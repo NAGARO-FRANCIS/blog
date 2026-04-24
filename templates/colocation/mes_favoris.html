@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Favoris - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <h1>❤️ Mes Annonces Favorites</h1>
+        <p>Retrouvez toutes les colocations que vous avez sauvegardées</p>
+    </div>
+
+    {% if favoris %}
+        <div class="annonces-grid">
+            {% for fav in favoris %}
+                <div class="annonce-card">
+                    <div class="annonce-image">
+                        <button class="favorite-btn active" data-annonce-id="{{ fav.annonce.id }}" onclick="removeFavori(this, event)">❤️</button>
+                        🏠 Colocation
+                    </div>
+                    <div class="annonce-content">
+                        <div class="annonce-ville">📍 {{ fav.annonce.ville }}{% if fav.annonce.quartier %} - {{ fav.annonce.quartier }}{% endif %}</div>
+                        <div class="annonce-titre">{{ fav.annonce.description|truncatewords:8 }}</div>
+                        <div class="annonce-meta">
+                            <div class="annonce-prix">{{ fav.annonce.budget_mensuel }} FCFA/mois</div>
+                            <div class="annonce-profil">{{ fav.annonce.profil_recherche|truncatewords:3 }}</div>
+                        </div>
+                        <div class="annonce-description">{{ fav.annonce.infos_logement|truncatewords:15 }}</div>
+                        <div class="annonce-actions">
+                            <a href="{% url 'messagerie:envoyer_message_annonce' 'colocation' fav.annonce.id %}" class="btn">Contacter</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center section-empty">
+            <h2>Vous n'avez pas encore de favoris</h2>
+            <p class="text-muted">Explorez nos annonces et marquez vos préférées</p>
+            <a href="{% url 'colocation:colocation_home' %}" class="btn">Découvrir les annonces</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

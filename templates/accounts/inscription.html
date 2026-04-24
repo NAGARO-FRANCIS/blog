@@ -1,0 +1,718 @@
+{% extends 'base.html' %}
+
+{% block title %}S'inscrire - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="signup-wrapper">
+    <div class="signup-container">
+        <!-- Branding Section -->
+        <div class="signup-header">
+            <div class="header-progress">
+                <div class="progress-step active" id="step1-indicator">1</div>
+                <div class="progress-line"></div>
+                <div class="progress-step" id="step2-indicator">2</div>
+                <div class="progress-line"></div>
+                <div class="progress-step" id="step3-indicator">3</div>
+            </div>
+            <h1 id="step-title">Créer votre compte</h1>
+            <p id="step-subtitle">Informations personnelles</p>
+        </div>
+
+        <!-- Error Messages -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <div>❌ {{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" class="signup-form" id="signupForm" novalidate enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- STEP 1: Basic Info -->
+            <div class="signup-step visible" id="step1">
+                <div class="step-content">
+                    <h2 class="step-heading">👤 Informations personnelles</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}">Prénom</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<span class="field-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}">Nom</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<span class="field-error">{{ form.last_name.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}">👤 Nom d'utilisateur</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<span class="field-error">{{ form.username.errors.0 }}</span>{% endif %}
+                        <small class="form-hint">Caractères alphanumériques et _ seulement</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}">📧 Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<span class="field-error">{{ form.email.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.password1.id_for_label }}">🔑 Mot de passe</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}<span class="field-error">{{ form.password1.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.password2.id_for_label }}">🔑 Confirmer</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}<span class="field-error">{{ form.password2.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Profile Details -->
+            <div class="signup-step" id="step2">
+                <div class="step-content">
+                    <h2 class="step-heading">📍 Informations du profil</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.ville.id_for_label }}">📍 Ville</label>
+                            {{ form.ville }}
+                            {% if form.ville.errors %}<span class="field-error">{{ form.ville.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.quartier.id_for_label }}">Quartier (optionnel)</label>
+                            {{ form.quartier }}
+                            {% if form.quartier.errors %}<span class="field-error">{{ form.quartier.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.date_naissance.id_for_label }}">🎂 Date de naissance</label>
+                            {{ form.date_naissance }}
+                            {% if form.date_naissance.errors %}<span class="field-error">{{ form.date_naissance.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.sexe.id_for_label }}">👥 Sexe</label>
+                            <div class="radio-group">
+                                {% for value, label in form.sexe.field.choices %}
+                                    <label class="radio-label">
+                                        <input type="radio" name="{{ form.sexe.name }}" value="{{ value }}" {% if form.sexe.value == value %}checked{% endif %}>
+                                        {{ label }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            {% if form.sexe.errors %}<span class="field-error">{{ form.sexe.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.telephone.id_for_label }}">📱 Téléphone</label>
+                        {{ form.telephone }}
+                        {% if form.telephone.errors %}<span class="field-error">{{ form.telephone.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Account Type & Documents -->
+            <div class="signup-step" id="step3">
+                <div class="step-content">
+                    <h2 class="step-heading">🎯 Type de compte</h2>
+
+                    <div class="form-group">
+                        <label>Qui êtes-vous ?</label>
+                        <div class="role-grid">
+                            {% for value, label in form.role.field.choices %}
+                                <label class="role-card">
+                                    <input type="radio" name="{{ form.role.name }}" value="{{ value }}" {% if form.role.value == value %}checked{% endif %}>
+                                    <span class="role-icon">{% if value == 'proprietaire' %}🏠{% elif value == 'locataire' %}👤{% else %}🔄{% endif %}</span>
+                                    <span class="role-label">{{ label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.role.errors %}<span class="field-error">{{ form.role.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.profession.id_for_label }}">💼 Profession</label>
+                        {{ form.profession }}
+                        {% if form.profession.errors %}<span class="field-error">{{ form.profession.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label>🪪 Pièce d'identité</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.type_piece_identite.id_for_label }}">Type</label>
+                                {{ form.type_piece_identite }}
+                                {% if form.type_piece_identite.errors %}<span class="field-error">{{ form.type_piece_identite.errors.0 }}</span>{% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.numero_piece_identite.id_for_label }}">Numéro</label>
+                                {{ form.numero_piece_identite }}
+                                {% if form.numero_piece_identite.errors %}<span class="field-error">{{ form.numero_piece_identite.errors.0 }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.photo_profil.id_for_label }}">📸 Photo de profil (optionnel)</label>
+                        <div class="photo-upload">
+                            {{ form.photo_profil }}
+                            <p class="upload-hint">JPG, PNG ou GIF. Max 5MB</p>
+                        </div>
+                        {% if form.photo_profil.errors %}<span class="field-error">{{ form.photo_profil.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
+                        <button type="submit" class="btn btn-success">✅ Créer mon compte</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+            <p>Vous avez déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></p>
+        </div>
+    </div>
+
+    <!-- Background decoration -->
+    <div class="signup-background">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+</div>
+
+<style>
+    .signup-wrapper {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        overflow: hidden;
+        padding: 30px 20px;
+    }
+
+    .signup-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        opacity: 0.08;
+    }
+
+    .shape-1 {
+        width: 350px;
+        height: 350px;
+        background: #534AB7;
+        top: -150px;
+        right: -100px;
+        animation: float 7s ease-in-out infinite;
+    }
+
+    .shape-2 {
+        width: 300px;
+        height: 300px;
+        background: #5EB3F6;
+        bottom: -150px;
+        left: -80px;
+        animation: float 9s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(40px); }
+    }
+
+    .signup-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 600px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+    }
+
+    /* Header */
+    .signup-header {
+        background: linear-gradient(135deg, #534AB7 0%, #4c3aa3 100%);
+        padding: 40px;
+        color: white;
+        text-align: center;
+    }
+
+    .header-progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .progress-step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.2);
+        border: 2px solid rgba(255,255,255,.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: rgba(255,255,255,.6);
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+        background: white;
+        color: #534AB7;
+        border-color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,.2);
+    }
+
+    .progress-line {
+        flex: 1;
+        height: 2px;
+        background: rgba(255,255,255,.2);
+        max-width: 60px;
+    }
+
+    #step-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 10px;
+    }
+
+    #step-subtitle {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin: 0;
+    }
+
+    /* Form */
+    .signup-form {
+        padding: 40px;
+    }
+
+    .signup-step {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .signup-step.visible {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .step-heading {
+        font-size: 1.3rem;
+        color: #1a2332;
+        margin: 0 0 10px;
+        font-weight: 600;
+    }
+
+    /* Form Groups */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #1a2332;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #534AB7;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.1);
+    }
+
+    .form-hint {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .field-error {
+        color: #dc2626;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    /* Radio & Select Groups */
+    .radio-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f8fafc;
+        font-weight: 500;
+    }
+
+    .radio-label:hover {
+        border-color: #534AB7;
+        background: #f1f5f9;
+    }
+
+    .radio-label input[type="radio"] {
+        accent-color: #534AB7;
+        cursor: pointer;
+    }
+
+    .role-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 12px;
+    }
+
+    .role-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 25px;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+
+    .role-card:hover {
+        border-color: #534AB7;
+        background: #f1f5f9;
+    }
+
+    .role-card input[type="radio"] {
+        accent-color: #534AB7;
+        display: none;
+    }
+
+    .role-card input[type="radio"]:checked + .role-icon {
+        transform: scale(1.2);
+    }
+
+    .role-card input[type="radio"]:checked ~ .role-label {
+        color: #534AB7;
+        font-weight: 700;
+    }
+
+    .role-icon {
+        font-size: 2.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .role-label {
+        font-weight: 600;
+        color: #1a2332;
+        text-align: center;
+    }
+
+    /* Photo Upload */
+    .photo-upload {
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+
+    .photo-upload:hover {
+        border-color: #534AB7;
+        background: #f1f5f9;
+    }
+
+    .photo-upload input[type="file"] {
+        display: none;
+    }
+
+    .upload-hint {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* Buttons */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .btn {
+        padding: 13px 28px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .btn-next {
+        background: linear-gradient(135deg, #534AB7 0%, #4c3aa3 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(83, 74, 183, 0.3);
+    }
+
+    .btn-next:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(83, 74, 183, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #1a2332;
+        border: 2px solid #cbd5e1;
+    }
+
+    .btn-secondary:hover {
+        background: #cbd5e1;
+        border-color: #94a3b8;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(22, 163, 74, 0.4);
+    }
+
+    /* Alert */
+    .alert {
+        padding: 14px 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        display: none;
+    }
+
+    .alert.alert-danger {
+        display: block;
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    /* Footer */
+    .auth-footer {
+        text-align: center;
+        padding: 20px 40px 30px;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .auth-footer p {
+        color: #64748b;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .auth-footer a {
+        color: #534AB7;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .role-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .signup-header {
+            padding: 30px 20px;
+        }
+
+        .signup-form {
+            padding: 25px 20px;
+        }
+
+        .signup-container {
+            border-radius: 16px;
+        }
+
+        .header-progress {
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress-step {
+            width: 35px;
+            height: 35px;
+            font-size: 0.9rem;
+        }
+
+        #step-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    let currentStep = 1;
+
+    function nextStep() {
+        if (validateStep(currentStep)) {
+            if (currentStep < 3) {
+                document.getElementById(`step${currentStep}`).classList.remove('visible');
+                currentStep++;
+                document.getElementById(`step${currentStep}`).classList.add('visible');
+                updateProgress();
+            }
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            document.getElementById(`step${currentStep}`).classList.remove('visible');
+            currentStep--;
+            document.getElementById(`step${currentStep}`).classList.add('visible');
+            updateProgress();
+        }
+    }
+
+    function updateProgress() {
+        for (let i = 1; i <= 3; i++) {
+            const indicator = document.getElementById(`step${i}-indicator`);
+            if (i === currentStep) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        const titles = {
+            1: 'Créer votre compte',
+            2: 'Informations du profil',
+            3: 'Type de compte'
+        };
+
+        const subtitles = {
+            1: 'Informations personnelles',
+            2: 'Détails du profil',
+            3: 'Documents et photo'
+        };
+
+        document.getElementById('step-title').textContent = titles[currentStep];
+        document.getElementById('step-subtitle').textContent = subtitles[currentStep];
+    }
+
+    function validateStep(step) {
+        const inputs = document.getElementById(`step${step}`).querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                input.classList.add('error');
+                isValid = false;
+            } else {
+                input.classList.remove('error');
+            }
+        });
+
+        return isValid;
+    }
+
+    // Photo upload preview
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                if (file.size > 5000000) {
+                    alert('Le fichier est trop volumineux (max 5MB)');
+                    e.target.value = '';
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coloc.ai - Trouvez votre colocation idéale{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    
+</head>
+<body>
+<header>
+    <nav>
+        <div class="logo">🏠 Coloc.ai</div>
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}">Accueil</a></li>
+            <li><a href="{% url 'colocation:liste_annonces' %}">Annonces</a></li>
+            {% if request.user.is_authenticated %}
+                <li><a href="{% url 'colocation:mes_favoris' %}">♥ Mes Favoris</a></li>
+                <li><a href="{% url 'messagerie:mes_conversations' %}">📧 Messages</a></li>
+                <li><a href="{% url 'accounts:profil' %}">👤 Profil</a></li>
+                <li><a href="{% url 'accounts:logout' %}" class="nav-btn">Déconnexion</a></li>
+            {% else %}
+                <li><a href="{% url 'accounts:login' %}" class="nav-btn">Connexion</a></li>
+                <li><a href="{% url 'accounts:inscription' %}" class="nav-btn primary">S'inscrire</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</header>
+
+<main>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="success-message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <p>&copy; 2026 Coloc.ai. Trouvez votre colocation en Côte d'Ivoire. Tous droits réservés.</p>
+</footer>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function toggleFavori(button, annonceId) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `/colocation/toggle-favori/${annonceId}/`, true);
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.is_favorite) {
+                    button.classList.add('active');
+                    button.textContent = '❤️';
+                } else {
+                    button.classList.remove('active');
+                    button.textContent = '🤍';
+                }
+            }
+        };
+        
+        xhr.onerror = function() {
+            console.error('Erreur lors de la mise à jour du favori');
+        };
+        
+        xhr.send();
+    }
+
+    function removeFavori(button, event) {
+        event.preventDefault();
+        const annonceId = button.dataset.annonceId;
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `/colocation/toggle-favori/${annonceId}/`, true);
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (!response.is_favorite) {
+                    // Supprimer la carte d'annonce du DOM
+                    const card = button.closest('.annonce-card');
+                    if (card) {
+                        card.style.animation = 'fadeOut 0.3s ease-out';
+                        setTimeout(() => {
+                            card.remove();
+                            // Si plus d'annonces, montrer le message vide
+                            const grid = document.querySelector('.annonces-grid');
+                            if (grid && grid.children.length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                }
+            }
+        };
+        
+        xhr.onerror = function() {
+            console.error('Erreur lors de la suppression du favori');
+        };
+        
+        xhr.send();
+    }
+
+    // Event delegation pour tous les boutons favoris
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('favorite-btn')) {
+            e.preventDefault();
+            const annonceId = e.target.dataset.annonceId;
+            if (annonceId) {
+                toggleFavori(e.target, annonceId);
+            }
+        }
+    });
+</script>
+</body>
+</html>

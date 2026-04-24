@@ -1,0 +1,412 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Accueil - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <h1>🏠 Bienvenue sur Coloc.ai</h1>
+        <p>Trouvez votre colocation idéale en Côte d'Ivoire</p>
+    </div>
+
+    <!-- Section d'introduction -->
+    <div class="intro-section">
+        <div class="intro-card">
+            <div class="intro-icon">🔍</div>
+            <h3>Parcourez les annonces</h3>
+            <p>Découvrez toutes les colocations disponibles et trouvez celle qui vous convient</p>
+            <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">Voir les annonces</a>
+        </div>
+        <div class="intro-card">
+            <div class="intro-icon">📢</div>
+            <h3>Publiez une annonce</h3>
+            <p>Proposez votre colocation et trouvez des colocataires</p>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'colocation:publier_annonce' %}" class="btn btn-primary">Publier</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-primary">Se connecter</a>
+            {% endif %}
+        </div>
+        <div class="intro-card">
+            <div class="intro-icon">❤️</div>
+            <h3>Mes favoris</h3>
+            <p>Retrouvez toutes vos annonces préférées</p>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'colocation:mes_favoris' %}" class="btn btn-primary">Mes favoris</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}" class="btn btn-primary">Se connecter</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="recent-annonces">
+        <h2>📌 Dernières annonces</h2>
+
+        {% if annonces %}
+            <div class="annonces-grid">
+                {% for annonce in annonces %}
+                    <div class="annonce-card">
+                        <!-- Image principale -->
+                        <div class="annonce-image">
+                            {% if annonce.photos.all %}
+                                <img src="{{ annonce.photos.first.image.url }}" alt="{{ annonce.photos.first.alt_text }}" class="card-image">
+                            {% else %}
+                                <div class="card-image-placeholder">🏠</div>
+                            {% endif %}
+                            {% if annonce.photos.count > 1 %}
+                                <span class="badge badge-photos">📸 {{ annonce.photos.count }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="annonce-content">
+                            <div class="annonce-prix">{{ annonce.budget_mensuel|floatformat:0 }} FCFA/mois</div>
+                            <div class="annonce-ville">
+                                📍 {{ annonce.ville }}
+                                {% if annonce.quartier %}<span class="quartier"> - {{ annonce.quartier }}</span>{% endif %}
+                            </div>
+                            
+                            <!-- Caractéristiques -->
+                            <div class="annonce-features">
+                                <span class="feature">
+                                    <strong>{{ annonce.nombre_chambres }}</strong> chambre{{ annonce.nombre_chambres|pluralize }}
+                                </span>
+                                <span class="feature">
+                                    <strong>{{ annonce.nombre_colocataires }}</strong> place{{ annonce.nombre_colocataires|pluralize }}
+                                </span>
+                            </div>
+                            
+                            <div class="annonce-description">{{ annonce.description|truncatewords:15 }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center" style="margin-top: 40px;">
+                <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">Voir toutes les annonces →</a>
+            </div>
+        {% else %}
+            <div class="text-center section-empty">
+                <h2>Aucune annonce disponible</h2>
+                <p class="text-muted">Revenez bientôt pour découvrir les nouvelles annonces</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Hero Section */
+    .container .hero {
+        background: linear-gradient(135deg, #1a2332 0%, #2d3e50 100%);
+        color: white;
+        padding: 60px 40px;
+        border-radius: 24px;
+        margin-bottom: 50px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .container .hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        z-index: 0;
+    }
+
+    .container .hero h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0 0 15px;
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.5px;
+    }
+
+    .container .hero p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Intro Cards */
+    .intro-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 28px;
+        margin: 50px 0;
+    }
+
+    .intro-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px 32px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 2px solid #f0f4f8;
+        position: relative;
+    }
+
+    .intro-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #534AB7 0%, #5EB3F6 100%);
+        border-radius: 20px 20px 0 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .intro-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 16px 40px rgba(83, 74, 183, 0.2);
+        border-color: #e0e7ff;
+    }
+
+    .intro-card:hover::before {
+        opacity: 1;
+    }
+
+    .intro-icon {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        display: block;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .intro-card h3 {
+        font-size: 1.4rem;
+        color: #1a2332;
+        margin: 0 0 15px;
+        font-weight: 700;
+    }
+
+    .intro-card p {
+        color: #64748b;
+        margin: 0 0 25px;
+        flex: 1;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    .intro-card .btn {
+        align-self: center;
+        margin-top: auto;
+    }
+
+    /* Recent Announcements */
+    .recent-annonces {
+        margin-top: 80px;
+        padding-top: 50px;
+        border-top: 2px solid #f0f4f8;
+    }
+
+    .recent-annonces h2 {
+        color: #1a2332;
+        font-size: 2rem;
+        margin-bottom: 40px;
+        font-weight: 700;
+    }
+
+    .annonces-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 28px;
+        margin-bottom: 40px;
+    }
+
+    .annonce-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #f0f4f8;
+    }
+
+    .annonce-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 20px 50px rgba(83, 74, 183, 0.2);
+    }
+
+    .annonce-image {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .annonce-card:hover .card-image {
+        transform: scale(1.08);
+    }
+
+    .card-image-placeholder {
+        font-size: 4rem;
+        color: rgba(83, 74, 183, 0.2);
+    }
+
+    .badge {
+        position: absolute;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+    }
+
+    .badge-photos {
+        top: 12px;
+        right: 12px;
+    }
+
+    .annonce-content {
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .annonce-prix {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #534AB7;
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
+    }
+
+    .annonce-ville {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .annonce-ville .quartier {
+        color: #475569;
+        font-weight: 700;
+    }
+
+    .annonce-features {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .feature {
+        background: linear-gradient(135deg, #f0e9ff 0%, #e8dfff 100%);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: #534AB7;
+        font-weight: 600;
+        border: 1px solid #ddd6f3;
+    }
+
+    .feature strong {
+        color: #1a2332;
+        font-weight: 700;
+    }
+
+    .annonce-description {
+        color: #64748b;
+        font-size: 0.9rem;
+        flex: 1;
+        line-height: 1.5;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #534AB7 0%, #4c3aa3 100%);
+        color: white;
+        padding: 12px 28px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(83, 74, 183, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(83, 74, 183, 0.4);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .section-empty {
+        padding: 80px 40px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 24px;
+        border: 2px dashed #cbd5e1;
+    }
+
+    .section-empty h2 {
+        color: #1a2332;
+        margin-bottom: 12px;
+        font-size: 1.5rem;
+    }
+
+    .text-muted {
+        color: #64748b;
+    }
+
+    @media (max-width: 768px) {
+        .container .hero {
+            padding: 40px 20px;
+        }
+
+        .container .hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .recent-annonces h2 {
+            font-size: 1.5rem;
+        }
+
+        .intro-section,
+        .annonces-grid {
+            gap: 20px;
+        }
+    }
+</style>
+{% endblock %}

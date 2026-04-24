@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Publier un logement - Coloc.ai{% endblock %}
+
+{% block content %}
+<style>
+  .fp-wrap { max-width: 680px; margin: 0 auto; padding: 1rem 0 2rem; font-family: var(--font-sans); }
+  .fp-hero { text-align: center; margin-bottom: 2rem; }
+  .fp-hero h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 6px; }
+  .fp-hero p { font-size: 14px; color: var(--color-text-secondary); margin: 0; }
+  .fp-steps { display: flex; gap: 0; margin-bottom: 2rem; border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; overflow: hidden; }
+  .fp-step { flex: 1; padding: 10px 8px; text-align: center; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: white; border-right: 0.5px solid var(--color-border-tertiary); transition: background 0.15s; }
+  .fp-step:last-child { border-right: none; }
+  .fp-step.active { background: #f5f5f5; color: #111; font-weight: 500; }
+  .fp-step span { display: block; font-size: 16px; margin-bottom: 2px; }
+  .fp-section { display: none; }
+  .fp-section.visible { display: block; }
+  .fp-card { background: white; border: 0.5px solid #e0e0e0; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .fp-card h2 { font-size: 13px; font-weight: 500; color: #888; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .fp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .fp-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+  .fp-field { display: flex; flex-direction: column; gap: 4px; }
+  .fp-field label { font-size: 13px; color: #555; }
+  .fp-field input, .fp-field select, .fp-field textarea { width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 14px; border: 0.5px solid #ccc; border-radius: 8px; background: white; color: #111; font-family: inherit; }
+  .fp-field textarea { min-height: 90px; resize: vertical; }
+  .fp-full { grid-column: 1 / -1; }
+  .fp-hint { font-size: 12px; color: #aaa; margin-top: 3px; }
+  .fp-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+  .fp-check { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 0.5px solid #e0e0e0; border-radius: 8px; cursor: pointer; background: white; transition: all 0.15s; font-size: 13px; color: #111; }
+  .fp-check:hover { border-color: #aaa; background: #fafafa; }
+  .fp-check input { width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: #534AB7; }
+  .fp-photo-zone { border: 0.5px dashed #bbb; border-radius: 12px; padding: 2rem; text-align: center; color: #888; font-size: 14px; cursor: pointer; transition: background 0.15s; margin-bottom: 12px; }
+  .fp-photo-zone:hover { background: #fafafa; }
+  .fp-photo-zone p { margin: 6px 0 0; font-size: 12px; color: #aaa; }
+  .fp-photo-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .fp-photo-slot { aspect-ratio: 1; border: 0.5px dashed #ddd; border-radius: 8px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #bbb; cursor: pointer; }
+  .fp-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+  .fp-nav button { padding: 9px 20px; font-size: 14px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .fp-btn-prev { background: transparent; border: 0.5px solid #ccc; color: #111; }
+  .fp-btn-next { background: #534AB7; border: none; color: #fff; }
+  .fp-btn-submit { background: #534AB7; border: none; color: #fff; padding: 10px 28px; font-size: 14px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .fp-progress { height: 3px; background: #eee; border-radius: 99px; margin-bottom: 1.5rem; overflow: hidden; }
+  .fp-progress-bar { height: 100%; background: #534AB7; border-radius: 99px; transition: width 0.3s; }
+  .fp-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #f0f0f0; color: #888; margin-left: 6px; }
+</style>
+
+<div class="fp-wrap">
+  <div class="fp-hero">
+    <h1>Publier votre logement</h1>
+    <p>Trouvez les meilleurs locataires pour votre propriété</p>
+  </div>
+
+  <div class="fp-progress"><div class="fp-progress-bar" id="progress" style="width: 25%"></div></div>
+
+  <div class="fp-steps">
+    <div class="fp-step active" onclick="goTo(0)"><span>📍</span>Infos</div>
+    <div class="fp-step" onclick="goTo(1)"><span>🏠</span>Caract.</div>
+    <div class="fp-step" onclick="goTo(2)"><span>⚙️</span>Équip.</div>
+    <div class="fp-step" onclick="goTo(3)"><span>📸</span>Photos</div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Étape 1 : Informations -->
+    <div class="fp-section visible" id="s0">
+      <div class="fp-card">
+        <h2>Informations principales</h2>
+        <div class="fp-grid">
+          <div class="fp-field fp-full">
+            <label>Titre de l'annonce</label>
+            {{ form.titre }}
+          </div>
+          <div class="fp-field">
+            <label>Type de logement</label>
+            {{ form.type_logement }}
+          </div>
+          <div class="fp-field">
+            <label>Ville</label>
+            {{ form.ville }}
+          </div>
+          <div class="fp-field">
+            <label>Quartier</label>
+            {{ form.quartier }}
+          </div>
+          <div class="fp-field fp-full">
+            <label>Description</label>
+            {{ form.description }}
+            <span class="fp-hint">Soyez précis : état, luminosité, environnement, transports...</span>
+          </div>
+          <div class="fp-field">
+            <label>Disponible à partir du</label>
+            {{ form.disponible_depuis }}
+          </div>
+        </div>
+      </div>
+      <div class="fp-nav">
+        <span></span>
+        <button type="button" class="fp-btn-next" onclick="goTo(1)">Suivant →</button>
+      </div>
+    </div>
+
+    <!-- Étape 2 : Caractéristiques -->
+    <div class="fp-section" id="s1">
+      <div class="fp-card">
+        <h2>Caractéristiques</h2>
+        <div class="fp-grid cols3">
+          <div class="fp-field">
+            <label>Loyer mensuel (FCFA)</label>
+            {{ form.prix }}
+          </div>
+          <div class="fp-field">
+            <label>Surface (m²)</label>
+            {{ form.surface }}
+          </div>
+          <div class="fp-field">
+            <label>Étage</label>
+            {{ form.etage }}
+          </div>
+          <div class="fp-field">
+            <label>Nombre de pièces</label>
+            {{ form.nombre_pieces }}
+          </div>
+          <div class="fp-field">
+            <label>Chambres</label>
+            {{ form.nombre_chambres }}
+          </div>
+          <div class="fp-field">
+            <label>Salles de bain</label>
+            {{ form.nombre_salles_bain }}
+          </div>
+        </div>
+      </div>
+      <div class="fp-nav">
+        <button type="button" class="fp-btn-prev" onclick="goTo(0)">← Précédent</button>
+        <button type="button" class="fp-btn-next" onclick="goTo(2)">Suivant →</button>
+      </div>
+    </div>
+
+    <!-- Étape 3 : Équipements -->
+    <div class="fp-section" id="s2">
+      <div class="fp-card">
+        <h2>Équipements disponibles</h2>
+        <div class="fp-checks">
+          <label class="fp-check">{{ form.climatisation }} Climatisation</label>
+          <label class="fp-check">{{ form.wifi }} WiFi</label>
+          <label class="fp-check">{{ form.cuisine_equipee }} Cuisine équipée</label>
+          <label class="fp-check">{{ form.garage }} Garage</label>
+          <label class="fp-check">{{ form.jardin }} Jardin</label>
+          <label class="fp-check">{{ form.piscine }} Piscine</label>
+          <label class="fp-check">{{ form.meuble }} Meublé</label>
+        </div>
+      </div>
+      <div class="fp-nav">
+        <button type="button" class="fp-btn-prev" onclick="goTo(1)">← Précédent</button>
+        <button type="button" class="fp-btn-next" onclick="goTo(3)">Suivant →</button>
+      </div>
+    </div>
+
+    <!-- Étape 4 : Photos -->
+    <div class="fp-section" id="s3">
+      <div class="fp-card">
+        <h2>Photos <span class="fp-badge">max 5</span></h2>
+        {{ formset.management_form }}
+        <div class="fp-photo-zone" onclick="document.getElementById('photo-input').click()">
+          <div style="font-size: 24px;">+</div>
+          Cliquez pour ajouter des photos
+          <p>JPG, PNG — max 5 Mo par photo</p>
+          <input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none" onchange="showPreviews(this)" />
+        </div>
+        <div class="fp-photo-grid" id="photo-grid">
+          <div class="fp-photo-slot">+</div>
+          <div class="fp-photo-slot">+</div>
+          <div class="fp-photo-slot">+</div>
+          <div class="fp-photo-slot">+</div>
+          <div class="fp-photo-slot">+</div>
+        </div>
+        {% for photo_form in formset %}
+          <div style="display:none">{{ photo_form }}</div>
+        {% endfor %}
+      </div>
+      <div class="fp-nav">
+        <button type="button" class="fp-btn-prev" onclick="goTo(2)">← Précédent</button>
+        <button type="submit" class="fp-btn-submit">Publier le logement</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  let current = 0;
+  const sections = document.querySelectorAll('.fp-section');
+  const steps = document.querySelectorAll('.fp-step');
+  const bar = document.getElementById('progress');
+
+  function goTo(n) {
+    sections[current].classList.remove('visible');
+    steps[current].classList.remove('active');
+    current = n;
+    sections[current].classList.add('visible');
+    steps[current].classList.add('active');
+    bar.style.width = ((n + 1) / 4 * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showPreviews(input) {
+    const slots = document.querySelectorAll('.fp-photo-slot');
+    const files = Array.from(input.files).slice(0, 5);
+    files.forEach((file, i) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        slots[i].style.backgroundImage = 'url(' + e.target.result + ')';
+        slots[i].style.backgroundSize = 'cover';
+        slots[i].style.backgroundPosition = 'center';
+        slots[i].textContent = '';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+</script>
+{% endblock %}

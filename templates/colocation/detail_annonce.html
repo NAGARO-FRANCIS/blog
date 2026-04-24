@@ -1,0 +1,817 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ annonce.ville }} - Annonce de Colocation - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="detail-wrapper">
+    <div class="detail-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{% url 'colocation:colocation_home' %}">Accueil</a> >
+            <a href="{% url 'colocation:liste_annonces' %}">Annonces</a> >
+            <span>{{ annonce.ville }}</span>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="detail-gallery-section">
+            <div class="detail-gallery-main">
+                {% if annonce.photos.all %}
+                    <img id="main-image" src="{{ annonce.photos.first.image.url }}" alt="Photo principale">
+                {% else %}
+                    <div class="no-image-placeholder">📷 Pas de photo disponible</div>
+                {% endif %}
+            </div>
+
+            {% if annonce.photos.all %}
+                <div class="detail-gallery-thumbnails">
+                    {% for photo in annonce.photos.all %}
+                        <img 
+                            src="{{ photo.image.url }}" 
+                            alt="Photo {{ forloop.counter }}"
+                            class="thumbnail {% if forloop.first %}active{% endif %}"
+                            onclick="changeMainImage(this)"
+                        >
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Favorite Button -->
+            <div class="detail-favorite">
+                {% if request.user.is_authenticated %}
+                    <button class="favorite-btn-large {% if is_favorite %}active{% endif %}" 
+                            onclick="toggleFavori(event, this, {{ annonce.id }})"
+                            id="fav-btn">
+                        {% if is_favorite %}❤️ Ajouté aux favoris{% else %}🤍 Ajouter aux favoris{% endif %}
+                    </button>
+                {% else %}
+                    <button class="favorite-btn-large" onclick="alert('Veuillez vous connecter')">
+                        🤍 Ajouter aux favoris
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="detail-content">
+            <!-- Header -->
+            <div class="detail-header">
+                <div>
+                    <h1 class="detail-title">{{ annonce.budget_mensuel|floatformat:0 }} FCFA/mois</h1>
+                    <p class="detail-location">
+                        📍 {{ annonce.ville }}
+                        {% if annonce.quartier %}<span> - {{ annonce.quartier }}</span>{% endif %}
+                    </p>
+                    <p class="detail-date">Publiée le {{ annonce.created_at|date:"d M Y à H:i" }}</p>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="detail-quick-info">
+                <div class="info-item">
+                    <span class="info-label">Chambres</span>
+                    <span class="info-value">{{ annonce.nombre_chambres }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Places</span>
+                    <span class="info-value">{{ annonce.nombre_colocataires }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Salles de bain</span>
+                    <span class="info-value">{{ annonce.nombre_salles_bain }}</span>
+                </div>
+                {% if annonce.surface %}
+                    <div class="info-item">
+                        <span class="info-label">Surface</span>
+                        <span class="info-value">{{ annonce.surface }} m²</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Description Section -->
+            <section class="detail-section">
+                <h2 class="section-title">📝 Description du logement</h2>
+                <div class="section-content">
+                    {{ annonce.description|linebreaks }}
+                </div>
+            </section>
+
+            <!-- Housing Info Section -->
+            <section class="detail-section">
+                <h2 class="section-title">🏠 Caractéristiques</h2>
+                <div class="section-content">
+                    <div class="characteristics-grid">
+                        <div class="char-item">
+                            <span class="char-label">Meublé</span>
+                            <span class="char-value">{% if annonce.meuble %}✅ Oui{% else %}❌ Non{% endif %}</span>
+                        </div>
+                        <div class="char-item">
+                            <span class="char-label">Disponible depuis</span>
+                            <span class="char-value">{{ annonce.disponible_depuis|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="char-item">
+                            <span class="char-label">Durée minimum</span>
+                            <span class="char-value">{{ annonce.durée_minimum }} mois</span>
+                        </div>
+                    </div>
+
+                    {% if annonce.infos_logement %}
+                        <div class="info-block" style="margin-top: 20px;">
+                            <h3>Informations supplémentaires</h3>
+                            <p>{{ annonce.infos_logement|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Amenities Section -->
+            {% if annonce.climatisation or annonce.wifi or annonce.cuisine_equipee or annonce.garage or annonce.jardin %}
+                <section class="detail-section">
+                    <h2 class="section-title">⚙️ Équipements</h2>
+                    <div class="amenities-grid">
+                        {% if annonce.climatisation %}
+                            <div class="amenity-item">❄️ Climatisation</div>
+                        {% endif %}
+                        {% if annonce.wifi %}
+                            <div class="amenity-item">📶 WiFi</div>
+                        {% endif %}
+                        {% if annonce.cuisine_equipee %}
+                            <div class="amenity-item">🍳 Cuisine équipée</div>
+                        {% endif %}
+                        {% if annonce.garage %}
+                            <div class="amenity-item">🚗 Garage</div>
+                        {% endif %}
+                        {% if annonce.jardin %}
+                            <div class="amenity-item">🌿 Jardin</div>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endif %}
+
+            <!-- Roommates & Conditions Section -->
+            <section class="detail-section">
+                <h2 class="section-title">👥 Colocataires & Conditions</h2>
+                <div class="section-content">
+                    {% if annonce.profil_recherche %}
+                        <div class="info-block">
+                            <h3>Profil recherché</h3>
+                            <p class="profile-badge">{{ annonce.get_profil_recherche_display }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if annonce.conditions_vie %}
+                        <div class="info-block">
+                            <h3>Conditions de vie & Règles</h3>
+                            <p>{{ annonce.conditions_vie|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- Owner Section -->
+            <section class="detail-section">
+                <h2 class="section-title">👤 Propriétaire</h2>
+                <div class="owner-card">
+                    <div class="owner-info">
+                        {% if annonce.proprietaire.profile.photo_profil %}
+                            <img src="{{ annonce.proprietaire.profile.photo_profil.url }}" alt="{{ annonce.proprietaire.get_full_name }}" class="owner-photo">
+                        {% else %}
+                            <div class="owner-photo-placeholder">👤</div>
+                        {% endif %}
+                        
+                        <div class="owner-details">
+                            <h3 class="owner-name">{{ annonce.proprietaire.get_full_name|default:annonce.proprietaire.username }}</h3>
+                            {% if annonce.proprietaire.profile.profession %}
+                                <p class="owner-profession">💼 {{ annonce.proprietaire.profile.profession }}</p>
+                            {% endif %}
+                            {% if annonce.proprietaire.profile.ville %}
+                                <p class="owner-location">📍 {{ annonce.proprietaire.profile.ville }}</p>
+                            {% endif %}
+                            {% if annonce.proprietaire.profile.verified %}
+                                <p class="owner-verified">✅ Profil vérifié</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Contact Button -->
+                    <div class="owner-actions">
+                        {% if request.user.is_authenticated %}
+                            {% if annonce.proprietaire.id == request.user.id %}
+                                <div class="btn-badge-large">✅ C'est votre annonce</div>
+                            {% else %}
+                                <a href="{% url 'messagerie:envoyer_message_annonce' 'colocation' annonce.id %}" class="btn btn-primary btn-large">
+                                    💬 Envoyer un message
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}?next={% url 'colocation:detail_annonce' annonce.id %}" class="btn btn-primary btn-large">
+                                Se connecter pour contacter
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    .detail-wrapper {
+        background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        min-height: 100vh;
+        padding: 30px 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .detail-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+    }
+
+    .breadcrumb {
+        padding: 16px 30px;
+        font-size: 0.9rem;
+        color: #64748b;
+        background: rgba(244, 248, 252, 0.5);
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .breadcrumb a {
+        color: #534AB7;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb a:hover {
+        color: #3d2d7a;
+    }
+
+    /* Gallery Premium */
+    .detail-gallery-section {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 140px;
+        gap: 20px;
+        padding: 40px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .detail-gallery-main {
+        grid-column: 1;
+        aspect-ratio: 16 / 12;
+        background: linear-gradient(135deg, #e0e7ff 0%, #f5f3ff 100%);
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(83, 74, 183, 0.15);
+    }
+
+    .detail-gallery-main img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .no-image-placeholder {
+        font-size: 3.5rem;
+        color: #cbd5e1;
+    }
+
+    .detail-gallery-thumbnails {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 500px;
+        overflow-y: auto;
+        padding: 4px;
+    }
+
+    .detail-gallery-thumbnails::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .detail-gallery-thumbnails::-webkit-scrollbar-track {
+        background: #e2e8f0;
+        border-radius: 10px;
+    }
+
+    .detail-gallery-thumbnails::-webkit-scrollbar-thumb {
+        background: #534AB7;
+        border-radius: 10px;
+    }
+
+    .thumbnail {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 14px;
+        cursor: pointer;
+        opacity: 0.55;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 3px solid transparent;
+        object-fit: cover;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .thumbnail:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+
+    .thumbnail.active {
+        opacity: 1;
+        border-color: #534AB7;
+        box-shadow: 0 8px 20px rgba(83, 74, 183, 0.3);
+    }
+
+    .detail-favorite {
+        position: absolute;
+        top: 40px;
+        right: 40px;
+        z-index: 10;
+    }
+
+    .favorite-btn-large {
+        background: white;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #64748b;
+        transition: all 0.4s ease;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .favorite-btn-large:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    }
+
+    .favorite-btn-large.active {
+        background: #fff5f5;
+        color: #e53e3e;
+        border: 2px solid #e53e3e;
+    }
+
+    /* Content Premium */
+    .detail-content {
+        padding: 45px;
+    }
+
+    .detail-header {
+        margin-bottom: 35px;
+        border-bottom: 3px solid #e2e8f0;
+        padding-bottom: 25px;
+    }
+
+    .detail-title {
+        font-size: 3rem;
+        color: #0f172a;
+        margin: 0;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .detail-location {
+        font-size: 1.25rem;
+        color: #64748b;
+        margin: 12px 0 8px;
+        font-weight: 500;
+    }
+
+    .detail-date {
+        font-size: 0.95rem;
+        color: #94a3b8;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Quick Info Premium */
+    .detail-quick-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .info-item {
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .info-item:hover {
+        border-color: #534AB7;
+        box-shadow: 0 8px 20px rgba(83, 74, 183, 0.1);
+        transform: translateY(-4px);
+    }
+
+    .info-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        display: block;
+        font-size: 2rem;
+        color: #534AB7;
+        font-weight: 800;
+    }
+
+    /* Sections Premium */
+    .detail-section {
+        margin-bottom: 45px;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        color: #0f172a;
+        margin: 0 0 20px;
+        font-weight: 800;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #534AB7;
+        display: inline-block;
+    }
+
+    .section-content {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #475569;
+    }
+
+    .characteristics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 20px;
+    }
+
+    .char-item {
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border-left: 5px solid #534AB7;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .char-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(83, 74, 183, 0.12);
+        background: linear-gradient(135deg, #f1f5f9 0%, #e8eef7 100%);
+    }
+
+    .char-label {
+        display: block;
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .char-value {
+        display: block;
+        font-size: 1.5rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+
+    .info-block {
+        margin-bottom: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        border-left: 5px solid #534AB7;
+        border: 1px solid #e2e8f0;
+    }
+
+    .info-block h3 {
+        margin: 0 0 12px;
+        color: #0f172a;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .info-block p {
+        margin: 0;
+        color: #475569;
+        line-height: 1.8;
+        word-break: break-word;
+    }
+
+    /* Amenities Grid Premium */
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .amenity-item {
+        padding: 16px 18px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        text-align: center;
+        font-weight: 700;
+        color: #0f172a;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .amenity-item:hover {
+        border-color: #534AB7;
+        background: linear-gradient(135deg, #e8eef7 0%, #dfe6f5 100%);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(83, 74, 183, 0.15);
+    }
+
+    .profile-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #e8eef7 0%, #dfe6f5 100%);
+        color: #534AB7;
+        border-radius: 25px;
+        font-weight: 700;
+        margin: 0;
+        border: 2px solid #d0dff0;
+    }
+
+    /* Owner Card Premium */
+    .owner-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 35px;
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .owner-card:hover {
+        border-color: #534AB7;
+        box-shadow: 0 15px 40px rgba(83, 74, 183, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .owner-info {
+        display: flex;
+        gap: 20px;
+        flex: 1;
+    }
+
+    .owner-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(83, 74, 183, 0.25);
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .owner-photo:hover {
+        transform: scale(1.08);
+    }
+
+    .owner-photo-placeholder {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e8eef7 0%, #dfe6f5 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(83, 74, 183, 0.25);
+        flex-shrink: 0;
+    }
+
+    .owner-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .owner-name {
+        margin: 0 0 12px;
+        font-size: 1.5rem;
+        color: #0f172a;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+    }
+
+    .owner-profession,
+    .owner-location {
+        margin: 8px 0;
+        font-size: 1rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .owner-verified {
+        margin: 8px 0;
+        font-size: 1rem;
+        color: #16a34a;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .owner-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 280px;
+    }
+
+    .btn-large {
+        padding: 16px 28px !important;
+        font-size: 1.05rem !important;
+        letter-spacing: 0.3px;
+    }
+
+    .btn {
+        padding: 16px 28px;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 1.05rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #534AB7 0%, #4c3aa3 100%);
+        color: white;
+        box-shadow: 0 10px 28px rgba(83, 74, 183, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(83, 74, 183, 0.4);
+    }
+
+    .btn-primary:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-badge-large {
+        background: linear-gradient(135deg, #e8f4f8 0%, #dfe9f3 100%);
+        color: #0066cc;
+        border: 2px solid #b3d9e8;
+        font-weight: 700;
+        padding: 16px 28px;
+        border-radius: 14px;
+        text-align: center;
+    }
+
+    @media (max-width: 768px) {
+        .detail-gallery-section {
+            grid-template-columns: 1fr;
+            padding: 25px;
+            gap: 15px;
+        }
+
+        .detail-gallery-main {
+            aspect-ratio: 4 / 3;
+        }
+
+        .detail-gallery-thumbnails {
+            grid-column: 1;
+            flex-direction: row;
+            overflow-x: auto;
+            height: auto;
+            gap: 10px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        .detail-title {
+            font-size: 2rem;
+        }
+
+        .detail-content {
+            padding: 25px;
+        }
+
+        .owner-card {
+            flex-direction: column;
+            padding: 25px;
+            gap: 20px;
+        }
+
+        .owner-actions {
+            min-width: auto;
+        }
+
+        .characteristics-grid,
+        .amenities-grid {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+
+        .detail-favorite {
+            top: 25px;
+            right: 25px;
+        }
+
+        .favorite-btn-large {
+            padding: 12px 18px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<script>
+    function changeMainImage(element) {
+        const mainImage = document.getElementById('main-image');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        
+        mainImage.src = element.src;
+        mainImage.alt = element.alt;
+        
+        thumbnails.forEach(thumb => thumb.classList.remove('active'));
+        element.classList.add('active');
+    }
+
+    function toggleFavori(event, button, annonceId) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Récupérer le CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
+
+        fetch(`/colocation/toggle-favori/${annonceId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_favorite) {
+                button.classList.add('active');
+                button.textContent = '❤️ Ajouté aux favoris';
+            } else {
+                button.classList.remove('active');
+                button.textContent = '🤍 Ajouter aux favoris';
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    }
+</script>
+{% endblock %}

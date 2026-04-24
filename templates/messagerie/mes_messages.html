@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Conversations - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero hero-compact">
+        <h1>💬 Mes Conversations</h1>
+        <p>Gérez vos échanges avec les autres utilisateurs</p>
+    </div>
+
+    {% if conversations %}
+        <div class="conversations-list">
+            {% for conv_info in conversations %}
+                <div class="conversation-item {% if conv_info.unread_count > 0 %}unread{% endif %}">
+                    <div class="conversation-avatar">
+                        {% if conv_info.other_participant.profile.photo_profil %}
+                            <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="Photo de {{ conv_info.other_participant.get_full_name }}">
+                        {% else %}
+                            <div class="avatar-placeholder">{{ conv_info.other_participant.first_name|first|upper }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="conversation-content">
+                        <div class="conversation-header">
+                            <h3 class="conversation-partner">
+                                {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}
+                                {% if conv_info.unread_count > 0 %}
+                                    <span class="unread-badge">{{ conv_info.unread_count }}</span>
+                                {% endif %}
+                            </h3>
+                            <span class="conversation-date">
+                                {% if conv_info.last_message %}
+                                    {{ conv_info.last_message.created_at|date:"d/m H:i" }}
+                                {% else %}
+                                    {{ conv_info.conversation.created_at|date:"d/m H:i" }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {% if conv_info.conversation.annonce %}
+                            <div class="conversation-subject">
+                                📄 {{ conv_info.conversation.annonce.titre|truncatechars:50 }}
+                            </div>
+                        {% endif %}
+
+                        {% if conv_info.last_message %}
+                            <div class="conversation-preview">
+                                {% if conv_info.last_message.expediteur == request.user %}
+                                    <strong>Vous:</strong>
+                                {% endif %}
+                                {{ conv_info.last_message.contenu|truncatechars:100 }}
+                            </div>
+                        {% else %}
+                            <div class="conversation-preview text-muted">
+                                Nouvelle conversation
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="conversation-actions">
+                        <a href="{% url 'messagerie:conversation_detail' conv_info.conversation.id %}" class="btn">
+                            {% if conv_info.unread_count > 0 %}
+                                Voir ({{ conv_info.unread_count }} nouveau{% if conv_info.unread_count > 1 %}x{% endif %})
+                            {% else %}
+                                Voir
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center section-empty">
+            <div class="empty-icon">💬</div>
+            <h2>Aucune conversation pour le moment</h2>
+            <p class="text-muted">Commencez une conversation en répondant à une annonce qui vous intéresse</p>
+            <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">Voir les annonces</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .conversations-list {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .conversation-item {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        margin-bottom: 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .conversation-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .conversation-item.unread {
+        border-left-color: var(--primary);
+        background: linear-gradient(90deg, rgba(94, 93, 255, 0.05) 0%, white 20%);
+    }
+
+    .conversation-avatar {
+        margin-right: 15px;
+    }
+
+    .conversation-avatar img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--primary);
+    }
+
+    .avatar-placeholder {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        border: 2px solid var(--primary);
+    }
+
+    .conversation-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .conversation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .conversation-partner {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .unread-badge {
+        background: var(--primary);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .conversation-date {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .conversation-subject {
+        color: var(--primary);
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .conversation-preview {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .conversation-actions {
+        margin-left: 15px;
+    }
+
+    .conversation-actions .btn {
+        white-space: nowrap;
+    }
+
+    .section-empty {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .section-empty h2 {
+        color: var(--text);
+        margin-bottom: 10px;
+    }
+
+    .section-empty p {
+        color: var(--text-muted);
+        margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+        .conversation-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 15px;
+        }
+
+        .conversation-avatar {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+
+        .conversation-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .conversation-actions {
+            margin-left: 0;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .conversation-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
