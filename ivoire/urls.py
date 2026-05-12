@@ -24,6 +24,7 @@ from colocation.views import home
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
+    path('logement/', include('logement.urls')),
     path('colocation/', include('colocation.urls')),
     path('messagerie/', include('messagerie.urls')),
     path('accounts/', include('accounts.urls')),

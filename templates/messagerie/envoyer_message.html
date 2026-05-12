@@ -87,145 +87,198 @@
 </div>
 
 <style>
+    .form-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f0f2f5;
+    }
+
+    .hero-compact {
+        background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+        color: white;
+        padding: 40px 20px;
+        margin-bottom: 30px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .hero-compact h1 {
+        margin: 0 0 8px 0;
+        font-size: 1.8rem;
+    }
+
+    .hero-compact p {
+        margin: 0;
+        opacity: 0.95;
+        font-size: 1rem;
+    }
+
     .annonce-preview {
         background: white;
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         border-left: 4px solid var(--primary);
     }
 
     .annonce-header h2 {
-        margin: 0 0 10px 0;
-        color: var(--text);
-        font-size: 1.3rem;
+        margin: 0 0 12px 0;
+        color: #1a1a1a;
+        font-size: 1.2rem;
+        font-weight: 600;
     }
 
     .annonce-meta {
         display: flex;
-        gap: 15px;
+        gap: 16px;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .prix {
-        font-size: 1.2rem;
-        font-weight: bold;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: var(--primary);
     }
 
     .location {
-        color: var(--text-muted);
+        color: #65676b;
+        font-size: 0.95rem;
     }
 
     .annonce-description {
-        color: var(--text-muted);
+        color: #65676b;
         margin: 0;
         line-height: 1.5;
+        font-size: 0.95rem;
     }
 
     .destinataire-info {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
     .user-card {
         background: white;
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 16px;
+    }
+
+    .user-avatar {
+        flex-shrink: 0;
     }
 
     .user-avatar img,
     .avatar-placeholder {
-        width: 60px;
-        height: 60px;
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid var(--primary);
+        border: 2px solid #e5e7eb;
     }
 
     .user-details h3 {
-        margin: 0 0 5px 0;
-        color: var(--text);
+        margin: 0 0 6px 0;
+        color: #1a1a1a;
+        font-size: 1.1rem;
+        font-weight: 600;
     }
 
     .user-location {
-        margin: 0 0 5px 0;
-        color: var(--text-muted);
+        margin: 0 0 8px 0;
+        color: #65676b;
+        font-size: 0.9rem;
     }
 
     .verified-badge {
-        background: #28a745;
+        background: #31a24c;
         color: white;
-        padding: 2px 8px;
+        padding: 4px 10px;
         border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: bold;
+        font-size: 0.75rem;
+        font-weight: 600;
     }
 
     .message-form {
         background: white;
         border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 28px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        margin-bottom: 24px;
     }
 
     .form-section {
-        margin-bottom: 30px;
+        margin-bottom: 24px;
     }
 
     .section-title {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 600;
-        color: var(--primary);
-        margin-bottom: 15px;
+        color: #1a1a1a;
+        margin-bottom: 16px;
     }
 
     .message-form textarea {
         width: 100%;
-        padding: 15px;
-        border: 2px solid #e0e0e0;
+        padding: 12px 14px;
+        border: 1px solid #d0d0d0;
         border-radius: 8px;
         font-family: inherit;
-        font-size: 1rem;
+        font-size: 0.95rem;
         resize: vertical;
         min-height: 120px;
+        color: #1a1a1a;
+    }
+
+    .message-form textarea::placeholder {
+        color: #bcc0c4;
     }
 
     .message-form textarea:focus {
         outline: none;
         border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(94, 93, 255, 0.1);
     }
 
     .form-help {
         display: block;
-        color: var(--text-muted);
-        font-size: 0.9rem;
+        color: #65676b;
+        font-size: 0.85rem;
         margin-top: 8px;
     }
 
     .form-actions {
         display: flex;
-        gap: 15px;
+        gap: 12px;
         justify-content: flex-end;
         padding-top: 20px;
-        border-top: 1px solid #e0e0e0;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .form-actions .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 600;
     }
 
     .communication-tips {
-        background: #f8f9fa;
+        background: white;
         border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border-left: 4px solid var(--primary);
     }
 
     .communication-tips h3 {
-        margin: 0 0 15px 0;
-        color: var(--text);
+        margin: 0 0 16px 0;
+        color: #1a1a1a;
+        font-size: 1rem;
+        font-weight: 600;
     }
 
     .communication-tips ul {
@@ -234,8 +287,10 @@
     }
 
     .communication-tips li {
-        margin-bottom: 8px;
-        color: var(--text-muted);
+        margin-bottom: 10px;
+        color: #65676b;
+        font-size: 0.95rem;
+        line-height: 1.5;
     }
 
     @media (max-width: 768px) {

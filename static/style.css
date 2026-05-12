@@ -146,6 +146,36 @@ nav a:hover::after {
   width: 30px;
 }
 
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.menu-toggle span {
+  width: 25px;
+  height: 2.5px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(8px, -8px);
+}
+
 .nav-btn {
   background-color: rgba(59,130,246,.25) !important;
   color: #e0f2fe !important;
@@ -977,6 +1007,49 @@ footer a:hover {
     font-size: 0.875rem;
   }
 
+  .menu-toggle {
+    display: flex;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, var(--primary) 0%, #253447 100%);
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .nav-links.active {
+    max-height: 500px;
+  }
+
+  .nav-links li {
+    padding: 0;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 0.75rem 1.25rem !important;
+    border-radius: 0;
+  }
+
+  .nav-links a::after {
+    display: none;
+  }
+
+  .nav-links .nav-btn {
+    margin: 0.5rem 1.25rem;
+    width: calc(100% - 2.5rem);
+    text-align: center;
+  }
+
   .header { padding: 2.5rem 1.25rem; }
   .header h1 { font-size: 1.8rem; }
   .header p  { font-size: 1rem; }
@@ -1005,6 +1078,67 @@ footer a:hover {
   th, td { padding: 0.7rem 0.9rem; }
 }
 
+@media (max-width: 480px) {
+  header {
+    position: sticky;
+  }
+
+  nav {
+    padding: 0.5rem 0.75rem;
+    height: auto;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    gap: 6px;
+  }
+
+  .menu-toggle {
+    padding: 6px;
+  }
+
+  .menu-toggle span {
+    width: 22px;
+    height: 2px;
+    gap: 4px;
+  }
+
+  .nav-links {
+    top: 55px;
+  }
+
+  .nav-links a {
+    padding: 0.65rem 1rem !important;
+    font-size: 0.8rem;
+  }
+
+  .nav-links .nav-btn {
+    margin: 0.4rem 1rem;
+    width: calc(100% - 2rem);
+    padding: 0.5rem 1rem !important;
+    font-size: 0.8rem;
+  }
+
+  body { font-size: 0.95rem; }
+
+  main {
+    padding: 1.5rem 1rem;
+  }
+
+  .header h1 { font-size: 1.5rem; }
+  .header { padding: 2rem 1rem; }
+
+  .card    { padding: 1.25rem; }
+  form     { padding: 1.25rem; }
+
+  button, .btn { padding: 0.6rem 1.1rem; }
+
+  input, textarea, select { padding: 0.6rem 0.85rem; }
+
+  table { font-size: 0.8rem; }
+  th, td { padding: 0.6rem 0.7rem; }
+}
+
 /* ========================================
    ANIMATIONS
    ======================================== */
@@ -1020,15 +1154,19 @@ footer a:hover {
   }
 }
 
-@media (max-width: 480px) {
-  body { font-size: 0.95rem; }
+/* Message Badge Styles */
+.nav-links li[style*="position: relative"] span {
+  animation: badgePulse 2s infinite;
+  box-shadow: 0 2px 8px rgba(233, 30, 99, 0.4);
+}
 
-  .header h1 { font-size: 1.5rem; }
-
-  .card    { padding: 1.25rem; }
-  form     { padding: 1.25rem; }
-
-  button, .btn { padding: 0.6rem 1.1rem; }
-
-  input, textarea, select { padding: 0.6rem 0.85rem; }
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(233, 30, 99, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 2px 12px rgba(233, 30, 99, 0.6);
+  }
 }

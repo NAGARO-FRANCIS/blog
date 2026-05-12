@@ -32,10 +32,7 @@
     </form>
 
     {% if request.user.is_authenticated %}
-        <div class="text-center mb-20" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-            <a href="{% url 'colocation:publier_annonce' %}" class="btn btn-primary">+ Publier une annonce</a>
-            <button onclick="location.reload()" class="btn btn-primary" style="background: #6c757d;">🔄 Rafraîchir</button>
-        </div>
+       
     {% endif %}
 
     {% if annonces %}
@@ -414,6 +411,240 @@
 
     .text-muted {
         color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+        .search-form {
+            grid-template-columns: 1fr;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .search-form button {
+            padding: 10px 16px;
+            width: 100%;
+        }
+
+        .annonces-grid {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .annonce-card {
+            border-radius: 16px;
+        }
+
+        .annonce-image {
+            height: 180px;
+        }
+
+        .annonce-content {
+            padding: 16px;
+        }
+
+        .annonce-prix {
+            font-size: 1.2rem;
+        }
+
+        .feature {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+        }
+
+        .section-empty {
+            padding: 40px 20px;
+        }
+
+        .section-empty h2 {
+            font-size: 1.3rem;
+        }
+
+        .mb-20 {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mb-20 .btn-primary {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero {
+            padding: 20px 15px;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: 1.4rem;
+        }
+
+        .hero p {
+            font-size: 0.9rem;
+        }
+
+        .search-form {
+            grid-template-columns: 1fr;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 16px;
+        }
+
+        .search-form .form-group {
+            margin-bottom: 8px;
+        }
+
+        .search-form label {
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .search-form input,
+        .search-form select {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 10px;
+        }
+
+        .search-form button {
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .mb-20 {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .mb-20 .btn {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+        }
+
+        .annonces-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .annonce-card {
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .annonce-card-link:hover .annonce-card {
+            transform: translateY(-4px);
+        }
+
+        .annonce-image {
+            height: 160px;
+        }
+
+        .favorite-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
+        }
+
+        .badge-photos {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+        }
+
+        .annonce-content {
+            padding: 12px;
+        }
+
+        .annonce-header {
+            gap: 8px;
+        }
+
+        .annonce-prix {
+            font-size: 1.1rem;
+        }
+
+        .annonce-date {
+            font-size: 0.7rem;
+        }
+
+        .annonce-ville {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .annonce-features {
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .feature {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 6px;
+        }
+
+        .annonce-description {
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+
+        .amenity {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+        }
+
+        .annonce-profil {
+            font-size: 0.8rem;
+            padding: 8px;
+        }
+
+        .section-empty {
+            padding: 30px 15px;
+            border-radius: 16px;
+        }
+
+        .section-empty h2 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .section-empty p {
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        .section-empty .btn-primary {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .annonces-grid {
+            gap: 10px;
+        }
+
+        .annonce-card {
+            border-radius: 12px;
+        }
+
+        .annonce-image {
+            height: 140px;
+        }
+
+        .annonce-content {
+            padding: 10px;
+        }
+
+        .annonce-prix {
+            font-size: 1rem;
+        }
     }
 </style>
 

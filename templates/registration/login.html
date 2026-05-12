@@ -328,32 +328,198 @@
         font-weight: 500;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
+        .login-wrapper {
+            padding: 1.5rem 0;
+        }
+
         .login-container {
-            margin: 20px;
+            margin: 0;
             padding: 30px 20px;
+            max-width: calc(100% - 2rem);
             border-radius: 16px;
         }
 
         .login-header {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .logo-large {
-            font-size: 3rem;
+            font-size: 3.5rem;
         }
 
         .login-header h1 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
+        }
+
+        .login-header p {
+            font-size: 0.9rem;
         }
 
         .login-form-container h2 {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+        }
+
+        .login-form {
+            gap: 16px;
+        }
+
+        .btn-login {
+            padding: 11px 20px;
+            font-size: 0.95rem;
+        }
+
+        .login-features {
+            flex-direction: row;
+            gap: 12px;
+        }
+
+        .feature-item {
+            font-size: 0.85rem;
+        }
+
+        .feature-icon {
+            font-size: 1.3rem;
+        }
+
+        .feature-text {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .login-wrapper {
+            padding: 1rem 0;
+            min-height: auto;
+        }
+
+        .login-container {
+            margin: 10px auto;
+            padding: 24px 16px;
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-header {
+            margin-bottom: 20px;
+        }
+
+        .logo-large {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .login-header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        .login-header p {
+            font-size: 0.85rem;
+        }
+
+        .login-form-container {
+            margin-bottom: 20px;
+        }
+
+        .login-form-container h2 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        .login-form {
+            gap: 14px;
+        }
+
+        .form-group {
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+        }
+
+        .login-form input {
+            padding: 10px 12px;
+            font-size: 16px;
+            border-radius: 10px;
+        }
+
+        .btn-login {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+
+        .field-error {
+            font-size: 0.8rem;
+        }
+
+        .alert {
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        .auth-footer {
+            margin-top: 16px;
+            padding-top: 16px;
+        }
+
+        .auth-footer p {
+            font-size: 0.85rem;
         }
 
         .login-features {
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            padding-top: 16px;
+        }
+
+        .feature-item {
+            font-size: 0.8rem;
+            gap: 4px;
+        }
+
+        .feature-icon {
+            font-size: 1.2rem;
+        }
+
+        .feature-text {
+            font-size: 0.7rem;
+        }
+
+        .shape-1,
+        .shape-2 {
+            display: none;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .login-container {
+            padding: 20px 12px;
+        }
+
+        .logo-large {
+            font-size: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.2rem;
+        }
+
+        .login-form-container h2 {
+            font-size: 1rem;
+        }
+
+        .login-form input {
+            font-size: 16px;
         }
     }
 </style>

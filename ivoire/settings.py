@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-8%g05@gf^wfr_j=#k#+1bilpi)veftxmq1wym-me13p9fdp_rp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 
 # Application definition
@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'ivoire.context_processors.unread_messages_count',
             ],
         },
     },
@@ -111,7 +112,7 @@ LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE = 'UTC'
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'accounts:dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

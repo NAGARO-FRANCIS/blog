@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}S'inscrire - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="signup-wrapper">
+    <div class="signup-container" style="max-width: 600px;">
+        <!-- Branding Section -->
+        <div class="signup-header">
+            <h1>Bienvenue sur Coloc.ai 🏠</h1>
+            <p>Choisissez votre type de compte pour continuer</p>
+        </div>
+
+        <!-- Error Messages -->
+        {% if account_type_form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in account_type_form.non_field_errors %}
+                    <div>❌ {{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" class="signup-form" novalidate>
+            {% csrf_token %}
+
+            <div class="account-type-selection">
+                <fieldset>
+                    <legend style="font-size: 1.2rem; font-weight: 600; margin-bottom: 30px;">{{ account_type_form.account_type.label }}</legend>
+                    
+                    <div class="account-type-options">
+                        {% for value, label in account_type_form.account_type.field.choices %}
+                            <label class="account-type-option">
+                                <input type="radio" name="account_type" value="{{ value }}" {% if account_type_form.account_type.value == value %}checked{% endif %}>
+                                <div class="option-card">
+                                    {% if value == 'individu' %}
+                                        <div class="option-icon">👤</div>
+                                        <div class="option-title">Individu</div>
+                                        <div class="option-description">Vous cherchez une colocation ou un logement</div>
+                                    {% elif value == 'residence' %}
+                                        <div class="option-icon">🏢</div>
+                                        <div class="option-title">Résidence</div>
+                                        <div class="option-description">Vous gérez une résidence</div>
+                                    {% elif value == 'hotel' %}
+                                        <div class="option-icon">🏨</div>
+                                        <div class="option-title">Hôtel</div>
+                                        <div class="option-description">Vous gérez un hôtel</div>
+                                    {% endif %}
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    {% if account_type_form.account_type.errors %}
+                        <div class="field-error">{{ account_type_form.account_type.errors.0 }}</div>
+                    {% endif %}
+                </fieldset>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Continuer →</button>
+            </div>
+
+            <p style="text-align: center; margin-top: 20px; color: #666;">
+                Déjà inscrit ? <a href="{% url 'accounts:login' %}">Connectez-vous</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+<style>
+.account-type-selection {
+    margin: 30px 0;
+}
+
+.account-type-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.account-type-option {
+    cursor: pointer;
+}
+
+.account-type-option input[type="radio"] {
+    display: none;
+}
+
+.option-card {
+    padding: 25px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    text-align: center;
+    background: white;
+}
+
+.account-type-option input[type="radio"]:checked + .option-card {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.account-type-option:hover .option-card {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.option-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.option-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.option-description {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .account-type-options {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

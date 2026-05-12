@@ -3,41 +3,623 @@
 {% block title %}Mes Favoris - Coloc.ai{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="hero">
-        <h1>❤️ Mes Annonces Favorites</h1>
-        <p>Retrouvez toutes les colocations que vous avez sauvegardées</p>
+<div class="favoris-page">
+    <!-- Hero Section -->
+    <div class="favoris-hero">
+        <div class="hero-content">
+            <div class="hero-icon">❤️</div>
+            <h1>Mes Annonces Favorites</h1>
+            <p>{{ favoris|length }} annonce{{ favoris|length|pluralize }} sauvegardée{{ favoris|length|pluralize }}</p>
+        </div>
+        <div class="hero-shape"></div>
     </div>
 
     {% if favoris %}
-        <div class="annonces-grid">
-            {% for fav in favoris %}
-                <div class="annonce-card">
-                    <div class="annonce-image">
-                        <button class="favorite-btn active" data-annonce-id="{{ fav.annonce.id }}" onclick="removeFavori(this, event)">❤️</button>
-                        🏠 Colocation
-                    </div>
-                    <div class="annonce-content">
-                        <div class="annonce-ville">📍 {{ fav.annonce.ville }}{% if fav.annonce.quartier %} - {{ fav.annonce.quartier }}{% endif %}</div>
-                        <div class="annonce-titre">{{ fav.annonce.description|truncatewords:8 }}</div>
-                        <div class="annonce-meta">
-                            <div class="annonce-prix">{{ fav.annonce.budget_mensuel }} FCFA/mois</div>
-                            <div class="annonce-profil">{{ fav.annonce.profil_recherche|truncatewords:3 }}</div>
+        <!-- Stats Section -->
+        <div class="favoris-stats">
+            <div class="stat-card">
+                <span class="stat-number">{{ favoris|length }}</span>
+                <span class="stat-label">Annonces</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ favoris|length }}</span>
+                <span class="stat-label">À explorer</span>
+            </div>
+        </div>
+
+        <!-- Grid des Favoris -->
+        <div class="favoris-container">
+            <div class="favoris-grid">
+                {% for fav in favoris %}
+                    <div class="favori-item">
+                        <!-- Card Image Section -->
+                        <div class="favori-image-wrapper">
+                            {% if fav.annonce.photos.all %}
+                                <img src="{{ fav.annonce.photos.first.photo.url }}" alt="Photo de l'annonce" class="favori-image">
+                            {% else %}
+                                <div class="favori-image-placeholder">
+                                    <span>🏠</span>
+                                </div>
+                            {% endif %}
+
+                            <!-- Overlay Badges -->
+                            <div class="favori-overlay">
+                                <button class="favori-heart-btn" data-annonce-id="{{ fav.annonce.id }}" onclick="removeFavori(this, event)" title="Supprimer des favoris">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Type Badge -->
+                            <div class="favori-type-badge">🏘️ Colocation</div>
+
+                            <!-- Price Tag -->
+                            <div class="favori-price-tag">
+                                <span class="price-amount">{{ fav.annonce.budget_mensuel|floatformat:0 }}</span>
+                                <span class="price-currency">FCFA/mois</span>
+                            </div>
                         </div>
-                        <div class="annonce-description">{{ fav.annonce.infos_logement|truncatewords:15 }}</div>
-                        <div class="annonce-actions">
-                            <a href="{% url 'messagerie:envoyer_message_annonce' 'colocation' fav.annonce.id %}" class="btn">Contacter</a>
+
+                        <!-- Card Content Section -->
+                        <div class="favori-content">
+                            <!-- Location -->
+                            <div class="favori-location">
+                                <span class="location-icon">📍</span>
+                                <span class="location-text">{{ fav.annonce.ville }}{% if fav.annonce.quartier %}<br><small>{{ fav.annonce.quartier }}</small>{% endif %}</span>
+                            </div>
+
+                            <!-- Title -->
+                            <h3 class="favori-title">{{ fav.annonce.description|truncatewords:6 }}</h3>
+
+                            <!-- Features Row -->
+                            <div class="favori-features">
+                                {% if fav.annonce.nombre_chambres %}
+                                    <div class="feature-item">
+                                        <span class="feature-icon">🛏️</span>
+                                        <span class="feature-text">{{ fav.annonce.nombre_chambres }} chambre{{ fav.annonce.nombre_chambres|pluralize }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if fav.annonce.surface %}
+                                    <div class="feature-item">
+                                        <span class="feature-icon">📐</span>
+                                        <span class="feature-text">{{ fav.annonce.surface|floatformat:0 }} m²</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Profile Type -->
+                            <div class="favori-profil">
+                                <span class="profil-badge">👥 {{ fav.annonce.get_profil_recherche_display }}</span>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="favori-description">{{ fav.annonce.infos_logement|truncatewords:12 }}</p>
+
+                            <!-- Equipements -->
+                            {% if fav.annonce.climatisation or fav.annonce.wifi or fav.annonce.garage %}
+                                <div class="favori-equipements">
+                                    {% if fav.annonce.climatisation %}
+                                        <span class="equip-tag">❄️ Clim</span>
+                                    {% endif %}
+                                    {% if fav.annonce.wifi %}
+                                        <span class="equip-tag">📡 WiFi</span>
+                                    {% endif %}
+                                    {% if fav.annonce.garage %}
+                                        <span class="equip-tag">🚗 Garage</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            <!-- Action Buttons -->
+                            <div class="favori-actions">
+                                <a href="{% url 'colocation:detail_annonce' fav.annonce.id %}" class="btn-action btn-primary">
+                                    Voir les détails
+                                </a>
+                                <a href="{% url 'messagerie:envoyer_message_annonce' 'colocation' fav.annonce.id %}" class="btn-action btn-secondary">
+                                    Contacter
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     {% else %}
-        <div class="text-center section-empty">
-            <h2>Vous n'avez pas encore de favoris</h2>
-            <p class="text-muted">Explorez nos annonces et marquez vos préférées</p>
-            <a href="{% url 'colocation:colocation_home' %}" class="btn">Découvrir les annonces</a>
+        <!-- Empty State -->
+        <div class="favoris-empty">
+            <div class="empty-illustration">💭</div>
+            <h2>Aucun favori pour le moment</h2>
+            <p>Explorez nos annonces et marquez les colocations que vous aimez</p>
+            <a href="{% url 'colocation:colocation_home' %}" class="btn-empty">Découvrir les annonces</a>
         </div>
     {% endif %}
 </div>
+
+<style>
+    .favoris-page {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding-bottom: 60px;
+    }
+
+    /* Hero Section */
+    .favoris-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .favoris-hero::before {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        bottom: -100px;
+        right: -100px;
+    }
+
+    .favoris-hero::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 50%;
+        top: -80px;
+        left: -80px;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        animation: floatIcon 3s ease-in-out infinite;
+    }
+
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .favoris-hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .favoris-hero p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin: 0;
+    }
+
+    /* Stats Section */
+    .favoris-stats {
+        display: flex;
+        gap: 20px;
+        max-width: 1200px;
+        margin: -40px auto 50px;
+        padding: 0 20px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .stat-card {
+        flex: 1;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+
+    .stat-number {
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        display: block;
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    /* Container */
+    .favoris-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Grid */
+    .favoris-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 28px;
+    }
+
+    /* Favori Item */
+    .favori-item {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .favori-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+
+    /* Image Section */
+    .favori-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .favori-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .favori-item:hover .favori-image {
+        transform: scale(1.05);
+    }
+
+    .favori-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Overlay */
+    .favori-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0);
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .favori-item:hover .favori-overlay {
+        background: rgba(0,0,0,0.3);
+    }
+
+    .favori-heart-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e91e63;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .favori-heart-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    .favori-heart-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Badges */
+    .favori-type-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(255,255,255,0.95);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #333;
+        backdrop-filter: blur(10px);
+    }
+
+    .favori-price-tag {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: baseline;
+        gap: 2px;
+    }
+
+    .price-amount {
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
+
+    .price-currency {
+        font-size: 0.75rem;
+        opacity: 0.9;
+    }
+
+    /* Content Section */
+    .favori-content {
+        padding: 20px;
+    }
+
+    .favori-location {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .location-icon {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .location-text {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .location-text small {
+        font-size: 0.8rem;
+        color: #999;
+    }
+
+    .favori-title {
+        margin: 0 0 12px 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        line-height: 1.4;
+    }
+
+    /* Features */
+    .favori-features {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: #666;
+        background: #f5f5f5;
+        padding: 6px 10px;
+        border-radius: 6px;
+    }
+
+    .feature-icon {
+        font-size: 1rem;
+    }
+
+    /* Profile Badge */
+    .favori-profil {
+        margin-bottom: 12px;
+    }
+
+    .profil-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        color: #667eea;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* Description */
+    .favori-description {
+        margin: 0 0 12px 0;
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Equipements */
+    .favori-equipements {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .equip-tag {
+        font-size: 0.8rem;
+        background: #f0f0f0;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #555;
+    }
+
+    /* Actions */
+    .favori-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #efefef;
+        border-color: #d0d0d0;
+    }
+
+    /* Empty State */
+    .favoris-empty {
+        max-width: 500px;
+        margin: 100px auto;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-illustration {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        animation: bounceIcon 2s ease-in-out infinite;
+    }
+
+    @keyframes bounceIcon {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .favoris-empty h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 10px 0;
+    }
+
+    .favoris-empty p {
+        color: #666;
+        font-size: 1rem;
+        margin: 0 0 30px 0;
+    }
+
+    .btn-empty {
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 32px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-empty:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Animations */
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+            transform: scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
+
+    .favori-item {
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+   .favori-content {
+            padding: 16px;
+        }
+    }
+</style>
+
+<script>
+function removeFavori(btn, event) {
+    event.preventDefault();
+    const annonceId = btn.dataset.annonceId;
+    fetch(`/colocation/toggle-favori/${annonceId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)[1],
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    }).then(r => r.json()).then(data => {
+        if (!data.is_favorite) {
+            btn.closest('.favori-item').style.animation = 'fadeOut 0.3s ease forwards';
+            setTimeout(() => btn.closest('.favori-item').remove(), 300);
+        }
+    });
+}
+</script>
+
 {% endblock %}

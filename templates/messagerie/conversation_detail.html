@@ -61,17 +61,16 @@
                         <p>{{ message.contenu|linebreaks }}</p>
                         {% if message.attachment %}
                             <div class="message-attachment">
-                                📎 <a href="{{ message.attachment.url }}" target="_blank">{{ message.attachment.name|basename }}</a>
-                            </div>
+                               {{ message.attachment.name|cut:"/media/"|cut:"messagerie/" }}
                         {% endif %}
                     </div>
                     <div class="message-time">
                         {{ message.created_at|date:"d/m/Y H:i" }}
                         {% if message.expediteur == request.user %}
                             {% if message.lu %}
-                                <span class="read-status">✓ Lu</span>
+                                <span class=\"read-status\" title=\"Lu\">✓✓</span>
                             {% else %}
-                                <span class="read-status">✓✓ Envoyé</span>
+                                <span class=\"read-status\" title=\"Envoyé\">✓</span>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -81,7 +80,7 @@
     </div>
 
     <div class="message-form-container">
-        <form method="post" class="message-form" id="messageForm">
+        <form method="post" action="{% url 'messagerie:envoyer_message' %}" class="message-form" id="messageForm">
             {% csrf_token %}
             <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
             <div class="form-group">
@@ -108,111 +107,157 @@
 
 <style>
     .conversation-page {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 0 auto;
         padding: 20px;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
     }
 
     .conversation-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 20px;
+        padding: 16px 20px;
         background: white;
         border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        margin-bottom: 16px;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .participant-info {
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 12px;
+    }
+
+    .participant-avatar {
+        position: relative;
     }
 
     .participant-avatar img,
     .avatar-placeholder {
-        width: 60px;
-        height: 60px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid var(--primary);
+        border: 2px solid #e5e7eb;
     }
 
     .participant-details h1 {
-        margin: 0 0 5px 0;
-        font-size: 1.4rem;
-        color: var(--text);
+        margin: 0;
+        font-size: 1.1rem;
+        color: #1a1a1a;
+        font-weight: 600;
     }
 
     .conversation-subject {
-        color: var(--primary);
-        font-weight: 500;
-        margin: 0 0 5px 0;
+        color: #65676b;
+        font-weight: 400;
+        margin: 2px 0 0 0;
+        font-size: 0.9rem;
     }
 
     .conversation-status {
         margin: 0;
         display: flex;
-        gap: 15px;
+        gap: 8px;
         align-items: center;
+        margin-top: 4px;
     }
 
     .verified-badge {
-        background: #28a745;
+        background: #31a24c;
         color: white;
         padding: 2px 8px;
         border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: bold;
+        font-size: 0.75rem;
+        font-weight: 600;
     }
 
     .location {
-        color: var(--text-muted);
+        color: #65676b;
         font-size: 0.9rem;
     }
 
     .conversation-actions {
         display: flex;
-        gap: 10px;
+        gap: 8px;
+    }
+
+    .conversation-actions .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
     }
 
     .messages-container {
         background: white;
         border-radius: 12px;
         padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        max-height: 500px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        flex: 1;
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     .message {
         display: flex;
-        margin-bottom: 20px;
-        align-items: flex-start;
+        margin-bottom: 12px;
+        align-items: flex-end;
+        animation: messageSlideIn 0.3s ease-out;
+    }
+
+    @keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .message-avatar {
-        margin-right: 10px;
+        margin-right: 8px;
         flex-shrink: 0;
     }
 
-    .message-avatar img,
-    .message .avatar-placeholder {
-        width: 40px;
-        height: 40px;
+    .message-avatar img {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         object-fit: cover;
     }
 
+    .message .avatar-placeholder {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+
     .message.sent {
         flex-direction: row-reverse;
+        justify-content: flex-end;
     }
 
     .message.sent .message-avatar {
         margin-right: 0;
-        margin-left: 10px;
+        margin-left: 8px;
     }
 
     .message.sent .message-content {
@@ -220,22 +265,26 @@
     }
 
     .message-content {
-        max-width: 70%;
+        max-width: 75%;
         display: flex;
         flex-direction: column;
     }
 
     .message-bubble {
-        background: #f1f1f1;
-        padding: 12px 16px;
+        background: #e4e6eb;
+        color: #1a1a1a;
+        padding: 10px 14px;
         border-radius: 18px;
-        margin-bottom: 5px;
+        margin-bottom: 4px;
         word-wrap: break-word;
+        line-height: 1.4;
+        font-size: 0.95rem;
     }
 
     .message.sent .message-bubble {
         background: var(--primary);
         color: white;
+        border-radius: 18px;
     }
 
     .message-attachment {
@@ -243,59 +292,75 @@
         font-size: 0.9rem;
     }
 
-    .message.sent .message-attachment a {
-        color: #e0e0e0;
-    }
-
     .message-time {
-        font-size: 0.8rem;
-        color: var(--text-muted);
+        font-size: 0.75rem;
+        color: #65676b;
         display: flex;
         align-items: center;
-        gap: 5px;
-    }
-
-    .message.sent .message-time {
-        justify-content: flex-end;
+        gap: 4px;
+        padding: 0 4px;
     }
 
     .read-status {
         font-size: 0.7rem;
-        opacity: 0.8;
+        font-weight: 600;
+        color: #65676b;
+        letter-spacing: -1px;
+    }
+
+    .message.sent .read-status {
+        color: #7b9ae6;
     }
 
     .message-form-container {
         background: white;
         border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border-top: 1px solid #e5e7eb;
     }
 
     .message-form {
         display: flex;
-        gap: 15px;
+        gap: 12px;
         align-items: flex-end;
     }
 
-    .message-form textarea {
+    .form-group {
         flex: 1;
-        min-height: 50px;
-        max-height: 120px;
-        padding: 12px 16px;
-        border: 2px solid #e0e0e0;
-        border-radius: 25px;
+    }
+
+    .message-form textarea {
+        width: 100%;
+        min-height: 44px;
+        max-height: 100px;
+        padding: 10px 14px;
+        border: 1px solid #d0d0d0;
+        border-radius: 20px;
         resize: vertical;
         font-family: inherit;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        color: #1a1a1a;
+    }
+
+    .message-form textarea::placeholder {
+        color: #65676b;
     }
 
     .message-form textarea:focus {
         outline: none;
         border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(94, 93, 255, 0.1);
     }
 
     .form-actions {
         flex-shrink: 0;
+    }
+
+    .form-actions .btn {
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: 600;
     }
 
     /* Modal styles */
@@ -306,30 +371,60 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.6);
         z-index: 1000;
         align-items: center;
         justify-content: center;
+        backdrop-filter: blur(4px);
     }
 
     .modal.show {
         display: flex;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     .modal-content {
         background: white;
-        padding: 30px;
+        padding: 28px;
         border-radius: 12px;
-        max-width: 400px;
+        max-width: 420px;
         width: 90%;
         text-align: center;
+        box-shadow: 0 20px 25px rgba(0,0,0,0.15);
+    }
+
+    .modal-content h3 {
+        margin: 0 0 12px 0;
+        font-size: 1.2rem;
+        color: #1a1a1a;
+    }
+
+    .modal-content p {
+        margin: 0 0 20px 0;
+        color: #65676b;
+        font-size: 0.95rem;
     }
 
     .modal-actions {
         display: flex;
-        gap: 15px;
+        gap: 12px;
         justify-content: center;
-        margin-top: 20px;
+    }
+
+    .modal-actions .btn {
+        flex: 1;
+        padding: 10px 16px;
     }
 
     @media (max-width: 768px) {

@@ -1,7 +1,23 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import Profile, ProfessionalProfile
+
+
+class AccountTypeForm(forms.Form):
+    """Formulaire de choix du type de compte lors de l'inscription"""
+    ACCOUNT_TYPE_CHOICES = [
+        ('individu', 'Je suis un individu (cherche colocation/logement)'),
+        ('residence', 'Je gère une résidence'),
+        ('hotel', 'Je gère un hôtel'),
+    ]
+    
+    account_type = forms.ChoiceField(
+        choices=ACCOUNT_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        label='Quel est votre type de compte ?',
+        help_text='Sélectionnez l\'option qui correspond à votre profil'
+    )
 
 
 class SignUpForm(UserCreationForm):
@@ -65,7 +81,12 @@ class SignUpForm(UserCreationForm):
     photo_profil = forms.ImageField(
         label='Photo de profil',
         required=False,
-        help_text='Téléchargez une photo professionnelle (optionnel)'
+        help_text='Téléchargez une photo professionnelle (optionnel)',
+        widget=forms.FileInput(attrs={
+            'accept': 'image/jpeg,image/png,image/gif',
+            'class': 'file-input',
+            'id': 'photoInput'
+        })
     )
 
     # Pièce d'identité
@@ -118,6 +139,7 @@ class SignUpForm(UserCreationForm):
         # Use get_or_create to safely handle profile creation
         profile, created = Profile.objects.get_or_create(user=user)
         profile.role = self.cleaned_data['role']
+        profile.account_type = self.cleaned_data.get('account_type', 'individu')
         profile.ville = self.cleaned_data['ville']
         profile.quartier = self.cleaned_data.get('quartier', '')
         profile.date_naissance = self.cleaned_data['date_naissance']
@@ -130,6 +152,195 @@ class SignUpForm(UserCreationForm):
         if commit:
             profile.save()
         return user
+
+
+class ProfessionalSignUpForm(UserCreationForm):
+    """Formulaire d'inscription pour les professionnels (Résidence/Hôtel)"""
+    # Informations personnelles du représentant
+    first_name = forms.CharField(
+        label='Nom du représentant légal',
+        required=True,
+        max_length=30,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Dupont'})
+    )
+    last_name = forms.CharField(
+        label='Prénoms du représentant',
+        required=True,
+        max_length=150,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Jean Paul'})
+    )
+    email = forms.EmailField(
+        label='Email',
+        required=True,
+        widget=forms.EmailInput(attrs={'placeholder': 'exemple@email.com'})
+    )
+    telephone = forms.CharField(
+        label='Numéro de téléphone personnel',
+        required=True,
+        max_length=20,
+        widget=forms.TextInput(attrs={'placeholder': '+225 01 02 03 04 05'})
+    )
+    
+    # Informations de l'établissement
+    establishment_name = forms.CharField(
+        label='Nom officiel de l\'établissement',
+        required=True,
+        max_length=200,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Résidence La Paix'})
+    )
+    siret_or_rccm = forms.CharField(
+        label='SIRET ou RCCM',
+        required=True,
+        max_length=50,
+        widget=forms.TextInput(attrs={'placeholder': 'Numéro SIRET/RCCM'}),
+        help_text='SIRET pour la France, RCCM pour la Côte d\'Ivoire'
+    )
+    legal_phone = forms.CharField(
+        label='Téléphone de l\'établissement',
+        required=True,
+        max_length=20,
+        widget=forms.TextInput(attrs={'placeholder': '+225 01 02 03 04 05'})
+    )
+    
+    # Adresse de l'établissement
+    establishment_address = forms.CharField(
+        label='Adresse complète',
+        required=True,
+        max_length=255,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Rue de la Paix, Plateaux'})
+    )
+    establishment_city = forms.CharField(
+        label='Ville',
+        required=True,
+        max_length=100,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Abidjan'})
+    )
+    establishment_postal_code = forms.CharField(
+        label='Code postal',
+        required=False,
+        max_length=10,
+        widget=forms.TextInput(attrs={'placeholder': '00000'})
+    )
+    
+    # Détails de l'établissement
+    number_of_rooms = forms.IntegerField(
+        label='Nombre de chambres/unités',
+        required=True,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'placeholder': '10'})
+    )
+    number_of_floors = forms.IntegerField(
+        label='Nombre d\'étages',
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'placeholder': '3'})
+    )
+    website = forms.URLField(
+        label='Site web',
+        required=False,
+        widget=forms.URLInput(attrs={'placeholder': 'https://example.com'})
+    )
+    
+    # Documents
+    legal_document = forms.FileField(
+        label='Document légal de constitution',
+        required=True,
+        help_text='PDF ou image',
+        widget=forms.FileInput(attrs={'accept': '.pdf,image/*'})
+    )
+    establishment_photo = forms.ImageField(
+        label='Photo de façade de l\'établissement',
+        required=True,
+        help_text='Photo claire de la façade',
+        widget=forms.FileInput(attrs={'accept': 'image/*'})
+    )
+    
+    # Pièce d'identité du représentant
+    type_piece_identite = forms.ChoiceField(
+        label='Type de pièce d\'identité',
+        choices=Profile.PIECE_IDENTITE_CHOICES,
+        widget=forms.Select,
+        required=True
+    )
+    numero_piece_identite = forms.CharField(
+        label='Numéro de pièce d\'identité',
+        required=True,
+        max_length=50,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: CI123456789'})
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'username',
+            'telephone',
+            'password1',
+            'password2',
+        ]
+
+    def clean_siret_or_rccm(self):
+        siret = self.cleaned_data.get('siret_or_rccm')
+        if siret and ProfessionalProfile.objects.filter(siret_or_rccm=siret).exists():
+            raise forms.ValidationError("Ce numéro SIRET/RCCM est déjà enregistré.")
+        return siret
+
+    def clean_numero_piece_identite(self):
+        numero = self.cleaned_data.get('numero_piece_identite')
+        if numero and Profile.objects.filter(numero_piece_identite=numero).exists():
+            raise forms.ValidationError("Ce numéro de pièce d'identité est déjà enregistré.")
+        return numero
+
+    def save(self, commit=True, establishment_type='residence'):
+        user = super().save(commit=commit)
+        
+        # Créer le profil individu
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.account_type = establishment_type
+        profile.role = 'proprietaire'
+        profile.ville = self.cleaned_data['establishment_city']
+        profile.profession = f"Gestionnaire de {establishment_type}"
+        profile.telephone = self.cleaned_data['telephone']
+        profile.type_piece_identite = self.cleaned_data['type_piece_identite']
+        profile.numero_piece_identite = self.cleaned_data['numero_piece_identite']
+        if commit:
+            profile.save()
+        
+        # Créer le profil professionnel avec tous les champs requis
+        prof_profile_data = {
+            'profile': profile,
+            'establishment_type': establishment_type,
+            'establishment_name': self.cleaned_data['establishment_name'],
+            'siret_or_rccm': self.cleaned_data['siret_or_rccm'],
+            'legal_representative': f"{self.cleaned_data['first_name']} {self.cleaned_data['last_name']}",
+            'legal_phone': self.cleaned_data['legal_phone'],
+            'establishment_address': self.cleaned_data['establishment_address'],
+            'establishment_city': self.cleaned_data['establishment_city'],
+            'establishment_postal_code': self.cleaned_data.get('establishment_postal_code', ''),
+            'number_of_rooms': self.cleaned_data['number_of_rooms'],
+            'number_of_floors': self.cleaned_data.get('number_of_floors'),
+            'website': self.cleaned_data.get('website', ''),
+            'legal_document': self.cleaned_data['legal_document'],
+            'establishment_photo': self.cleaned_data['establishment_photo'],
+        }
+        
+        # Utiliser get_or_create avec les defaults pour créer avec tous les champs requis
+        prof_profile, created = ProfessionalProfile.objects.get_or_create(
+            profile=profile,
+            defaults=prof_profile_data
+        )
+        
+        # Si l'objet existait déjà, mettre à jour les champs
+        if not created:
+            for key, value in prof_profile_data.items():
+                if key != 'profile':
+                    setattr(prof_profile, key, value)
+        
+        if commit:
+            prof_profile.save()
+        
         return user
 
 
@@ -199,3 +410,4 @@ class ProfileEditForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
+

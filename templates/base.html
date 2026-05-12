@@ -12,12 +12,22 @@
 <header>
     <nav>
         <div class="logo">🏠 Coloc.ai</div>
-        <ul class="nav-links">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
             <li><a href="{% url 'home' %}">Accueil</a></li>
             <li><a href="{% url 'colocation:liste_annonces' %}">Annonces</a></li>
             {% if request.user.is_authenticated %}
                 <li><a href="{% url 'colocation:mes_favoris' %}">♥ Mes Favoris</a></li>
-                <li><a href="{% url 'messagerie:mes_conversations' %}">📧 Messages</a></li>
+                <li style="position: relative;">
+                    <a href="{% url 'messagerie:mes_conversations' %}">📧 Messages</a>
+                    {% if unread_messages_count > 0 %}
+                        <span style="position: absolute; top: -8px; right: -8px; background: #e91e63; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">{{ unread_messages_count }}</span>
+                    {% endif %}
+                </li>
                 <li><a href="{% url 'accounts:profil' %}">👤 Profil</a></li>
                 <li><a href="{% url 'accounts:logout' %}" class="nav-btn">Déconnexion</a></li>
             {% else %}
@@ -43,6 +53,34 @@
 </footer>
 
 <script>
+    // Menu toggle for mobile
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            this.classList.toggle('active');
+        });
+
+        // Close menu when clicking on a link
+        const links = navLinks.querySelectorAll('a');
+        links.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.classList.remove('active');
+                menuToggle.classList.remove('active');
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('nav')) {
+                navLinks.classList.remove('active');
+                menuToggle.classList.remove('active');
+            }
+        });
+    }
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {

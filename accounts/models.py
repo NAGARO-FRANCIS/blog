@@ -5,6 +5,12 @@ from django.dispatch import receiver
 
 
 class Profile(models.Model):
+    ACCOUNT_TYPE_CHOICES = [
+        ('individu', 'Individu'),
+        ('residence', 'Gestionnaire de Résidence'),
+        ('hotel', 'Gestionnaire d\'Hôtel'),
+    ]
+
     ROLE_CHOICES = [
         ('locataire', 'Locataire'),
         ('colocataire', 'Colocataire'),
@@ -25,7 +31,21 @@ class Profile(models.Model):
         ('carte_etudiant', 'Carte d\'étudiant'),
     ]
 
+    VERIFICATION_STATUS_CHOICES = [
+        ('pending', '⏳ En attente de vérification'),
+        ('verified', '✅ Vérifié'),
+        ('rejected', '❌ Rejeté'),
+        ('flagged', '⚠️ Signalé'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    # Type de compte
+    account_type = models.CharField(
+        max_length=20,
+        choices=ACCOUNT_TYPE_CHOICES,
+        default='individu',
+        help_text="Type de compte utilisateur"
+    )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='locataire')
 
     # Informations personnelles
@@ -55,7 +75,15 @@ class Profile(models.Model):
     )
 
     # Statut et vérification
+    verification_status = models.CharField(
+        max_length=20,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='pending',
+        help_text="Statut de vérification de l'inscription"
+    )
     verified = models.BooleanField(default=False)
+    verification_date = models.DateTimeField(null=True, blank=True)
+    
     date_creation = models.DateTimeField(auto_now_add=True)
     derniere_connexion = models.DateTimeField(auto_now=True)
 
@@ -74,7 +102,7 @@ class Profile(models.Model):
 
     @property
     def est_verifie(self):
-        return self.verified
+        return self.verification_status == 'verified'
 
     @property
     def ville_residence(self):
@@ -84,6 +112,170 @@ class Profile(models.Model):
         from django.core.exceptions import ValidationError
         # Allow telephone to be empty for new profiles
         pass
+
+
+class ProfessionalProfile(models.Model):
+    """Profil étendu pour les gestionnaires de résidence et d'hôtel"""
+    ESTABLISHMENT_TYPE_CHOICES = [
+        ('residence', 'Résidence'),
+        ('hotel', 'Hôtel'),
+    ]
+
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='professional_profile')
+    
+    # Informations de l'établissement
+    establishment_type = models.CharField(
+        max_length=20,
+        choices=ESTABLISHMENT_TYPE_CHOICES,
+        help_text="Type d'établissement"
+    )
+    establishment_name = models.CharField(
+        max_length=200,
+        help_text="Nom officiel de l'établissement"
+    )
+    
+    # Détails légaux
+    siret_or_rccm = models.CharField(
+        max_length=50,
+        unique=True,
+        help_text="SIRET (France) ou RCCM (Côte d'Ivoire)"
+    )
+    legal_representative = models.CharField(
+        max_length=150,
+        help_text="Représentant légal de l'établissement"
+    )
+    legal_phone = models.CharField(
+        max_length=20,
+        help_text="Téléphone de contact légal"
+    )
+    
+    # Adresse de l'établissement
+    establishment_address = models.CharField(max_length=255)
+    establishment_city = models.CharField(max_length=100)
+    establishment_postal_code = models.CharField(max_length=10, blank=True)
+    establishment_country = models.CharField(max_length=100, default='Côte d\'Ivoire')
+    
+    # Détails de l'établissement
+    number_of_rooms = models.PositiveIntegerField(
+        help_text="Nombre de chambres/unités"
+    )
+    number_of_floors = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Nombre d'étages"
+    )
+    website = models.URLField(blank=True, help_text="Site web de l'établissement")
+    
+    # Équipements
+    wifi = models.BooleanField(default=False)
+    parking = models.BooleanField(default=False)
+    restaurant = models.BooleanField(default=False)
+    reception_24h = models.BooleanField(default=False, help_text="Réception 24h/24")
+    air_conditioning = models.BooleanField(default=False)
+    laundry_service = models.BooleanField(default=False)
+    gym = models.BooleanField(default=False)
+    conference_room = models.BooleanField(default=False)
+    
+    # Documents requis
+    legal_document = models.FileField(
+        upload_to='professional_docs/%Y/%m/',
+        help_text="Document légal de constitution"
+    )
+    establishment_photo = models.ImageField(
+        upload_to='professional_photos/%Y/%m/',
+        help_text="Photo de façade de l'établissement"
+    )
+    
+    # Statuts
+    is_verified = models.BooleanField(default=False)
+    verification_date = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.establishment_name} ({self.get_establishment_type_display()})"
+
+
+class DocumentVerification(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ('id_front', 'Pièce d\'identité - Avant'),
+        ('id_back', 'Pièce d\'identité - Arrière'),
+        ('selfie', 'Selfie avec pièce d\'identité'),
+        ('proof_address', 'Preuve de résidence'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', '⏳ En attente'),
+        ('verified', '✅ Approuvé'),
+        ('rejected', '❌ Rejeté'),
+        ('flagged', '⚠️ À revoir'),
+    ]
+
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES)
+    document_file = models.FileField(upload_to='verification_docs/%Y/%m/')
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Métadonnées
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='verified_documents')
+    
+    # Notes d'admin
+    admin_notes = models.TextField(blank=True, help_text="Notes pour l'admin sur la vérification")
+    rejection_reason = models.CharField(max_length=255, blank=True, help_text="Raison du rejet")
+    
+    # Sécurité
+    file_hash = models.CharField(max_length=64, blank=True, help_text="SHA256 du fichier pour anti-fraude")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-uploaded_at']
+        unique_together = [('profile', 'document_type')]
+
+    def __str__(self):
+        return f"{self.profile.user.username} - {self.get_document_type_display()}"
+
+    def is_complete_verification(self):
+        """Vérifie si tous les documents requis sont présents"""
+        required_docs = ['id_front', 'id_back', 'selfie']
+        documents = self.profile.documents.filter(
+            status='verified',
+            document_type__in=required_docs
+        ).values_list('document_type', flat=True)
+        return set(documents) == set(required_docs)
+
+
+class VerificationLog(models.Model):
+    """Log de toutes les actions de vérification pour l'audit"""
+    ACTION_CHOICES = [
+        ('created', 'Inscription créée'),
+        ('document_uploaded', 'Document téléchargé'),
+        ('document_verified', 'Document approuvé'),
+        ('document_rejected', 'Document rejeté'),
+        ('profile_flagged', 'Profil signalé'),
+        ('profile_verified', 'Profil vérifié'),
+        ('profile_banned', 'Profil banni'),
+    ]
+
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='verification_logs')
+    action = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    details = models.TextField(blank=True)
+    performed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.profile.user.username} - {self.get_action_display()}"
 
 
 @receiver(post_save, sender=User)

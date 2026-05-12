@@ -1,0 +1,586 @@
+{% extends 'base.html' %}
+
+{% block title %}S'inscrire comme Gestionnaire de Résidence - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="signup-wrapper">
+    <div class="signup-container">
+        <!-- Header -->
+        <div class="signup-header">
+            <div class="header-progress">
+                <div class="progress-step active">1</div>
+                <div class="progress-line active"></div>
+                <div class="progress-step">2</div>
+            </div>
+            <h1>Inscription Résidence</h1>
+            <p>🏢 Gestionnaire de Résidence</p>
+        </div>
+
+        <!-- Error Messages -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <div>❌ {{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" class="signup-form" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="signup-step visible">
+                <div class="step-content">
+                    <h2 class="step-heading">🏢 Informations de la Résidence</h2>
+
+                    <div class="form-group">
+                        <label for="{{ form.establishment_name.id_for_label }}">{{ form.establishment_name.label }}</label>
+                        {{ form.establishment_name }}
+                        {% if form.establishment_name.errors %}<span class="field-error">{{ form.establishment_name.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.siret_or_rccm.id_for_label }}">{{ form.siret_or_rccm.label }}</label>
+                            {{ form.siret_or_rccm }}
+                            {% if form.siret_or_rccm.errors %}<span class="field-error">{{ form.siret_or_rccm.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.number_of_rooms.id_for_label }}">{{ form.number_of_rooms.label }}</label>
+                            {{ form.number_of_rooms }}
+                            {% if form.number_of_rooms.errors %}<span class="field-error">{{ form.number_of_rooms.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.establishment_address.id_for_label }}">{{ form.establishment_address.label }}</label>
+                        {{ form.establishment_address }}
+                        {% if form.establishment_address.errors %}<span class="field-error">{{ form.establishment_address.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.establishment_city.id_for_label }}">{{ form.establishment_city.label }}</label>
+                            {{ form.establishment_city }}
+                            {% if form.establishment_city.errors %}<span class="field-error">{{ form.establishment_city.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.establishment_postal_code.id_for_label }}">{{ form.establishment_postal_code.label }}</label>
+                            {{ form.establishment_postal_code }}
+                            {% if form.establishment_postal_code.errors %}<span class="field-error">{{ form.establishment_postal_code.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.number_of_floors.id_for_label }}">{{ form.number_of_floors.label }}</label>
+                            {{ form.number_of_floors }}
+                            {% if form.number_of_floors.errors %}<span class="field-error">{{ form.number_of_floors.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>
+                            {{ form.website }}
+                            {% if form.website.errors %}<span class="field-error">{{ form.website.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.establishment_photo.id_for_label }}">{{ form.establishment_photo.label }}</label>
+                        <div class="photo-upload" onclick="document.getElementById('establishmentPhotoInput').click()">
+                            <span class="photo-upload-icon">📷</span>
+                            <div>
+                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez une photo</p>
+                                <span class="upload-hint">JPG, PNG ou GIF</span>
+                            </div>
+                            <img id="establishmentPhotoPreview" class="photo-preview" alt="Aperçu">
+                        </div>
+                        {{ form.establishment_photo }}
+                        {% if form.establishment_photo.errors %}<span class="field-error">{{ form.establishment_photo.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <button type="button" class="btn btn-next" onclick="nextStep()" style="width: 100%;">Continuer →</button>
+                </div>
+            </div>
+
+            <div class="signup-step">
+                <div class="step-content">
+                    <h2 class="step-heading">👤 Informations du Représentant</h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<span class="field-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<span class="field-error">{{ form.last_name.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<span class="field-error">{{ form.email.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}<span class="field-error">{{ form.username.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.telephone.id_for_label }}">{{ form.telephone.label }}</label>
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}<span class="field-error">{{ form.telephone.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.legal_phone.id_for_label }}">{{ form.legal_phone.label }}</label>
+                            {{ form.legal_phone }}
+                            {% if form.legal_phone.errors %}<span class="field-error">{{ form.legal_phone.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}<span class="field-error">{{ form.password1.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}<span class="field-error">{{ form.password2.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🪪 Pièce d'identité</label>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="{{ form.type_piece_identite.id_for_label }}">Type</label>
+                                {{ form.type_piece_identite }}
+                                {% if form.type_piece_identite.errors %}<span class="field-error">{{ form.type_piece_identite.errors.0 }}</span>{% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.numero_piece_identite.id_for_label }}">Numéro</label>
+                                {{ form.numero_piece_identite }}
+                                {% if form.numero_piece_identite.errors %}<span class="field-error">{{ form.numero_piece_identite.errors.0 }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.legal_document.id_for_label }}">{{ form.legal_document.label }}</label>
+                        <div class="file-upload" onclick="document.getElementById('legalDocumentInput').click()">
+                            <span class="file-upload-icon">📄</span>
+                            <div>
+                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez le document</p>
+                                <span class="upload-hint">PDF ou image</span>
+                            </div>
+                        </div>
+                        {{ form.legal_document }}
+                        {% if form.legal_document.errors %}<span class="field-error">{{ form.legal_document.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()" style="width: 100%;">← Retour</button>
+                        <button type="submit" class="btn btn-success" style="width: 100%;">✅ Créer mon compte</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="auth-footer">
+            <p>Vous avez déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></p>
+        </div>
+    </div>
+
+    <div class="signup-background">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+</div>
+
+<style>
+    .signup-wrapper {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        overflow: hidden;
+        padding: 30px 20px;
+    }
+
+    .signup-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        opacity: 0.08;
+    }
+
+    .shape-1 {
+        width: 350px;
+        height: 350px;
+        background: #534AB7;
+        top: -150px;
+        right: -100px;
+        animation: float 7s ease-in-out infinite;
+    }
+
+    .shape-2 {
+        width: 300px;
+        height: 300px;
+        background: #5EB3F6;
+        bottom: -150px;
+        left: -80px;
+        animation: float 9s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(40px); }
+    }
+
+    .signup-container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 600px;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+    }
+
+    .signup-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        padding: 40px;
+        color: white;
+        text-align: center;
+    }
+
+    .header-progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .progress-step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.2);
+        border: 2px solid rgba(255,255,255,.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: rgba(255,255,255,.6);
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+        background: white;
+        color: #059669;
+    }
+
+    .progress-line {
+        width: 40px;
+        height: 2px;
+        background: rgba(255,255,255,.2);
+        transition: background 0.3s ease;
+    }
+
+    .progress-line.active {
+        background: white;
+    }
+
+    .signup-header h1 {
+        font-size: 2rem;
+        margin: 0 0 10px;
+        font-weight: 700;
+    }
+
+    .signup-header p {
+        margin: 0;
+        opacity: 0.95;
+        font-size: 1rem;
+    }
+
+    .signup-form {
+        padding: 40px;
+    }
+
+    .signup-step {
+        display: none;
+    }
+
+    .signup-step.visible {
+        display: block;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .step-heading {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 25px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .field-error {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fee2e2;
+    }
+
+    .photo-upload,
+    .file-upload {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #fafafa;
+    }
+
+    .photo-upload:hover,
+    .file-upload:hover {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .photo-upload-icon,
+    .file-upload-icon {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .upload-hint {
+        display: block;
+        color: #999;
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    .photo-preview {
+        max-width: 150px;
+        max-height: 150px;
+        margin-top: 10px;
+        display: none;
+        border-radius: 8px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-next,
+    .btn-primary,
+    .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .btn-next:hover,
+    .btn-primary:hover,
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #efefef;
+    }
+
+    .auth-footer {
+        padding: 20px 40px;
+        background: #f9f9f9;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+        color: #666;
+    }
+
+    .auth-footer a {
+        color: #10b981;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .signup-container {
+            border-radius: 0;
+        }
+
+        .signup-form {
+            padding: 30px 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .signup-header {
+            padding: 30px 20px;
+        }
+
+        .signup-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    let currentStep = 1;
+
+    function nextStep() {
+        const steps = document.querySelectorAll('.signup-step');
+        if (currentStep < steps.length) {
+            steps[currentStep - 1].classList.remove('visible');
+            currentStep++;
+            steps[currentStep - 1].classList.add('visible');
+            updateProgress();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            const steps = document.querySelectorAll('.signup-step');
+            steps[currentStep - 1].classList.remove('visible');
+            currentStep--;
+            steps[currentStep - 1].classList.add('visible');
+            updateProgress();
+        }
+    }
+
+    function updateProgress() {
+        const progressSteps = document.querySelectorAll('.progress-step');
+        const progressLines = document.querySelectorAll('.progress-line');
+        for (let i = 0; i < progressSteps.length; i++) {
+            if (i < currentStep) {
+                progressSteps[i].classList.add('active');
+                if (progressLines[i]) progressLines[i].classList.add('active');
+            } else {
+                progressSteps[i].classList.remove('active');
+                if (progressLines[i]) progressLines[i].classList.remove('active');
+            }
+        }
+    }
+
+    document.getElementById('establishmentPhotoInput')?.addEventListener('change', function(e) {
+        const preview = document.getElementById('establishmentPhotoPreview');
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.querySelectorAll('.btn-next, .btn-secondary').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+        });
+    });
+</script>
+{% endblock %}
