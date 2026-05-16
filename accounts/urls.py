@@ -1,6 +1,6 @@
 from django.urls import include, path
 from .views import (
-    inscription, inscription_individu, inscription_residence, inscription_hotel,
+    inscription, inscription_individu, inscription_individu_form, inscription_residence, inscription_hotel,
     dashboard, dashboard_individu, dashboard_residence, dashboard_hotel,
     profil, edit_profil, verification_docs, upload_document
 )
@@ -11,6 +11,7 @@ urlpatterns = [
     # Inscription
     path('inscription/', inscription, name='inscription'),
     path('inscription/individu/', inscription_individu, name='inscription_individu'),
+    path('inscription/individu/formulaire/', inscription_individu_form, name='inscription_individu_form'),
     path('inscription/residence/', inscription_residence, name='inscription_residence'),
     path('inscription/hotel/', inscription_hotel, name='inscription_hotel'),
     

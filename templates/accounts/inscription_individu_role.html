@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Choisissez votre rôle - Inscription - Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-12 text-center mb-5">
+            <!-- Titre -->
+            <h1 class="mb-2">👥 Quel est votre rôle ?</h1>
+            <p class="text-muted text-lg">Sélectionnez l'option qui correspond à votre situation</p>
+        </div>
+    </div>
+
+    <div class="row mt-5 mb-5">
+        <div class="col-12">
+
+            <form method="post" class="role-selection-form">
+                {% csrf_token %}
+
+                <div class="role-options-grid">
+                    <!-- Option 1: Propriétaire -->
+                    <div class="role-card card">
+                        <input type="radio" id="role_proprietaire" name="role" value="proprietaire" required style="display: none;">
+                        <label for="role_proprietaire" class="role-label-card p-4 h-100 cursor-pointer">
+                            <div class="text-center mb-3">
+                                <div class="role-icon">🏠</div>
+                                <h3 class="mt-2 mb-1">Propriétaire</h3>
+                            </div>
+                            <p class="role-description text-center text-muted mb-3 small">
+                                Je possède une maison et veux louer les chambres
+                            </p>
+                            <ul class="role-benefits list-unstyled">
+                                <li class="mb-2">✅ Publier des annonces</li>
+                                <li class="mb-2">✅ Gérer réservations</li>
+                                <li class="mb-2">✅ Tableau de bord</li>
+                                <li>✅ Recevoir paiements</li>
+                            </ul>
+                        </label>
+                    </div>
+
+                    <!-- Option 2: Locataire -->
+                    <div class="role-card card">
+                        <input type="radio" id="role_locataire" name="role" value="locataire" required style="display: none;">
+                        <label for="role_locataire" class="role-label-card p-4 h-100 cursor-pointer">
+                            <div class="text-center mb-3">
+                                <div class="role-icon">🔑</div>
+                                <h3 class="mt-2 mb-1">Locataire</h3>
+                            </div>
+                            <p class="role-description text-center text-muted mb-3 small">
+                                Je cherche un colocataire pour partager
+                            </p>
+                            <ul class="role-benefits list-unstyled">
+                                <li class="mb-2">✅ Publier annonces</li>
+                                <li class="mb-2">✅ Chercher colocataire</li>
+                                <li class="mb-2">✅ Gérer candidatures</li>
+                                <li>✅ Tableau de bord</li>
+                            </ul>
+                        </label>
+                    </div>
+
+                    <!-- Option 3: Colocataire -->
+                    <div class="role-card card">
+                        <input type="radio" id="role_colocataire" name="role" value="colocataire" required style="display: none;">
+                        <label for="role_colocataire" class="role-label-card p-4 h-100 cursor-pointer">
+                            <div class="text-center mb-3">
+                                <div class="role-icon">👥</div>
+                                <h3 class="mt-2 mb-1">Colocataire</h3>
+                            </div>
+                            <p class="role-description text-center text-muted mb-3 small">
+                                Je cherche une chambre ou maison
+                            </p>
+                            <ul class="role-benefits list-unstyled">
+                                <li class="mb-2">✅ Consulter annonces</li>
+                                <li class="mb-2">✅ Contacter propriétaires</li>
+                                <li class="mb-2">✅ Profil public</li>
+                                <li>❌ Pas de publication</li>
+                            </ul>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Messages de validation -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-4">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <!-- Boutons -->
+                <div class="mt-5 pt-4 d-flex gap-3 justify-center">
+                    <a href="{% url 'accounts:inscription' %}" class="btn btn-secondary">
+                        ← Retour
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        ✅ Continuer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-options-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        .role-options-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .role-card {
+        position: relative;
+        overflow: visible !important;
+    }
+
+    .role-label-card {
+        display: block;
+        cursor: pointer;
+        user-select: none;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+    }
+
+    #role_proprietaire:checked + label,
+    #role_locataire:checked + label,
+    #role_colocataire:checked + label {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+    }
+
+    #role_proprietaire:checked ~ .card,
+    #role_locataire:checked ~ .card,
+    #role_colocataire:checked ~ .card {
+        border-color: #007bff;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+
+    .role-icon {
+        font-size: 3rem;
+        line-height: 1;
+    }
+
+    .role-benefits li {
+        font-size: 0.9rem;
+        color: inherit;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

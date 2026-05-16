@@ -1,0 +1,213 @@
+{% load static %}
+
+<!-- Professional Property Card Component with Type Distinction -->
+<div class="card property-card property-type-{{ logement.account_type }} animate-in">
+    <!-- Top Gradient Bar -->
+    <div class="property-card-header">
+        <!-- Property Image -->
+        <div class="property-image">
+            {% if logement.photos.all %}
+                <img src="{{ logement.photos.first.image.url }}" 
+                     alt="{{ logement.titre }}"
+                     loading="lazy">
+            {% else %}
+                <div class="card-image-placeholder" style="height: 200px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%); font-size: 3rem;">
+                    {% if logement.account_type == 'hotel' %}
+                        🏨
+                    {% elif logement.account_type == 'residence' %}
+                        🏢
+                    {% else %}
+                        🏠
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            <!-- Type Badge -->
+            <span class="property-type-badge {{ logement.account_type }}"
+                  data-icon="">
+                {% if logement.account_type == 'hotel' %}
+                    Hôtel
+                {% elif logement.account_type == 'residence' %}
+                    Résidence
+                {% else %}
+                    Individu
+                {% endif %}
+            </span>
+            
+            <!-- Photos Count -->
+            {% if logement.photos.count > 1 %}
+                <span class="badge badge-photos" style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.6); color: white;">
+                    📸 {{ logement.photos.count }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Card Content -->
+    <div class="card-body p-4">
+        <!-- Title -->
+        <h3 class="card-title" style="margin: 0 0 8px; font-size: 1.1rem;">
+            {{ logement.titre|truncatewords:8 }}
+        </h3>
+        
+        <!-- Location -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: #666; font-size: 0.95rem;">
+            <span>📍</span>
+            <strong>{{ logement.ville }}</strong>
+            {% if logement.quartier %}<span>• {{ logement.quartier }}</span>{% endif %}
+        </div>
+        
+        <!-- Features based on type -->
+        <div class="property-features">
+            {% if logement.account_type == 'hotel' %}
+                <!-- Hotel features -->
+                <span class="property-feature">
+                    🛏️ {{ logement.nombre_lits|default:"1" }} lit{{ logement.nombre_lits|default:"1"|pluralize }}
+                </span>
+                <span class="property-feature">
+                    👥 {{ logement.capacite|default:"1" }} pers.
+                </span>
+                {% if logement.reception_24h %}
+                    <span class="property-feature">🔔 24/24</span>
+                {% endif %}
+            
+            {% elif logement.account_type == 'residence' %}
+                <!-- Residence features -->
+                <span class="property-feature">
+                    🛏️ {{ logement.nombre_chambres }} chambre{{ logement.nombre_chambres|pluralize }}
+                </span>
+                <span class="property-feature">
+                    🚿 {{ logement.nombre_salles_bain }} salle{{ logement.nombre_salles_bain|pluralize }}
+                </span>
+                {% if logement.securite %}
+                    <span class="property-feature">🔐 Sécurisée</span>
+                {% endif %}
+            
+            {% else %}
+                <!-- Individual features -->
+                <span class="property-feature">
+                    🛏️ {{ logement.nombre_chambres }} chambre{{ logement.nombre_chambres|pluralize }}
+                </span>
+                <span class="property-feature">
+                    🚿 {{ logement.nombre_salles_bain }} salle{{ logement.nombre_salles_bain|pluralize }}
+                </span>
+                {% if logement.meuble %}
+                    <span class="property-feature">🪑 Meublé</span>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <!-- Description -->
+        <p style="color: #666; font-size: 0.9rem; margin: 12px 0; line-height: 1.4;">
+            {{ logement.description|truncatewords:20 }}
+        </p>
+        
+        <!-- Owner Info with Type Indicator -->
+        {% if logement.proprietaire %}
+        <div class="property-owner">
+            <div class="property-owner-badge">
+                {% if logement.account_type == 'hotel' %}
+                    🏨
+                {% elif logement.account_type == 'residence' %}
+                    🏢
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+            <div class="property-owner-info">
+                <div class="property-owner-name">
+                    {% if logement.account_type == 'hotel' %}
+                        🏨 {{ logement.proprietaire.first_name|default:"Propriétaire" }}
+                    {% elif logement.account_type == 'residence' %}
+                        🏢 {{ logement.proprietaire.first_name|default:"Propriétaire" }}
+                    {% else %}
+                        👤 {{ logement.proprietaire.first_name|default:"Propriétaire" }}
+                    {% endif %}
+                </div>
+                <div class="property-owner-type">
+                    {% if logement.account_type == 'hotel' %}
+                        Hôtelier
+                    {% elif logement.account_type == 'residence' %}
+                        Syndic de Résidence
+                    {% else %}
+                        Particulier
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Price Section -->
+        <div style="display: flex; justify-content: space-between; align-items: end; margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee;">
+            <div>
+                <div class="property-price {{ logement.account_type }}">
+                    {% if logement.account_type == 'hotel' and logement.prix_par_nuit %}
+                        {{ logement.prix_par_nuit|floatformat:0 }}
+                        <span class="property-price-period">/ nuit</span>
+                    {% elif logement.account_type == 'residence' and logement.prix_par_mois %}
+                        {{ logement.prix_par_mois|floatformat:0 }}
+                        <span class="property-price-period">/ mois</span>
+                    {% elif logement.prix %}
+                        {{ logement.prix|floatformat:0 }}
+                        <span class="property-price-period">FCFA</span>
+                    {% else %}
+                        Sur demande
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Action Button -->
+            <a href="{% url 'logement:detail_logement' logement.id %}" 
+               class="btn btn-sm"
+               style="background: var(--type-color); color: white; border: none; padding: 8px 16px;">
+                Voir →
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .property-card-header {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .property-image {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        background: #f0f0f0;
+    }
+    
+    .property-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .property-card:hover .property-image img {
+        transform: scale(1.05);
+        transition: transform var(--transition-base);
+    }
+    
+    .badge-photos {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .p-4 {
+        padding: var(--spacing-lg);
+    }
+    
+    .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+</style>

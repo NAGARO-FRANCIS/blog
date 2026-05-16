@@ -1,0 +1,563 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Publier une Annonce - Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-nav mb-4">
+                <a href="{% url 'logement:home' %}">Accueil</a> > 
+                <span>Publier une annonce</span>
+            </nav>
+
+            <!-- Titre et description -->
+            <div class="page-header mb-5">
+                <h1>📝 Publier une Annonce</h1>
+                <p class="text-muted">Remplissez les informations de votre logement</p>
+                
+                <!-- Info sur le type de publication -->
+                <div class="role-publication-info mt-4">
+                    {% if role == 'proprietaire' %}
+                        <div class="alert alert-info">
+                            🏠 <strong>Mode Propriétaire</strong> - Vous publiez votre maison/chambres à louer
+                        </div>
+                    {% elif role == 'locataire' %}
+                        <div class="alert alert-info">
+                            🔑 <strong>Mode Locataire</strong> - Vous cherchez un colocataire pour partager votre maison
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            👥 <strong>Mode Individu</strong> - Publiez votre annonce
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Formulaire -->
+            <form method="post" enctype="multipart/form-data" class="publication-form">
+                {% csrf_token %}
+
+                <!-- Messages d'erreur généraux -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <!-- Section: Informations de Base -->
+                <fieldset class="form-section">
+                    <legend>📍 Informations de Base</legend>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.titre.id_for_label }}">{{ form.titre.label }}</label>
+                        {{ form.titre }}
+                        {% if form.titre.errors %}
+                            <div class="alert alert-danger small mt-2">{{ form.titre.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="alert alert-danger small mt-2">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.type_logement.id_for_label }}">{{ form.type_logement.label }}</label>
+                                {{ form.type_logement }}
+                                {% if form.type_logement.errors %}
+                                    <div class="alert alert-danger small mt-2">{{ form.type_logement.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.prix.id_for_label }}">{{ form.prix.label }}</label>
+                                {{ form.prix }}
+                                {% if form.prix.errors %}
+                                    <div class="alert alert-danger small mt-2">{{ form.prix.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
+                                {{ form.ville }}
+                                {% if form.ville.errors %}
+                                    <div class="alert alert-danger small mt-2">{{ form.ville.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.quartier.id_for_label }}">{{ form.quartier.label }}</label>
+                                {{ form.quartier }}
+                                {% if form.quartier.errors %}
+                                    <div class="alert alert-danger small mt-2">{{ form.quartier.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Section: Caractéristiques -->
+                <fieldset class="form-section">
+                    <legend>🏠 Caractéristiques du Logement</legend>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="{{ form.surface.id_for_label }}">{{ form.surface.label }}</label>
+                                {{ form.surface }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="{{ form.nombre_pieces.id_for_label }}">{{ form.nombre_pieces.label }}</label>
+                                {{ form.nombre_pieces }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="{{ form.nombre_chambres.id_for_label }}">{{ form.nombre_chambres.label }}</label>
+                                {{ form.nombre_chambres }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="{{ form.nombre_lits.id_for_label }}">{{ form.nombre_lits.label }}</label>
+                                {{ form.nombre_lits }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="{{ form.nombre_salles_bain.id_for_label }}">{{ form.nombre_salles_bain.label }}</label>
+                                {{ form.nombre_salles_bain }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="{{ form.etage.id_for_label }}">{{ form.etage.label }}</label>
+                                {{ form.etage }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.meuble.id_for_label }}">{{ form.meuble.label }}</label>
+                                {{ form.meuble }}
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Section: Équipements -->
+                <fieldset class="form-section">
+                    <legend>✨ Équipements</legend>
+                    
+                    <div class="equipements-grid">
+                        <div class="form-check">
+                            {{ form.climatisation }}
+                            <label class="form-check-label" for="{{ form.climatisation.id_for_label }}">
+                                {{ form.climatisation.label }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.wifi }}
+                            <label class="form-check-label" for="{{ form.wifi.id_for_label }}">
+                                {{ form.wifi.label }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.garage }}
+                            <label class="form-check-label" for="{{ form.garage.id_for_label }}">
+                                {{ form.garage.label }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.jardin }}
+                            <label class="form-check-label" for="{{ form.jardin.id_for_label }}">
+                                {{ form.jardin.label }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.piscine }}
+                            <label class="form-check-label" for="{{ form.piscine.id_for_label }}">
+                                {{ form.piscine.label }}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            {{ form.cuisine_equipee }}
+                            <label class="form-check-label" for="{{ form.cuisine_equipee.id_for_label }}">
+                                {{ form.cuisine_equipee.label }}
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Section: Photos (formset) -->
+                <fieldset class="form-section">
+                    <legend>📷 Photos (maximum 5)</legend>
+                    
+                    <div id="formset-container">
+                        {{ formset.management_form }}
+                        
+                        {% for form_photo in formset %}
+                            <div class="photo-form mb-3 p-3 border rounded">
+                                {% if form_photo.image.value %}
+                                    <div class="mb-2">
+                                        <img src="{{ form_photo.image.value.url }}" style="max-width: 100px; max-height: 100px;">
+                                    </div>
+                                {% endif %}
+                                
+                                {{ form_photo.image }}
+                                {{ form_photo.alt_text }}
+                                {{ form_photo.DELETE }}
+                                
+                                {% if form_photo.errors %}
+                                    <div class="alert alert-danger small mt-2">{{ form_photo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <!-- Boutons -->
+                <div class="form-actions mt-5">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        ✅ Publier mon annonce
+                    </button>
+                    <a href="{% url 'logement:home' %}" class="btn btn-secondary btn-lg w-100 mt-2">
+                        ← Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-lg);
+    }
+
+    .mt-5 {
+        margin-top: var(--spacing-2xl);
+    }
+
+    .mb-4 {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .mb-5 {
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .col-lg-12 {
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-dark);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        font-size: 0.9rem;
+        color: var(--color-secondary);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .breadcrumb-nav a {
+        color: var(--color-primary);
+        text-decoration: none;
+    }
+
+    .breadcrumb-nav a:hover {
+        text-decoration: underline;
+    }
+
+    /* Page header */
+    .page-header {
+        border-bottom: 2px solid var(--color-light);
+        padding-bottom: var(--spacing-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .page-header p {
+        color: var(--color-secondary);
+        margin: 0;
+    }
+
+    .text-muted {
+        color: var(--color-secondary);
+    }
+
+    /* Form sections */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-xl);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section legend {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-dark);
+        display: block;
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: var(--spacing-sm);
+        display: block;
+        color: var(--color-dark);
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-light);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all var(--transition-base);
+        background: white;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        font-family: inherit;
+        min-height: 120px;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    @media (min-width: 768px) {
+        .row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 992px) {
+        .row {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .col-md-6,
+    .col-md-3 {
+        width: 100%;
+    }
+
+    /* Équipements grid */
+    .equipements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-light);
+        border-radius: 8px;
+        transition: all var(--transition-base);
+    }
+
+    .form-check:hover {
+        border-color: var(--color-primary);
+        background-color: var(--color-light);
+    }
+
+    .form-check input[type="checkbox"] {
+        margin-right: var(--spacing-sm);
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--color-primary);
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+
+    /* Photos form */
+    .photo-form {
+        background: var(--color-light);
+        border: 2px dashed var(--color-light);
+        border-radius: 8px;
+        padding: var(--spacing-md);
+    }
+
+    .photo-form img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 4px;
+    }
+
+    .photo-form input[type="file"] {
+        width: 100%;
+        margin-top: var(--spacing-sm);
+    }
+
+    /* Alerts */
+    .alert {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: 8px;
+        margin-bottom: var(--spacing-md);
+        border: 1px solid transparent;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+
+    .small {
+        font-size: 0.875rem;
+    }
+
+    .mt-2 {
+        margin-top: var(--spacing-sm);
+    }
+
+    /* Boutons */
+    .btn {
+        display: inline-block;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all var(--transition-base);
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: var(--color-secondary);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-lg {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        font-size: 1rem;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .form-actions {
+        margin-top: var(--spacing-2xl);
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid var(--color-light);
+    }
+
+    .p-3 {
+        padding: var(--spacing-md);
+    }
+
+    .border {
+        border: 1px solid var(--color-light);
+    }
+
+    .rounded {
+        border-radius: 8px;
+    }
+
+    .mb-2 {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .role-publication-info {
+        margin: var(--spacing-lg) 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2rem;
+        }
+
+        .equipements-grid {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        }
+
+        @media (min-width: 768px) and (max-width: 992px) {
+            .row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    }
+</style>
+{% endblock %}

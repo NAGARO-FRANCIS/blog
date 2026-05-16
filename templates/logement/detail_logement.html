@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ logement.titre }} - Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Galerie Photos (Gauche) -->
+        <div class="col-lg-8">
+            <div class="detail-photos">
+                {% if photos %}
+                    <div id="photoCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for photo in photos %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img src="{{ photo.image.url }}" class="d-block w-100" alt="{{ photo.alt_text }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if photos.count > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="no-photo">
+                        <p>Aucune photo disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Informations de base -->
+            <div class="mt-4 detail-info">
+                <h1>{{ logement.titre }}</h1>
+                
+                <div class="detail-tags">
+                    <span class="badge bg-info">{{ logement.get_account_type_display }}</span>
+                    <span class="badge bg-primary">{{ logement.get_type_logement_display }}</span>
+                </div>
+
+                <div class="detail-location mt-3">
+                    <p><strong>📍 Localisation:</strong> {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</p>
+                </div>
+
+                <!-- Caractéristiques -->
+                <div class="detail-features mt-4">
+                    <h3>Caractéristiques</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p>Surface: <strong>{{ logement.surface }} m²</strong></p>
+                            <p>Chambres: <strong>{{ logement.chambres }}</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>Lits: <strong>{{ logement.lits }}</strong></p>
+                            <p>Salle(s) de bain: <strong>{{ logement.salle_de_bain }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="detail-description mt-4">
+                    <h3>Description</h3>
+                    <p>{{ logement.description|linebreaks }}</p>
+                </div>
+
+                <!-- Équipements -->
+                {% if logement.wifi or logement.clim or logement.chauffe_eau %}
+                    <div class="detail-equipements mt-4">
+                        <h3>Équipements</h3>
+                        <ul>
+                            {% if logement.wifi %}<li>✅ WiFi</li>{% endif %}
+                            {% if logement.clim %}<li>✅ Climatisation</li>{% endif %}
+                            {% if logement.chauffe_eau %}<li>✅ Chauffe-eau</li>{% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Formulaire de Réservation (Droite) -->
+        <div class="col-lg-4">
+            <div class="reservation-card">
+                <!-- Prix -->
+                <div class="reservation-header">
+                    <h2>Réservation</h2>
+                    <div class="price-display">
+                        {% if logement.account_type == 'hotel' and logement.prix_par_nuit %}
+                            <p class="price">{{ logement.prix_par_nuit|floatformat:0 }} FCFA <small>/nuit</small></p>
+                        {% elif logement.account_type == 'residence' and logement.prix_par_mois %}
+                            <p class="price">{{ logement.prix_par_mois|floatformat:0 }} FCFA <small>/mois</small></p>
+                        {% else %}
+                            <p class="price">{{ logement.prix|floatformat:0 }} FCFA</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Bouton de réservation -->
+                <a href="{% url 'logement:reserver_logement' logement.id %}" class="btn btn-primary btn-lg w-100 mt-4">
+                    🔗 Réserver maintenant
+                </a>
+
+                <!-- Info supplémentaire -->
+                <div class="reservation-info mt-4">
+                    <p class="text-muted">
+                        <small>
+                            {% if logement.account_type == 'hotel' %}
+                                Réservation pour une ou plusieurs nuits
+                            {% elif logement.account_type == 'residence' %}
+                                Bail long terme (minimum {{ logement.duree_min_bail }} mois)
+                            {% else %}
+                                Disponible pour location
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+
+                <!-- Propriétaire -->
+                <div class="owner-info mt-4 p-3 border-top">
+                    <h5>Propriétaire</h5>
+                    <p>{{ logement.proprietaire.get_full_name|default:logement.proprietaire.username }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-lg);
+    }
+
+    .mt-5 {
+        margin-top: var(--spacing-2xl);
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+    }
+
+    @media (min-width: 992px) {
+        .row {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
+    .col-lg-8,
+    .col-lg-4 {
+        width: 100%;
+    }
+
+    /* Galerie photos */
+    .detail-photos {
+        max-height: 500px;
+        overflow: hidden;
+        border-radius: 12px;
+        background: var(--color-light);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-photos img {
+        max-height: 500px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        background-color: rgba(0, 0, 0, 0.3);
+        border: none;
+    }
+
+    /* Détails */
+    .detail-info h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-dark);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .detail-info h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-dark);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .detail-tags {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .detail-tags .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    .badge {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    .detail-location {
+        padding: var(--spacing-md);
+        background: var(--color-light);
+        border-left: 4px solid var(--color-primary);
+        border-radius: 4px;
+    }
+
+    .detail-features,
+    .detail-description,
+    .detail-equipements {
+        margin-top: var(--spacing-xl);
+    }
+
+    .detail-features ul,
+    .detail-equipements ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .detail-features li,
+    .detail-equipements li {
+        padding: var(--spacing-sm);
+        border-bottom: 1px solid var(--color-light);
+    }
+
+    .detail-features li:last-child,
+    .detail-equipements li:last-child {
+        border-bottom: none;
+    }
+
+    /* Carte de réservation */
+    .reservation-card {
+        background: white;
+        border-radius: 12px;
+        padding: var(--spacing-xl);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: var(--spacing-lg);
+    }
+
+    .reservation-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-dark);
+    }
+
+    .price-display .price {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-success);
+        margin: 0;
+    }
+
+    .price-display small {
+        font-size: 1rem;
+        color: var(--color-secondary);
+    }
+
+    .btn {
+        display: inline-block;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all var(--transition-base);
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: var(--color-primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-lg {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        font-size: 1rem;
+    }
+
+    .mt-4 {
+        margin-top: var(--spacing-lg);
+    }
+
+    .mt-3 {
+        margin-top: var(--spacing-md);
+    }
+
+    .p-3 {
+        padding: var(--spacing-md);
+    }
+
+    .border-top {
+        border-top: 1px solid var(--color-light);
+        padding-top: var(--spacing-md);
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .text-muted {
+        color: var(--color-secondary);
+    }
+
+    .owner-info {
+        margin-top: var(--spacing-lg);
+    }
+
+    .owner-info h5 {
+        font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+        color: var(--color-dark);
+    }
+
+    .reservation-info {
+        background: var(--color-light);
+        padding: var(--spacing-md);
+        border-radius: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .reservation-card {
+            position: static;
+            margin-top: var(--spacing-xl);
+        }
+
+        .detail-info h1 {
+            font-size: 1.5rem;
+        }
+
+        .price-display .price {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,493 @@
+/* =========================================
+   IVOIRE CONNECT - UTILITAIRES
+   Classes utilitaires réutilisables
+   ========================================= */
+
+/* ========== ARRIÈRE-PLANS ========== */
+
+.bg-primary { background-color: var(--primary); }
+.bg-primary-light { background-color: var(--primary-light); }
+.bg-primary-dark { background-color: var(--primary-dark); }
+
+.bg-success { background-color: var(--success); }
+.bg-success-light { background-color: var(--success-light); }
+
+.bg-danger { background-color: var(--danger); }
+.bg-danger-light { background-color: var(--danger-light); }
+
+.bg-warning { background-color: var(--warning); }
+.bg-warning-light { background-color: var(--warning-light); }
+
+.bg-info { background-color: var(--info); }
+.bg-info-light { background-color: var(--info-light); }
+
+.bg-white { background-color: var(--white); }
+.bg-light { background-color: var(--light); }
+.bg-gray-50 { background-color: #f9fafb; }
+.bg-gray-100 { background-color: var(--gray-100); }
+.bg-gray-200 { background-color: var(--gray-200); }
+.bg-gray-300 { background-color: var(--gray-300); }
+
+/* ========== COULEURS AVANT PLAN ========== */
+
+.color-primary { color: var(--primary); }
+.color-success { color: var(--success); }
+.color-danger { color: var(--danger); }
+.color-warning { color: var(--warning); }
+.color-info { color: var(--info); }
+.color-white { color: var(--white); }
+.color-dark { color: var(--dark); }
+
+/* ========== BORDURES ========== */
+
+.border {
+    border: 1px solid var(--border-color);
+}
+
+.border-0 {
+    border: none;
+}
+
+.border-top {
+    border-top: 1px solid var(--border-color);
+}
+
+.border-bottom {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.border-left {
+    border-left: 1px solid var(--border-color);
+}
+
+.border-right {
+    border-right: 1px solid var(--border-color);
+}
+
+.border-x {
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.border-y {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.border-primary {
+    border-color: var(--primary);
+}
+
+.border-success {
+    border-color: var(--success);
+}
+
+.border-danger {
+    border-color: var(--danger);
+}
+
+.border-dashed {
+    border-style: dashed;
+}
+
+.border-dotted {
+    border-style: dotted;
+}
+
+/* ========== RADIUS ========== */
+
+.rounded {
+    border-radius: var(--radius-md);
+}
+
+.rounded-sm {
+    border-radius: var(--radius-sm);
+}
+
+.rounded-lg {
+    border-radius: var(--radius-lg);
+}
+
+.rounded-xl {
+    border-radius: var(--radius-xl);
+}
+
+.rounded-2xl {
+    border-radius: var(--radius-2xl);
+}
+
+.rounded-full {
+    border-radius: var(--radius-full);
+}
+
+.rounded-t {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.rounded-b {
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.rounded-l {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.rounded-r {
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* ========== OMBRES ========== */
+
+.shadow-none {
+    box-shadow: none;
+}
+
+.shadow-xs {
+    box-shadow: var(--shadow-xs);
+}
+
+.shadow-sm {
+    box-shadow: var(--shadow-sm);
+}
+
+.shadow-md {
+    box-shadow: var(--shadow-md);
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+
+.shadow-xl {
+    box-shadow: var(--shadow-xl);
+}
+
+.shadow-2xl {
+    box-shadow: var(--shadow-2xl);
+}
+
+.shadow-hover:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+/* ========== OPACITÉ ========== */
+
+.opacity-0 { opacity: 0; }
+.opacity-25 { opacity: 0.25; }
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+.opacity-100 { opacity: 1; }
+
+/* ========== TRANSFORMATIONS ========== */
+
+.scale-75 { transform: scale(0.75); }
+.scale-90 { transform: scale(0.9); }
+.scale-100 { transform: scale(1); }
+.scale-110 { transform: scale(1.1); }
+.scale-125 { transform: scale(1.25); }
+
+.translate-x-0 { transform: translateX(0); }
+.translate-y-0 { transform: translateY(0); }
+
+.scale-hover:hover {
+    transform: scale(1.05);
+}
+
+.lift-hover:hover {
+    transform: translateY(-4px);
+}
+
+/* ========== CURSEURS ========== */
+
+.cursor-auto { cursor: auto; }
+.cursor-default { cursor: default; }
+.cursor-pointer { cursor: pointer; }
+.cursor-wait { cursor: wait; }
+.cursor-text { cursor: text; }
+.cursor-move { cursor: move; }
+.cursor-help { cursor: help; }
+.cursor-not-allowed { cursor: not-allowed; }
+
+/* ========== POINTS ÉLÉMENTAIRES ========== */
+
+.user-select-none {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.user-select-text {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+.pointer-events-auto {
+    pointer-events: auto;
+}
+
+/* ========== ALIGNEMENT VERTICAL ========== */
+
+.align-baseline { vertical-align: baseline; }
+.align-top { vertical-align: top; }
+.align-middle { vertical-align: middle; }
+.align-bottom { vertical-align: bottom; }
+.align-text-top { vertical-align: text-top; }
+.align-text-bottom { vertical-align: text-bottom; }
+
+/* ========== ESPACES BLANCS ========== */
+
+.whitespace-normal { white-space: normal; }
+.whitespace-nowrap { white-space: nowrap; }
+.whitespace-pre { white-space: pre; }
+.whitespace-pre-wrap { white-space: pre-wrap; }
+.whitespace-pre-line { white-space: pre-line; }
+
+/* ========== CONTOUR ========== */
+
+.outline-none {
+    outline: none;
+}
+
+.outline-primary {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ========== TRANSITIONS UTILITAIRES ========== */
+
+.transition-fast {
+    transition: all var(--transition-fast);
+}
+
+.transition-base {
+    transition: all var(--transition-base);
+}
+
+.transition-slow {
+    transition: all var(--transition-slow);
+}
+
+.no-transition {
+    transition: none;
+}
+
+/* ========== FLOTTANTS ========== */
+
+.float-left { float: left; }
+.float-right { float: right; }
+.float-none { float: none; }
+.clear { clear: both; }
+
+/* ========== CENTRAGE ========== */
+
+.center-flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-grid {
+    display: grid;
+    place-items: center;
+}
+
+.mx-auto-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ========== ASCENSEUR ========== */
+
+.scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ========== DÉGRADÉS ========== */
+
+.gradient-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.gradient-success {
+    background: linear-gradient(135deg, var(--success) 0%, #218838 100%);
+}
+
+.gradient-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, #c82333 100%);
+}
+
+.gradient-to-right {
+    background: linear-gradient(to right, var(--primary), var(--primary-light));
+}
+
+.gradient-to-bottom {
+    background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+}
+
+/* ========== FILTRES ========== */
+
+.blur-sm { filter: blur(4px); }
+.blur-md { filter: blur(8px); }
+.blur-lg { filter: blur(12px); }
+
+.brightness-75 { filter: brightness(0.75); }
+.brightness-90 { filter: brightness(0.9); }
+.brightness-110 { filter: brightness(1.1); }
+.brightness-125 { filter: brightness(1.25); }
+
+.contrast-75 { filter: contrast(0.75); }
+.contrast-100 { filter: contrast(1); }
+.contrast-125 { filter: contrast(1.25); }
+.contrast-150 { filter: contrast(1.5); }
+
+.grayscale { filter: grayscale(1); }
+.grayscale-0 { filter: grayscale(0); }
+
+.sepia { filter: sepia(1); }
+
+/* ========== ASPECT RATIO ========== */
+
+.aspect-square {
+    aspect-ratio: 1;
+}
+
+.aspect-video {
+    aspect-ratio: 16 / 9;
+}
+
+.aspect-4-3 {
+    aspect-ratio: 4 / 3;
+}
+
+.aspect-21-9 {
+    aspect-ratio: 21 / 9;
+}
+
+/* ========== SKEW ========== */
+
+.skew-x-0 { transform: skewX(0deg); }
+.skew-x-6 { transform: skewX(6deg); }
+.skew-x-12 { transform: skewX(12deg); }
+
+.skew-y-0 { transform: skewY(0deg); }
+.skew-y-6 { transform: skewY(6deg); }
+.skew-y-12 { transform: skewY(12deg); }
+
+/* ========== ANIMATIONS SIMPLES ========== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.animate-fade-out {
+    animation: fadeOut 0.3s ease-out;
+}
+
+.animate-slide-in-up {
+    animation: slideInUp 0.3s ease-out;
+}
+
+.animate-slide-in-down {
+    animation: slideInDown 0.3s ease-out;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ========== LIENS UTILITAIRES ========== */
+
+.link-underline {
+    text-decoration: underline;
+}
+
+.link-no-underline {
+    text-decoration: none;
+}
+
+.link-hover-underline:hover {
+    text-decoration: underline;
+}
+
+/* ========== CORPS VIDES ========== */
+
+.empty-state {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-state-icon {
+    font-size: var(--font-size-5xl);
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.5;
+}
+
+.empty-state-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state-text {
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-muted);
+}

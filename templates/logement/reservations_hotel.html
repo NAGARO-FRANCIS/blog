@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Réservations - Gestion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 40px 30px;
+        margin-bottom: 30px;
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    .content-section {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    
+    .coming-soon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #059669;
+        margin-bottom: 10px;
+    }
+    
+    .section-desc {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .back-link {
+        display: inline-block;
+        background: #10b981;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        background: #059669;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📋 {{ titre|default:"Réservations" }}</h1>
+    <p>Gérez vos réservations et voir l'historique de vos clients</p>
+</div>
+
+<div class="container">
+    <div class="content-section">
+        <div class="coming-soon">📅</div>
+        <h2 class="section-title">Page en Développement</h2>
+        <p class="section-desc">
+            Cette page permettra de consulter et gérer toutes vos réservations en détail.<br>
+            Vous pourrez voir l'état de chaque réservation, les dates, les clients et les montants.
+        </p>
+        <a href="{% url 'accounts:dashboard_hotel' %}" class="back-link">← Retour au Dashboard</a>
+    </div>
+</div>
+{% endblock %}

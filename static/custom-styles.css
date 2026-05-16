@@ -1,0 +1,552 @@
+/* 
+   IVOIRE CONNECT - Customization & Specific Styles
+   ==========================================
+*/
+
+/* ==========================================
+   NAVIGATION & HEADER
+   ========================================== */
+
+.navbar {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #007bff !important;
+    text-decoration: none;
+}
+
+.navbar-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.navbar-nav a {
+    color: #495057;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav a:hover {
+    color: #007bff;
+}
+
+/* ==========================================
+   HERO SECTION
+   ========================================== */
+
+.hero {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+/* ==========================================
+   CARTES DE PUBLICATION
+   ========================================== */
+
+.listing-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.listing-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.listing-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: #e9ecef;
+}
+
+.listing-card-body {
+    padding: 1.5rem;
+}
+
+.listing-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #212529;
+}
+
+.listing-card-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #28a745;
+    margin: 0.5rem 0;
+}
+
+.listing-card-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* ==========================================
+   ÉTAPES & PROGRESS
+   ========================================== */
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+}
+
+.progress-step::before {
+    content: '';
+    position: absolute;
+    top: 1.5rem;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #e9ecef;
+    margin-left: 50%;
+    z-index: 0;
+}
+
+.progress-step:last-child::before {
+    display: none;
+}
+
+.progress-step.active::before {
+    background: #007bff;
+}
+
+.progress-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: #e9ecef;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    z-index: 1;
+    position: relative;
+}
+
+.progress-step.active .progress-number {
+    background: #007bff;
+    color: white;
+}
+
+.progress-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6c757d;
+    text-align: center;
+}
+
+.progress-step.active .progress-label {
+    color: #007bff;
+    font-weight: 600;
+}
+
+/* ==========================================
+   FORMULAIRES - PERSONALISÉ
+   ========================================== */
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-section legend {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #007bff;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    background: white;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* ==========================================
+   DASHBOARD CARDS
+   ========================================== */
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* ==========================================
+   PAGINATION & PAGINATION-LIKE
+   ========================================== */
+
+.pagination {
+    display: flex;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    justify-content: center;
+}
+
+.page-link {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    color: #007bff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.page-link.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+.footer {
+    background: #212529;
+    color: #adb5bd;
+    padding: 3rem 0 1rem;
+    margin-top: auto;
+}
+
+.footer h5 {
+    color: white;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.footer a {
+    color: #adb5bd;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: white;
+}
+
+.footer-section {
+    margin-bottom: 2rem;
+}
+
+.footer-divider {
+    border-top: 1px solid #495057;
+    margin-top: 2rem;
+    padding-top: 1rem;
+}
+
+/* ==========================================
+   MODALS & OVERLAYS
+   ========================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    padding: 2rem;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+/* ==========================================
+   NOTIFICATIONS & TOAST
+   ========================================== */
+
+.toast {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast-success {
+    border-color: #28a745;
+}
+
+.toast-error {
+    border-color: #dc3545;
+}
+
+.toast-info {
+    border-color: #17a2b8;
+}
+
+/* ==========================================
+   IMAGE GALLERIES
+   ========================================== */
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    aspect-ratio: 1;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+/* ==========================================
+   BADGES & LABELS
+   ========================================== */
+
+.label-primary {
+    background: #e7f1ff;
+    color: #007bff;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.label-success {
+    background: #d4edda;
+    color: #155724;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.label-danger {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease;
+}
+
+/* ==========================================
+   DARK MODE (Optionnel)
+   ========================================== */
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .card,
+    .form-section,
+    .listing-card,
+    .stat-card {
+        background: #2d2d2d;
+        color: #e0e0e0;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        background: #1a1a1a;
+        color: #e0e0e0;
+        border-color: #495057;
+    }
+}
+
+/* ==========================================
+   IMPRIMERIE
+   ========================================== */
+
+@media print {
+    .navbar,
+    .footer,
+    .btn,
+    .form-actions {
+        display: none;
+    }
+    
+    body {
+        background: white;
+    }
+}

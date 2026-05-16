@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from .models import Profile, DocumentVerification, VerificationLog
-from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileEditForm
+from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileEditForm, IndividuRoleForm
 
 
 def get_file_hash(file_obj):
@@ -49,9 +49,28 @@ def inscription(request):
 
 
 def inscription_individu(request):
-    """Formulaire d'inscription pour les individus"""
+    """Étape 1 : Choix du rôle pour les individus"""
     if request.session.get('account_type') != 'individu':
         return redirect('accounts:inscription')
+    
+    if request.method == 'POST':
+        form = IndividuRoleForm(request.POST)
+        if form.is_valid():
+            role = form.cleaned_data['role']
+            request.session['individu_role'] = role
+            return redirect('accounts:inscription_individu_form')
+    else:
+        form = IndividuRoleForm()
+
+    return render(request, 'accounts/inscription_individu_role.html', {'form': form})
+
+
+def inscription_individu_form(request):
+    """Étape 2 : Remplir le formulaire d'inscription pour les individus"""
+    if request.session.get('account_type') != 'individu' or 'individu_role' not in request.session:
+        return redirect('accounts:inscription')
+    
+    role = request.session['individu_role']
     
     if request.method == 'POST':
         form = SignUpForm(request.POST, request.FILES)
@@ -66,7 +85,7 @@ def inscription_individu(request):
             profile.profession = form.cleaned_data.get('profession', '')
             profile.date_naissance = form.cleaned_data.get('date_naissance')
             profile.sexe = form.cleaned_data.get('sexe', '')
-            profile.role = form.cleaned_data.get('role', '')
+            profile.role = role  # Utiliser le rôle de la session
             profile.account_type = 'individu'
             profile.type_piece_identite = form.cleaned_data.get('type_piece_identite', '')
             profile.numero_piece_identite = form.cleaned_data.get('numero_piece_identite', '')
@@ -79,25 +98,33 @@ def inscription_individu(request):
             
             # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
+            role_label = dict(Profile.ROLE_CHOICES).get(role, role)
             VerificationLog.objects.create(
                 profile=profile,
                 action='created',
-                details=f"Inscription (Individu) complétée. Pièce: {profile.type_piece_identite}, Numéro: {profile.numero_piece_identite}",
+                details=f"Inscription (Individu - {role_label}) complétée. Pièce: {profile.type_piece_identite}, Numéro: {profile.numero_piece_identite}",
                 ip_address=client_ip
             )
             
             login(request, user)
             
-            # Supprimer le type de compte de la session
+            # Nettoyer la session
             if 'account_type' in request.session:
                 del request.session['account_type']
+            if 'individu_role' in request.session:
+                del request.session['individu_role']
             
             # Rediriger vers la page de vérification des documents
             return redirect('accounts:verification_docs')
     else:
         form = SignUpForm()
 
-    return render(request, 'accounts/inscription_individu.html', {'form': form})
+    context = {
+        'form': form,
+        'role': role,
+        'role_label': dict(Profile.ROLE_CHOICES).get(role, role),
+    }
+    return render(request, 'accounts/inscription_individu_form.html', context)
 
 
 def inscription_residence(request):
@@ -264,19 +291,25 @@ def upload_document(request):
 
 
 @login_required
+@login_required
+@login_required
 def dashboard(request):
     """Redirection vers le dashboard approprié selon le type de compte"""
-    profile = request.user.profile
-    account_type = profile.account_type
-    
-    if account_type == 'individu':
-        return redirect('accounts:dashboard_individu')
-    elif account_type == 'residence':
-        return redirect('accounts:dashboard_residence')
-    elif account_type == 'hotel':
-        return redirect('accounts:dashboard_hotel')
-    else:
-        # Par défaut, rediriger vers le profil
+    try:
+        profile = request.user.profile
+        account_type = profile.account_type
+        
+        if account_type == 'individu':
+            return redirect('accounts:dashboard_individu')
+        elif account_type == 'residence':
+            return redirect('accounts:dashboard_residence')
+        elif account_type == 'hotel':
+            return redirect('accounts:dashboard_hotel')
+        else:
+            # Par défaut, rediriger vers le profil
+            return redirect('accounts:profil')
+    except Exception as e:
+        # Si pas de profil, rediriger vers le profil
         return redirect('accounts:profil')
 
 
@@ -329,10 +362,34 @@ def dashboard_residence(request):
     except Exception:
         nb_logements = 0
     
+    # Statistiques avancées (à personnaliser selon vos modèles)
+    nb_reservations = 0  # À adapter selon vos modèles
+    nb_clients_actifs = 0  # À adapter selon vos modèles
+    taux_occupation = 0  # À calculer selon vos données
+    revenu_mois = 0  # À calculer selon vos données
+    note_moyenne = 4.5  # À calculer selon les avis
+    nb_avis = 0  # À adapter selon vos modèles
+    logements_disponibles = nb_logements  # À adapter
+    
+    # Données récentes (exemples)
+    recent_reservations = []  # À adapter selon vos modèles
+    recent_tenants = []  # À adapter selon vos modèles
+    recent_reviews = []  # À adapter selon vos modèles
+    
     context = {
         'profile': profile,
         'prof_profile': prof_profile,
         'nb_logements': nb_logements,
+        'nb_reservations': nb_reservations,
+        'nb_clients_actifs': nb_clients_actifs,
+        'taux_occupation': taux_occupation,
+        'revenu_mois': revenu_mois,
+        'note_moyenne': note_moyenne,
+        'nb_avis': nb_avis,
+        'logements_disponibles': logements_disponibles,
+        'recent_reservations': recent_reservations,
+        'recent_tenants': recent_tenants,
+        'recent_reviews': recent_reviews,
     }
     return render(request, 'accounts/dashboard_residence.html', context)
 
@@ -358,10 +415,34 @@ def dashboard_hotel(request):
     except Exception:
         nb_chambres = 0
     
+    # Statistiques avancées (à personnaliser selon vos modèles)
+    nb_reservations = 0  # À adapter selon vos modèles
+    nb_clients_actifs = 0  # À adapter selon vos modèles
+    taux_occupation = 0  # À calculer selon vos données
+    revenu_mois = 0  # À calculer selon vos données
+    note_moyenne = 4.8  # À calculer selon les avis
+    nb_avis = 0  # À adapter selon vos modèles
+    chambres_disponibles = nb_chambres  # À adapter
+    
+    # Données récentes (exemples)
+    recent_reservations = []  # À adapter selon vos modèles
+    recent_clients = []  # À adapter selon vos modèles
+    recent_reviews = []  # À adapter selon vos modèles
+    
     context = {
         'profile': profile,
         'prof_profile': prof_profile,
         'nb_chambres': nb_chambres,
+        'nb_reservations': nb_reservations,
+        'nb_clients_actifs': nb_clients_actifs,
+        'taux_occupation': taux_occupation,
+        'revenu_mois': revenu_mois,
+        'note_moyenne': note_moyenne,
+        'nb_avis': nb_avis,
+        'chambres_disponibles': chambres_disponibles,
+        'recent_reservations': recent_reservations,
+        'recent_clients': recent_clients,
+        'recent_reviews': recent_reviews,
     }
     return render(request, 'accounts/dashboard_hotel.html', context)
 

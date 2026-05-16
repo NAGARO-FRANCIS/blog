@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+
+{% block title %}Démonstration Design Premium{% endblock %}
+
+{% block content %}
+<main class="animate-slide-up">
+    <div class="container my-5">
+        <h1 class="mb-4">✨ Démonstration Design Premium Ivoire Connect</h1>
+
+        <!-- SECTION COULEURS -->
+        <section class="mb-5 animate-slide-up">
+            <h2 class="h3 mb-3 text-primary">🎨 Nouvelle Palette de Couleurs</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-4 rounded-lg text-white text-center" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);">
+                    <strong>Primaire</strong><br/>
+                    <small>#4f46e5</small>
+                </div>
+                <div class="p-4 rounded-lg text-white text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <strong>Succès</strong><br/>
+                    <small>#10b981</small>
+                </div>
+                <div class="p-4 rounded-lg text-white text-center" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <strong>Danger</strong><br/>
+                    <small>#ef4444</small>
+                </div>
+                <div class="p-4 rounded-lg text-white text-center" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                    <strong>Accent</strong><br/>
+                    <small>#06b6d4</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION BOUTONS -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.1s;">
+            <h2 class="h3 mb-3 text-primary">🔘 Boutons Premium</h2>
+            <div class="flex flex-wrap gap-3 mb-4">
+                <button class="btn btn-primary">Bouton Primaire</button>
+                <button class="btn btn-success">Bouton Succès</button>
+                <button class="btn btn-danger">Bouton Danger</button>
+                <button class="btn btn-secondary">Bouton Secondaire</button>
+                <button class="btn btn-outline-primary">Bouton Outline</button>
+                <button class="btn btn-primary" disabled>Désactivé</button>
+            </div>
+            <p class="text-muted text-sm">
+                ✨ <strong>Effet:</strong> Brillance au survol, ombres dynamiques, lift transformation
+            </p>
+        </section>
+
+        <!-- SECTION CARTES -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.2s;">
+            <h2 class="h3 mb-3 text-primary">🃏 Cartes Modernes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="card">
+                    <div style="height: 150px; background: var(--gradient-primary);" class="rounded-top"></div>
+                    <div class="p-4">
+                        <h5 class="card-title">Carte Premium 1</h5>
+                        <p class="text-muted">Survolez pour voir l'effet de barre colorée et lift.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="height: 150px; background: var(--gradient-success);" class="rounded-top"></div>
+                    <div class="p-4">
+                        <h5 class="card-title">Carte Premium 2</h5>
+                        <p class="text-muted">Dégradé vert avec ombres sophistiquées.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="height: 150px; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);" class="rounded-top"></div>
+                    <div class="p-4">
+                        <h5 class="card-title">Carte Premium 3</h5>
+                        <p class="text-muted">Dégradé cyan avec design moderne.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted text-sm mt-3">
+                ✨ <strong>Effet:</strong> Barre colorée au survol, lift transformation, ombres 2xl
+            </p>
+        </section>
+
+        <!-- SECTION LISTING CARDS -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.3s;">
+            <h2 class="h3 mb-3 text-primary">🏠 Listing Cards Premium</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for i in "123" %}
+                <div class="listing-card">
+                    <div style="height: 200px; background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);" class="listing-card-image"></div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h5 class="card-title m-0">Propriété Premium</h5>
+                            <span class="badge badge-success">Disponible</span>
+                        </div>
+                        <p class="text-muted text-sm mb-3">Localisation premium avec services haut de gamme.</p>
+                        <div class="flex justify-between items-end">
+                            <strong class="text-primary">1.500.000 XOF</strong>
+                            <button class="btn btn-sm btn-primary">Voir plus</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="text-muted text-sm mt-3">
+                ✨ <strong>Effet:</strong> Image zoom, overlay gradient, ombres dynamiques au survol
+            </p>
+        </section>
+
+        <!-- SECTION BADGES -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.4s;">
+            <h2 class="h3 mb-3 text-primary">🏷️ Badges Premium</h2>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="badge badge-primary">Primaire</span>
+                <span class="badge badge-success">Succès</span>
+                <span class="badge badge-danger">Danger</span>
+                <span class="badge badge-warning">Attention</span>
+                <span class="badge badge-secondary">Secondaire</span>
+            </div>
+            <p class="text-muted text-sm">
+                ✨ <strong>Effet:</strong> Gradients brillants, ombres colorées, scale au survol
+            </p>
+        </section>
+
+        <!-- SECTION ALERTES -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.5s;">
+            <h2 class="h3 mb-3 text-primary">📢 Alertes Modernes</h2>
+            
+            <div class="alert alert-primary mb-3">
+                <div>
+                    <strong>ℹ️ Information:</strong> Ceci est une alerte avec un dégradé premium et une barre latérale colorée.
+                </div>
+            </div>
+
+            <div class="alert alert-success mb-3">
+                <div>
+                    <strong>✅ Succès:</strong> Action effectuée avec succès! Design moderne et professionnel.
+                </div>
+            </div>
+
+            <div class="alert alert-danger mb-3">
+                <div>
+                    <strong>❌ Erreur:</strong> Une erreur s'est produite. Dégradé rouge sophistiqué.
+                </div>
+            </div>
+
+            <div class="alert alert-warning mb-3">
+                <div>
+                    <strong>⚠️ Attention:</strong> Veuillez vérifier vos données. Design attrayant.
+                </div>
+            </div>
+
+            <p class="text-muted text-sm">
+                ✨ <strong>Effet:</strong> Dégradés subtils, barres latérales, effet shine
+            </p>
+        </section>
+
+        <!-- SECTION ANIMATIONS -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.6s;">
+            <h2 class="h3 mb-3 text-primary">🎬 Animations Premium</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="card text-center p-4">
+                    <div class="animate-fade p-4" style="background: var(--gradient-primary); color: white; border-radius: 8px;">
+                        Fade In
+                    </div>
+                </div>
+
+                <div class="card text-center p-4">
+                    <div class="animate-slide-up p-4" style="background: var(--gradient-success); color: white; border-radius: 8px;">
+                        Slide Up
+                    </div>
+                </div>
+
+                <div class="card text-center p-4">
+                    <div class="animate-in p-4" style="background: var(--gradient-accent); color: white; border-radius: 8px;">
+                        Scale In
+                    </div>
+                </div>
+
+                <div class="card text-center p-4">
+                    <div class="animate-float p-4" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; border-radius: 8px;">
+                        Float
+                    </div>
+                </div>
+
+                <div class="card text-center p-4">
+                    <div class="animate-pulse p-4" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 8px;">
+                        Pulse
+                    </div>
+                </div>
+
+                <div class="card text-center p-4">
+                    <div class="animate-glow p-4" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border-radius: 8px;">
+                        Glow
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted text-sm mt-3">
+                ✨ Toutes les animations sont fluides et optimisées pour une UX premium
+            </p>
+        </section>
+
+        <!-- SECTION COMPOSANTS -->
+        <section class="mb-5 animate-slide-up" style="animation-delay: 0.7s;">
+            <h2 class="h3 mb-3 text-primary">🎯 Éléments Premium</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card p-4">
+                    <h5 class="card-title mb-3">Glassmorphism</h5>
+                    <div class="glass p-4 rounded-lg mb-3">
+                        Effet verre avec flou de fond subtil
+                    </div>
+                    <p class="text-muted text-sm">Parfait pour les modales et les menus superposés.</p>
+                </div>
+
+                <div class="card p-4">
+                    <h5 class="card-title mb-3">Neumorphism</h5>
+                    <div class="neumorphic p-4 rounded-lg mb-3">
+                        Effet d'épaisseur avec ombres douces
+                    </div>
+                    <p class="text-muted text-sm">Crée une sensation tactile et dimensionnelle.</p>
+                </div>
+
+                <div class="card p-4">
+                    <h5 class="card-title mb-3">Textures Premium</h5>
+                    <div class="texture-noise p-4 rounded-lg mb-3" style="background: var(--gradient-primary); color: white;">
+                        Surface avec texture subtile
+                    </div>
+                    <p class="text-muted text-sm">Ajoute de la profondeur et du détail.</p>
+                </div>
+
+                <div class="card p-4">
+                    <h5 class="card-title mb-3">Gradient Animé</h5>
+                    <div class="gradient-animated p-4 rounded-lg mb-3" style="height: 80px;">
+                        Gradient qui change dynamiquement
+                    </div>
+                    <p class="text-muted text-sm">Crée une ambiance moderne et vivante.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA FINAL -->
+        <section class="text-center py-5 animate-slide-up" style="animation-delay: 0.8s;">
+            <h2 class="h3 mb-3 text-primary">🚀 Prêt à explorer votre app premium?</h2>
+            <p class="text-muted mb-4">Cliquez sur les boutons et éléments pour voir les effets en action!</p>
+            <a href="/" class="btn btn-primary btn-lg">Retour à l'accueil</a>
+        </section>
+    </div>
+</main>
+
+<style>
+    /* Style for demo page */
+    .grid-cols-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-cols-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-cols-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (max-width: 768px) {
+        .md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; }
+        .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr) !important; }
+        .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr) !important; }
+        .md\:grid-cols-1 { grid-template-columns: 1fr !important; }
+    }
+
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+
+    .gap-2 { gap: var(--spacing-sm); }
+    .gap-3 { gap: var(--spacing-md); }
+    .gap-4 { gap: var(--spacing-lg); }
+
+    .p-4 { padding: var(--spacing-lg); }
+
+    .text-center { text-align: center; }
+    .text-muted { color: #999; }
+    .text-sm { font-size: 0.875rem; }
+    .text-primary { color: var(--primary); }
+
+    .mb-2 { margin-bottom: var(--spacing-sm); }
+    .mb-3 { margin-bottom: var(--spacing-md); }
+    .mb-4 { margin-bottom: var(--spacing-lg); }
+    .mb-5 { margin-bottom: var(--spacing-xl); }
+    .mt-3 { margin-top: var(--spacing-md); }
+
+    .my-5 { margin: var(--spacing-xl) 0; }
+
+    .flex { display: flex; }
+    .flex-wrap { flex-wrap: wrap; }
+    .justify-between { justify-content: space-between; }
+    .justify-end { justify-content: flex-end; }
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .items-end { align-items: flex-end; }
+
+    .h3 { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
+    .m-0 { margin: 0; }
+
+    .btn-sm {
+        padding: var(--spacing-xs) var(--spacing-md);
+        font-size: var(--font-size-sm);
+    }
+
+    .btn-lg {
+        padding: var(--spacing-md) var(--spacing-xl);
+        font-size: var(--font-size-lg);
+    }
+
+    .card-title {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .rounded-top {
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .rounded-lg {
+        border-radius: var(--radius-lg);
+    }
+</style>
+{% endblock %}

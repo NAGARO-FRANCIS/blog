@@ -1,463 +1,390 @@
 {% extends 'base.html' %}
 
-{% block title %}Mon profil - Coloc.ai{% endblock %}
+{% block title %}Mon profil — {{ request.user.first_name|default:request.user.username }}{% endblock %}
 
 {% block content %}
+<div class="pr-wrap">
+
+    <!-- ── HEADER ── -->
+    <header class="pr-header">
+        <div class="pr-header__left">
+            <div class="pr-avatar">
+                {% if profile.photo_profil %}
+                    <img src="{{ profile.photo_profil.url }}" alt="Photo de profil">
+                {% else %}
+                    <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+                {% endif %}
+            </div>
+            <div>
+                <h1 class="pr-header__name">{{ request.user.first_name }} {{ request.user.last_name }}</h1>
+                <p class="pr-header__username">@{{ request.user.username }}</p>
+                <div class="pr-header__badges">
+                    <span class="pr-badge">{{ profile.get_role_display }}</span>
+                    {% if profile.verified %}
+                        <span class="pr-badge pr-badge--verified">Vérifié</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'accounts:edit_profil' %}" class="pr-edit-btn">Modifier le profil</a>
+    </header>
+
+    <!-- ── STATS ── -->
+    <div class="pr-stats">
+        <div class="pr-stat">
+            <span class="pr-stat__value">{{ nb_annonces|default:"0" }}</span>
+            <span class="pr-stat__label">Annonces</span>
+        </div>
+        <div class="pr-stat">
+            <span class="pr-stat__value">{{ nb_favoris|default:"0" }}</span>
+            <span class="pr-stat__label">Favoris</span>
+        </div>
+        <div class="pr-stat">
+            <span class="pr-stat__value">{{ nb_messages|default:"0" }}</span>
+            <span class="pr-stat__label">Messages</span>
+        </div>
+    </div>
+
+    <!-- ── INFOS PERSONNELLES ── -->
+    <div class="pr-card">
+        <div class="pr-card__header">
+            <h2 class="pr-card__title">Informations personnelles</h2>
+        </div>
+        <div class="pr-grid">
+            <div class="pr-item">
+                <span class="pr-item__label">Email</span>
+                <span class="pr-item__value">{{ request.user.email|default:"—" }}</span>
+            </div>
+            <div class="pr-item">
+                <span class="pr-item__label">Téléphone</span>
+                <span class="pr-item__value {% if not profile.telephone %}pr-item__value--empty{% endif %}">
+                    {{ profile.telephone|default:"Non renseigné" }}
+                </span>
+            </div>
+            <div class="pr-item">
+                <span class="pr-item__label">Date de naissance</span>
+                <span class="pr-item__value {% if not profile.date_naissance %}pr-item__value--empty{% endif %}">
+                    {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
+                </span>
+            </div>
+            <div class="pr-item">
+                <span class="pr-item__label">Sexe</span>
+                <span class="pr-item__value {% if not profile.sexe %}pr-item__value--empty{% endif %}">
+                    {{ profile.get_sexe_display|default:"Non renseigné" }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── INFOS PROFIL ── -->
+    <div class="pr-card">
+        <div class="pr-card__header">
+            <h2 class="pr-card__title">Informations du profil</h2>
+        </div>
+        <div class="pr-grid">
+            <div class="pr-item">
+                <span class="pr-item__label">Type de profil</span>
+                <span class="pr-item__value">{{ profile.get_role_display }}</span>
+            </div>
+            <div class="pr-item">
+                <span class="pr-item__label">Profession</span>
+                <span class="pr-item__value {% if not profile.profession %}pr-item__value--empty{% endif %}">
+                    {{ profile.profession|default:"Non renseignée" }}
+                </span>
+            </div>
+            <div class="pr-item">
+                <span class="pr-item__label">Ville</span>
+                <span class="pr-item__value {% if not profile.ville %}pr-item__value--empty{% endif %}">
+                    {{ profile.ville|default:"Non renseignée" }}
+                </span>
+            </div>
+            <div class="pr-item">
+                <span class="pr-item__label">Quartier</span>
+                <span class="pr-item__value {% if not profile.quartier %}pr-item__value--empty{% endif %}">
+                    {{ profile.quartier|default:"Non renseigné" }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── STATUT ── -->
+    <div class="pr-card">
+        <div class="pr-card__header">
+            <h2 class="pr-card__title">Statut de vérification</h2>
+        </div>
+        {% if profile.verified %}
+            <div class="pr-status pr-status--ok">
+                <div class="pr-status__icon">✓</div>
+                <div>
+                    <p class="pr-status__title">Profil vérifié</p>
+                    <p class="pr-status__sub">Vous pouvez publier des annonces sur la plateforme.</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="pr-status pr-status--pending">
+                <div class="pr-status__icon">⏳</div>
+                <div>
+                    <p class="pr-status__title">En attente de vérification</p>
+                    <p class="pr-status__sub">L'administrateur vérifiera votre profil sous peu.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
 <style>
-  * { box-sizing: border-box; }
+/* ── Tokens ── */
+:root {
+    --ci-orange:     #F77F00;
+    --ci-orange-dk:  #D96B00;
+    --ci-orange-lt:  #FFF3E0;
+    --ci-green:      #009A44;
+    --ci-green-dk:   #007A35;
+    --ci-green-lt:   #E6F5ED;
+    --pr-text:       #111827;
+    --pr-muted:      #6B7280;
+    --pr-border:     #E5E7EB;
+    --pr-surface:    #F9FAFB;
+    --pr-white:      #FFFFFF;
+    --pr-radius:     14px;
+    --pr-shadow:     0 2px 8px rgba(0,0,0,.07);
+    --pr-shadow-lg:  0 8px 24px rgba(0,0,0,.10);
+    --pr-transition: .2s ease;
+}
 
-  .pr-wrap {
-    max-width: 760px;
+/* ── Layout ── */
+.pr-wrap {
+    max-width: 800px;
     margin: 0 auto;
-    padding: 2rem 1rem 3rem;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-  }
+    padding: 32px 24px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 
-  /* ── HEADER ── */
-  .pr-header {
-    background: #534AB7;
-    border-radius: 20px;
-    padding: 32px;
-    margin-bottom: 1.5rem;
+/* ── Header ── */
+.pr-header {
+    background: var(--pr-white);
+    border: 1px solid var(--pr-border);
+    border-top: 4px solid var(--ci-orange);
+    border-radius: var(--pr-radius);
+    padding: 24px 28px;
     display: flex;
     align-items: center;
-    gap: 24px;
-    position: relative;
-    overflow: hidden;
-  }
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: var(--pr-shadow);
+}
+.pr-header__left { display: flex; align-items: center; gap: 18px; }
 
-  .pr-header::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 200px; height: 200px;
-    background: rgba(255,255,255,0.06);
+.pr-avatar {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
     border-radius: 50%;
-  }
-
-  .pr-header::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; left: 40%;
-    width: 260px; height: 260px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 50%;
-  }
-
-  .pr-avatar {
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: 3px solid rgba(255,255,255,0.4);
+    background: var(--ci-orange-lt);
+    border: 2px solid var(--ci-orange);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
-    color: white;
-    flex-shrink: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--ci-orange);
     overflow: hidden;
-    position: relative;
-    z-index: 1;
-  }
+}
+.pr-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-  .pr-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .pr-header-info {
-    flex: 1;
-    position: relative;
-    z-index: 1;
-  }
-
-  .pr-name {
-    font-size: 22px;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 4px;
-    letter-spacing: -0.3px;
-  }
-
-  .pr-username {
-    font-size: 13px;
-    color: rgba(255,255,255,0.65);
+.pr-header__name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--pr-text);
+    margin: 0 0 3px;
+    letter-spacing: -.02em;
+}
+.pr-header__username {
+    font-size: .8rem;
+    color: var(--pr-muted);
     margin: 0 0 10px;
-  }
+}
+.pr-header__badges { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  .pr-badges {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .pr-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.9);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 99px;
-    letter-spacing: 0.04em;
+.pr-badge {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 100px;
+    background: var(--ci-orange-lt);
+    color: var(--ci-orange-dk);
+    border: 1px solid #fcd9a0;
     text-transform: uppercase;
-    border: 1px solid rgba(255,255,255,0.15);
-  }
+    letter-spacing: .04em;
+}
+.pr-badge--verified {
+    background: var(--ci-green-lt);
+    color: var(--ci-green-dk);
+    border-color: #a7d7b8;
+}
 
-  .pr-badge.verified {
-    background: rgba(40,200,120,0.2);
-    border-color: rgba(40,200,120,0.4);
-    color: #a8f0c6;
-  }
-
-  .pr-edit-btn {
-    margin-left: auto;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: white;
+.pr-edit-btn {
+    background: var(--ci-orange);
+    color: #fff;
+    border: none;
     padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: 8px;
+    font-size: .84rem;
+    font-weight: 700;
     cursor: pointer;
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
+    white-space: nowrap;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-    transition: background 0.2s;
-    font-family: inherit;
-  }
+    transition: background var(--pr-transition), transform var(--pr-transition);
+}
+.pr-edit-btn:hover {
+    background: var(--ci-orange-dk);
+    transform: translateY(-1px);
+}
 
-  .pr-edit-btn:hover {
-    background: rgba(255,255,255,0.22);
-  }
-
-  /* ── STATS ROW ── */
-  .pr-stats {
+/* ── Stats ── */
+.pr-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 1.5rem;
-  }
-
-  .pr-stat {
-    background: white;
-    border: 0.5px solid #e8e8e8;
-    border-radius: 14px;
-    padding: 16px 18px;
-    text-align: center;
-  }
-
-  .pr-stat-number {
-    font-size: 26px;
-    font-weight: 700;
-    color: #534AB7;
+    gap: 14px;
+}
+.pr-stat {
+    background: var(--pr-white);
+    border: 1px solid var(--pr-border);
+    border-radius: var(--pr-radius);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: var(--pr-shadow);
+    transition: transform var(--pr-transition), box-shadow var(--pr-transition);
+}
+.pr-stat:hover { transform: translateY(-3px); box-shadow: var(--pr-shadow-lg); }
+.pr-stat__value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--ci-orange);
+    letter-spacing: -.03em;
     line-height: 1;
-    margin-bottom: 6px;
-  }
-
-  .pr-stat-label {
-    font-size: 12px;
-    color: #999;
-    font-weight: 500;
-  }
-
-  /* ── CARDS ── */
-  .pr-card {
-    background: white;
-    border: 0.5px solid #e8e8e8;
-    border-radius: 16px;
-    padding: 20px 22px;
-    margin-bottom: 14px;
-  }
-
-  .pr-card-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 14px;
-    border-bottom: 0.5px solid #f0f0f0;
-  }
-
-  .pr-card-icon {
-    width: 30px;
-    height: 30px;
-    background: #EEEDFE;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-
-  .pr-card-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #333;
-    letter-spacing: 0.01em;
-  }
-
-  /* ── INFO GRID ── */
-  .pr-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-  }
-
-  .pr-item {
-    background: #fafafa;
-    border: 0.5px solid #f0f0f0;
-    border-radius: 10px;
-    padding: 12px 14px;
-    transition: border-color 0.2s;
-  }
-
-  .pr-item:hover {
-    border-color: #d0cef5;
-  }
-
-  .pr-item-label {
-    font-size: 11px;
-    color: #bbb;
+}
+.pr-stat__label {
+    font-size: .75rem;
+    color: var(--pr-muted);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
-  }
+    letter-spacing: .04em;
+}
 
-  .pr-item-value {
-    font-size: 14px;
-    color: #111;
+/* ── Card ── */
+.pr-card {
+    background: var(--pr-white);
+    border: 1px solid var(--pr-border);
+    border-radius: var(--pr-radius);
+    padding: 22px 24px;
+    box-shadow: var(--pr-shadow);
+}
+.pr-card__header {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--pr-border);
+}
+.pr-card__title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--pr-text);
+    margin: 0;
+    padding-left: 10px;
+    border-left: 3px solid var(--ci-orange);
+}
+
+/* ── Info Grid ── */
+.pr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+.pr-item {
+    background: var(--pr-surface);
+    border: 1px solid var(--pr-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: border-color var(--pr-transition);
+}
+.pr-item:hover { border-color: #fcd9a0; }
+.pr-item__label {
+    font-size: .7rem;
+    color: var(--pr-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.pr-item__value {
+    font-size: .88rem;
+    color: var(--pr-text);
     font-weight: 500;
     word-break: break-word;
-  }
-
-  .pr-item-value.empty {
-    color: #ccc;
+}
+.pr-item__value--empty {
+    color: #C4C9D4;
     font-style: italic;
     font-weight: 400;
-  }
+}
 
-  /* ── VERIFICATION STATUS ── */
-  .pr-status {
+/* ── Statut ── */
+.pr-status {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 16px 18px;
-    border-radius: 12px;
-  }
-
-  .pr-status.verified {
-    background: #f0faf5;
-    border: 1px solid #b8e8d0;
-  }
-
-  .pr-status.pending {
-    background: #fffbf0;
-    border: 1px solid #f5dfa0;
-  }
-
-  .pr-status-icon {
-    width: 42px;
-    height: 42px;
+    border-radius: 10px;
+}
+.pr-status--ok {
+    background: var(--ci-green-lt);
+    border: 1px solid #a7d7b8;
+}
+.pr-status--pending {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+}
+.pr-status__icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
+    font-size: 1rem;
     font-weight: 700;
-  }
-
-  .verified .pr-status-icon {
-    background: #c8f0dc;
-    color: #0f7a45;
-  }
-
-  .pending .pr-status-icon {
-    background: #fde8a0;
-    color: #8a6200;
-  }
-
-  .pr-status-body {}
-
-  .pr-status-title {
-    font-size: 14px;
+}
+.pr-status--ok .pr-status__icon { background: #bbf0d0; color: var(--ci-green-dk); }
+.pr-status--pending .pr-status__icon { background: #FEF3C7; color: #92400E; }
+.pr-status__title {
+    font-size: .88rem;
     font-weight: 700;
-    color: #111;
-    margin-bottom: 3px;
-  }
+    color: var(--pr-text);
+    margin: 0 0 3px;
+}
+.pr-status__sub {
+    font-size: .78rem;
+    color: var(--pr-muted);
+    margin: 0;
+}
 
-  .pr-status-sub {
-    font-size: 12px;
-    color: #777;
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .pr-header {
-      flex-wrap: wrap;
-      padding: 22px;
-    }
-    .pr-edit-btn {
-      margin-left: 0;
-      width: 100%;
-      justify-content: center;
-    }
-    .pr-stats {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-    .pr-stat-number {
-      font-size: 20px;
-    }
-    .pr-name {
-      font-size: 18px;
-    }
-  }
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .pr-wrap { padding: 16px 16px 32px; }
+    .pr-header { flex-wrap: wrap; }
+    .pr-edit-btn { width: 100%; text-align: center; justify-content: center; }
+    .pr-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .pr-stat__value { font-size: 1.4rem; }
+}
 </style>
 
-<div class="pr-wrap">
-
-  <!-- HEADER -->
-  <div class="pr-header">
-    <div class="pr-avatar">
-      {% if profile.photo_profil %}
-        <img src="{{ profile.photo_profil.url }}" alt="Photo de profil">
-      {% else %}
-        👤
-      {% endif %}
-    </div>
-
-    <div class="pr-header-info">
-      <div class="pr-name">{{ request.user.first_name }} {{ request.user.last_name }}</div>
-      <div class="pr-username">@{{ request.user.username }}</div>
-      <div class="pr-badges">
-        <span class="pr-badge">{{ profile.get_role_display }}</span>
-        {% if profile.verified %}
-          <span class="pr-badge verified">✓ Vérifié</span>
-        {% endif %}
-      </div>
-    </div>
-
-    <a href="{% url 'accounts:edit_profil' %}" class="pr-edit-btn">
-      ✏ Modifier le profil
-    </a>
-  </div>
-
-  <!-- STATS -->
-  <div class="pr-stats">
-    <div class="pr-stat">
-      <div class="pr-stat-number">{{ nb_annonces|default:"0" }}</div>
-      <div class="pr-stat-label">Annonces</div>
-    </div>
-    <div class="pr-stat">
-      <div class="pr-stat-number">{{ nb_favoris|default:"0" }}</div>
-      <div class="pr-stat-label">Favoris</div>
-    </div>
-    <div class="pr-stat">
-      <div class="pr-stat-number">{{ nb_messages|default:"0" }}</div>
-      <div class="pr-stat-label">Messages</div>
-    </div>
-  </div>
-
-  <!-- INFOS PERSONNELLES -->
-  <div class="pr-card">
-    <div class="pr-card-header">
-      <div class="pr-card-icon">📋</div>
-      <div class="pr-card-title">Informations personnelles</div>
-    </div>
-    <div class="pr-grid">
-      <div class="pr-item">
-        <div class="pr-item-label">Email</div>
-        <div class="pr-item-value">{{ request.user.email|default:"—" }}</div>
-      </div>
-      <div class="pr-item">
-        <div class="pr-item-label">Téléphone</div>
-        <div class="pr-item-value {% if not profile.telephone %}empty{% endif %}">
-          {{ profile.telephone|default:"Non renseigné" }}
-        </div>
-      </div>
-      <div class="pr-item">
-        <div class="pr-item-label">Date de naissance</div>
-        <div class="pr-item-value {% if not profile.date_naissance %}empty{% endif %}">
-          {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
-        </div>
-      </div>
-      <div class="pr-item">
-        <div class="pr-item-label">Sexe</div>
-        <div class="pr-item-value {% if not profile.sexe %}empty{% endif %}">
-          {{ profile.get_sexe_display|default:"Non renseigné" }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- INFOS PROFIL -->
-  <div class="pr-card">
-    <div class="pr-card-header">
-      <div class="pr-card-icon">🏠</div>
-      <div class="pr-card-title">Informations du profil</div>
-    </div>
-    <div class="pr-grid">
-      <div class="pr-item">
-        <div class="pr-item-label">Type de profil</div>
-        <div class="pr-item-value">{{ profile.get_role_display }}</div>
-      </div>
-      <div class="pr-item">
-        <div class="pr-item-label">Profession</div>
-        <div class="pr-item-value {% if not profile.profession %}empty{% endif %}">
-          {{ profile.profession|default:"Non renseignée" }}
-        </div>
-      </div>
-      <div class="pr-item">
-        <div class="pr-item-label">Ville</div>
-        <div class="pr-item-value {% if not profile.ville %}empty{% endif %}">
-          {{ profile.ville|default:"Non renseignée" }}
-        </div>
-      </div>
-      <div class="pr-item">
-        <div class="pr-item-label">Quartier</div>
-        <div class="pr-item-value {% if not profile.quartier %}empty{% endif %}">
-          {{ profile.quartier|default:"Non renseigné" }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- STATUT -->
-  <div class="pr-card">
-    <div class="pr-card-header">
-      <div class="pr-card-icon">🛡</div>
-      <div class="pr-card-title">Statut de vérification</div>
-    </div>
-    {% if profile.verified %}
-      <div class="pr-status verified">
-        <div class="pr-status-icon">✓</div>
-        <div class="pr-status-body">
-          <div class="pr-status-title">Profil vérifié</div>
-          <div class="pr-status-sub">Vous pouvez publier des annonces sur la plateforme</div>
-        </div>
-      </div>
-    {% else %}
-      <div class="pr-status pending">
-        <div class="pr-status-icon">⏳</div>
-        <div class="pr-status-body">
-          <div class="pr-status-title">En attente de vérification</div>
-          <div class="pr-status-sub">L'administrateur vérifiera votre profil sous peu</div>
-        </div>
-      </div>
-    {% endif %}
-  </div>
-
-</div>
 {% endblock %}

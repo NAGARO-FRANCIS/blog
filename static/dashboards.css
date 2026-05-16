@@ -1,0 +1,424 @@
+/* =========================================
+   IVOIRE CONNECT - DASHBOARDS
+   Styles spécifiques pour les tableaux de bord
+   ========================================= */
+
+/* ========== LAYOUT GÉNÉRAL DES DASHBOARDS ========== */
+
+.dashboard-container {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.dashboard-sidebar {
+    flex: 0 0 250px;
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    height: fit-content;
+    position: sticky;
+    top: calc(var(--height-header) + var(--spacing-lg));
+}
+
+.dashboard-main {
+    flex: 1;
+}
+
+/* ========== MENU SIDEBAR ========== */
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu-item {
+    margin-bottom: var(--spacing-xs);
+}
+
+.sidebar-menu-item a {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+}
+
+.sidebar-menu-item a:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.sidebar-menu-item a.active {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+.sidebar-menu-item a i,
+.sidebar-menu-item a .icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========== SECTIONS DE DASHBOARD ========== */
+
+.dashboard-section {
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-section-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.dashboard-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-md);
+}
+
+.dashboard-section-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* ========== CARTES STATISTIQUES ========== */
+
+.stat-card {
+    background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.stat-card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-md);
+    font-size: var(--font-size-xl);
+}
+
+.stat-card-icon.primary {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.stat-card-icon.success {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.stat-card-icon.danger {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.stat-card-icon.warning {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.stat-card-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.stat-card-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.stat-card-change {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.stat-card-change.positive {
+    color: var(--success);
+}
+
+.stat-card-change.negative {
+    color: var(--danger);
+}
+
+/* ========== GRILLE DE STATISTIQUES ========== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* ========== TABLEAUX DASHBOARD ========== */
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-lg);
+}
+
+.dashboard-table thead {
+    background-color: var(--gray-100);
+}
+
+.dashboard-table th {
+    padding: var(--spacing-md);
+    text-align: left;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    border: none;
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-table td {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: var(--gray-50);
+}
+
+.dashboard-table tbody tr.active {
+    background-color: var(--primary-light);
+}
+
+/* ========== ACTIONS TABLEAU ========== */
+
+.table-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.table-actions .btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-xs);
+}
+
+/* ========== GRAPHIQUES ========== */
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.chart-container canvas {
+    max-height: 100%;
+}
+
+/* ========== FILTRES ========== */
+
+.dashboard-filters {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.dashboard-filters .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-button {
+    align-self: flex-end;
+}
+
+/* ========== LISTE D'ÉLÉMENTS ========== */
+
+.dashboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard-list-item {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-base);
+}
+
+.dashboard-list-item:hover {
+    background-color: var(--gray-50);
+}
+
+.dashboard-list-item:last-child {
+    border-bottom: none;
+}
+
+.dashboard-list-item-info {
+    flex: 1;
+}
+
+.dashboard-list-item-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.dashboard-list-item-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.dashboard-list-item-meta {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-left: auto;
+    text-align: right;
+}
+
+/* ========== STATUTS ========== */
+
+.status-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active,
+.status-badge.published {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.status-badge.inactive,
+.status-badge.draft {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.status-badge.pending {
+    background-color: var(--info-light);
+    color: var(--info);
+}
+
+.status-badge.deleted,
+.status-badge.archived {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+/* ========== ONGLETS DASHBOARD ========== */
+
+.dashboard-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+    gap: 0;
+}
+
+.dashboard-tabs button,
+.dashboard-tabs a {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.dashboard-tabs button:hover,
+.dashboard-tabs a:hover {
+    color: var(--text-primary);
+}
+
+.dashboard-tabs button.active,
+.dashboard-tabs a.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .dashboard-sidebar {
+        flex: 1;
+        position: static;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-table {
+        font-size: var(--font-size-xs);
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        padding: var(--spacing-sm);
+    }
+
+    .dashboard-filters {
+        flex-direction: column;
+    }
+
+    .dashboard-filters .form-group {
+        min-width: auto;
+    }
+
+    .table-actions {
+        flex-direction: column;
+    }
+}

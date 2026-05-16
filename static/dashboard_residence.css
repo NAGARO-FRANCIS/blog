@@ -1,0 +1,672 @@
+/* ========================================
+   DASHBOARD RÉSIDENCE - STYLES PROFESSIONNELS
+   Green Theme #10b981
+   ======================================== */
+
+.dashboard-residence {
+    background: #f0fdf4;
+}
+
+.dashboard-residence .dashboard-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    padding: 50px 30px;
+    border-radius: 0 0 25px 25px;
+    color: white;
+    box-shadow: 0 10px 32px rgba(16, 185, 129, 0.2);
+}
+
+.dashboard-residence .dashboard-header h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    letter-spacing: -0.02em;
+}
+
+.dashboard-residence .dashboard-header p {
+    font-size: 1.15rem;
+    opacity: 0.95;
+    margin: 0;
+}
+
+/* Professional Stats Bar */
+.dashboard-residence .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: -35px 20px 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.dashboard-residence .stat-item {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+    transition: all 0.3s ease;
+    border-left: 4px solid #10b981;
+}
+
+.dashboard-residence .stat-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+}
+
+.dashboard-residence .stat-icon {
+    font-size: 2.5rem;
+}
+
+.dashboard-residence .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.dashboard-residence .stat-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Professional Info Section */
+.dashboard-residence .pro-info {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #10b981;
+}
+
+.dashboard-residence .pro-info h2 {
+    color: #059669;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.dashboard-residence .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.dashboard-residence .info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dashboard-residence .info-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.dashboard-residence .info-value {
+    font-size: 1.15rem;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+/* Quick Actions */
+.dashboard-residence .quick-actions {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-residence .quick-actions h2 {
+    color: #059669;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.dashboard-residence .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-residence .action-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 2px solid #d1fae5;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.dashboard-residence .action-card:hover {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.15);
+}
+
+.dashboard-residence .action-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.dashboard-residence .action-title {
+    color: #059669;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.dashboard-residence .action-desc {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* Info Box */
+.dashboard-residence .info-box {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 40px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    border-left: 4px solid;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-residence .info-box.warning {
+    border-left-color: #f59e0b;
+    background: #fefce8;
+}
+
+.dashboard-residence .info-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.dashboard-residence .info-content h3 {
+    color: #059669;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.dashboard-residence .info-content p {
+    color: #6b7280;
+    margin-bottom: 15px;
+}
+
+/* Features Section */
+.dashboard-residence .features {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-residence .features h2 {
+    color: #059669;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+}
+
+.dashboard-residence .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.dashboard-residence .feature-item {
+    text-align: center;
+    padding: 20px;
+    border-radius: 12px;
+    background: #f0fdf4;
+    border: 2px solid #d1fae5;
+    transition: all 0.3s ease;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+
+.dashboard-residence .feature-item:hover {
+    border-color: #10b981;
+    background: #ecfdf5;
+}
+
+.dashboard-residence .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.dashboard-residence .feature-item h4 {
+    color: #059669;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.dashboard-residence .feature-item p {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   Performance Metrics Section (Green Theme)
+   ======================================== */
+.dashboard-residence .performance-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.dashboard-residence .metric-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+    border-top: 3px solid #10b981;
+    transition: all 0.3s ease;
+}
+
+.dashboard-residence .metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+}
+
+.dashboard-residence .metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.dashboard-residence .metric-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-residence .metric-icon {
+    font-size: 1.2rem;
+}
+
+.dashboard-residence .metric-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #10b981;
+    margin-bottom: 10px;
+}
+
+.dashboard-residence .metric-bar {
+    background: #f0f0f0;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.dashboard-residence .metric-progress {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.3s ease;
+}
+
+.dashboard-residence .metric-trend {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #10b981;
+}
+
+.dashboard-residence .metric-reviews,
+.dashboard-residence .metric-availability {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+/* ========================================
+   Recent Sections (Green Theme)
+   ======================================== */
+.dashboard-residence .recent-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.dashboard-residence .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #10b981;
+}
+
+.dashboard-residence .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a2332;
+    margin: 0;
+}
+
+.dashboard-residence .view-all-link {
+    color: #10b981;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.dashboard-residence .view-all-link:hover {
+    color: #059669;
+}
+
+.dashboard-residence .reservations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.dashboard-residence .reservation-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
+    border-left: 3px solid #10b981;
+    border-radius: 8px;
+}
+
+.dashboard-residence .reservation-guest {
+    font-weight: 600;
+    color: #1a2332;
+}
+
+.dashboard-residence .reservation-dates {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.dashboard-residence .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard-residence .status-badge.confirmed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.dashboard-residence .status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.dashboard-residence .status-badge.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.dashboard-residence .reservation-amount {
+    font-weight: 700;
+    color: #10b981;
+    font-size: 1.1rem;
+    text-align: right;
+}
+
+.dashboard-residence .clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-residence .client-card {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dashboard-residence .client-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.15);
+}
+
+.dashboard-residence .client-avatar {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.dashboard-residence .client-name {
+    font-weight: 600;
+    color: #1a2332;
+    margin-bottom: 8px;
+}
+
+.dashboard-residence .client-visits {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.dashboard-residence .client-rating {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.dashboard-residence .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.dashboard-residence .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.dashboard-residence .empty-state p {
+    color: #6b7280;
+}
+
+/* Reviews & Alerts */
+.dashboard-residence .reviews-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.dashboard-residence .reviews-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dashboard-residence .review-item {
+    padding: 20px;
+    background: #f9fafb;
+    border-left: 3px solid #10b981;
+    border-radius: 8px;
+}
+
+.dashboard-residence .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.dashboard-residence .review-author {
+    font-weight: 600;
+    color: #1a2332;
+}
+
+.dashboard-residence .review-rating {
+    color: #10b981;
+    letter-spacing: 2px;
+}
+
+.dashboard-residence .review-date {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.dashboard-residence .review-text {
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.dashboard-residence .alerts-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.dashboard-residence .alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.dashboard-residence .alert-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 15px;
+    align-items: center;
+    padding: 15px 20px;
+    border-left: 3px solid;
+    border-radius: 8px;
+}
+
+.dashboard-residence .alert-item.alert-success {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+}
+
+.dashboard-residence .alert-item.alert-info {
+    background: #f0f9ff;
+    border-left-color: #0ea5e9;
+}
+
+.dashboard-residence .alert-item.alert-warning {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+}
+
+.dashboard-residence .alert-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.dashboard-residence .alert-content {
+    margin: 0;
+}
+
+.dashboard-residence .alert-title {
+    font-weight: 600;
+    color: #1a2332;
+    margin-bottom: 4px;
+}
+
+.dashboard-residence .alert-message {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.dashboard-residence .alert-time {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-residence .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-residence .dashboard-header h1 {
+        font-size: 2rem;
+    }
+
+    .dashboard-residence .pro-info,
+    .dashboard-residence .quick-actions,
+    .dashboard-residence .features {
+        padding: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-residence .stats-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-residence .dashboard-header {
+        padding: 30px 15px;
+    }
+
+    .dashboard-residence .dashboard-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .dashboard-residence .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Buttons */
+.dashboard-residence .btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+}
+
+.dashboard-residence .btn-primary {
+    background: #10b981;
+    color: white;
+}
+
+.dashboard-residence .btn-primary:hover {
+    background: #059669;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.dashboard-residence .btn-small {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+}

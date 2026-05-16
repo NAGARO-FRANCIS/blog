@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inscription - {{ role_label }} - Ivoire Connect{% endblock %}
+
+{% block content %}
+
+<div class="signup-page">
+
+    <!-- HEADER -->
+    <div class="signup-header">
+        <h1>📝 Créer mon compte 🇨🇮</h1>
+        <p>Rejoignez Ivoire Connect et trouvez votre logement facilement</p>
+
+        <div class="role-badge">
+            {% if role == 'proprietaire' %}
+                🏠 Propriétaire
+            {% elif role == 'locataire' %}
+                🔑 Locataire
+            {% else %}
+                👥 Colocataire
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="signup-container">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <!-- AUTH -->
+            <div class="form-section">
+                <h2>🔐 Compte</h2>
+
+                <div class="grid">
+                    <div>
+                        <label>Username</label>
+                        {{ form.username }}
+                    </div>
+
+                    <div>
+                        <label>Email</label>
+                        {{ form.email }}
+                    </div>
+
+                    <div>
+                        <label>Mot de passe</label>
+                        {{ form.password1 }}
+                    </div>
+
+                    <div>
+                        <label>Confirmation</label>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERSONAL -->
+            <div class="form-section">
+                <h2>👤 Informations personnelles</h2>
+
+                <div class="grid">
+                    <div>
+                        <label>Nom</label>
+                        {{ form.first_name }}
+                    </div>
+
+                    <div>
+                        <label>Prénom</label>
+                        {{ form.last_name }}
+                    </div>
+
+                    <div>
+                        <label>Date de naissance</label>
+                        {{ form.date_naissance }}
+                    </div>
+
+                    <div>
+                        <label>Sexe</label>
+                        {{ form.sexe }}
+                    </div>
+
+                    <div class="full">
+                        <label>Profession</label>
+                        {{ form.profession }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOCATION -->
+            <div class="form-section">
+                <h2>📍 Localisation</h2>
+
+                <div class="grid">
+                    <div>
+                        <label>Ville</label>
+                        {{ form.ville }}
+                    </div>
+
+                    <div>
+                        <label>Quartier</label>
+                        {{ form.quartier }}
+                    </div>
+
+                    <div class="full">
+                        <label>Téléphone</label>
+                        {{ form.telephone }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ID -->
+            <div class="form-section">
+                <h2>🪪 Identité</h2>
+
+                <div class="grid">
+                    <div>
+                        <label>Type pièce</label>
+                        {{ form.type_piece_identite }}
+                    </div>
+
+                    <div>
+                        <label>Numéro</label>
+                        {{ form.numero_piece_identite }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PHOTO -->
+            <div class="form-section">
+                <h2>📷 Photo de profil</h2>
+
+                {{ form.photo_profil }}
+                <small>Ajoutez une photo claire pour votre profil</small>
+            </div>
+
+            <!-- INFO -->
+            <div class="info-box">
+                ℹ️ En créant un compte, vous acceptez nos conditions d’utilisation.
+            </div>
+
+            <!-- BUTTONS -->
+            <button type="submit" class="btn-primary">
+                ✅ Créer mon compte
+            </button>
+
+            <a href="{% url 'accounts:inscription_individu' %}" class="btn-secondary">
+                ← Retour
+            </a>
+
+        </form>
+
+    </div>
+</div>
+
+<style>
+
+:root {
+    --ci-orange: #f77f00;
+    --ci-white: #ffffff;
+    --ci-green: #009e60;
+    --dark: #1e1e2f;
+    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* PAGE */
+.signup-page {
+    background: linear-gradient(135deg, #f8f9fb, #ffffff);
+    min-height: 100vh;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+.signup-header {
+    background: linear-gradient(90deg, var(--ci-orange), var(--ci-white), var(--ci-green));
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.signup-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.signup-header::after {
+    content: "🇨🇮";
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 70px;
+    opacity: 0.2;
+}
+
+/* ROLE BADGE */
+.role-badge {
+    margin-top: 10px;
+    display: inline-block;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 50px;
+    font-weight: bold;
+}
+
+/* CONTAINER */
+.signup-container {
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+/* FORM */
+form {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+
+/* SECTIONS */
+.form-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.form-section h2 {
+    font-size: 18px;
+    border-left: 5px solid var(--ci-orange);
+    padding-left: 10px;
+    color: var(--ci-green);
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.full {
+    grid-column: span 2;
+}
+
+/* INPUTS */
+label {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-top: 5px;
+}
+
+input:focus, select:focus {
+    border-color: var(--ci-orange);
+    outline: none;
+}
+
+/* BUTTONS */
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(90deg, var(--ci-orange), var(--ci-green));
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    color: var(--ci-green);
+    text-decoration: none;
+}
+
+/* INFO BOX */
+.info-box {
+    background: #e8fff3;
+    padding: 10px;
+    border-left: 5px solid var(--ci-green);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+/* ALERT */
+.alert.danger {
+    background: #ffe5e5;
+    padding: 10px;
+    border-left: 5px solid red;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: span 1;
+    }
+}
+
+</style>
+
+{% endblock %}

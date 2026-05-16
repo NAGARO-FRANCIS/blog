@@ -1,0 +1,414 @@
+/* =========================================
+   IVOIRE CONNECT - RESPONSIVE & MEDIA QUERIES
+   Design réactif pour tous les appareils
+   ========================================= */
+
+/* ========== BREAKPOINTS ========== */
+
+/* 
+    xs: 0 - 576px (téléphones)
+    sm: 576px - 768px (petites tablettes)
+    md: 768px - 992px (tablettes)
+    lg: 992px - 1200px (petits écrans)
+    xl: 1200px+ (grands écrans)
+*/
+
+/* ========== MEDIUM SCREENS (768px) ========== */
+
+@media (max-width: 768px) {
+    /* Conteneurs */
+    .container,
+    .container-sm,
+    .container-lg {
+        padding-left: var(--spacing-md);
+        padding-right: var(--spacing-md);
+    }
+
+    /* Grille */
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Typographie */
+    h1 { font-size: var(--font-size-2xl); }
+    h2 { font-size: var(--font-size-xl); }
+    h3 { font-size: var(--font-size-lg); }
+
+    /* Flexbox responsif */
+    .flex-md-col {
+        flex-direction: column;
+    }
+
+    .flex-md-row {
+        flex-direction: row;
+    }
+
+    /* Affichage responsif */
+    .d-md-none {
+        display: none;
+    }
+
+    .d-md-block {
+        display: block;
+    }
+
+    .d-md-flex {
+        display: flex;
+    }
+
+    /* Espacements responsifs */
+    .p-md-sm { padding: var(--spacing-sm); }
+    .p-md-md { padding: var(--spacing-md); }
+    .p-md-lg { padding: var(--spacing-lg); }
+
+    .m-md-sm { margin: var(--spacing-sm); }
+    .m-md-md { margin: var(--spacing-md); }
+    .m-md-lg { margin: var(--spacing-lg); }
+
+    /* Texte */
+    .text-md-center { text-align: center; }
+    .text-md-left { text-align: left; }
+    .text-md-right { text-align: right; }
+
+    /* Formulaires */
+    .form-row-2,
+    .form-row-3,
+    .form-row-4 {
+        grid-template-columns: 1fr;
+    }
+
+    /* Boutons */
+    .btn-block-md {
+        width: 100%;
+    }
+}
+
+/* ========== SMALL SCREENS (576px) ========== */
+
+@media (max-width: 576px) {
+    /* Conteneurs */
+    .container,
+    .container-sm,
+    .container-lg {
+        padding-left: var(--spacing-sm);
+        padding-right: var(--spacing-sm);
+    }
+
+    /* Typographie */
+    h1 { font-size: var(--font-size-xl); }
+    h2 { font-size: var(--font-size-lg); }
+    h3 { font-size: var(--font-size-base); }
+    h4, h5, h6 { font-size: var(--font-size-sm); }
+
+    /* Espacements */
+    .grid { gap: var(--spacing-md); }
+    
+    .p-sm-0 { padding: 0; }
+    .p-sm-xs { padding: var(--spacing-xs); }
+    .p-sm-sm { padding: var(--spacing-sm); }
+
+    .m-sm-0 { margin: 0; }
+    .m-sm-xs { margin: var(--spacing-xs); }
+    .m-sm-sm { margin: var(--spacing-sm); }
+
+    /* Affichage */
+    .d-sm-none {
+        display: none;
+    }
+
+    .d-sm-block {
+        display: block;
+    }
+
+    .d-sm-flex {
+        display: flex;
+    }
+
+    /* Flexbox */
+    .flex-sm-col {
+        flex-direction: column;
+    }
+
+    .flex-sm-row {
+        flex-direction: row;
+    }
+
+    .gap-sm-0 { gap: 0; }
+    .gap-sm-xs { gap: var(--spacing-xs); }
+    .gap-sm-sm { gap: var(--spacing-sm); }
+
+    /* Texte */
+    .text-sm-center { text-align: center; }
+    .text-sm-left { text-align: left; }
+
+    /* Cards */
+    .card {
+        border-radius: var(--radius-md);
+    }
+
+    /* Boutons */
+    .btn {
+        padding: var(--spacing-xs) var(--spacing-md);
+        font-size: var(--font-size-sm);
+        width: 100%;
+    }
+
+    .btn-block-sm {
+        width: 100%;
+    }
+
+    /* Formulaires */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group.form-group-row {
+        flex-direction: column;
+    }
+
+    .form-group-row label {
+        min-width: auto;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px; /* Évite le zoom sur iOS */
+    }
+
+    /* Tableaux */
+    .dashboard-table {
+        font-size: var(--font-size-xs);
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        padding: var(--spacing-xs);
+    }
+
+    /* Navigation */
+    .navbar {
+        height: auto;
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    /* Listes */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Alertes */
+    .alert {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+}
+
+/* ========== LARGE SCREENS (1200px) ========== */
+
+@media (min-width: 1200px) {
+    /* Grille large */
+    .grid-lg-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-lg-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-lg-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Affichage large */
+    .d-lg-none {
+        display: none;
+    }
+
+    .d-lg-block {
+        display: block;
+    }
+
+    .d-lg-flex {
+        display: flex;
+    }
+
+    /* Espacements large */
+    .p-lg-xl { padding: var(--spacing-xl); }
+    .p-lg-2xl { padding: var(--spacing-2xl); }
+
+    .m-lg-xl { margin: var(--spacing-xl); }
+    .m-lg-2xl { margin: var(--spacing-2xl); }
+
+    /* Texte large */
+    .text-lg-center { text-align: center; }
+    .text-lg-right { text-align: right; }
+}
+
+/* ========== PORTRAIT vs LANDSCAPE ========== */
+
+@media (orientation: portrait) {
+    .landscape-only {
+        display: none;
+    }
+}
+
+@media (orientation: landscape) {
+    .portrait-only {
+        display: none;
+    }
+}
+
+/* ========== RETINA DISPLAYS ========== */
+
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* ========== DARK MODE (si implémenté) ========== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-body: #1a1a1a;
+        --bg-surface: #2d2d2d;
+        --text-primary: #f5f5f5;
+        --text-secondary: #b0b0b0;
+        --border-color: #404040;
+    }
+
+    body {
+        background-color: var(--bg-body);
+        color: var(--text-primary);
+    }
+
+    .card,
+    .dashboard-section {
+        background-color: var(--bg-surface);
+    }
+}
+
+/* ========== ACCESSIBILITÉ - MOUVEMENT RÉDUIT ========== */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ========== ACCESSIBILITÉ - CONTRASTE FORCÉ ========== */
+
+@media (prefers-contrast: more) {
+    body {
+        font-weight: 600;
+    }
+
+    button,
+    a {
+        border: 2px solid;
+    }
+}
+
+/* ========== IMPRESSION ========== */
+
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+
+    header,
+    footer,
+    .navbar,
+    .sidebar,
+    .no-print {
+        display: none;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+
+    .btn,
+    .card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+    }
+
+    main {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+}
+
+/* ========== UTILITAIRES RESPONSIFS ========== */
+
+.hide-on-mobile {
+    @media (max-width: 768px) {
+        display: none !important;
+    }
+}
+
+.hide-on-tablet {
+    @media (min-width: 576px) and (max-width: 992px) {
+        display: none !important;
+    }
+}
+
+.hide-on-desktop {
+    @media (min-width: 993px) {
+        display: none !important;
+    }
+}
+
+.show-on-mobile {
+    @media (min-width: 769px) {
+        display: none !important;
+    }
+}
+
+.show-on-tablet {
+    @media (max-width: 575px),
+           (min-width: 993px) {
+        display: none !important;
+    }
+}
+
+.show-on-desktop {
+    @media (max-width: 992px) {
+        display: none !important;
+    }
+}
+
+/* ========== FULL WIDTH RESPONSIVE ========== */
+
+.full-width {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.full-width-container {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+}

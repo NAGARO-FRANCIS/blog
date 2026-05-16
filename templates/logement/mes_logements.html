@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Logements - Gestion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 40px 30px;
+        margin-bottom: 30px;
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .logements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    
+    .logement-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .logement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+    }
+    
+    .logement-image {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+    }
+    
+    .logement-content {
+        padding: 20px;
+    }
+    
+    .logement-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1a2332;
+        margin-bottom: 8px;
+    }
+    
+    .logement-type {
+        display: inline-block;
+        background: #d1fae5;
+        color: #065f46;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .logement-info {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 15px;
+        line-height: 1.6;
+    }
+    
+    .logement-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 8px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        text-align: center;
+    }
+    
+    .btn-edit {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #059669;
+    }
+    
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+    
+    .empty-text {
+        color: #6b7280;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+    
+    .empty-state a {
+        display: inline-block;
+        background: #10b981;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🏠 Mes Logements</h1>
+    <p>Gestion de vos propriétés - Total: {{ total }} logement(s)</p>
+</div>
+
+<div class="container">
+    {% if logements %}
+    <div class="logements-grid">
+        {% for logement in logements %}
+        <div class="logement-card">
+            <div class="logement-image">
+                {% if logement.photos.all %}
+                    <img src="{{ logement.photos.first.image.url }}" alt="{{ logement.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    🏠
+                {% endif %}
+            </div>
+            <div class="logement-content">
+                <h3 class="logement-title">{{ logement.titre }}</h3>
+                <span class="logement-type">{{ logement.type_logement|title }}</span>
+                <div class="logement-info">
+                    <div>📍 {{ logement.ville }}, {{ logement.quartier }}</div>
+                    <div>💰 {{ logement.prix }} FCFA/mois</div>
+                </div>
+                <div class="logement-actions">
+                    <a href="#" class="btn btn-edit">✏️ Modifier</a>
+                    <a href="#" class="btn btn-delete">🗑️ Supprimer</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🏠</div>
+        <p class="empty-text">Aucun logement trouvé</p>
+        <a href="{% url 'logement:ajouter_logement' %}">+ Ajouter votre premier logement</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

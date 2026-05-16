@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendrier des Réservations{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 40px 30px;
+        margin-bottom: 30px;
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    .content-section {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+    
+    .coming-soon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #d97706;
+        margin-bottom: 10px;
+    }
+    
+    .section-desc {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .back-link {
+        display: inline-block;
+        background: #f59e0b;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+        background: #d97706;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📅 Calendrier des Réservations</h1>
+    <p>Visualisez et gérez vos réservations de manière visuelle</p>
+</div>
+
+<div class="container">
+    <div class="content-section">
+        <div class="coming-soon">📆</div>
+        <h2 class="section-title">Calendrier Interactif</h2>
+        <p class="section-desc">
+            Bientôt disponible: Un calendrier interactif pour voir tous vos réservations,<br>
+            ajouter des événements, et gérer les disponibilités de vos propriétés.
+        </p>
+        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
+    </div>
+</div>
+{% endblock %}

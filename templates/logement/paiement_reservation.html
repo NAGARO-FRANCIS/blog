@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Paiement - Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="mb-4">Paiement de votre réservation</h1>
+
+            <div class="row">
+                <!-- Détails de la réservation (Gauche) -->
+                <div class="col-md-6">
+                    <div class="reservation-summary p-3 bg-light rounded mb-4">
+                        <h5>Résumé de votre réservation</h5>
+                        
+                        <div class="summary-item">
+                            <strong>{{ reservation.logement.titre }}</strong>
+                        </div>
+                        
+                        <div class="summary-item mt-2">
+                            <p class="mb-1"><small>Client:</small> {{ reservation.client_nom }}</p>
+                            <p class="mb-1"><small>Email:</small> {{ reservation.client_email }}</p>
+                            <p class="mb-1"><small>Téléphone:</small> {{ reservation.client_telephone }}</p>
+                        </div>
+                        
+                        <div class="summary-item mt-2 border-top pt-2">
+                            <p class="mb-1"><small>Arrivée:</small> <strong>{{ reservation.date_arrivee|date:'d/m/Y' }}</strong></p>
+                            <p class="mb-1"><small>Départ:</small> <strong>{{ reservation.date_depart|date:'d/m/Y' }}</strong></p>
+                            <p class="mb-1"><small>Nombre de nuits:</small> <strong>{{ reservation.nombre_nuits }}</strong></p>
+                        </div>
+                        
+                        <div class="summary-item mt-3 p-2 bg-white rounded border">
+                            <p class="mb-1">
+                                <small>Prix par nuit:</small>
+                                <strong class="float-end">{{ reservation.prix_par_nuit|floatformat:0 }} FCFA</strong>
+                            </p>
+                            <p class="mb-1">
+                                <small>Subtotal:</small>
+                                <strong class="float-end">{{ reservation.prix_total|floatformat:0 }} FCFA</strong>
+                            </p>
+                            {% if reservation.frais_service > 0 %}
+                                <p class="mb-1">
+                                    <small>Frais service:</small>
+                                    <strong class="float-end">{{ reservation.frais_service|floatformat:0 }} FCFA</strong>
+                                </p>
+                            {% endif %}
+                            {% if reservation.frais_nettoyage_reservation > 0 %}
+                                <p class="mb-1">
+                                    <small>Frais nettoyage:</small>
+                                    <strong class="float-end">{{ reservation.frais_nettoyage_reservation|floatformat:0 }} FCFA</strong>
+                                </p>
+                            {% endif %}
+                            <hr>
+                            <p class="mb-0">
+                                <strong>TOTAL:</strong>
+                                <strong class="float-end text-success" style="font-size: 1.3rem;">
+                                    {{ reservation.montant_final|floatformat:0 }} FCFA
+                                </strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire de paiement Stripe (Droite) -->
+                <div class="col-md-6">
+                    <div class="payment-form p-3 bg-white rounded border">
+                        <h5 class="mb-3">Paiement par Carte Bancaire</h5>
+                        
+                        <form id="payment-form" method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Stripe Card Element -->
+                            <div id="card-element" class="form-control mb-3" style="height: 40px; padding-top: 10px;"></div>
+                            <div id="card-errors" class="alert alert-danger d-none" role="alert"></div>
+                            
+                            <!-- Informations client -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" value="{{ reservation.client_email }}" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="name" value="{{ reservation.client_nom }}" readonly>
+                            </div>
+                            
+                            <!-- Bouton paiement -->
+                            <button type="submit" id="submit-btn" class="btn btn-success btn-lg w-100">
+                                💳 Payer {{ reservation.montant_final|floatformat:0 }} FCFA
+                            </button>
+                            
+                            <div id="payment-message" class="mt-3"></div>
+                        </form>
+                        
+                        <!-- Info supplémentaire -->
+                        <div class="mt-3 text-muted small">
+                            <p>🔒 Paiement sécurisé par Stripe</p>
+                            <p>Vos données bancaires sont protégées</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Options de paiement alternatives -->
+                    <div class="mt-4">
+                        <p class="text-center text-muted small">
+                            Vous pouvez également payer par virement bancaire ou à l'arrivée.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Configuration Stripe
+    const stripe = Stripe("{{ stripe_public_key }}");
+    const elements = stripe.elements();
+    const cardElement = elements.create("card");
+    cardElement.mount("#card-element");
+    
+    // Gestion des erreurs de saisie
+    cardElement.addEventListener("change", function(event) {
+        const displayError = document.getElementById("card-errors");
+        if (event.error) {
+            displayError.textContent = event.error.message;
+            displayError.classList.remove("d-none");
+        } else {
+            displayError.classList.add("d-none");
+        }
+    });
+    
+    // Traitement du formulaire
+    document.getElementById("payment-form").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById("submit-btn");
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "⏳ Traitement...";
+        
+        // Créer le payment intent côté serveur (TODO: implémenter endpoint)
+        try {
+            // TODO: Appeler API pour créer payment intent
+            // const response = await fetch("/api/create-payment-intent/", { ... });
+            // const data = await response.json();
+            
+            // Confirmez le paiement avec Stripe
+            // const result = await stripe.confirmCardPayment(data.clientSecret, {...});
+            
+            alert("✅ Paiement réussi (TODO: intégration Stripe complète)");
+            // Rediriger après succès
+            // window.location.href = "/reservation/success/";
+        } catch (error) {
+            document.getElementById("payment-message").innerHTML = 
+                '<div class="alert alert-danger">Erreur: ' + error.message + '</div>';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '💳 Payer {{ reservation.montant_final|floatformat:0 }} FCFA';
+        }
+    });
+</script>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 var(--spacing-lg);
+    }
+
+    .mt-5 {
+        margin-top: var(--spacing-2xl);
+    }
+
+    .mb-4 {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-dark);
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+    }
+
+    @media (min-width: 768px) {
+        .row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .col-lg-8 {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    @media (min-width: 992px) {
+        .col-lg-8 {
+            max-width: 900px;
+        }
+    }
+
+    .col-md-6 {
+        width: 100%;
+    }
+
+    /* Résumé de réservation */
+    .reservation-summary {
+        background: white;
+        border-radius: 12px;
+        padding: var(--spacing-xl);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--color-primary);
+    }
+
+    .reservation-summary h5 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-dark);
+    }
+
+    .summary-item {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .summary-item small {
+        color: var(--color-secondary);
+    }
+
+    .summary-item strong {
+        color: var(--color-dark);
+    }
+
+    .summary-item p {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .border-top {
+        border-top: 1px solid var(--color-light);
+    }
+
+    .pt-2 {
+        padding-top: var(--spacing-sm);
+    }
+
+    .bg-white {
+        background-color: white;
+    }
+
+    .bg-light {
+        background-color: var(--color-light);
+    }
+
+    .p-2 {
+        padding: var(--spacing-sm);
+    }
+
+    .p-3 {
+        padding: var(--spacing-md);
+    }
+
+    .mt-2 {
+        margin-top: var(--spacing-sm);
+    }
+
+    .mt-3 {
+        margin-top: var(--spacing-md);
+    }
+
+    .border {
+        border: 1px solid var(--color-light);
+    }
+
+    .rounded {
+        border-radius: 8px;
+    }
+
+    .text-success {
+        color: var(--color-success);
+    }
+
+    /* Formulaire de paiement */
+    .payment-form {
+        background: white;
+        border-radius: 12px;
+        padding: var(--spacing-xl);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .payment-form h5 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-dark);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 2px solid var(--color-light);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all var(--transition-base);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .form-control[readonly] {
+        background-color: var(--color-light);
+        cursor: not-allowed;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 600;
+        color: var(--color-dark);
+    }
+
+    .mb-3 {
+        margin-bottom: var(--spacing-md);
+    }
+
+    #card-element {
+        border: 2px solid var(--color-light);
+        border-radius: 8px;
+        background-color: white;
+        padding: var(--spacing-md) !important;
+    }
+
+    /* Bouton paiement */
+    .btn {
+        display: inline-block;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all var(--transition-base);
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-success {
+        background-color: var(--color-success);
+        color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+        background-color: #20c997;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-success:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-lg {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        font-size: 1rem;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    /* Alertes */
+    .alert {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: 8px;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .d-none {
+        display: none;
+    }
+
+    .alert {
+        border: 1px solid transparent;
+    }
+
+    /* Messages */
+    #payment-message {
+        margin-top: var(--spacing-lg);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-muted {
+        color: var(--color-secondary);
+    }
+
+    .small {
+        font-size: 0.875rem;
+    }
+
+    .float-end {
+        float: right;
+    }
+
+    .mt-4 {
+        margin-top: var(--spacing-lg);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        .row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

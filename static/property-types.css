@@ -1,0 +1,429 @@
+/* ========== PROPERTY TYPE STYLING ========== */
+/* Système professionnel pour distinguer Hotel, Résidence, et Individu */
+
+/* ========== COULEURS PAR TYPE ========== */
+
+.property-type-hotel {
+    --type-color: #ff6b35;
+    --type-color-light: #ffe8d6;
+    --type-color-dark: #d94a1f;
+    --type-gradient: linear-gradient(135deg, #ff6b35 0%, #d94a1f 100%);
+}
+
+.property-type-residence {
+    --type-color: #4f46e5;
+    --type-color-light: #eef2ff;
+    --type-color-dark: #3730a3;
+    --type-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+}
+
+.property-type-individu {
+    --type-color: #10b981;
+    --type-color-light: #d1fae5;
+    --type-color-dark: #059669;
+    --type-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+/* ========== PROPERTY CARDS - TYPE SPECIFIC ========== */
+
+.property-card {
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-base);
+}
+
+/* Top gradient bar by type */
+.property-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--type-color);
+    z-index: 10;
+}
+
+/* Type badge */
+.property-type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    border-radius: 50px;
+    background: var(--type-gradient);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.property-type-badge::before {
+    content: attr(data-icon);
+    font-size: 1.2rem;
+}
+
+.property-type-badge.hotel::before {
+    content: '🏨';
+}
+
+.property-type-badge.residence::before {
+    content: '🏢';
+}
+
+.property-type-badge.individu::before {
+    content: '🏠';
+}
+
+/* Owner info with type indicator */
+.property-owner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--type-color-light);
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.property-owner-info {
+    flex: 1;
+}
+
+.property-owner-name {
+    font-weight: 600;
+    color: var(--type-color-dark);
+    font-size: 0.95rem;
+}
+
+.property-owner-type {
+    font-size: 0.8rem;
+    color: var(--type-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.property-owner-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--type-gradient);
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== FILTER TABS ========== */
+
+.property-filter-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.property-filter-tab {
+    padding: 10px 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 50px;
+    background: white;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.property-filter-tab:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
+.property-filter-tab.active {
+    background: var(--type-gradient);
+    color: white;
+    border-color: var(--type-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.property-filter-tab.all {
+    --type-color: #6b7280;
+    --type-gradient: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.property-filter-tab.all.active {
+    background: var(--type-gradient);
+}
+
+/* Tab icons */
+.property-filter-tab::before {
+    font-size: 1.2rem;
+}
+
+.property-filter-tab.all::before {
+    content: '✨';
+}
+
+.property-filter-tab.hotel::before {
+    content: '🏨';
+}
+
+.property-filter-tab.residence::before {
+    content: '🏢';
+}
+
+.property-filter-tab.individu::before {
+    content: '🏠';
+}
+
+/* ========== PROPERTY TYPE SECTIONS ========== */
+
+.properties-section {
+    margin-bottom: 48px;
+}
+
+.properties-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--type-color);
+}
+
+.properties-section-header::before {
+    font-size: 2rem;
+    content: attr(data-icon);
+}
+
+.properties-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--type-color-dark);
+    margin: 0;
+}
+
+.properties-section-subtitle {
+    font-size: 0.95rem;
+    color: #999;
+    margin: 0;
+}
+
+/* ========== PROPERTY GRID ========== */
+
+.properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+@media (max-width: 768px) {
+    .properties-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========== PROPERTY CARD ENHANCEMENTS ========== */
+
+.property-card .property-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+}
+
+.property-card .property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-base);
+}
+
+.property-card:hover .property-image img {
+    transform: scale(1.05);
+}
+
+/* Type-specific shadows */
+.property-card.property-type-hotel {
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+.property-card.property-type-hotel:hover {
+    box-shadow: 0 12px 28px rgba(255, 107, 53, 0.25);
+}
+
+.property-card.property-type-residence {
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.property-card.property-type-residence:hover {
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.25);
+}
+
+.property-card.property-type-individu {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.property-card.property-type-individu:hover {
+    box-shadow: 0 12px 28px rgba(16, 185, 129, 0.25);
+}
+
+/* ========== FEATURES BY TYPE ========== */
+
+.property-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.property-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--type-color-light);
+    color: var(--type-color-dark);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ========== PRICING BY TYPE ========== */
+
+.property-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--type-color);
+}
+
+.property-price-period {
+    font-size: 0.9rem;
+    color: #999;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.property-price.hotel {
+    --type-color: #ff6b35;
+}
+
+.property-price.residence {
+    --type-color: #4f46e5;
+}
+
+.property-price.individu {
+    --type-color: #10b981;
+}
+
+/* ========== SPECIAL INDICATORS ========== */
+
+.property-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.property-indicator.verified {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.property-indicator.verified::before {
+    content: '✓';
+}
+
+.property-indicator.featured {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.property-indicator.featured::before {
+    content: '⭐';
+}
+
+.property-indicator.promoted {
+    background: #dbeafe;
+    color: #0284c7;
+}
+
+.property-indicator.promoted::before {
+    content: '🚀';
+}
+
+/* ========== EMPTY STATE ========== */
+
+.properties-empty {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+}
+
+.properties-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.properties-empty-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 10px;
+}
+
+.properties-empty-text {
+    color: #999;
+    margin: 0;
+}
+
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 1024px) {
+    .properties-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 640px) {
+    .property-filter-tabs {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .property-filter-tab {
+        white-space: nowrap;
+    }
+
+    .properties-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .property-type-badge {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+
+    .properties-section-title {
+        font-size: 1.25rem;
+    }
+}

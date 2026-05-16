@@ -1,53 +1,90 @@
-# 🏠 Coloc.ai - Plateforme de Colocation et Logement en Côte d'Ivoire
+# � IVOIRE CONNECT
 
-**Une plateforme moderne et professionnelle pour trouver ou publier des annonces de logement et colocation en Côte d'Ivoire.**
+**Plateforme moderne et professionnelle de location et colocation pour la Côte d'Ivoire**
 
-## 🎯 Caractéristiques principales
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-green)]()
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue)]()
+[![Django](https://img.shields.io/badge/Django-6.0.4-darkgreen)]()
 
-### Pour les propriétaires/gestionnaires
-- 📸 **Publier avec photos** - Jusqu'à 5 photos de haute qualité par annonce
-- 🏠 **Annonces détaillées** - Type, surface, équipements, etc.
-- 🔍 **Visibilité optimale** - Annonces bien structurées pour la recherche
-- ✅ **Professionnel** - Design moderne et crédible
-- 💬 **Messagerie intégrée** - Communiquer directement avec les intéressés
+---
 
-### Pour les locataires/colocs
-- 🔎 **Recherche avancée** - Filtrer par budget, ville, équipements
-- ❤️ **Favoris** - Marquer vos annonces préférées
-- 📧 **Notifications** - Recevoir les nouvelles annonces
-- 💬 **Messagerie sécurisée** - Discuter avec les propriétaires
-- 📱 **Mobile-friendly** - Rechercher sur téléphone ou ordinateur
+## 📋 Table des Matières
 
-## 🚀 Installation
+- [À Propos](#à-propos)
+- [Fonctionnalités](#-fonctionnalités)
+- [Installation Rapide](#-installation-rapide)
+- [Architecture](#-architecture)
+- [Documentation](#-documentation)
+- [Développement](#-développement)
+- [Support](#-support)
+
+---
+
+## À Propos
+
+Ivoire Connect est une **plateforme complète** permettant aux utilisateurs de publier, chercher et réserver des logements en Côte d'Ivoire.
+
+**Types d'Utilisateurs Supportés:**
+- 🏠 **Propriétaires individuels** - Publier des annonces de location
+- 🏨 **Hôtels** - Gérer les réservations avec dashboards
+- 🏢 **Résidences** - Système de gestion complet
+- 👥 **Locataires/Colocataires** - Chercher et réserver
+
+---
+
+## ✨ Fonctionnalités
+
+### 📸 Pour les Propriétaires
+- Publier des annonces avec photos (jusqu'à 5)
+- Gestion complète des annonces
+- Calendrier de disponibilité
+- Réservations et paiements
+- Messagerie avec locataires
+- Statistiques et rapports
+
+### 🔎 Pour les Locataires
+- Recherche avancée avec filtres
+- Annonces détaillées avec photos
+- Réservation sécurisée
+- Paiement en ligne (Stripe)
+- Messagerie sécurisée
+- Design responsive (mobile/desktop)
+
+### 💳 Paiements
+- Intégration Stripe
+- Paiement sécurisé
+- Confirmation automatique
+- Reçus par email
+
+---
+
+## 🚀 Installation Rapide
 
 ### Prérequis
-- Python 3.10+
-- pip (gestionnaire de paquets Python)
-- Git (optionnel)
+- Python 3.14+
+- Django 6.0.4
+- pip
 
-### Étapes d'installation
+### Étapes
 
-1. **Cloner le repository** (ou télécharger les fichiers)
 ```bash
+# 1. Accéder au dossier
 cd c:\projet\pro\ivoire
-```
 
-2. **Installer les dépendances**
-```bash
+# 2. Installer les dépendances
 pip install -r requirements.txt
-```
 
-3. **Appliquer les migrations**
-```bash
+# 3. Appliquer les migrations
 python manage.py migrate
-```
 
-4. **Créer un compte administrateur**
-```bash
+# 4. Créer un superutilisateur
 python manage.py createsuperuser
+
+# 5. Lancer le serveur
+python manage.py runserver
 ```
 
-5. **Démarrer le serveur**
+Visitez: **http://localhost:8000/**
 ```bash
 python manage.py runserver
 ```

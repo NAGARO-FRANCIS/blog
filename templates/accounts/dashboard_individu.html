@@ -1,345 +1,346 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Dashboard - Mon Espace Coloc.ai{% endblock %}
+{% block title %}Mon Espace — {{ user.first_name|default:user.username }}{% endblock %}
 
 {% block content %}
-<div class="dashboard-wrapper">
-    <div class="dashboard-container">
-        <!-- Header -->
-        <div class="dashboard-header">
-            <div class="header-content">
-                <h1>Bienvenue, {{ user.first_name|default:user.username }} 👤</h1>
-                <p>Votre espace pour chercher un logement ou des colocataires</p>
+<div class="di-wrapper">
+    <div class="di-container">
+
+        <!-- ── HEADER ── -->
+        <header class="di-header">
+            <div class="di-header__left">
+                <span class="di-header__flag">🇨🇮</span>
+                <div>
+                    <h1 class="di-header__title">Bonjour, {{ user.first_name|default:user.username }}</h1>
+                    <p class="di-header__sub">Trouvez un logement ou un colocataire près de chez vous</p>
+                </div>
+            </div>
+            <span class="di-badge {% if profile.verified %}di-badge--verified{% endif %}">
+                {% if profile.verified %}Compte vérifié{% else %}Non vérifié{% endif %}
+            </span>
+        </header>
+
+        <!-- ── STATS ── -->
+        <div class="di-stats">
+            <div class="di-stat">
+                <span class="di-stat__value">{{ nb_logements_favoris|default:"0" }}</span>
+                <span class="di-stat__label">Favoris</span>
+            </div>
+            <div class="di-stat">
+                <span class="di-stat__value">{{ nb_messages_non_lus|default:"0" }}</span>
+                <span class="di-stat__label">Messages non lus</span>
+            </div>
+            <div class="di-stat">
+                <span class="di-stat__value">{{ nb_annonces_vues|default:"0" }}</span>
+                <span class="di-stat__label">Annonces consultées</span>
             </div>
         </div>
 
-        <!-- Stats Bar -->
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-icon">❤️</div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ nb_logements_favoris }}</div>
-                    <div class="stat-label">Favoris</div>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">💬</div>
-                <div class="stat-info">
-                    <div class="stat-value">{{ nb_messages_non_lus }}</div>
-                    <div class="stat-label">Conversations</div>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">✓</div>
-                <div class="stat-info">
-                    <div class="stat-value">{% if profile.verified %}Vérifié{% else %}Non vérifié{% endif %}</div>
-                    <div class="stat-label">Statut</div>
-                </div>
-            </div>
-        </div>
+        <!-- ── ACTIONS RAPIDES ── -->
+        <section class="di-section">
+            <h2 class="di-section__title">Actions rapides</h2>
+            <div class="di-actions">
 
-        <!-- Main Content -->
-        <div class="dashboard-content">
-            <!-- Quick Actions -->
-            <section class="quick-actions">
-                <h2>Actions Rapides</h2>
-                <div class="actions-grid">
-                    <a href="{% url 'colocation:liste_annonces' %}" class="action-card">
-                        <div class="action-icon">🔍</div>
-                        <div class="action-title">Chercher un Logement</div>
-                        <div class="action-desc">Explorez les annonces disponibles</div>
-                    </a>
-                    
-                    <a href="{% url 'colocation:liste_annonces' %}" class="action-card">
-                        <div class="action-icon">👥</div>
-                        <div class="action-title">Chercher un Colocataire</div>
-                        <div class="action-desc">Trouvez le colocataire idéal</div>
-                    </a>
-                    
-                    <a href="{% url 'messagerie:mes_conversations' %}" class="action-card">
-                        <div class="action-icon">💬</div>
-                        <div class="action-title">Mes Messages</div>
-                        <div class="action-desc">Consultez vos conversations</div>
-                    </a>
-                    
-                    <a href="{% url 'colocation:mes_favoris' %}" class="action-card">
-                        <div class="action-icon">❤️</div>
-                        <div class="action-title">Mes Favoris</div>
-                        <div class="action-desc">Vos annonces sauvegardées</div>
-                    </a>
-                </div>
-            </section>
-
-            <!-- Info Box -->
-            {% if not profile.verified %}
-            <section class="info-box warning">
-                <div class="info-icon">⚠️</div>
-                <div class="info-content">
-                    <h3>Complétez votre profil</h3>
-                    <p>Vérifiez votre identité pour augmenter votre crédibilité auprès des autres utilisateurs.</p>
-                    <a href="{% url 'accounts:verification_docs' %}" class="btn btn-small btn-primary">Vérifier mon compte</a>
-                </div>
-            </section>
-            {% endif %}
-
-            <!-- Recent Activity -->
-            <section class="recent-activity">
-                <h2>Guide Rapide</h2>
-                <div class="guide-items">
-                    <div class="guide-item">
-                        <div class="guide-number">1</div>
-                        <div class="guide-text">
-                            <h4>Créer une annonce</h4>
-                            <p>Publiez une annonce pour chercher un colocataire ou proposer une chambre</p>
-                        </div>
+                <a href="{% url 'colocation:liste_annonces' %}" class="di-action">
+                    <span class="di-action__icon">⌕</span>
+                    <div>
+                        <p class="di-action__name">Chercher un logement</p>
+                        <p class="di-action__desc">Explorez les annonces disponibles</p>
                     </div>
-                    <div class="guide-item">
-                        <div class="guide-number">2</div>
-                        <div class="guide-text">
-                            <h4>Parcourir les offres</h4>
-                            <p>Consultez les logements disponibles dans votre région</p>
-                        </div>
+                </a>
+
+                <a href="{% url 'colocation:liste_annonces' %}" class="di-action">
+                    <span class="di-action__icon">◎</span>
+                    <div>
+                        <p class="di-action__name">Trouver un colocataire</p>
+                        <p class="di-action__desc">Rencontrez des profils compatibles</p>
                     </div>
-                    <div class="guide-item">
-                        <div class="guide-number">3</div>
-                        <div class="guide-text">
-                            <h4>Contacter les autres</h4>
-                            <p>Envoyez des messages directement aux propriétaires ou colocataires potentiels</p>
-                        </div>
+                </a>
+
+                <a href="{% url 'messagerie:mes_conversations' %}" class="di-action">
+                    <span class="di-action__icon">✉</span>
+                    <div>
+                        <p class="di-action__name">Mes messages</p>
+                        <p class="di-action__desc">Consultez vos conversations</p>
+                    </div>
+                </a>
+
+                <a href="{% url 'colocation:mes_favoris' %}" class="di-action">
+                    <span class="di-action__icon">♡</span>
+                    <div>
+                        <p class="di-action__name">Mes favoris</p>
+                        <p class="di-action__desc">Vos annonces sauvegardées</p>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- ── GUIDE ── -->
+        <section class="di-section">
+            <h2 class="di-section__title">Comment ça marche</h2>
+            <div class="di-guide">
+
+                <div class="di-guide__step">
+                    <span class="di-guide__num">1</span>
+                    <div>
+                        <h3 class="di-guide__step-title">Publiez une annonce</h3>
+                        <p class="di-guide__step-desc">Cherchez un colocataire ou proposez une chambre en quelques minutes.</p>
                     </div>
                 </div>
-            </section>
-        </div>
+
+                <div class="di-guide__divider" aria-hidden="true"></div>
+
+                <div class="di-guide__step">
+                    <span class="di-guide__num">2</span>
+                    <div>
+                        <h3 class="di-guide__step-title">Parcourez les offres</h3>
+                        <p class="di-guide__step-desc">Consultez les logements disponibles dans votre région.</p>
+                    </div>
+                </div>
+
+                <div class="di-guide__divider" aria-hidden="true"></div>
+
+                <div class="di-guide__step">
+                    <span class="di-guide__num">3</span>
+                    <div>
+                        <h3 class="di-guide__step-title">Prenez contact</h3>
+                        <p class="di-guide__step-desc">Envoyez un message directement aux propriétaires ou colocataires.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </div>
 </div>
 
 <style>
-    .dashboard-wrapper {
-        min-height: calc(100vh - 80px);
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 30px 20px;
-    }
+/* ── Tokens ── */
+:root {
+    --ci-orange:     #F77F00;
+    --ci-orange-dk:  #D96B00;
+    --ci-orange-lt:  #FFF3E0;
+    --ci-green:      #009A44;
+    --ci-green-dk:   #007A35;
+    --ci-green-lt:   #E6F5ED;
+    --di-text:       #111827;
+    --di-muted:      #6B7280;
+    --di-border:     #E5E7EB;
+    --di-surface:    #F9FAFB;
+    --di-white:      #FFFFFF;
+    --di-radius:     14px;
+    --di-shadow:     0 2px 8px rgba(0,0,0,.07);
+    --di-shadow-lg:  0 8px 24px rgba(0,0,0,.10);
+    --di-transition: .2s ease;
+}
 
-    .dashboard-container {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
+/* ── Layout ── */
+.di-wrapper {
+    background: var(--di-surface);
+    min-height: 100vh;
+    padding: 32px 24px;
+}
+.di-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
 
-    .dashboard-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 40px;
-        border-radius: 12px;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-    }
+/* ── Header ── */
+.di-header {
+    background: var(--di-white);
+    border: 1px solid var(--di-border);
+    border-top: 4px solid var(--ci-orange);
+    border-radius: var(--di-radius);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--di-shadow);
+}
+.di-header__left { display: flex; align-items: center; gap: 16px; }
+.di-header__flag { font-size: 2.4rem; line-height: 1; }
+.di-header__title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--di-text);
+    margin: 0 0 4px;
+    letter-spacing: -.02em;
+}
+.di-header__sub { font-size: .82rem; color: var(--di-muted); margin: 0; }
 
-    .dashboard-header h1 {
-        font-size: 2.2rem;
-        margin: 0 0 10px;
-        font-weight: 700;
-    }
+.di-badge {
+    font-size: .75rem;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 100px;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    white-space: nowrap;
+}
+.di-badge--verified {
+    background: var(--ci-green-lt);
+    color: var(--ci-green-dk);
+    border-color: #a7d7b8;
+}
 
-    .dashboard-header p {
-        margin: 0;
-        opacity: 0.95;
-        font-size: 1.1rem;
-    }
+/* ── Stats ── */
+.di-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.di-stat {
+    background: var(--di-white);
+    border: 1px solid var(--di-border);
+    border-radius: var(--di-radius);
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: var(--di-shadow);
+    transition: transform var(--di-transition), box-shadow var(--di-transition);
+}
+.di-stat:hover { transform: translateY(-3px); box-shadow: var(--di-shadow-lg); }
+.di-stat__value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--ci-orange);
+    letter-spacing: -.03em;
+    line-height: 1;
+}
+.di-stat__label {
+    font-size: .75rem;
+    color: var(--di-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
 
-    .stats-bar {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-    }
+/* ── Section ── */
+.di-section__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--di-text);
+    margin: 0 0 16px;
+    padding-left: 12px;
+    border-left: 3px solid var(--ci-orange);
+}
 
-    .stat-item {
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-    }
+/* ── Actions ── */
+.di-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+.di-action {
+    background: var(--di-white);
+    border: 1px solid var(--di-border);
+    border-radius: var(--di-radius);
+    padding: 18px 20px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--di-text);
+    box-shadow: var(--di-shadow);
+    transition: all var(--di-transition);
+}
+.di-action:hover {
+    border-color: var(--ci-orange);
+    transform: translateY(-2px);
+    box-shadow: var(--di-shadow-lg);
+}
+.di-action__icon {
+    font-size: 1.3rem;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 10px;
+    background: var(--ci-orange-lt);
+    color: var(--ci-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--di-transition), color var(--di-transition);
+}
+.di-action:hover .di-action__icon { background: var(--ci-orange); color: #fff; }
+.di-action__name {
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--di-text);
+    margin: 0 0 2px;
+}
+.di-action__desc {
+    font-size: .78rem;
+    color: var(--di-muted);
+    margin: 0;
+}
 
-    .stat-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-    }
+/* ── Guide ── */
+.di-guide {
+    background: var(--di-white);
+    border: 1px solid var(--di-border);
+    border-radius: var(--di-radius);
+    padding: 24px 28px;
+    box-shadow: var(--di-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.di-guide__step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+}
+.di-guide__num {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: var(--ci-orange);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+.di-guide__step-title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--di-text);
+    margin: 0 0 4px;
+}
+.di-guide__step-desc {
+    font-size: .82rem;
+    color: var(--di-muted);
+    margin: 0;
+    line-height: 1.55;
+}
+.di-guide__divider {
+    height: 1px;
+    background: var(--di-border);
+    margin: 0 0 0 48px;
+}
 
-    .stat-icon {
-        font-size: 2.5rem;
-    }
-
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #667eea;
-    }
-
-    .stat-label {
-        font-size: 0.9rem;
-        color: #999;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .dashboard-content {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    section {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    section h2 {
-        margin: 0 0 25px;
-        font-size: 1.5rem;
-        color: #333;
-        border-bottom: 3px solid #667eea;
-        padding-bottom: 15px;
-    }
-
-    .actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-    }
-
-    .action-card {
-        padding: 25px;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        text-align: center;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .action-card:hover {
-        border-color: #667eea;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
-    }
-
-    .action-icon {
-        font-size: 2.5rem;
-        margin-bottom: 15px;
-    }
-
-    .action-title {
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-        color: #333;
-    }
-
-    .action-desc {
-        font-size: 0.85rem;
-        color: #999;
-        line-height: 1.4;
-    }
-
-    .info-box {
-        display: flex;
-        gap: 20px;
-        padding: 25px;
-        border-radius: 12px;
-        align-items: flex-start;
-    }
-
-    .info-box.warning {
-        background: #fffbea;
-        border-left: 4px solid #ffc107;
-    }
-
-    .info-icon {
-        font-size: 2rem;
-        flex-shrink: 0;
-    }
-
-    .info-content h3 {
-        margin: 0 0 8px;
-        color: #333;
-        font-size: 1.1rem;
-    }
-
-    .info-content p {
-        margin: 0 0 15px;
-        color: #666;
-        font-size: 0.95rem;
-    }
-
-    .btn-small {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
-
-    .guide-items {
-        display: grid;
-        gap: 20px;
-    }
-
-    .guide-item {
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
-        padding: 20px;
-        background: #f9f9f9;
-        border-radius: 8px;
-    }
-
-    .guide-number {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    .guide-text h4 {
-        margin: 0 0 5px;
-        color: #333;
-        font-size: 1rem;
-    }
-
-    .guide-text p {
-        margin: 0;
-        color: #666;
-        font-size: 0.9rem;
-        line-height: 1.4;
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-header {
-            padding: 30px 20px;
-        }
-
-        .dashboard-header h1 {
-            font-size: 1.6rem;
-        }
-
-        .actions-grid {
-            grid-template-columns: 1fr;
-        }
-
-        section {
-            padding: 20px;
-        }
-    }
+/* ── Responsive ── */
+@media (max-width: 700px) {
+    .di-wrapper { padding: 16px; }
+    .di-stats { grid-template-columns: repeat(3, 1fr); }
+    .di-actions { grid-template-columns: 1fr; }
+    .di-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+@media (max-width: 480px) {
+    .di-stats { grid-template-columns: 1fr 1fr; }
+}
 </style>
+
 {% endblock %}

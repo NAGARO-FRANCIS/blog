@@ -4,53 +4,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Coloc.ai - Trouvez votre colocation idéale{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Ivoire Connect{% endblock %}</title>
     
+    <!-- CSS System - Ordered Structure -->
+    <!-- 1. Global Variables -->
+    <link rel="stylesheet" href="{% static 'variables.css' %}">
+    <!-- 2. Browser Reset -->
+    <link rel="stylesheet" href="{% static 'reset.css' %}">
+    <!-- 2.5. Premium Effects & Textures -->
+    <link rel="stylesheet" href="{% static 'premium.css' %}">
+    <!-- 3. Typography -->
+    <link rel="stylesheet" href="{% static 'typography.css' %}">
+    <!-- 4. Layout & Grid -->
+    <link rel="stylesheet" href="{% static 'layout.css' %}">
+    <!-- 5. Reusable Components -->
+    <link rel="stylesheet" href="{% static 'components.css' %}">
+    <!-- 6. Forms -->
+    <link rel="stylesheet" href="{% static 'forms.css' %}">
+    <!-- 7. Navigation & Header/Footer -->
+    <link rel="stylesheet" href="{% static 'navigation.css' %}">
+    <!-- 8. Dashboard Specific -->
+    <link rel="stylesheet" href="{% static 'dashboards.css' %}">
+    <!-- 9. Utilities & Helpers -->
+    <link rel="stylesheet" href="{% static 'utilities.css' %}">
+    <!-- 9.5. Property Types Distinction -->
+    <link rel="stylesheet" href="{% static 'property-types.css' %}">
+    <!-- 10. Responsive Design -->
+    <link rel="stylesheet" href="{% static 'responsive.css' %}">
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-<header>
-    <nav>
-        <div class="logo">🏠 Coloc.ai</div>
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <ul class="nav-links" id="navLinks">
-            <li><a href="{% url 'home' %}">Accueil</a></li>
-            <li><a href="{% url 'colocation:liste_annonces' %}">Annonces</a></li>
-            {% if request.user.is_authenticated %}
-                <li><a href="{% url 'colocation:mes_favoris' %}">♥ Mes Favoris</a></li>
-                <li style="position: relative;">
-                    <a href="{% url 'messagerie:mes_conversations' %}">📧 Messages</a>
-                    {% if unread_messages_count > 0 %}
-                        <span style="position: absolute; top: -8px; right: -8px; background: #e91e63; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">{{ unread_messages_count }}</span>
+<header class="animate-fade">
+    <div class="navbar">
+        <div class="container flex justify-between items-center">
+            <a href="{% url 'home' %}" class="navbar-brand hover-scale">
+                🌍 Ivoire Connect
+            </a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="{% url 'home' %}">🏠 Accueil</a></li>
+                <li><a href="{% url 'logement:home' %}">🏘️ Annonces</a></li>
+                {% if request.user.is_authenticated %}
+                    {% if request.user.profile.account_type == 'individu' and request.user.profile.role != 'colocataire' or request.user.profile.account_type in 'hotel,residence' %}
+                        <li><a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary btn-sm">➕ Publier</a></li>
                     {% endif %}
-                </li>
-                <li><a href="{% url 'accounts:profil' %}">👤 Profil</a></li>
-                <li><a href="{% url 'accounts:logout' %}" class="nav-btn">Déconnexion</a></li>
-            {% else %}
-                <li><a href="{% url 'accounts:login' %}" class="nav-btn">Connexion</a></li>
-                <li><a href="{% url 'accounts:inscription' %}" class="nav-btn primary">S'inscrire</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+                    <li><a href="{% url 'accounts:dashboard' %}">📊 Dashboard</a></li>
+                    <li><a href="{% url 'accounts:profil' %}">👤 Profil</a></li>
+                    <li><a href="{% url 'accounts:logout' %}">🚪 Déconnexion</a></li>
+                {% else %}
+                    <li><a href="{% url 'accounts:login' %}">🔐 Connexion</a></li>
+                    <li><a href="{% url 'accounts:inscription' %}" class="btn btn-primary btn-sm">📝 S'inscrire</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
 </header>
 
-<main>
+<main class="animate-slide-up">
     {% if messages %}
-        {% for message in messages %}
-            <div class="success-message">{{ message }}</div>
-        {% endfor %}
+        <div class="container mt-lg">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} animate-slide-down">
+                    <div class="flex items-center gap-md">
+                        <span class="text-lg">ℹ️</span>
+                        <div class="flex-grow">{{ message }}</div>
+                        <button class="alert-close" type="button" aria-label="Close">&times;</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     {% endif %}
 
     {% block content %}{% endblock %}
 </main>
 
-<footer>
-    <p>&copy; 2026 Coloc.ai. Trouvez votre colocation en Côte d'Ivoire. Tous droits réservés.</p>
-</footer>
 
 <script>
     // Menu toggle for mobile
@@ -81,6 +114,7 @@
         });
     }
 
+    // Utility function to get CSRF token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -95,79 +129,7 @@
         }
         return cookieValue;
     }
-
-    function toggleFavori(button, annonceId) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `/colocation/toggle-favori/${annonceId}/`, true);
-        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.is_favorite) {
-                    button.classList.add('active');
-                    button.textContent = '❤️';
-                } else {
-                    button.classList.remove('active');
-                    button.textContent = '🤍';
-                }
-            }
-        };
-        
-        xhr.onerror = function() {
-            console.error('Erreur lors de la mise à jour du favori');
-        };
-        
-        xhr.send();
-    }
-
-    function removeFavori(button, event) {
-        event.preventDefault();
-        const annonceId = button.dataset.annonceId;
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `/colocation/toggle-favori/${annonceId}/`, true);
-        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (!response.is_favorite) {
-                    // Supprimer la carte d'annonce du DOM
-                    const card = button.closest('.annonce-card');
-                    if (card) {
-                        card.style.animation = 'fadeOut 0.3s ease-out';
-                        setTimeout(() => {
-                            card.remove();
-                            // Si plus d'annonces, montrer le message vide
-                            const grid = document.querySelector('.annonces-grid');
-                            if (grid && grid.children.length === 0) {
-                                location.reload();
-                            }
-                        }, 300);
-                    }
-                }
-            }
-        };
-        
-        xhr.onerror = function() {
-            console.error('Erreur lors de la suppression du favori');
-        };
-        
-        xhr.send();
-    }
-
-    // Event delegation pour tous les boutons favoris
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('favorite-btn')) {
-            e.preventDefault();
-            const annonceId = e.target.dataset.annonceId;
-            if (annonceId) {
-                toggleFavori(e.target, annonceId);
-            }
-        }
-    });
 </script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

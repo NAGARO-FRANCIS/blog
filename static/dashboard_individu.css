@@ -1,0 +1,229 @@
+/* ========================================
+   DASHBOARD INDIVIDU - STYLES UNIQUES
+   Purple Theme #667eea
+   ======================================== */
+
+.dashboard-individu .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    border-radius: 0 0 20px 20px;
+    color: white;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.dashboard-individu .dashboard-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+}
+
+.dashboard-individu .dashboard-header p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    margin: 0;
+}
+
+/* Stats Bar - Purple theme */
+.dashboard-individu .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: -30px 20px 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.dashboard-individu .stat-item {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.dashboard-individu .stat-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
+.dashboard-individu .stat-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.dashboard-individu .stat-info {
+    flex: 1;
+}
+
+.dashboard-individu .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #667eea;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.dashboard-individu .stat-label {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Actions Grid */
+.dashboard-individu .quick-actions h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #1a2332;
+}
+
+.dashboard-individu .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.dashboard-individu .action-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.dashboard-individu .action-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    transform: translateY(-8px);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.dashboard-individu .action-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.dashboard-individu .action-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a2332;
+    margin-bottom: 8px;
+}
+
+.dashboard-individu .action-desc {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+/* Info Box */
+.dashboard-individu .info-box {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe6a0 100%);
+    border-left: 4px solid #ffc107;
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.dashboard-individu .info-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.dashboard-individu .info-content h3 {
+    color: #856404;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.dashboard-individu .info-content p {
+    color: #856404;
+    margin-bottom: 15px;
+}
+
+/* Recent Activity / Guide */
+.dashboard-individu .recent-activity {
+    margin-top: 40px;
+}
+
+.dashboard-individu .recent-activity h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #1a2332;
+}
+
+.dashboard-individu .guide-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-individu .guide-item {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    display: flex;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.dashboard-individu .guide-item:hover {
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
+    transform: translateY(-4px);
+}
+
+.dashboard-individu .guide-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.dashboard-individu .guide-text h4 {
+    color: #1a2332;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.dashboard-individu .guide-text p {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-individu .dashboard-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .dashboard-individu .stats-bar {
+        margin-top: -20px;
+    }
+    
+    .dashboard-individu .actions-grid,
+    .dashboard-individu .guide-items {
+        grid-template-columns: 1fr;
+    }
+}

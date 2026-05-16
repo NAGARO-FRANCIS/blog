@@ -1,548 +1,461 @@
 ﻿{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Accueil - Coloc.ai{% endblock %}
+{% block title %}Accueil - Ivoire Connect{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="hero">
-        <h1>🏠 Bienvenue sur Coloc.ai</h1>
-        <p>Trouvez votre colocation idéale en Côte d'Ivoire</p>
-    </div>
 
-    <!-- Section d'introduction -->
-    <div class="intro-section">
-        <div class="intro-card">
-            <div class="intro-icon">🔍</div>
-            <h3>Parcourez les annonces</h3>
-            <p>Découvrez toutes les colocations disponibles et trouvez celle qui vous convient</p>
-            <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">Voir les annonces</a>
-        </div>
-        <div class="intro-card">
-            <div class="intro-icon">📢</div>
-            <h3>Publiez une annonce</h3>
-            <p>Proposez votre colocation et trouvez des colocataires</p>
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'colocation:publier_annonce' %}" class="btn btn-primary">Publier</a>
+<!-- ═══════════════════════════════════════════════════════
+     HERO SECTION
+════════════════════════════════════════════════════════ -->
+<section class="ic-hero">
+    <div class="ic-container">
+        <div class="ic-hero__inner">
+            <span class="ic-hero__eyebrow">🌍 La plateforme N°1 en Côte d'Ivoire</span>
+            <h1 class="ic-hero__title">Trouvez votre logement idéal sur Ivoire Connect</h1>
+            <p class="ic-hero__subtitle">Hôtels, résidences et colocations — des milliers d'annonces vérifiées près de chez vous.</p>
+
+            {% if not user.is_authenticated %}
+                <div class="ic-hero__actions">
+                    <a href="{% url 'accounts:login' %}" class="ic-btn ic-btn--primary">Se connecter</a>
+                    <a href="{% url 'accounts:inscription' %}" class="ic-btn ic-btn--outline">Créer un compte</a>
+                </div>
             {% else %}
-                <a href="{% url 'accounts:login' %}" class="btn btn-primary">Se connecter</a>
-            {% endif %}
-        </div>
-        <div class="intro-card">
-            <div class="intro-icon">❤️</div>
-            <h3>Mes favoris</h3>
-            <p>Retrouvez toutes vos annonces préférées</p>
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'colocation:mes_favoris' %}" class="btn btn-primary">Mes favoris</a>
-            {% else %}
-                <a href="{% url 'accounts:login' %}" class="btn btn-primary">Se connecter</a>
+                <div class="ic-hero__actions">
+                    <a href="{% url 'logement:home' %}" class="ic-btn ic-btn--primary">Parcourir les annonces</a>
+                    {% if user.profile.account_type == 'individu' and user.profile.role != 'colocataire' or user.profile.account_type in 'hotel,residence' %}
+                        <a href="{% url 'logement:ajouter_logement' %}" class="ic-btn ic-btn--outline">Publier une annonce</a>
+                    {% endif %}
+                </div>
             {% endif %}
         </div>
     </div>
+</section>
 
-    <div class="recent-annonces">
-        <h2>📌 Dernières annonces</h2>
+
+<!-- ═══════════════════════════════════════════════════════
+     STATS BAND
+════════════════════════════════════════════════════════ -->
+<section class="ic-stats-band">
+    <div class="ic-container">
+        <div class="ic-stats-band__grid">
+            <div class="ic-stat">
+                <span class="ic-stat__icon">📍</span>
+                <span class="ic-stat__value">5 000+</span>
+                <span class="ic-stat__label">Annonces</span>
+            </div>
+            <div class="ic-stat">
+                <span class="ic-stat__icon">👥</span>
+                <span class="ic-stat__value">25 000+</span>
+                <span class="ic-stat__label">Utilisateurs</span>
+            </div>
+            <div class="ic-stat">
+                <span class="ic-stat__icon">✅</span>
+                <span class="ic-stat__value">10 000+</span>
+                <span class="ic-stat__label">Réservations</span>
+            </div>
+            <div class="ic-stat">
+                <span class="ic-stat__icon">⭐</span>
+                <span class="ic-stat__value">4,8/5</span>
+                <span class="ic-stat__label">Note moyenne</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     LATEST LISTINGS
+════════════════════════════════════════════════════════ -->
+<section class="ic-section">
+    <div class="ic-container">
+        <div class="ic-section__header ic-section__header--row">
+            <div>
+                <h2 class="ic-section__title">Dernières annonces</h2>
+                <p class="ic-section__sub">Les logements les plus récents sur la plateforme</p>
+            </div>
+            <a href="{% url 'colocation:liste_annonces' %}" class="ic-btn ic-btn--ghost">
+                Toutes les annonces →
+            </a>
+        </div>
 
         {% if annonces %}
-            <div class="annonces-grid">
+            <div class="ic-listings-grid">
                 {% for annonce in annonces %}
-                    <div class="annonce-card">
-                        <!-- Image principale -->
-                        <div class="annonce-image">
+                    <article class="ic-listing-card">
+                        <div class="ic-listing-card__media">
                             {% if annonce.photos.all %}
-                                <img src="{{ annonce.photos.first.image.url }}" alt="{{ annonce.photos.first.alt_text }}" class="card-image">
+                                <img
+                                    src="{{ annonce.photos.first.image.url }}"
+                                    alt="{{ annonce.photos.first.alt_text }}"
+                                    class="ic-listing-card__img"
+                                    loading="lazy"
+                                >
                             {% else %}
-                                <div class="card-image-placeholder">🏠</div>
+                                <div class="ic-listing-card__placeholder">🏠</div>
                             {% endif %}
                             {% if annonce.photos.count > 1 %}
-                                <span class="badge badge-photos">📸 {{ annonce.photos.count }}</span>
+                                <span class="ic-badge">📸 {{ annonce.photos.count }} photos</span>
                             {% endif %}
                         </div>
-                        
-                        <div class="annonce-content">
-                            <div class="annonce-prix">{{ annonce.budget_mensuel|floatformat:0 }} FCFA/mois</div>
-                            <div class="annonce-ville">
-                                📍 {{ annonce.ville }}
-                                {% if annonce.quartier %}<span class="quartier"> - {{ annonce.quartier }}</span>{% endif %}
+
+                        <div class="ic-listing-card__body">
+                            <p class="ic-listing-card__price">
+                                {{ annonce.budget_mensuel|floatformat:0 }} <span>FCFA/mois</span>
+                            </p>
+                            <p class="ic-listing-card__location">
+                                📍 {{ annonce.ville }}{% if annonce.quartier %} — {{ annonce.quartier }}{% endif %}
+                            </p>
+                            <div class="ic-listing-card__tags">
+                                <span class="ic-tag">{{ annonce.nombre_chambres }} chambre{{ annonce.nombre_chambres|pluralize }}</span>
+                                <span class="ic-tag">{{ annonce.nombre_colocataires }} place{{ annonce.nombre_colocataires|pluralize }}</span>
                             </div>
-                            
-                            <!-- Caractéristiques -->
-                            <div class="annonce-features">
-                                <span class="feature">
-                                    <strong>{{ annonce.nombre_chambres }}</strong> chambre{{ annonce.nombre_chambres|pluralize }}
-                                </span>
-                                <span class="feature">
-                                    <strong>{{ annonce.nombre_colocataires }}</strong> place{{ annonce.nombre_colocataires|pluralize }}
-                                </span>
-                            </div>
-                            
-                            <div class="annonce-description">{{ annonce.description|truncatewords:15 }}</div>
+                            <p class="ic-listing-card__desc">{{ annonce.description|truncatewords:15 }}</p>
                         </div>
-                    </div>
+                    </article>
                 {% endfor %}
             </div>
 
-            <div class="text-center" style="margin-top: 40px;">
-                <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">Voir toutes les annonces →</a>
+            <div class="ic-listings__footer">
+                <a href="{% url 'colocation:liste_annonces' %}" class="ic-btn ic-btn--primary">
+                    Voir toutes les annonces →
+                </a>
             </div>
+
         {% else %}
-            <div class="text-center section-empty">
-                <h2>Aucune annonce disponible</h2>
-                <p class="text-muted">Revenez bientôt pour découvrir les nouvelles annonces</p>
+            <div class="ic-empty-state">
+                <div class="ic-empty-state__icon">🏠</div>
+                <h3>Aucune annonce disponible</h3>
+                <p>Revenez bientôt pour découvrir les nouvelles annonces.</p>
             </div>
         {% endif %}
     </div>
-</div>
+</section>
 
+
+<!-- ═══════════════════════════════════════════════════════
+     STYLES
+════════════════════════════════════════════════════════ -->
 <style>
-    /* Hero Section */
-    .container .hero {
-        background: linear-gradient(135deg, #1a2332 0%, #2d3e50 100%);
-        color: white;
-        padding: 60px 40px;
-        border-radius: 24px;
-        margin-bottom: 50px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .container .hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 400px;
-        height: 400px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        z-index: 0;
-    }
-
-    .container .hero h1 {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin: 0 0 15px;
-        position: relative;
-        z-index: 1;
-        letter-spacing: -0.5px;
-    }
-
-    .container .hero p {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        max-width: 600px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Intro Cards */
-    .intro-section {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 28px;
-        margin: 50px 0;
-    }
-
-    .intro-card {
-        background: white;
-        border-radius: 20px;
-        padding: 40px 32px;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border: 2px solid #f0f4f8;
-        position: relative;
-    }
-
-    .intro-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #534AB7 0%, #5EB3F6 100%);
-        border-radius: 20px 20px 0 0;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .intro-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 16px 40px rgba(83, 74, 183, 0.2);
-        border-color: #e0e7ff;
-    }
-
-    .intro-card:hover::before {
-        opacity: 1;
-    }
-
-    .intro-icon {
-        font-size: 3.5rem;
-        margin-bottom: 20px;
-        display: block;
-        animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .intro-card h3 {
-        font-size: 1.4rem;
-        color: #1a2332;
-        margin: 0 0 15px;
-        font-weight: 700;
-    }
-
-    .intro-card p {
-        color: #64748b;
-        margin: 0 0 25px;
-        flex: 1;
-        line-height: 1.6;
-        font-size: 0.95rem;
-    }
-
-    .intro-card .btn {
-        align-self: center;
-        margin-top: auto;
-    }
-
-    /* Recent Announcements */
-    .recent-annonces {
-        margin-top: 80px;
-        padding-top: 50px;
-        border-top: 2px solid #f0f4f8;
-    }
-
-    .recent-annonces h2 {
-        color: #1a2332;
-        font-size: 2rem;
-        margin-bottom: 40px;
-        font-weight: 700;
-    }
-
-    .annonces-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 28px;
-        margin-bottom: 40px;
-    }
-
-    .annonce-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        display: flex;
-        flex-direction: column;
-        border: 1px solid #f0f4f8;
-    }
-
-    .annonce-card:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 20px 50px rgba(83, 74, 183, 0.2);
-    }
-
-    .annonce-image {
-        position: relative;
-        width: 100%;
-        height: 220px;
-        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-
-    .card-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.4s ease;
-    }
-
-    .annonce-card:hover .card-image {
-        transform: scale(1.08);
-    }
-
-    .card-image-placeholder {
-        font-size: 4rem;
-        color: rgba(83, 74, 183, 0.2);
-    }
-
-    .badge {
-        position: absolute;
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%);
-        color: white;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        backdrop-filter: blur(10px);
-    }
-
-    .badge-photos {
-        top: 12px;
-        right: 12px;
-    }
-
-    .annonce-content {
-        padding: 24px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .annonce-prix {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #534AB7;
-        margin-bottom: 10px;
-        letter-spacing: -0.5px;
-    }
-
-    .annonce-ville {
-        color: #64748b;
-        font-size: 0.95rem;
-        margin-bottom: 12px;
-        font-weight: 600;
-    }
-
-    .annonce-ville .quartier {
-        color: #475569;
-        font-weight: 700;
-    }
-
-    .annonce-features {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-        flex-wrap: wrap;
-    }
-
-    .feature {
-        background: linear-gradient(135deg, #f0e9ff 0%, #e8dfff 100%);
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        color: #534AB7;
-        font-weight: 600;
-        border: 1px solid #ddd6f3;
-    }
-
-    .feature strong {
-        color: #1a2332;
-        font-weight: 700;
-    }
-
-    .annonce-description {
-        color: #64748b;
-        font-size: 0.9rem;
-        flex: 1;
-        line-height: 1.5;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #534AB7 0%, #4c3aa3 100%);
-        color: white;
-        padding: 12px 28px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        display: inline-block;
-        box-shadow: 0 4px 15px rgba(83, 74, 183, 0.3);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(83, 74, 183, 0.4);
-    }
-
-    .text-center {
-        text-align: center;
-    }
-
-    .section-empty {
-        padding: 80px 40px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 24px;
-        border: 2px dashed #cbd5e1;
-    }
-
-    .section-empty h2 {
-        color: #1a2332;
-        margin-bottom: 12px;
-        font-size: 1.5rem;
-    }
-
-    .text-muted {
-        color: #64748b;
-    }
-
-    @media (max-width: 768px) {
-        .container .hero {
-            padding: 30px 20px;
-        }
-
-        .container .hero h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-
-        .container .hero p {
-            font-size: 1rem;
-        }
-
-        .container .hero::before {
-            width: 300px;
-            height: 300px;
-            top: -30%;
-            right: 0%;
-        }
-
-        .recent-annonces h2 {
-            font-size: 1.5rem;
-        }
-
-        .intro-section,
-        .annonces-grid {
-            gap: 20px;
-        }
-
-        .intro-card {
-            padding: 20px;
-        }
-
-        .intro-icon {
-            font-size: 2.5rem;
-        }
-
-        .intro-card h3 {
-            font-size: 1.1rem;
-        }
-
-        .btn-primary {
-            padding: 10px 20px;
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .container .hero {
-            padding: 20px 15px;
-            margin-bottom: 30px;
-            border-radius: 16px;
-        }
-
-        .container .hero h1 {
-            font-size: 1.4rem;
-            margin-bottom: 8px;
-        }
-
-        .container .hero p {
-            font-size: 0.9rem;
-        }
-
-        .container .hero::before {
-            width: 200px;
-            height: 200px;
-        }
-
-        .intro-section {
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin: 30px 0;
-        }
-
-        .intro-card {
-            padding: 15px;
-            border-radius: 16px;
-        }
-
-        .intro-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .intro-card h3 {
-            font-size: 1rem;
-            margin-bottom: 8px;
-        }
-
-        .intro-card p {
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
-
-        .btn-primary {
-            padding: 9px 16px;
-            font-size: 0.85rem;
-            width: 100%;
-            text-align: center;
-        }
-
-        .recent-annonces {
-            margin-top: 30px;
-        }
-
-        .recent-annonces h2 {
-            font-size: 1.3rem;
-            margin-bottom: 16px;
-        }
-
-        .annonces-grid {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-
-        .annonce-card {
-            border-radius: 16px;
-        }
-
-        .annonce-image {
-            height: 180px;
-        }
-
-        .annonce-prix {
-            font-size: 1.3rem;
-        }
-
-        .annonce-description {
-            font-size: 0.85rem;
-        }
-
-        .feature {
-            font-size: 0.8rem;
-            padding: 5px 10px;
-        }
-
-        .section-empty {
-            padding: 40px 20px;
-            border-radius: 16px;
-        }
-
-        .section-empty h2 {
-            font-size: 1.2rem;
-        }
-
-        .section-empty p {
-            font-size: 0.9rem;
-        }
-
-        .text-center {
-            margin-top: 24px !important;
-        }
-    }
+/* ─── Design Tokens — Côte d'Ivoire (🟠⬜🟢) ─── */
+:root {
+    --ic-orange:        #F77F00;
+    --ic-orange-dark:   #D96B00;
+    --ic-orange-light:  #FFF3E0;
+    --ic-green:         #009A44;
+    --ic-green-dark:    #007A35;
+    --ic-green-light:   #E6F5ED;
+    --ic-text:          #1C1C1C;
+    --ic-text-muted:    #6B7280;
+    --ic-border:        #E5E7EB;
+    --ic-surface:       #F9FAFB;
+    --ic-white:         #FFFFFF;
+    --ic-radius-sm:     6px;
+    --ic-radius-md:     12px;
+    --ic-radius-lg:     20px;
+    --ic-shadow-sm:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+    --ic-shadow-md:     0 4px 12px rgba(0,0,0,.10);
+    --ic-shadow-lg:     0 12px 32px rgba(0,0,0,.12);
+    --ic-transition:    .22s cubic-bezier(.4,0,.2,1);
+    --ic-max-width:     1160px;
+}
+
+/* ─── Layout Utils ─── */
+.ic-container {
+    max-width: var(--ic-max-width);
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ─── Hero ─── */
+.ic-hero {
+    background: linear-gradient(135deg, #b85c00 0%, #F77F00 40%, #ffffff 68%, #009A44 100%);
+    padding: 48px 0 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.ic-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 28, 28, 0.45);
+    pointer-events: none;
+}
+.ic-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F77F00 33.3%, #ffffff 33.3% 66.6%, #009A44 66.6%);
+    pointer-events: none;
+}
+.ic-hero__inner { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+.ic-hero__eyebrow {
+    display: inline-block;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    color: rgba(255,255,255,.85);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+}
+.ic-hero__title {
+    font-size: clamp(1.4rem, 2.8vw, 2rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    letter-spacing: -.02em;
+}
+.ic-hero__subtitle {
+    font-size: .95rem;
+    color: rgba(255,255,255,.75);
+    margin: 0 0 28px;
+    line-height: 1.6;
+}
+.ic-hero__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ─── Stats Band ─── */
+.ic-stats-band {
+    background: var(--ic-white);
+    border-bottom: 1px solid var(--ic-border);
+    padding: 36px 0;
+    box-shadow: var(--ic-shadow-sm);
+}
+.ic-stats-band__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+}
+.ic-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+    border-right: 1px solid var(--ic-border);
+}
+.ic-stat:last-child { border-right: none; }
+.ic-stat__icon { font-size: 1.5rem; }
+.ic-stat__value {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--ic-orange);
+    letter-spacing: -.02em;
+}
+.ic-stat__label { font-size: .8rem; color: var(--ic-text-muted); font-weight: 500; }
+
+/* ─── Section Base ─── */
+.ic-section { padding: 80px 0; }
+
+.ic-section__header {
+    text-align: left;
+    margin-bottom: 52px;
+}
+.ic-section__header--row {
+    text-align: left;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.ic-section__title {
+    font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+    font-weight: 800;
+    color: var(--ic-text);
+    margin: 0 0 8px;
+    letter-spacing: -.02em;
+    border-left: 4px solid var(--ic-orange);
+    padding-left: 12px;
+    text-align: left;
+}
+.ic-section__sub { font-size: .95rem; color: var(--ic-text-muted); margin: 0; }
+
+/* ─── Buttons ─── */
+.ic-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .9rem;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: var(--ic-radius-sm);
+    text-decoration: none;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--ic-transition);
+    white-space: nowrap;
+}
+.ic-btn--primary {
+    background: var(--ic-orange);
+    color: #fff;
+    border-color: var(--ic-orange);
+}
+.ic-btn--primary:hover {
+    background: var(--ic-orange-dark);
+    border-color: var(--ic-orange-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(247,127,0,.4);
+}
+.ic-btn--outline {
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    border-color: rgba(255,255,255,.35);
+    backdrop-filter: blur(4px);
+}
+.ic-btn--outline:hover {
+    background: rgba(255,255,255,.16);
+    border-color: rgba(255,255,255,.6);
+}
+.ic-btn--ghost {
+    background: transparent;
+    color: var(--ic-green);
+    border-color: transparent;
+    padding: 10px 4px;
+}
+.ic-btn--ghost:hover { text-decoration: underline; }
+.ic-btn--sm { padding: 9px 18px; font-size: .82rem; }
+
+/* ─── Listings ─── */
+.ic-listings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+.ic-listing-card {
+    background: var(--ic-white);
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow var(--ic-transition), transform var(--ic-transition);
+}
+.ic-listing-card:hover {
+    box-shadow: var(--ic-shadow-lg);
+    transform: translateY(-4px);
+    border-color: var(--ic-green);
+}
+.ic-listing-card__media {
+    position: relative;
+    height: 200px;
+    background: var(--ic-surface);
+    overflow: hidden;
+}
+.ic-listing-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+.ic-listing-card:hover .ic-listing-card__img { transform: scale(1.05); }
+.ic-listing-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #d1d5db;
+}
+.ic-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(17,24,39,.65);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+}
+.ic-listing-card__body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.ic-listing-card__price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--ic-green);
+    margin: 0;
+    letter-spacing: -.02em;
+}
+.ic-listing-card__price span {
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--ic-text-muted);
+}
+.ic-listing-card__location {
+    font-size: .83rem;
+    color: var(--ic-text-muted);
+    font-weight: 600;
+    margin: 0;
+}
+.ic-listing-card__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ic-tag {
+    background: var(--ic-orange-light);
+    color: var(--ic-orange-dark);
+    font-size: .76rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--ic-radius-sm);
+    border: 1px solid #fcd9a0;
+}
+.ic-listing-card__desc {
+    font-size: .83rem;
+    color: var(--ic-text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.ic-listings__footer {
+    margin-top: 40px;
+    text-align: center;
+}
+
+/* ─── Empty State ─── */
+.ic-empty-state {
+    text-align: center;
+    padding: 72px 40px;
+    background: var(--ic-surface);
+    border: 2px dashed var(--ic-border);
+    border-radius: var(--ic-radius-lg);
+}
+.ic-empty-state__icon { font-size: 3rem; margin-bottom: 16px; display: block; }
+.ic-empty-state h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ic-text);
+    margin: 0 0 8px;
+}
+.ic-empty-state p { font-size: .88rem; color: var(--ic-text-muted); margin: 0; }
+
+/* ─── Responsive ─── */
+@media (max-width: 900px) {
+    .ic-stats-band__grid { grid-template-columns: repeat(2, 1fr); }
+    .ic-stat:nth-child(2) { border-right: none; }
+}
+
+@media (max-width: 600px) {
+    .ic-hero { padding: 32px 0 28px; }
+    .ic-hero__title { font-size: 1.7rem; }
+    .ic-hero__actions { flex-direction: column; align-items: center; }
+    .ic-stats-band__grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .ic-stat { border-right: none; }
+    .ic-section { padding: 56px 0; }
+    .ic-section__header--row { flex-direction: column; align-items: flex-start; }
+    .ic-listings-grid { grid-template-columns: 1fr; }
+}
 </style>
+
 {% endblock %}

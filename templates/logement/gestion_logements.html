@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Logements{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --ci-orange: #f77f00;
+    --ci-white: #ffffff;
+    --ci-green: #009e60;
+    --dark: #1e1e2f;
+    --shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* PAGE BACKGROUND */
+body {
+    background: linear-gradient(135deg, #f8f9fb, #ffffff);
+}
+
+/* HEADER */
+.page-header {
+    background: linear-gradient(90deg, var(--ci-orange), var(--ci-white), var(--ci-green));
+    color: #1e1e1e;
+    padding: 40px 30px;
+    margin-bottom: 30px;
+    border-radius: 0 0 20px 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.page-header p {
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+/* DRAPEAU ICON */
+.page-header::after {
+    content: "🇨🇮";
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 70px;
+    opacity: 0.15;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* SECTIONS */
+.management-section {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid #f1f1f1;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ci-green);
+    margin-bottom: 20px;
+    padding-left: 10px;
+    border-left: 5px solid var(--ci-orange);
+}
+
+/* GRID */
+.management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+/* CARDS */
+.management-card {
+    background: white;
+    border: 2px solid #f1f1f1;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+/* hover premium */
+.management-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--ci-orange);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+}
+
+/* effet color overlay */
+.management-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(var(--ci-orange), var(--ci-green));
+}
+
+/* ICON */
+.management-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+/* TITLE */
+.management-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ci-green);
+    margin-bottom: 8px;
+}
+
+/* DESCRIPTION */
+.management-desc {
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .management-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>🔧 Gestion Avancée des Logements 🇨🇮</h1>
+    <p>Total: {{ total }} logement(s) • Gestion professionnelle moderne</p>
+</div>
+
+<div class="container">
+
+    <!-- INVENTAIRE -->
+    <div class="management-section">
+        <div class="section-title">📊 Inventaire</div>
+
+        <div class="management-grid">
+            <a href="{% url 'logement:mes_logements' %}" class="management-card">
+                <div class="management-icon">🏠</div>
+                <div class="management-title">Mes Logements</div>
+                <div class="management-desc">Gestion complète de vos propriétés</div>
+            </a>
+
+            <a href="{% url 'logement:ajouter_logement' %}" class="management-card">
+                <div class="management-icon">➕</div>
+                <div class="management-title">Ajouter</div>
+                <div class="management-desc">Créer un nouveau logement</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- RESERVATIONS -->
+    <div class="management-section">
+        <div class="section-title">📅 Réservations</div>
+
+        <div class="management-grid">
+            <a href="{% url 'logement:calendrier_reservations' %}" class="management-card">
+                <div class="management-icon">📆</div>
+                <div class="management-title">Calendrier</div>
+                <div class="management-desc">Planning des réservations</div>
+            </a>
+
+            <a href="{% url 'logement:mes_reservations' %}" class="management-card">
+                <div class="management-icon">📋</div>
+                <div class="management-title">Réservations</div>
+                <div class="management-desc">Toutes les réservations</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- FINANCES -->
+    <div class="management-section">
+        <div class="section-title">💰 Finances</div>
+
+        <div class="management-grid">
+            <a href="{% url 'logement:mes_paiements' %}" class="management-card">
+                <div class="management-icon">💳</div>
+                <div class="management-title">Paiements</div>
+                <div class="management-desc">Suivi des revenus</div>
+            </a>
+
+            <a href="{% url 'logement:statistiques' %}" class="management-card">
+                <div class="management-icon">📊</div>
+                <div class="management-title">Statistiques</div>
+                <div class="management-desc">Performance et analyses</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="management-section">
+        <div class="section-title">👥 Clients</div>
+
+        <div class="management-grid">
+            <a href="{% url 'logement:mes_clients' %}" class="management-card">
+                <div class="management-icon">👥</div>
+                <div class="management-title">Locataires</div>
+                <div class="management-desc">Gestion des clients</div>
+            </a>
+
+            <a href="{% url 'logement:avis_clients' %}" class="management-card">
+                <div class="management-icon">⭐</div>
+                <div class="management-title">Avis</div>
+                <div class="management-desc">Évaluations des clients</div>
+            </a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
