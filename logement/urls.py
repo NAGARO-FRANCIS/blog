@@ -3,7 +3,7 @@ from .views import (
     home, listings_all_types, ajouter_logement, mes_logements, gestion_logements,
     mes_reservations, calendrier_reservations, mes_paiements,
     mes_clients, avis_clients, statistiques_professionnel,
-    detail_logement, reserver_logement, paiement_reservation
+    detail_logement, reserver_logement, paiement_reservation, confirmation_reservation
 )
 
 app_name = 'logement'
@@ -16,6 +16,7 @@ urlpatterns = [
     path('<int:id>/', detail_logement, name='detail_logement'),
     path('<int:id>/reserver/', reserver_logement, name='reserver_logement'),
     path('reservation/<int:reservation_id>/paiement/', paiement_reservation, name='paiement'),
+    path('reservation/<int:reservation_id>/confirmation/', confirmation_reservation, name='confirmation_reservation'),
     
     # Gestion des logements
     path('ajouter/', ajouter_logement, name='ajouter_logement'),

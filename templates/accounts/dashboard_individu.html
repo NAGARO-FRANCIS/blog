@@ -77,6 +77,48 @@
             </div>
         </section>
 
+        <!-- ── MES ANNONCES ── -->
+        {% if profile.role != 'colocataire' %}
+        <section class="di-section">
+            <h2 class="di-section__title">Mes annonces</h2>
+            {% if mes_annonces %}
+                <div class="di-listings">
+                    {% for logement in mes_annonces %}
+                        <div class="di-listing-card">
+                            <div class="di-listing-card__image">
+                                {% if logement.photos.all %}
+                                    <img src="{{ logement.photos.first.image.url }}" alt="{{ logement.titre }}" />
+                                {% else %}
+                                    <div style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; height: 150px; color: #aaa;">
+                                        📷 Pas de photo
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="di-listing-card__content">
+                                <h3 class="di-listing-card__title">{{ logement.titre }}</h3>
+                                <p class="di-listing-card__location">📍 {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</p>
+                                <p class="di-listing-card__desc">{{ logement.description|truncatewords:20 }}</p>
+                                <div class="di-listing-card__footer">
+                                    <span class="di-listing-card__price">
+                                        {% if logement.prix %}
+                                            {{ logement.prix|floatformat:0 }} FCFA/mois
+                                        {% endif %}
+                                    </span>
+                                    <a href="{% url 'logement:detail_logement' logement.id %}" class="di-listing-card__link">Voir →</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="padding: 2rem; text-align: center; background: #f5f5f5; border-radius: 12px; color: #666;">
+                    <p>Vous n'avez pas encore publié d'annonce</p>
+                    <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">➕ Créer une annonce</a>
+                </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
         <!-- ── GUIDE ── -->
         <section class="di-section">
             <h2 class="di-section__title">Comment ça marche</h2>
@@ -331,15 +373,96 @@
     margin: 0 0 0 48px;
 }
 
+/* ── Mes Annonces ── */
+.di-listings {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.di-listing-card {
+    background: var(--di-white);
+    border: 1px solid var(--di-border);
+    border-radius: var(--di-radius);
+    overflow: hidden;
+    box-shadow: var(--di-shadow);
+    transition: transform var(--di-transition), box-shadow var(--di-transition);
+}
+.di-listing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--di-shadow-lg);
+}
+.di-listing-card__image {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    background: var(--di-surface);
+}
+.di-listing-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.di-listing-card__content {
+    padding: 14px 16px;
+}
+.di-listing-card__title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--di-text);
+    margin: 0 0 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.di-listing-card__location {
+    font-size: .78rem;
+    color: var(--di-muted);
+    margin: 0 0 8px;
+}
+.di-listing-card__desc {
+    font-size: .8rem;
+    color: var(--di-muted);
+    margin: 0 0 10px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.di-listing-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--di-border);
+}
+.di-listing-card__price {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--ci-orange);
+}
+.di-listing-card__link {
+    font-size: .78rem;
+    color: var(--ci-orange);
+    text-decoration: none;
+    font-weight: 700;
+    transition: color var(--di-transition);
+}
+.di-listing-card__link:hover {
+    color: var(--ci-orange-dk);
+}
+
 /* ── Responsive ── */
 @media (max-width: 700px) {
     .di-wrapper { padding: 16px; }
     .di-stats { grid-template-columns: repeat(3, 1fr); }
     .di-actions { grid-template-columns: 1fr; }
     .di-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .di-listings { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 }
 @media (max-width: 480px) {
     .di-stats { grid-template-columns: 1fr 1fr; }
+    .di-listings { grid-template-columns: 1fr; }
 }
 </style>
 

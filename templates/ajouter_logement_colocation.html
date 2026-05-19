@@ -1,0 +1,575 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cherche Colocataire — Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="fc-wrapper">
+    <div class="fc-container">
+
+        <!-- ── HEADER ── -->
+        <header class="fc-header">
+            <span class="fc-header__flag">🇨🇮</span>
+            <h1 class="fc-header__title">Cherche un colocataire</h1>
+            <p class="fc-header__sub">Décrivez votre logement pour trouver le profil idéal</p>
+        </header>
+
+        <div class="fc-body">
+
+            <!-- ── PROGRESSION ── -->
+            <div class="fc-progress">
+                <div class="fc-progress__bar" id="progressBar" style="width: 25%"></div>
+            </div>
+
+            <!-- ── ÉTAPES ── -->
+            <div class="fc-steps">
+                <div class="fc-step fc-step--active" onclick="goTo(0)">
+                    <span class="fc-step__num">1</span>
+                    <span class="fc-step__label">Informations</span>
+                </div>
+                <div class="fc-step" onclick="goTo(1)">
+                    <span class="fc-step__num">2</span>
+                    <span class="fc-step__label">Caractéristiques</span>
+                </div>
+                <div class="fc-step" onclick="goTo(2)">
+                    <span class="fc-step__num">3</span>
+                    <span class="fc-step__label">Équipements</span>
+                </div>
+                <div class="fc-step" onclick="goTo(3)">
+                    <span class="fc-step__num">4</span>
+                    <span class="fc-step__label">Photos</span>
+                </div>
+            </div>
+
+            <!-- ── FORMULAIRE ── -->
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="fc-alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if form.non_field_errors %}
+                    <div class="fc-alert">
+                        {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if formset.non_form_errors %}
+                    <div class="fc-alert">
+                        <strong>Erreur dans les photos:</strong>
+                        {% for error in formset.non_form_errors %}
+                            <br>{{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- ── ÉTAPE 1 : Informations ── -->
+                <div class="fc-section fc-section--visible" id="s0">
+                    <div class="fc-info-box">
+                        Vous cherchez quelqu'un pour partager votre logement. Décrivez bien votre annonce pour attirer le bon colocataire.
+                    </div>
+                    <div class="fc-card">
+                        <h2 class="fc-card__title">Informations principales</h2>
+                        <div class="fc-grid">
+                            <div class="fc-field fc-field--full">
+                                <label class="fc-label">Titre de l'annonce</label>
+                                {{ form.titre }}
+                                {% if form.titre.errors %}<span class="fc-error">{{ form.titre.errors }}</span>{% endif %}
+                                <span class="fc-hint">Ex : "Cherche colocataire pour beau T3 climatisé à Cocody"</span>
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Type de logement</label>
+                                {{ form.type_logement }}
+                                {% if form.type_logement.errors %}<span class="fc-error">{{ form.type_logement.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Ville</label>
+                                {{ form.ville }}
+                                {% if form.ville.errors %}<span class="fc-error">{{ form.ville.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Quartier</label>
+                                {{ form.quartier }}
+                                {% if form.quartier.errors %}<span class="fc-error">{{ form.quartier.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field fc-field--full">
+                                <label class="fc-label">Description détaillée</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}<span class="fc-error">{{ form.description.errors }}</span>{% endif %}
+                                <span class="fc-hint">Ambiance, règles de vie, profil recherché…</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ÉTAPE 2 : Caractéristiques ── -->
+                <div class="fc-section" id="s1">
+                    <div class="fc-card">
+                        <h2 class="fc-card__title">Caractéristiques du logement</h2>
+                        <div class="fc-grid">
+                            <div class="fc-field">
+                                <label class="fc-label">Surface totale (m²)</label>
+                                {{ form.surface }}
+                                {% if form.surface.errors %}<span class="fc-error">{{ form.surface.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Nombre de pièces</label>
+                                {{ form.nombre_pieces }}
+                                {% if form.nombre_pieces.errors %}<span class="fc-error">{{ form.nombre_pieces.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Chambres (y compris la vôtre)</label>
+                                {{ form.nombre_chambres }}
+                                {% if form.nombre_chambres.errors %}<span class="fc-error">{{ form.nombre_chambres.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Nombre de lits</label>
+                                {{ form.nombre_lits }}
+                                {% if form.nombre_lits.errors %}<span class="fc-error">{{ form.nombre_lits.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Salles de bain</label>
+                                {{ form.nombre_salles_bain }}
+                                {% if form.nombre_salles_bain.errors %}<span class="fc-error">{{ form.nombre_salles_bain.errors }}</span>{% endif %}
+                            </div>
+                            <div class="fc-field">
+                                <label class="fc-label">Meublé</label>
+                                {{ form.meuble }}
+                                {% if form.meuble.errors %}<span class="fc-error">{{ form.meuble.errors }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fc-card">
+                        <h2 class="fc-card__title">Tarification</h2>
+                        <div class="fc-grid">
+                            <div class="fc-field fc-field--full">
+                                <label class="fc-label">Loyer de la chambre (FCFA/mois)</label>
+                                {{ form.prix }}
+                                {% if form.prix.errors %}<span class="fc-error">{{ form.prix.errors }}</span>{% endif %}
+                                <span class="fc-hint">Le loyer pour la chambre à louer, pas le total du logement.</span>
+                            </div>
+                            <div class="fc-field fc-field--full">
+                                <label class="fc-label">Disponible depuis</label>
+                                {{ form.disponible_depuis }}
+                                {% if form.disponible_depuis.errors %}<span class="fc-error">{{ form.disponible_depuis.errors }}</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ÉTAPE 3 : Équipements ── -->
+                <div class="fc-section" id="s2">
+                    <div class="fc-card">
+                        <h2 class="fc-card__title">Équipements et services</h2>
+                        <div class="fc-checks">
+                            <label class="fc-check">{{ form.climatisation }}<span>Climatisation</span></label>
+                            <label class="fc-check">{{ form.wifi }}<span>Wi-Fi</span></label>
+                            <label class="fc-check">{{ form.garage }}<span>Garage / Parking</span></label>
+                            <label class="fc-check">{{ form.jardin }}<span>Jardin</span></label>
+                            <label class="fc-check">{{ form.cuisine_equipee }}<span>Cuisine équipée</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ÉTAPE 4 : Photos ── -->
+                <div class="fc-section" id="s3">
+                    <div class="fc-card">
+                        <h2 class="fc-card__title">Photos du logement</h2>
+                        <div class="fc-info-box">
+                            Des photos de qualité augmentent vos chances de trouver rapidement un colocataire.
+                        </div>
+                        <div id="formset-container">
+                            {{ formset.management_form }}
+                            {% for form_photo in formset %}
+                                <div class="fc-photo-slot">
+                                    {% if form_photo.errors %}
+                                        <div class="fc-alert" style="margin-bottom: 10px;">
+                                            {% for field, errors in form_photo.errors.items %}
+                                                <strong>{{ field }}:</strong> {{ errors.0 }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {{ form_photo.image }}
+                                    {{ form_photo.alt_text }}
+                                    {{ form_photo.order }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="fc-card" style="margin-top: 1.5rem;">
+                        <h2 class="fc-card__title">🎬 Vidéos du logement (Optionnel)</h2>
+                        <div class="fc-info-box">
+                            Ajoutez des vidéos de visite pour attirer plus de colocataires. Max 5 vidéos.
+                        </div>
+                        <div id="video-formset-container">
+                            {{ video_formset.management_form }}
+                            {% for form_video in video_formset %}
+                                <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e8d5ff; border-radius: 8px; background: #f9f6ff;">
+                                    {% if form_video.errors %}
+                                        <div class="fc-alert" style="margin-bottom: 10px;">
+                                            {% for field, errors in form_video.errors.items %}
+                                                <strong>{{ field }}:</strong> {{ errors.0 }}<br>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <label>Fichier vidéo</label>
+                                        {{ form_video.video }}
+                                    </div>
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <label>Titre de la vidéo</label>
+                                        {{ form_video.titre }}
+                                    </div>
+                                    <div style="margin-bottom: 0.75rem;">
+                                        <label>Description</label>
+                                        {{ form_video.description }}
+                                    </div>
+                                    <div>
+                                        <label>Ordre</label>
+                                        {{ form_video.order }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── NAVIGATION ── -->
+                <div class="fc-nav">
+                    <button type="button" class="fc-btn fc-btn--ghost" id="btnPrev" onclick="prev()" style="display:none">← Précédent</button>
+                    <button type="button" class="fc-btn fc-btn--primary" id="btnNext" onclick="next()">Suivant →</button>
+                    <button type="submit" class="fc-btn fc-btn--submit" id="btnSubmit" style="display:none">Publier l'annonce</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ── Tokens ── */
+:root {
+    --ci-orange:     #F77F00;
+    --ci-orange-dk:  #D96B00;
+    --ci-orange-lt:  #FFF3E0;
+    --ci-green:      #009A44;
+    --ci-green-dk:   #007A35;
+    --ci-green-lt:   #E6F5ED;
+    --fc-text:       #111827;
+    --fc-muted:      #6B7280;
+    --fc-border:     #E5E7EB;
+    --fc-surface:    #F9FAFB;
+    --fc-white:      #FFFFFF;
+    --fc-radius:     14px;
+    --fc-shadow:     0 2px 8px rgba(0,0,0,.07);
+    --fc-shadow-lg:  0 8px 24px rgba(0,0,0,.10);
+    --fc-transition: .2s ease;
+}
+
+/* ── Layout ── */
+.fc-wrapper {
+    background: var(--fc-surface);
+    min-height: 100vh;
+    padding: 32px 24px;
+}
+.fc-container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--fc-white);
+    border-radius: 20px;
+    box-shadow: var(--fc-shadow-lg);
+    overflow: hidden;
+}
+
+/* ── Header ── */
+.fc-header {
+    background: linear-gradient(135deg, #b85c00 0%, #F77F00 40%, #fff 68%, #009A44 100%);
+    position: relative;
+    padding: 36px 40px 32px;
+    text-align: center;
+}
+.fc-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(20,20,20,.42);
+}
+.fc-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ci-orange) 33.3%, #fff 33.3% 66.6%, var(--ci-green) 66.6%);
+}
+.fc-header__flag,
+.fc-header__title,
+.fc-header__sub { position: relative; z-index: 1; }
+.fc-header__flag { font-size: 1.8rem; display: block; margin-bottom: 10px; }
+.fc-header__title {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 8px;
+    letter-spacing: -.02em;
+}
+.fc-header__sub { font-size: .85rem; color: rgba(255,255,255,.8); margin: 0; }
+
+/* ── Body ── */
+.fc-body { padding: 28px 32px 40px; }
+
+/* ── Progression ── */
+.fc-progress {
+    height: 4px;
+    background: var(--fc-border);
+    border-radius: 100px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+.fc-progress__bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--ci-orange), var(--ci-green));
+    border-radius: 100px;
+    transition: width .35s ease;
+}
+
+/* ── Étapes ── */
+.fc-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--fc-border);
+    border-radius: var(--fc-radius);
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+.fc-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px;
+    background: var(--fc-white);
+    border-right: 1px solid var(--fc-border);
+    cursor: pointer;
+    transition: background var(--fc-transition);
+}
+.fc-step:last-child { border-right: none; }
+.fc-step--active { background: var(--ci-orange-lt); }
+.fc-step__num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--fc-border);
+    color: var(--fc-muted);
+    font-size: .75rem;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--fc-transition);
+}
+.fc-step--active .fc-step__num { background: var(--ci-orange); color: #fff; }
+.fc-step__label { font-size: .72rem; font-weight: 600; color: var(--fc-muted); text-align: center; }
+.fc-step--active .fc-step__label { color: var(--ci-orange-dk); }
+
+/* ── Sections ── */
+.fc-section { display: none; }
+.fc-section--visible { display: block; }
+
+/* ── Card ── */
+.fc-card {
+    background: var(--fc-white);
+    border: 1px solid var(--fc-border);
+    border-radius: var(--fc-radius);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+}
+.fc-card__title {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--fc-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 0 0 16px;
+    padding-left: 10px;
+    border-left: 3px solid var(--ci-orange);
+}
+
+/* ── Grille champs ── */
+.fc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+.fc-field { display: flex; flex-direction: column; gap: 5px; }
+.fc-field--full { grid-column: 1 / -1; }
+.fc-label { font-size: .82rem; font-weight: 600; color: var(--fc-text); }
+.fc-hint { font-size: .72rem; color: #C4C9D4; }
+.fc-error { font-size: .75rem; color: #DC2626; }
+.fc-info-box {
+    background: var(--ci-orange-lt);
+    border-left: 3px solid var(--ci-orange);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: .82rem;
+    color: var(--ci-orange-dk);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Champs Django */
+.fc-field input,
+.fc-field select,
+.fc-field textarea,
+.fc-grid input,
+.fc-grid select,
+.fc-grid textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    font-size: .88rem;
+    border: 1px solid var(--fc-border);
+    border-radius: 8px;
+    background: var(--fc-white);
+    color: var(--fc-text);
+    font-family: inherit;
+    transition: border-color var(--fc-transition), box-shadow var(--fc-transition);
+}
+.fc-field input:focus,
+.fc-field select:focus,
+.fc-field textarea:focus,
+.fc-grid input:focus,
+.fc-grid select:focus,
+.fc-grid textarea:focus {
+    outline: none;
+    border-color: var(--ci-orange);
+    box-shadow: 0 0 0 3px rgba(247,127,0,.12);
+}
+.fc-field textarea,
+.fc-grid textarea { min-height: 90px; resize: vertical; }
+
+/* ── Checkboxes ── */
+.fc-checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+.fc-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--fc-border);
+    border-radius: 10px;
+    cursor: pointer;
+    background: var(--fc-white);
+    font-size: .85rem;
+    color: var(--fc-text);
+    font-weight: 600;
+    transition: all var(--fc-transition);
+}
+.fc-check:hover { border-color: var(--ci-orange); background: var(--ci-orange-lt); }
+.fc-check input { width: 16px; height: 16px; margin: 0; cursor: pointer; accent-color: var(--ci-orange); }
+
+/* ── Photos ── */
+.fc-photo-slot {
+    padding: 14px;
+    border: 1px solid var(--fc-border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: var(--fc-surface);
+}
+
+/* ── Navigation ── */
+.fc-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--fc-border);
+}
+.fc-btn {
+    padding: 10px 22px;
+    font-size: .88rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    transition: all var(--fc-transition);
+}
+.fc-btn--ghost {
+    background: transparent;
+    border: 1px solid var(--fc-border);
+    color: var(--fc-text);
+}
+.fc-btn--ghost:hover { border-color: var(--fc-text); }
+.fc-btn--primary {
+    background: var(--ci-orange);
+    color: #fff;
+    margin-left: auto;
+}
+.fc-btn--primary:hover { background: var(--ci-orange-dk); transform: translateY(-1px); }
+.fc-btn--submit {
+    background: var(--ci-green);
+    color: #fff;
+    margin-left: auto;
+}
+.fc-btn--submit:hover { background: var(--ci-green-dk); transform: translateY(-1px); }
+
+/* ── Alert ── */
+.fc-alert {
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    color: #B91C1C;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: .82rem;
+    margin-bottom: 16px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .fc-wrapper { padding: 0; }
+    .fc-container { border-radius: 0; }
+    .fc-body { padding: 20px 16px 32px; }
+    .fc-header { padding: 28px 20px 24px; }
+    .fc-step__label { display: none; }
+    .fc-steps { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+
+<script>
+let currentStep = 0;
+const totalSteps = 4;
+
+function goTo(step) {
+    if (step < 0 || step >= totalSteps) return;
+    document.querySelector('.fc-section--visible').classList.remove('fc-section--visible');
+    document.getElementById(`s${step}`).classList.add('fc-section--visible');
+    document.querySelector('.fc-step--active').classList.remove('fc-step--active');
+    document.querySelectorAll('.fc-step')[step].classList.add('fc-step--active');
+    currentStep = step;
+    updateUI();
+}
+
+function next() { goTo(currentStep + 1); }
+function prev() { goTo(currentStep - 1); }
+
+function updateUI() {
+    const pct = ((currentStep + 1) / totalSteps) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('btnPrev').style.display   = currentStep === 0 ? 'none' : 'block';
+    document.getElementById('btnNext').style.display   = currentStep === totalSteps - 1 ? 'none' : 'block';
+    document.getElementById('btnSubmit').style.display = currentStep === totalSteps - 1 ? 'inline-block' : 'none';
+}
+
+updateUI();
+</script>
+
+{% endblock %}

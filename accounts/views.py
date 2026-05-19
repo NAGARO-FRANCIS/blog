@@ -333,10 +333,21 @@ def dashboard_individu(request):
     except Exception:
         nb_messages_non_lus = 0
     
+    # Récupérer les annonces de l'utilisateur (sauf pour colocataire)
+    try:
+        from logement.models import Logement
+        if profile.role != 'colocataire':
+            mes_annonces = Logement.objects.filter(proprietaire=request.user).prefetch_related('photos').order_by('-created_at')[:5]
+        else:
+            mes_annonces = []
+    except Exception:
+        mes_annonces = []
+    
     context = {
         'profile': profile,
         'nb_logements_favoris': nb_logements_favoris,
         'nb_messages_non_lus': nb_messages_non_lus,
+        'mes_annonces': mes_annonces,
     }
     return render(request, 'accounts/dashboard_individu.html', context)
 

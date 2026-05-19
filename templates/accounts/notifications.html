@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications - Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="notifications-wrapper">
+    <div class="notifications-container">
+        <div class="notifications-header">
+            <h1 class="notifications-title">🔔 Notifications</h1>
+            {% if unread_count > 0 %}
+                <button class="notifications-btn" onclick="markAllAsRead()">
+                    Marquer tout comme lu
+                </button>
+            {% endif %}
+        </div>
+
+        {% if notifications %}
+            <div class="notifications-list">
+                {% for notification in notifications %}
+                    <div class="notification-item {% if notification.is_read %}notification-item--read{% else %}notification-item--unread{% endif %}" data-notification-id="{{ notification.id }}">
+                        <div class="notification-icon">
+                            {% if notification.notification_type == 'new_listing' %}📢{% elif notification.notification_type == 'subscription' %}👥{% elif notification.notification_type == 'message' %}💬{% elif notification.notification_type == 'reservation' %}📅{% else %}ℹ️{% endif %}
+                        </div>
+
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3 class="notification-title">{{ notification.title }}</h3>
+                                <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="notification-message">{{ notification.message }}</p>
+                            {% if notification.actor %}
+                                <p class="notification-actor">Par <strong>{{ notification.actor_name }}</strong></p>
+                            {% endif %}
+                        </div>
+
+                        <div class="notification-actions">
+                            {% if not notification.is_read %}
+                                <button class="notification-action-btn" onclick="markAsRead({{ notification.id }})">
+                                    Marquer comme lu
+                                </button>
+                            {% endif %}
+                            {% if notification.related_listing_id %}
+                                <a href="{% url 'logement:detail_logement' notification.related_listing_id %}" class="notification-action-btn notification-action-btn--link">
+                                    Voir l'annonce
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="notifications-empty">
+                <div class="notifications-empty-icon">🔔</div>
+                <h3>Aucune notification</h3>
+                <p>Vous n'avez pas encore de notifications. Abonnez-vous à des utilisateurs pour être notifié de leurs nouvelles annonces!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* ── Design Tokens ── */
+:root {
+    --ci-orange: #F77F00;
+    --ci-orange-dk: #D96B00;
+    --ci-green: #009A44;
+    --ci-text: #1C1C1C;
+    --ci-text-muted: #6B7280;
+    --ci-border: #E5E7EB;
+    --ci-surface: #F9FAFB;
+    --ci-white: #FFFFFF;
+    --ci-radius: 12px;
+    --ci-shadow: 0 2px 8px rgba(0,0,0,.07);
+    --ci-transition: .2s ease;
+}
+
+/* ── Layout ── */
+.notifications-wrapper {
+    background: var(--ci-surface);
+    min-height: 100vh;
+    padding: 32px 24px 56px;
+}
+
+.notifications-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* ── Header ── */
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 16px;
+}
+
+.notifications-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--ci-text);
+    margin: 0;
+    letter-spacing: -.02em;
+}
+
+.notifications-btn {
+    background: var(--ci-orange);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--ci-transition);
+}
+
+.notifications-btn:hover {
+    background: var(--ci-orange-dk);
+    transform: translateY(-1px);
+}
+
+/* ── Notification Items ── */
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.notification-item {
+    background: var(--ci-white);
+    border: 1px solid var(--ci-border);
+    border-radius: var(--ci-radius);
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: all var(--ci-transition);
+    box-shadow: var(--ci-shadow);
+}
+
+.notification-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,.10);
+}
+
+.notification-item--unread {
+    background: linear-gradient(to right, rgba(247,127,0,.05), transparent);
+    border-left: 4px solid var(--ci-orange);
+}
+
+.notification-item--read {
+    opacity: .8;
+}
+
+/* ── Icon ── */
+.notification-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ── Content ── */
+.notification-content {
+    flex: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+    gap: 8px;
+}
+
+.notification-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--ci-text);
+    margin: 0;
+}
+
+.notification-time {
+    font-size: .75rem;
+    color: var(--ci-text-muted);
+    white-space: nowrap;
+}
+
+.notification-message {
+    font-size: .85rem;
+    color: var(--ci-text);
+    margin: 6px 0 4px;
+}
+
+.notification-actor {
+    font-size: .75rem;
+    color: var(--ci-text-muted);
+    margin: 4px 0 0;
+}
+
+/* ── Actions ── */
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.notification-action-btn {
+    background: var(--ci-surface);
+    color: var(--ci-text);
+    border: 1px solid var(--ci-border);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--ci-transition);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.notification-action-btn:hover {
+    background: var(--ci-orange-dk);
+    color: #fff;
+    border-color: var(--ci-orange-dk);
+}
+
+.notification-action-btn--link {
+    background: var(--ci-orange);
+    color: #fff;
+    border-color: var(--ci-orange);
+}
+
+.notification-action-btn--link:hover {
+    background: var(--ci-orange-dk);
+}
+
+/* ── Empty State ── */
+.notifications-empty {
+    text-align: center;
+    padding: 60px 24px;
+    background: var(--ci-white);
+    border: 2px dashed var(--ci-border);
+    border-radius: var(--ci-radius);
+}
+
+.notifications-empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.notifications-empty h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ci-text);
+    margin: 0 0 8px;
+}
+
+.notifications-empty p {
+    font-size: .9rem;
+    color: var(--ci-text-muted);
+    margin: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+    .notifications-wrapper { padding: 16px 16px 40px; }
+    
+    .notifications-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .notifications-btn {
+        width: 100%;
+    }
+    
+    .notification-item {
+        flex-direction: column;
+    }
+    
+    .notification-header {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/accounts/notifications/mark-as-read/${notificationId}/`, {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (item) {
+                    item.classList.remove('notification-item--unread');
+                    item.classList.add('notification-item--read');
+                    const btn = item.querySelector('.notification-action-btn');
+                    if (btn && btn.textContent.includes('Marquer')) {
+                        btn.remove();
+                    }
+                }
+            }
+        });
+}
+
+function markAllAsRead() {
+    fetch('/accounts/notifications/mark-all-as-read/', {method: 'POST'})
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelectorAll('.notification-item--unread').forEach(item => {
+                    item.classList.remove('notification-item--unread');
+                    item.classList.add('notification-item--read');
+                    const btn = item.querySelector('.notification-action-btn');
+                    if (btn && btn.textContent.includes('Marquer')) {
+                        btn.remove();
+                    }
+                });
+                location.reload();
+            }
+        });
+}
+</script>
+
+{% endblock %}

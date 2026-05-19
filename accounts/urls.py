@@ -4,6 +4,11 @@ from .views import (
     dashboard, dashboard_individu, dashboard_residence, dashboard_hotel,
     profil, edit_profil, verification_docs, upload_document
 )
+from .subscription_views import (
+    subscribe, unsubscribe, is_subscribed, get_subscriber_count,
+    notifications_list, mark_as_read, unread_notifications_count,
+    mark_all_as_read, notifications_api
+)
 
 app_name = 'accounts'
 
@@ -28,6 +33,17 @@ urlpatterns = [
     # Vérification
     path('verification-docs/', verification_docs, name='verification_docs'),
     path('upload-document/', upload_document, name='upload_document'),
+    
+    # Abonnements & Notifications
+    path('subscribe/<int:user_id>/', subscribe, name='subscribe'),
+    path('unsubscribe/<int:user_id>/', unsubscribe, name='unsubscribe'),
+    path('is-subscribed/<int:user_id>/', is_subscribed, name='is_subscribed'),
+    path('subscriber-count/<int:user_id>/', get_subscriber_count, name='subscriber_count'),
+    path('notifications/', notifications_list, name='notifications'),
+    path('notifications/mark-as-read/<int:notification_id>/', mark_as_read, name='mark_notification_as_read'),
+    path('notifications/mark-all-as-read/', mark_all_as_read, name='mark_all_notifications_as_read'),
+    path('notifications/unread-count/', unread_notifications_count, name='unread_notifications_count'),
+    path('api/notifications/', notifications_api, name='notifications_api'),
     
     # Authentication
     path('', include('django.contrib.auth.urls')),

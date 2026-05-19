@@ -13,7 +13,30 @@ def home(request):
 
 def liste_annonces(request):
     form = RechercheAnnonceForm(request.GET or None)
-    annonces = ColocationAnnonce.objects.prefetch_related('photos').order_by('-created_at')
+
+    user = request.user
+    if not user.is_authenticated:
+        annonces = ColocationAnnonce.objects.prefetch_related('photos').order_by('-created_at')
+    else:
+        try:
+            role         = user.profile.role
+            account_type = user.profile.account_type
+        except Exception:
+            role         = None
+            account_type = None
+
+        if account_type in ['hotel', 'residence']:
+            annonces = ColocationAnnonce.objects.prefetch_related('photos').order_by('-created_at')
+        elif role == 'colocataire':
+            annonces = ColocationAnnonce.objects.filter(
+                proprietaire__profile__role='locataire'
+            ).prefetch_related('photos').order_by('-created_at')
+        elif role == 'locataire':
+            annonces = ColocationAnnonce.objects.prefetch_related('photos').order_by('-created_at')
+        elif role == 'proprietaire':
+            annonces = ColocationAnnonce.objects.none()
+        else:
+            annonces = ColocationAnnonce.objects.prefetch_related('photos').order_by('-created_at')
 
     if form.is_valid():
         q = form.cleaned_data.get('q')

@@ -147,6 +147,9 @@ class Logement(models.Model):
     def get_nombre_photos(self):
         return self.photos.count()
 
+    def get_nombre_videos(self):
+        return self.videos.count()
+
 
 class PhotoLogement(models.Model):
     logement = models.ForeignKey(
@@ -164,6 +167,32 @@ class PhotoLogement(models.Model):
 
     def __str__(self):
         return f"Photo de {self.logement.titre}"
+
+
+class VideoLogement(models.Model):
+    """Modèle pour les vidéos des logements"""
+    logement = models.ForeignKey(
+        Logement, 
+        on_delete=models.CASCADE, 
+        related_name='videos'
+    )
+    video = models.FileField(
+        upload_to='logements/videos/%Y/%m/',
+        blank=True,
+        null=True,
+        help_text="Accepte les formats: MP4, WebM, Ogg (max 500 MB)"
+    )
+    titre = models.CharField(max_length=200, blank=True)
+    description = models.TextField(blank=True)
+    order = models.PositiveSmallIntegerField(default=0, blank=True)
+    duree_secondes = models.PositiveSmallIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"Vidéo: {self.titre or self.logement.titre}"
 
 
 # ================================
@@ -294,11 +323,14 @@ class Reservation(models.Model):
 
 
 class Paiement(models.Model):
-    """Modèle pour tracer les paiements Stripe"""
+    """Modèle pour tracer les paiements (Stripe, Mobile Money, Virement, Cash)"""
     METHODE_CHOICES = [
-        ('stripe', 'Carte bancaire (Stripe)'),
-        ('virement', 'Virement bancaire'),
-        ('cash', 'Paiement sur place'),
+        ('mouv', '🟠 MOUV (Étoile)'),
+        ('orange', '🟠 Orange Money'),
+        ('wave', '🔵 Wave'),
+        ('stripe', '💳 Carte bancaire (Stripe)'),
+        ('virement', '🏦 Virement bancaire'),
+        ('cash', '💵 Paiement sur place'),
     ]
     
     STATUT_CHOICES = [
@@ -350,3 +382,33 @@ class Paiement(models.Model):
     
     def __str__(self):
         return f"{self.reservation.logement.titre} - {self.montant} FCFA ({self.get_statut_display()})"
+
+
+# ================================
+# SIGNAUX POUR LES NOTIFICATIONS
+# ================================
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+@receiver(post_save, sender=Logement)
+def notify_subscribers_on_new_listing(sender, instance, created, **kwargs):
+    """Envoyer une notification aux abonnés quand on crée une nouvelle annonce"""
+    if created and instance.proprietaire:
+        from accounts.models import Subscription, Notification
+        
+        # Trouver tous les abonnés de ce propriétaire
+        subscriptions = Subscription.objects.filter(
+            creator=instance.proprietaire,
+            is_active=True,
+            notify_on_new_listing=True
+        ).select_related('subscriber')
+        
+        # Créer une notification pour chaque abonné
+        for subscription in subscriptions:
+            Notification.create_new_listing_notification(
+                subscriber=subscription.subscriber,
+                creator=instance.proprietaire,
+                listing=instance
+            )

@@ -1,358 +1,703 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ logement.titre }} - Ivoire Connect{% endblock %}
+{% block title %}{{ logement.titre }} — Ivoire Connect{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <!-- Galerie Photos (Gauche) -->
-        <div class="col-lg-8">
-            <div class="detail-photos">
+<div class="dl-wrapper">
+    <div class="dl-container">
+
+        <!-- ── COLONNE GAUCHE ── -->
+        <div class="dl-main">
+
+            <!-- Galerie -->
+            <div class="dl-gallery">
                 {% if photos %}
-                    <div id="photoCarousel" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
+                    <div class="dl-gallery__main" id="mainPhoto">
+                        <img src="{{ photos.0.image.url }}" alt="{{ photos.0.alt_text }}" id="mainImg">
+                        <span class="dl-gallery__badge">{{ photos|length }} photo{% if photos|length > 1 %}s{% endif %}</span>
+                    </div>
+                    {% if photos|length > 1 %}
+                        <div class="dl-gallery__thumbs">
                             {% for photo in photos %}
-                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                    <img src="{{ photo.image.url }}" class="d-block w-100" alt="{{ photo.alt_text }}">
-                                </div>
+                                <img src="{{ photo.image.url }}"
+                                     alt="{{ photo.alt_text }}"
+                                     class="dl-gallery__thumb {% if forloop.first %}dl-gallery__thumb--active{% endif %}"
+                                     onclick="switchPhoto(this, '{{ photo.image.url }}')">
                             {% endfor %}
                         </div>
-                        {% if photos.count > 1 %}
-                            <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon"></span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon"></span>
-                            </button>
-                        {% endif %}
-                    </div>
+                    {% endif %}
                 {% else %}
-                    <div class="no-photo">
-                        <p>Aucune photo disponible</p>
-                    </div>
+                    <div class="dl-gallery__empty">Aucune photo disponible</div>
                 {% endif %}
             </div>
 
-            <!-- Informations de base -->
-            <div class="mt-4 detail-info">
-                <h1>{{ logement.titre }}</h1>
-                
-                <div class="detail-tags">
-                    <span class="badge bg-info">{{ logement.get_account_type_display }}</span>
-                    <span class="badge bg-primary">{{ logement.get_type_logement_display }}</span>
-                </div>
-
-                <div class="detail-location mt-3">
-                    <p><strong>📍 Localisation:</strong> {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</p>
-                </div>
-
-                <!-- Caractéristiques -->
-                <div class="detail-features mt-4">
-                    <h3>Caractéristiques</h3>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p>Surface: <strong>{{ logement.surface }} m²</strong></p>
-                            <p>Chambres: <strong>{{ logement.chambres }}</strong></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p>Lits: <strong>{{ logement.lits }}</strong></p>
-                            <p>Salle(s) de bain: <strong>{{ logement.salle_de_bain }}</strong></p>
-                        </div>
+            <!-- Vidéos -->
+            {% if videos %}
+                <div class="dl-section">
+                    <h2 class="dl-section__title">🎬 Vidéos</h2>
+                    <div class="dl-videos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        {% for video in videos %}
+                            <div style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: #f5f5f5;">
+                                <video 
+                                    controls 
+                                    style="width: 100%; height: 200px; background: #000; object-fit: cover;"
+                                    poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23333' width='400' height='300'/%3E%3Cpolygon fill='%23fff' points='160,80 160,220 280,150'/%3E%3C/svg%3E">
+                                    <source src="{{ video.video.url }}" type="video/mp4">
+                                    Votre navigateur ne supporte pas les vidéos HTML5
+                                </video>
+                                {% if video.titre %}
+                                    <div style="padding: 0.75rem;">
+                                        <h4 style="margin: 0 0 0.25rem; font-size: 14px; font-weight: 600;">{{ video.titre }}</h4>
+                                        {% if video.description %}<p style="margin: 0; font-size: 12px; color: #666;">{{ video.description|truncatewords:15 }}</p>{% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
+            {% endif %}
 
-                <!-- Description -->
-                <div class="detail-description mt-4">
-                    <h3>Description</h3>
-                    <p>{{ logement.description|linebreaks }}</p>
+            <!-- Titre & tags -->
+            <div class="dl-section">
+                <div class="dl-tags">
+                    <span class="dl-tag dl-tag--type">{{ logement.get_account_type_display }}</span>
+                    <span class="dl-tag dl-tag--cat">{{ logement.get_type_logement_display }}</span>
                 </div>
-
-                <!-- Équipements -->
-                {% if logement.wifi or logement.clim or logement.chauffe_eau %}
-                    <div class="detail-equipements mt-4">
-                        <h3>Équipements</h3>
-                        <ul>
-                            {% if logement.wifi %}<li>✅ WiFi</li>{% endif %}
-                            {% if logement.clim %}<li>✅ Climatisation</li>{% endif %}
-                            {% if logement.chauffe_eau %}<li>✅ Chauffe-eau</li>{% endif %}
-                        </ul>
-                    </div>
-                {% endif %}
+                <h1 class="dl-title">{{ logement.titre }}</h1>
+                <p class="dl-location">📍 {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</p>
             </div>
+
+            <!-- Caractéristiques -->
+            <div class="dl-section">
+                <h2 class="dl-section__title">Caractéristiques</h2>
+                <div class="dl-chars">
+                    {% if logement.surface %}
+                        <div class="dl-char">
+                            <span class="dl-char__val">{{ logement.surface }}</span>
+                            <span class="dl-char__label">m²</span>
+                        </div>
+                    {% endif %}
+                    <div class="dl-char">
+                        <span class="dl-char__val">{{ logement.nombre_chambres }}</span>
+                        <span class="dl-char__label">Chambre{% if logement.nombre_chambres > 1 %}s{% endif %}</span>
+                    </div>
+                    {% if logement.nombre_lits %}
+                        <div class="dl-char">
+                            <span class="dl-char__val">{{ logement.nombre_lits }}</span>
+                            <span class="dl-char__label">Lit{% if logement.nombre_lits > 1 %}s{% endif %}</span>
+                        </div>
+                    {% endif %}
+                    <div class="dl-char">
+                        <span class="dl-char__val">{{ logement.nombre_salles_bain }}</span>
+                        <span class="dl-char__label">Salle{% if logement.nombre_salles_bain > 1 %}s{% endif %} de bain</span>
+                    </div>
+                    {% if logement.capacite %}
+                        <div class="dl-char">
+                            <span class="dl-char__val">{{ logement.capacite }}</span>
+                            <span class="dl-char__label">Capacité</span>
+                        </div>
+                    {% endif %}
+                    {% if logement.etage %}
+                        <div class="dl-char">
+                            <span class="dl-char__val">{{ logement.etage }}</span>
+                            <span class="dl-char__label">Étage</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="dl-section">
+                <h2 class="dl-section__title">Description</h2>
+                <div class="dl-desc">{{ logement.description|linebreaks }}</div>
+            </div>
+
+            <!-- Équipements -->
+            {% if logement.wifi or logement.climatisation or logement.garage or logement.jardin or logement.piscine or logement.cuisine_equipee or logement.minibar or logement.television or logement.coffre_fort or logement.reception_24h or logement.restaurant or logement.ascenseur or logement.gardien or logement.securite or logement.buanderie %}
+                <div class="dl-section">
+                    <h2 class="dl-section__title">Équipements &amp; services</h2>
+                    <div class="dl-amenities">
+                        {% if logement.wifi %}<span class="dl-amenity">WiFi</span>{% endif %}
+                        {% if logement.climatisation %}<span class="dl-amenity">Climatisation</span>{% endif %}
+                        {% if logement.garage %}<span class="dl-amenity">Garage</span>{% endif %}
+                        {% if logement.jardin %}<span class="dl-amenity">Jardin</span>{% endif %}
+                        {% if logement.piscine %}<span class="dl-amenity">Piscine</span>{% endif %}
+                        {% if logement.cuisine_equipee %}<span class="dl-amenity">Cuisine équipée</span>{% endif %}
+                        {% if logement.minibar %}<span class="dl-amenity">Minibar</span>{% endif %}
+                        {% if logement.television %}<span class="dl-amenity">Télévision</span>{% endif %}
+                        {% if logement.coffre_fort %}<span class="dl-amenity">Coffre-fort</span>{% endif %}
+                        {% if logement.reception_24h %}<span class="dl-amenity">Réception 24h</span>{% endif %}
+                        {% if logement.restaurant %}<span class="dl-amenity">Restaurant</span>{% endif %}
+                        {% if logement.ascenseur %}<span class="dl-amenity">Ascenseur</span>{% endif %}
+                        {% if logement.gardien %}<span class="dl-amenity">Gardien</span>{% endif %}
+                        {% if logement.securite %}<span class="dl-amenity">Sécurité</span>{% endif %}
+                        {% if logement.buanderie %}<span class="dl-amenity">Buanderie</span>{% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Conditions spéciales -->
+            {% if logement.conditions_speciales or logement.account_type == 'residence' %}
+                <div class="dl-section">
+                    <h2 class="dl-section__title">📋 Conditions</h2>
+                    {% if logement.conditions_speciales %}
+                        <div class="dl-desc">{{ logement.conditions_speciales|linebreaks }}</div>
+                    {% endif %}
+                    {% if logement.account_type == 'residence' %}
+                        <div class="dl-conditions">
+                            {% if logement.caution_mois %}<p>💳 <strong>Caution:</strong> {{ logement.caution_mois }} mois de loyer</p>{% endif %}
+                            {% if logement.frais_agence %}<p>📋 <strong>Frais d'agence:</strong> {{ logement.frais_agence|floatformat:0 }} FCFA</p>{% endif %}
+                            {% if logement.duree_min_bail %}<p>📅 <strong>Durée minimale:</strong> {{ logement.duree_min_bail }}</p>{% endif %}
+                            {% if logement.type_charge %}<p>💡 <strong>Type de charges:</strong> {{ logement.get_type_charge_display }}</p>{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
         </div>
 
-        <!-- Formulaire de Réservation (Droite) -->
-        <div class="col-lg-4">
-            <div class="reservation-card">
+        <!-- ── COLONNE DROITE ── -->
+        <div class="dl-sidebar">
+            <div class="dl-card">
+
                 <!-- Prix -->
-                <div class="reservation-header">
-                    <h2>Réservation</h2>
-                    <div class="price-display">
-                        {% if logement.account_type == 'hotel' and logement.prix_par_nuit %}
-                            <p class="price">{{ logement.prix_par_nuit|floatformat:0 }} FCFA <small>/nuit</small></p>
-                        {% elif logement.account_type == 'residence' and logement.prix_par_mois %}
-                            <p class="price">{{ logement.prix_par_mois|floatformat:0 }} FCFA <small>/mois</small></p>
-                        {% else %}
-                            <p class="price">{{ logement.prix|floatformat:0 }} FCFA</p>
-                        {% endif %}
-                    </div>
+                <div class="dl-card__price">
+                    {% if logement.account_type == 'hotel' and logement.prix_par_nuit %}
+                        <span class="dl-price">{{ logement.prix_par_nuit|floatformat:0 }} <small>FCFA / nuit</small></span>
+                    {% elif logement.account_type == 'residence' and logement.prix_par_mois %}
+                        <span class="dl-price">{{ logement.prix_par_mois|floatformat:0 }} <small>FCFA / mois</small></span>
+                    {% elif logement.prix %}
+                        <span class="dl-price">{{ logement.prix|floatformat:0 }} <small>FCFA</small></span>
+                    {% endif %}
                 </div>
 
-                <!-- Bouton de réservation -->
-                <a href="{% url 'logement:reserver_logement' logement.id %}" class="btn btn-primary btn-lg w-100 mt-4">
+                <!-- Tarification détaillée -->
+                {% if logement.account_type == 'hotel' or logement.account_type == 'residence' %}
+                    <div class="dl-card__pricing">
+                        <h4 class="dl-pricing__title">Tarification</h4>
+                        {% if logement.prix_par_nuit %}<p>💰 Nuit: <strong>{{ logement.prix_par_nuit|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.prix_par_mois %}<p>💰 Mois: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.frais_nettoyage %}<p>🧹 Nettoyage: <strong>{{ logement.frais_nettoyage|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.frais_agence %}<p>📋 Agence: <strong>{{ logement.frais_agence|floatformat:0 }} FCFA</strong></p>{% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- Infos rapides -->
+                <div class="dl-card__meta">
+                    <h4 class="dl-meta__title">📋 Informations</h4>
+                    {% if logement.account_type == 'hotel' %}
+                        <p>🏨 <strong>Hôtel</strong></p>
+                        {% if logement.min_sejour %}<p>🌙 Min: {{ logement.min_sejour }} nuit{% if logement.min_sejour > 1 %}s{% endif %}</p>{% endif %}
+                    {% elif logement.account_type == 'residence' %}
+                        <p>🏢 <strong>Résidence</strong></p>
+                        {% if logement.duree_min_bail %}<p>📅 Durée min: {{ logement.duree_min_bail }}</p>{% endif %}
+                        {% if logement.caution_mois %}<p>💳 Caution: {{ logement.caution_mois }} mois</p>{% endif %}
+                        {% if logement.type_charge %}<p>💡 Charges: {{ logement.get_type_charge_display }}</p>{% endif %}
+                    {% else %}
+                        <p>🏠 <strong>Particulier</strong></p>
+                    {% endif %}
+                    {% if logement.meuble %}<p>🛋️ Meublé</p>{% else %}<p>🏚️ Non meublé</p>{% endif %}
+                    {% if logement.disponible_depuis %}<p>✅ Depuis: {{ logement.disponible_depuis|date:"d/m/Y" }}</p>{% endif %}
+                </div>
+
+                <!-- CTA Principal -->
+                <a href="{% url 'logement:reserver_logement' logement.id %}" class="dl-btn dl-btn--primary">
                     🔗 Réserver maintenant
                 </a>
 
-                <!-- Info supplémentaire -->
-                <div class="reservation-info mt-4">
-                    <p class="text-muted">
-                        <small>
-                            {% if logement.account_type == 'hotel' %}
-                                Réservation pour une ou plusieurs nuits
-                            {% elif logement.account_type == 'residence' %}
-                                Bail long terme (minimum {{ logement.duree_min_bail }} mois)
-                            {% else %}
-                                Disponible pour location
-                            {% endif %}
-                        </small>
-                    </p>
+                <!-- Bouton d'abonnement -->
+                {% if user.is_authenticated and user != logement.proprietaire %}
+                    <button class="dl-btn dl-btn--subscribe" id="subscribeBtn" onclick="toggleSubscription({{ logement.proprietaire.id }})">
+                        <span id="subscribeBtnText">📢 S'abonner</span>
+                    </button>
+                {% endif %}
+
+                <!-- Actions rapides -->
+                <div class="dl-card__actions">
+                    <a href="tel:{{ logement.proprietaire.profile.telephone }}" class="dl-action-btn" title="Appeler">
+                        ☎️ Appeler
+                    </a>
+                    <a href="https://wa.me/{{ logement.proprietaire.profile.telephone|slice:'2:' }}" target="_blank" class="dl-action-btn" title="WhatsApp">
+                        💬 Message
+                    </a>
                 </div>
 
                 <!-- Propriétaire -->
-                <div class="owner-info mt-4 p-3 border-top">
-                    <h5>Propriétaire</h5>
-                    <p>{{ logement.proprietaire.get_full_name|default:logement.proprietaire.username }}</p>
+                <div class="dl-card__owner">
+                    <div class="dl-owner__avatar">
+                        {{ logement.proprietaire.first_name|slice:":1"|upper }}{{ logement.proprietaire.last_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <p class="dl-owner__name">{{ logement.proprietaire.get_full_name|default:logement.proprietaire.username }}</p>
+                        <p class="dl-owner__label">Propriétaire</p>
+                    </div>
                 </div>
+
+                <!-- Stats -->
+                {% if reservations_count %}
+                    <div class="dl-card__stat">
+                        {{ reservations_count }} réservation{% if reservations_count > 1 %}s{% endif %} confirmée{% if reservations_count > 1 %}s{% endif %}
+                    </div>
+                {% endif %}
+
             </div>
         </div>
+
     </div>
 </div>
 
 <style>
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 var(--spacing-lg);
-    }
+/* ── Tokens ── */
+:root {
+    --ci-orange:     #F77F00;
+    --ci-orange-dk:  #D96B00;
+    --ci-orange-lt:  #FFF3E0;
+    --ci-green:      #009A44;
+    --ci-green-dk:   #007A35;
+    --ci-green-lt:   #E6F5ED;
+    --dl-text:       #111827;
+    --dl-muted:      #6B7280;
+    --dl-border:     #E5E7EB;
+    --dl-surface:    #F9FAFB;
+    --dl-white:      #FFFFFF;
+    --dl-radius:     14px;
+    --dl-shadow:     0 2px 8px rgba(0,0,0,.07);
+    --dl-shadow-lg:  0 8px 24px rgba(0,0,0,.12);
+    --dl-transition: .2s ease;
+}
 
-    .mt-5 {
-        margin-top: var(--spacing-2xl);
-    }
+/* ── Layout ── */
+.dl-wrapper {
+    background: var(--dl-surface);
+    min-height: 100vh;
+    padding: 32px 24px 56px;
+}
+.dl-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+    align-items: start;
+}
 
-    .row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--spacing-xl);
-    }
+/* ── Galerie ── */
+.dl-gallery__main {
+    position: relative;
+    border-radius: var(--dl-radius);
+    overflow: hidden;
+    background: var(--dl-border);
+    aspect-ratio: 16/9;
+}
+.dl-gallery__main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+.dl-gallery__main:hover img { transform: scale(1.02); }
+.dl-gallery__badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(17,24,39,.6);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 100px;
+}
+.dl-gallery__thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+.dl-gallery__thumb {
+    width: 80px;
+    height: 56px;
+    min-width: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    opacity: .6;
+    border: 2px solid transparent;
+    transition: all var(--dl-transition);
+}
+.dl-gallery__thumb:hover { opacity: .9; }
+.dl-gallery__thumb--active {
+    opacity: 1;
+    border-color: var(--ci-orange);
+}
+.dl-gallery__empty {
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dl-surface);
+    border: 2px dashed var(--dl-border);
+    border-radius: var(--dl-radius);
+    color: var(--dl-muted);
+    font-size: .88rem;
+}
 
-    @media (min-width: 992px) {
-        .row {
-            grid-template-columns: 2fr 1fr;
-        }
-    }
+/* ── Sections ── */
+.dl-section {
+    background: var(--dl-white);
+    border: 1px solid var(--dl-border);
+    border-radius: var(--dl-radius);
+    padding: 22px 24px;
+    margin-top: 16px;
+    box-shadow: var(--dl-shadow);
+}
+.dl-section__title {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--dl-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 0 0 16px;
+    padding-left: 10px;
+    border-left: 3px solid var(--ci-orange);
+}
 
-    .col-lg-8,
-    .col-lg-4 {
-        width: 100%;
-    }
+/* Tags */
+.dl-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.dl-tag {
+    font-size: .72rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.dl-tag--type { background: var(--ci-orange-lt); color: var(--ci-orange-dk); border: 1px solid #fcd9a0; }
+.dl-tag--cat  { background: var(--ci-green-lt);  color: var(--ci-green-dk);  border: 1px solid #a7d7b8; }
 
-    /* Galerie photos */
-    .detail-photos {
-        max-height: 500px;
-        overflow: hidden;
-        border-radius: 12px;
-        background: var(--color-light);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
+.dl-title {
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    font-weight: 800;
+    color: var(--dl-text);
+    margin: 0 0 10px;
+    letter-spacing: -.02em;
+}
+.dl-location {
+    font-size: .88rem;
+    color: var(--dl-muted);
+    font-weight: 600;
+    margin: 0;
+}
 
-    .detail-photos img {
-        max-height: 500px;
-        object-fit: cover;
-        width: 100%;
-    }
+/* Caractéristiques */
+.dl-chars {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+}
+.dl-char {
+    background: var(--dl-surface);
+    border: 1px solid var(--dl-border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.dl-char__val {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--ci-orange);
+    line-height: 1;
+}
+.dl-char__label {
+    font-size: .72rem;
+    color: var(--dl-muted);
+    font-weight: 600;
+}
 
-    .carousel-control-prev,
-    .carousel-control-next {
-        background-color: rgba(0, 0, 0, 0.3);
-        border: none;
-    }
+/* Description */
+.dl-desc {
+    font-size: .9rem;
+    color: var(--dl-text);
+    line-height: 1.7;
+}
 
-    /* Détails */
-    .detail-info h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--color-dark);
-        margin-bottom: var(--spacing-lg);
-    }
+/* Équipements */
+.dl-amenities { display: flex; flex-wrap: wrap; gap: 8px; }
+.dl-amenity {
+    background: var(--ci-orange-lt);
+    color: var(--ci-orange-dk);
+    border: 1px solid #fcd9a0;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 100px;
+}
 
-    .detail-info h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--color-dark);
-        margin-bottom: var(--spacing-md);
-    }
+/* ── Sidebar ── */
+.dl-card {
+    background: var(--dl-white);
+    border: 1px solid var(--dl-border);
+    border-top: 4px solid var(--ci-orange);
+    border-radius: var(--dl-radius);
+    padding: 24px;
+    box-shadow: var(--dl-shadow-lg);
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.dl-card__price {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--dl-border);
+}
+.dl-price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--ci-green);
+    letter-spacing: -.03em;
+    line-height: 1;
+}
+.dl-price small {
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--dl-muted);
+}
+.dl-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.dl-card__meta p {
+    font-size: .8rem;
+    color: var(--dl-muted);
+    margin: 0;
+    padding-left: 10px;
+    border-left: 2px solid var(--dl-border);
+}
+.dl-btn {
+    display: block;
+    background: var(--ci-orange);
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+    padding: 13px 20px;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 700;
+    transition: all var(--dl-transition);
+}
+.dl-btn:hover {
+    background: var(--ci-orange-dk);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(247,127,0,.35);
+}
+.dl-btn--primary { background: var(--ci-orange); }
+.dl-btn--primary:hover { background: var(--ci-orange-dk); }
 
-    .detail-tags {
-        display: flex;
-        gap: var(--spacing-sm);
-        margin-bottom: var(--spacing-lg);
-    }
+/* Bouton d'abonnement */
+.dl-btn--subscribe {
+    background: var(--ci-green);
+    color: #fff;
+    text-decoration: none;
+    padding: 13px 20px;
+    border-radius: 8px;
+    font-size: .9rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all var(--dl-transition);
+    width: 100%;
+}
+.dl-btn--subscribe:hover {
+    background: var(--ci-green-dk);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,154,68,.35);
+}
+.dl-btn--subscribe.subscribed {
+    background: var(--dl-muted);
+}
+.dl-btn--subscribe.subscribed:hover {
+    background: #555;
+}
 
-    .detail-tags .badge {
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        font-weight: 600;
-    }
+/* Actions rapides */
+.dl-card__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.dl-action-btn {
+    background: var(--dl-surface);
+    color: var(--dl-text);
+    border: 1px solid var(--dl-border);
+    text-align: center;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+    transition: all var(--dl-transition);
+    display: block;
+}
+.dl-action-btn:hover {
+    background: var(--ci-orange-lt);
+    border-color: var(--ci-orange);
+    color: var(--ci-orange-dk);
+}
 
-    .badge {
-        background-color: var(--color-primary);
-        color: white;
-    }
+/* Tarification détaillée */
+.dl-card__pricing {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--dl-border);
+}
+.dl-pricing__title {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--dl-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 8px;
+}
+.dl-card__pricing p {
+    font-size: .78rem;
+    color: var(--dl-muted);
+    margin: 4px 0;
+}
+.dl-card__pricing strong {
+    color: var(--ci-orange);
+    font-weight: 700;
+}
 
-    .detail-location {
-        padding: var(--spacing-md);
-        background: var(--color-light);
-        border-left: 4px solid var(--color-primary);
-        border-radius: 4px;
-    }
+/* Meta title */
+.dl-meta__title {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--dl-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 8px;
+}
 
-    .detail-features,
-    .detail-description,
-    .detail-equipements {
-        margin-top: var(--spacing-xl);
-    }
+/* Conditions */
+.dl-conditions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.dl-conditions p {
+    font-size: .8rem;
+    color: var(--dl-text);
+    margin: 0;
+    padding-left: 10px;
+    border-left: 2px solid var(--ci-orange);
+}
+.dl-card__owner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--dl-border);
+}
+.dl-owner__avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    background: var(--ci-orange-lt);
+    border: 2px solid var(--ci-orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    font-weight: 800;
+    color: var(--ci-orange);
+}
+.dl-owner__name  { font-size: .88rem; font-weight: 700; color: var(--dl-text); margin: 0 0 2px; }
+.dl-owner__label { font-size: .72rem; color: var(--dl-muted); margin: 0; }
+.dl-card__stat {
+    background: var(--ci-green-lt);
+    color: var(--ci-green-dk);
+    border: 1px solid #a7d7b8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: .78rem;
+    font-weight: 600;
+    text-align: center;
+}
 
-    .detail-features ul,
-    .detail-equipements ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    .detail-features li,
-    .detail-equipements li {
-        padding: var(--spacing-sm);
-        border-bottom: 1px solid var(--color-light);
-    }
-
-    .detail-features li:last-child,
-    .detail-equipements li:last-child {
-        border-bottom: none;
-    }
-
-    /* Carte de réservation */
-    .reservation-card {
-        background: white;
-        border-radius: 12px;
-        padding: var(--spacing-xl);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        position: sticky;
-        top: var(--spacing-lg);
-    }
-
-    .reservation-header h2 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-lg);
-        color: var(--color-dark);
-    }
-
-    .price-display .price {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--color-success);
-        margin: 0;
-    }
-
-    .price-display small {
-        font-size: 1rem;
-        color: var(--color-secondary);
-    }
-
-    .btn {
-        display: inline-block;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all var(--transition-base);
-        border: none;
-        cursor: pointer;
-        width: 100%;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background-color: var(--color-primary);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
-    }
-
-    .btn-lg {
-        padding: var(--spacing-lg) var(--spacing-xl);
-        font-size: 1rem;
-    }
-
-    .mt-4 {
-        margin-top: var(--spacing-lg);
-    }
-
-    .mt-3 {
-        margin-top: var(--spacing-md);
-    }
-
-    .p-3 {
-        padding: var(--spacing-md);
-    }
-
-    .border-top {
-        border-top: 1px solid var(--color-light);
-        padding-top: var(--spacing-md);
-    }
-
-    .w-100 {
-        width: 100%;
-    }
-
-    .text-muted {
-        color: var(--color-secondary);
-    }
-
-    .owner-info {
-        margin-top: var(--spacing-lg);
-    }
-
-    .owner-info h5 {
-        font-weight: 700;
-        margin-bottom: var(--spacing-sm);
-        color: var(--color-dark);
-    }
-
-    .reservation-info {
-        background: var(--color-light);
-        padding: var(--spacing-md);
-        border-radius: 8px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .reservation-card {
-            position: static;
-            margin-top: var(--spacing-xl);
-        }
-
-        .detail-info h1 {
-            font-size: 1.5rem;
-        }
-
-        .price-display .price {
-            font-size: 2rem;
-        }
-    }
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .dl-container { grid-template-columns: 1fr; }
+    .dl-card { position: static; }
+}
+@media (max-width: 560px) {
+    .dl-wrapper { padding: 16px 16px 40px; }
+    .dl-chars { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
+
+<script>
+function switchPhoto(thumb, url) {
+    document.getElementById('mainImg').src = url;
+    document.querySelectorAll('.dl-gallery__thumb').forEach(t => t.classList.remove('dl-gallery__thumb--active'));
+    thumb.classList.add('dl-gallery__thumb--active');
+}
+
+// Gestion de l'abonnement
+function toggleSubscription(creatorId) {
+    const btn = document.getElementById('subscribeBtn');
+    const txtSpan = document.getElementById('subscribeBtnText');
+    
+    // Vérifier si déjà abonné
+    fetch(`/accounts/is-subscribed/${creatorId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_subscribed) {
+                // Désabonner
+                fetch(`/accounts/unsubscribe/${creatorId}/`, {method: 'POST'})
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            btn.classList.remove('subscribed');
+                            txtSpan.textContent = '📢 S\'abonner';
+                        }
+                    });
+            } else {
+                // S'abonner
+                fetch(`/accounts/subscribe/${creatorId}/`, {method: 'POST'})
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            btn.classList.add('subscribed');
+                            txtSpan.textContent = '✅ Abonné';
+                        }
+                    });
+            }
+        });
+}
+
+// Initialiser le statut du bouton au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const creatorId = {{ logement.proprietaire.id }};
+    fetch(`/accounts/is-subscribed/${creatorId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const btn = document.getElementById('subscribeBtn');
+            const txtSpan = document.getElementById('subscribeBtnText');
+            if (btn) {
+                if (data.is_subscribed) {
+                    btn.classList.add('subscribed');
+                    txtSpan.textContent = '✅ Abonné';
+                }
+            }
+        });
+});
+</script>
+
 {% endblock %}

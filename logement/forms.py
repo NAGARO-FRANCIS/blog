@@ -1,10 +1,10 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Logement, PhotoLogement, Reservation
+from .models import Logement, PhotoLogement, VideoLogement, Reservation
 from datetime import datetime, timedelta
 
-class LogementForm(forms.ModelForm):
-    """Formulaire générique pour individu"""
+class LogementProprietaireForm(forms.ModelForm):
+    """Formulaire pour propriétaire publiant un logement complet"""
     class Meta:
         model = Logement
         fields = [
@@ -228,6 +228,74 @@ class LogementResidenceForm(forms.ModelForm):
         }
 
 
+class LogementColocataireForm(forms.ModelForm):
+    """Formulaire pour locataire cherchant un colocataire"""
+    class Meta:
+        model = Logement
+        fields = [
+            # Informations de base
+            'titre', 'description', 'ville', 'quartier',
+            
+            # Caractéristiques du logement
+            'type_logement', 'surface', 'nombre_pieces', 'nombre_chambres',
+            'nombre_lits', 'nombre_salles_bain', 'meuble',
+            
+            # Tarification colocation
+            'prix', 'disponible_depuis',
+            
+            # Équipements en partage
+            'climatisation', 'wifi', 'garage', 'jardin', 'cuisine_equipee',
+        ]
+        widgets = {
+            'titre': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: Cherche colocataire pour beau T3 climatisé'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'rows': 6,
+                'placeholder': 'Décrivez votre logement, l\'ambiance, le profil du colocataire recherché...'
+            }),
+            'ville': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: Abidjan'
+            }),
+            'quartier': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: Plateaux'
+            }),
+            'type_logement': forms.Select(attrs={'class': 'form-select'}),
+            'surface': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Surface totale en m²'
+            }),
+            'nombre_pieces': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nombre de pièces'
+            }),
+            'nombre_chambres': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nombre de chambres (y compris la vôtre)'
+            }),
+            'nombre_lits': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nombre total de lits'
+            }),
+            'nombre_salles_bain': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nombre de salles de bain'
+            }),
+            'prix': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Loyer de la chambre à louer (FCFA/mois)'
+            }),
+            'disponible_depuis': forms.DateInput(attrs={
+                'class': 'form-input',
+                'type': 'date'
+            }),
+        }
+
+
 class PhotoLogementForm(forms.ModelForm):
     class Meta:
         model = PhotoLogement
@@ -269,7 +337,63 @@ PhotoLogementFormSet = inlineformset_factory(
     form=PhotoLogementForm,
     extra=5,
     max_num=5,
-    can_delete=True
+    can_delete=True,
+    min_num=0,
+    validate_min=False
+)
+
+
+class VideoLogementForm(forms.ModelForm):
+    """Formulaire pour ajouter des vidéos"""
+    class Meta:
+        model = VideoLogement
+        fields = ['video', 'titre', 'description', 'order']
+        widgets = {
+            'video': forms.FileInput(attrs={
+                'class': 'form-file-input',
+                'accept': 'video/*'
+            }),
+            'titre': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Titre de la vidéo (ex: Visite complète)'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'rows': 3,
+                'placeholder': 'Description brève de la vidéo'
+            }),
+            'order': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'min': '0'
+            }),
+        }
+    
+    def clean(self):
+        """Valider le formulaire - si pas de vidéo, les autres champs ne sont pas obligatoires"""
+        cleaned_data = super().clean()
+        video = cleaned_data.get('video')
+        
+        if not video:
+            # Si pas de vidéo, ignorer les erreurs pour les autres champs
+            if 'titre' in self.errors:
+                del self.errors['titre']
+            if 'description' in self.errors:
+                del self.errors['description']
+            if 'order' in self.errors:
+                del self.errors['order']
+        
+        return cleaned_data
+
+
+VideoLogementFormSet = inlineformset_factory(
+    Logement,
+    VideoLogement,
+    form=VideoLogementForm,
+    extra=3,
+    max_num=5,
+    can_delete=True,
+    min_num=0,
+    validate_min=False
 )
 
 

@@ -63,49 +63,155 @@
                     </div>
                 </div>
 
-                <!-- Formulaire de paiement Stripe (Droite) -->
+                <!-- Formulaire de paiement (Droite) -->
                 <div class="col-md-6">
                     <div class="payment-form p-3 bg-white rounded border">
-                        <h5 class="mb-3">Paiement par Carte Bancaire</h5>
+                        <h5 class="mb-3">🔒 Sélectionnez votre mode de paiement</h5>
                         
                         <form id="payment-form" method="post">
                             {% csrf_token %}
                             
-                            <!-- Stripe Card Element -->
-                            <div id="card-element" class="form-control mb-3" style="height: 40px; padding-top: 10px;"></div>
-                            <div id="card-errors" class="alert alert-danger d-none" role="alert"></div>
-                            
-                            <!-- Informations client -->
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" value="{{ reservation.client_email }}" readonly>
+                            <!-- Sélection de la méthode de paiement -->
+                            <div class="payment-methods mb-4">
+                                <div class="payment-method-grid">
+                                    <!-- MOUV -->
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment_method" value="mouv" checked onclick="updatePaymentMethod('mouv')">
+                                        <div class="method-card mouv">
+                                            <span class="method-icon">🟠</span>
+                                            <span class="method-name">MOUV</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <!-- Orange Money -->
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment_method" value="orange" onclick="updatePaymentMethod('orange')">
+                                        <div class="method-card orange">
+                                            <span class="method-icon">🟠</span>
+                                            <span class="method-name">Orange Money</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <!-- Wave -->
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment_method" value="wave" onclick="updatePaymentMethod('wave')">
+                                        <div class="method-card wave">
+                                            <span class="method-icon">🔵</span>
+                                            <span class="method-name">Wave</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <!-- Carte bancaire -->
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment_method" value="stripe" onclick="updatePaymentMethod('stripe')">
+                                        <div class="method-card stripe">
+                                            <span class="method-icon">💳</span>
+                                            <span class="method-name">Carte Bancaire</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <!-- Virement -->
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment_method" value="virement" onclick="updatePaymentMethod('virement')">
+                                        <div class="method-card virement">
+                                            <span class="method-icon">🏦</span>
+                                            <span class="method-name">Virement</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <!-- Paiement sur place -->
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment_method" value="cash" onclick="updatePaymentMethod('cash')">
+                                        <div class="method-card cash">
+                                            <span class="method-icon">💵</span>
+                                            <span class="method-name">Sur place</span>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nom complet</label>
-                                <input type="text" class="form-control" id="name" value="{{ reservation.client_nom }}" readonly>
+
+                            <!-- Contenu dynamique selon la méthode -->
+                            <div id="payment-content">
+                                <!-- MOUV -->
+                                <div id="method-mouv" class="method-content">
+                                    <div class="alert alert-info">
+                                        <strong>📱 Paiement via MOUV</strong><br>
+                                        Composez <strong>*111#</strong> et entrez le montant de <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Numéro MOUV (confirmez)</label>
+                                        <input type="tel" class="form-control" id="mouv_number" name="mouv_number" placeholder="+225 XX XX XX XX">
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Confirmer le paiement MOUV</button>
+                                </div>
+
+                                <!-- Orange Money -->
+                                <div id="method-orange" class="method-content" style="display:none;">
+                                    <div class="alert alert-info">
+                                        <strong>📱 Paiement via Orange Money</strong><br>
+                                        Composez <strong>#144#</strong> et entrez le montant de <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Numéro Orange (confirmez)</label>
+                                        <input type="tel" class="form-control" id="orange_number" name="orange_number" placeholder="+225 XX XX XX XX">
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Confirmer le paiement Orange Money</button>
+                                </div>
+
+                                <!-- Wave -->
+                                <div id="method-wave" class="method-content" style="display:none;">
+                                    <div class="alert alert-info">
+                                        <strong>🔵 Paiement via Wave</strong><br>
+                                        Ouvrez l'application Wave et envoyez <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> au numéro fourni
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Numéro Wave (confirmez)</label>
+                                        <input type="tel" class="form-control" id="wave_number" name="wave_number" placeholder="+225 XX XX XX XX">
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Confirmer le paiement Wave</button>
+                                </div>
+
+                                <!-- Carte Bancaire -->
+                                <div id="method-stripe" class="method-content" style="display:none;">
+                                    <div class="alert alert-warning">
+                                        <strong>💳 Paiement par Carte Bancaire</strong><br>
+                                        Entrez les détails de votre carte ci-dessous
+                                    </div>
+                                    <div id="card-element" class="form-control mb-3" style="height: 40px; padding-top: 10px;"></div>
+                                    <div id="card-errors" class="alert alert-danger d-none" role="alert"></div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">💳 Payer {{ reservation.montant_final|floatformat:0 }} FCFA</button>
+                                </div>
+
+                                <!-- Virement -->
+                                <div id="method-virement" class="method-content" style="display:none;">
+                                    <div class="alert alert-info">
+                                        <strong>🏦 Paiement par Virement Bancaire</strong><br>
+                                        Nos coordonnées bancaires vous seront envoyées par email
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email pour recevoir les coordonnées</label>
+                                        <input type="email" class="form-control" id="virement_email" name="virement_email" value="{{ reservation.client_email }}" readonly>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Demander les coordonnées bancaires</button>
+                                </div>
+
+                                <!-- Paiement sur place -->
+                                <div id="method-cash" class="method-content" style="display:none;">
+                                    <div class="alert alert-info">
+                                        <strong>💵 Paiement à l'arrivée</strong><br>
+                                        Vous paierez {{ reservation.montant_final|floatformat:0 }} FCFA directement au propriétaire
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="alert alert-warning">
+                                            Une caution de confirmation peut être demandée
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Réserver avec paiement sur place</button>
+                                </div>
                             </div>
-                            
-                            <!-- Bouton paiement -->
-                            <button type="submit" id="submit-btn" class="btn btn-success btn-lg w-100">
-                                💳 Payer {{ reservation.montant_final|floatformat:0 }} FCFA
-                            </button>
-                            
+
                             <div id="payment-message" class="mt-3"></div>
                         </form>
-                        
-                        <!-- Info supplémentaire -->
-                        <div class="mt-3 text-muted small">
-                            <p>🔒 Paiement sécurisé par Stripe</p>
-                            <p>Vos données bancaires sont protégées</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Options de paiement alternatives -->
-                    <div class="mt-4">
-                        <p class="text-center text-muted small">
-                            Vous pouvez également payer par virement bancaire ou à l'arrivée.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -113,54 +219,215 @@
     </div>
 </div>
 
-<!-- Script Stripe -->
+<!-- Script Stripe et Paiement -->
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-    // Configuration Stripe
-    const stripe = Stripe("{{ stripe_public_key }}");
-    const elements = stripe.elements();
-    const cardElement = elements.create("card");
-    cardElement.mount("#card-element");
-    
-    // Gestion des erreurs de saisie
-    cardElement.addEventListener("change", function(event) {
-        const displayError = document.getElementById("card-errors");
-        if (event.error) {
-            displayError.textContent = event.error.message;
-            displayError.classList.remove("d-none");
-        } else {
-            displayError.classList.add("d-none");
+    // Configuration Stripe (pour la méthode carte bancaire)
+    let stripe = null;
+    let elements = null;
+    let cardElement = null;
+
+    // Initialiser Stripe
+    function initStripe() {
+        if (!stripe && "{{ stripe_public_key }}") {
+            stripe = Stripe("{{ stripe_public_key }}");
+            elements = stripe.elements();
+            cardElement = elements.create("card");
+            
+            // Gestion des erreurs de saisie
+            cardElement.addEventListener("change", function(event) {
+                const displayError = document.getElementById("card-errors");
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                    displayError.classList.remove("d-none");
+                } else {
+                    displayError.classList.add("d-none");
+                }
+            });
         }
-    });
-    
+    }
+
+    // Changer la méthode de paiement
+    function updatePaymentMethod(method) {
+        // Masquer tous les contenus
+        document.querySelectorAll('.method-content').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Afficher le contenu sélectionné
+        const methodContent = document.getElementById('method-' + method);
+        if (methodContent) {
+            methodContent.style.display = 'block';
+        }
+        
+        // Initialiser Stripe si nécessaire
+        if (method === 'stripe') {
+            initStripe();
+            setTimeout(() => {
+                if (cardElement && !cardElement._parent) {
+                    cardElement.mount("#card-element");
+                }
+            }, 100);
+        }
+    }
+
     // Traitement du formulaire
     document.getElementById("payment-form").addEventListener("submit", async function(e) {
         e.preventDefault();
         
-        const submitBtn = document.getElementById("submit-btn");
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = "⏳ Traitement...";
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        const form = this;
         
-        // Créer le payment intent côté serveur (TODO: implémenter endpoint)
+        // Créer un FormData pour envoyer les données
+        const formData = new FormData(form);
+        
         try {
-            // TODO: Appeler API pour créer payment intent
-            // const response = await fetch("/api/create-payment-intent/", { ... });
-            // const data = await response.json();
+            // Envoyer le paiement au serveur
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',  // Important pour les cookies CSRF
+            });
             
-            // Confirmez le paiement avec Stripe
-            // const result = await stripe.confirmCardPayment(data.clientSecret, {...});
+            // Lire le contenu de la réponse
+            const data = await response.json();
             
-            alert("✅ Paiement réussi (TODO: intégration Stripe complète)");
-            // Rediriger après succès
-            // window.location.href = "/reservation/success/";
+            if (data.success) {
+                document.getElementById("payment-message").innerHTML = 
+                    '<div class="alert alert-success">✅ ' + data.message + '</div>';
+                // Rediriger après 2 secondes
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '/';
+                }, 2000);
+            } else {
+                document.getElementById("payment-message").innerHTML = 
+                    '<div class="alert alert-danger">❌ ' + data.message + '</div>';
+            }
         } catch (error) {
+            console.error('Erreur:', error);
             document.getElementById("payment-message").innerHTML = 
-                '<div class="alert alert-danger">Erreur: ' + error.message + '</div>';
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '💳 Payer {{ reservation.montant_final|floatformat:0 }} FCFA';
+                '<div class="alert alert-danger">❌ Erreur lors du paiement: ' + error.message + '</div>';
         }
     });
+
+    // Initialiser avec la première méthode
+    document.addEventListener('DOMContentLoaded', function() {
+        updatePaymentMethod('mouv');
+    });
 </script>
+
+<style>
+    /* Styles pour les méthodes de paiement */
+    .payment-method-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .payment-option {
+        display: flex;
+        align-items: center;
+    }
+
+    .payment-option input[type="radio"] {
+        display: none;
+    }
+
+    .method-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f9f9f9;
+    }
+
+    .payment-option input[type="radio"]:checked + .method-card {
+        border-color: #28a745;
+        background: #e8f5e9;
+        box-shadow: 0 0 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .method-icon {
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+
+    .method-name {
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        color: #333;
+    }
+
+    .method-content {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert {
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+
+    .alert-info {
+        background-color: #e3f2fd;
+        border: 1px solid #90caf9;
+        color: #1565c0;
+    }
+
+    .alert-warning {
+        background-color: #fff3e0;
+        border: 1px solid #ffe0b2;
+        color: #e65100;
+    }
+
+    .alert-danger {
+        background-color: #ffebee;
+        border: 1px solid #ef9a9a;
+        color: #b71c1c;
+    }
+
+    .alert-success {
+        background-color: #e8f5e9;
+        border: 1px solid #a5d6a7;
+        color: #2e7d32;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        font-weight: 600;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .btn-success:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+</style>
 
 <style>
     .container {

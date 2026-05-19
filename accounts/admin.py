@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
-from .models import Profile, DocumentVerification, VerificationLog, ProfessionalProfile
+from .models import Profile, DocumentVerification, VerificationLog, ProfessionalProfile, Subscription, Notification
 
 
 @admin.register(Profile)
@@ -225,3 +225,109 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
         count = queryset.update(is_verified=False)
         self.message_user(request, f'{count} établissement(s) non vérifié(s)')
     unverify_establishments.short_description = "❌ Retirer la vérification"
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ['subscriber_username', 'creator_username', 'subscribed_at', 'is_active', 'notify_on_new_listing']
+    list_filter = ['is_active', 'notify_on_new_listing', 'subscribed_at']
+    search_fields = ['subscriber__username', 'creator__username', 'subscriber__email', 'creator__email']
+    readonly_fields = ['subscriber', 'creator', 'subscribed_at']
+    
+    fieldsets = (
+        ('Abonnement', {
+            'fields': ('subscriber', 'creator')
+        }),
+        ('Paramètres', {
+            'fields': ('is_active', 'notify_on_new_listing')
+        }),
+        ('Dates', {
+            'fields': ('subscribed_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['activate_subscriptions', 'deactivate_subscriptions']
+    
+    def subscriber_username(self, obj):
+        return obj.subscriber.username
+    subscriber_username.short_description = 'Abonné'
+    
+    def creator_username(self, obj):
+        return obj.creator.username
+    creator_username.short_description = 'Créateur'
+    
+    def activate_subscriptions(self, request, queryset):
+        count = queryset.update(is_active=True)
+        self.message_user(request, f'{count} abonnement(s) activé(s)')
+    activate_subscriptions.short_description = "✅ Activer les abonnements sélectionnés"
+    
+    def deactivate_subscriptions(self, request, queryset):
+        count = queryset.update(is_active=False)
+        self.message_user(request, f'{count} abonnement(s) désactivé(s)')
+    deactivate_subscriptions.short_description = "❌ Désactiver les abonnements sélectionnés"
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['recipient_username', 'notification_type_badge', 'title', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['recipient__username', 'recipient__email', 'title', 'message']
+    readonly_fields = ['recipient', 'actor', 'created_at', 'read_at']
+    
+    fieldsets = (
+        ('Notification', {
+            'fields': ('recipient', 'notification_type', 'title', 'message')
+        }),
+        ('Détails', {
+            'fields': ('actor', 'related_listing_id', 'related_subscription_id')
+        }),
+        ('Statut', {
+            'fields': ('is_read', 'read_at')
+        }),
+        ('Dates', {
+            'fields': ('created_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['mark_as_read', 'mark_as_unread']
+    
+    def recipient_username(self, obj):
+        return obj.recipient.username
+    recipient_username.short_description = 'Destinataire'
+    
+    def notification_type_badge(self, obj):
+        colors = {
+            'new_listing': '#3b82f6',
+            'subscription': '#8b5cf6',
+            'message': '#06b6d4',
+            'reservation': '#ec4899',
+            'system': '#6b7280',
+        }
+        icons = {
+            'new_listing': '📢',
+            'subscription': '👥',
+            'message': '💬',
+            'reservation': '📅',
+            'system': 'ℹ️',
+        }
+        color = colors.get(obj.notification_type, '#6b7280')
+        icon = icons.get(obj.notification_type, '🔔')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 12px; font-weight: 600;">{} {}</span>',
+            color,
+            icon,
+            obj.get_notification_type_display()
+        )
+    notification_type_badge.short_description = 'Type'
+    
+    def mark_as_read(self, request, queryset):
+        count = queryset.update(is_read=True, read_at=timezone.now())
+        self.message_user(request, f'{count} notification(s) marquée(s) comme lue(s)')
+    mark_as_read.short_description = "✅ Marquer comme lu"
+    
+    def mark_as_unread(self, request, queryset):
+        count = queryset.update(is_read=False, read_at=None)
+        self.message_user(request, f'{count} notification(s) marquée(s) comme non lue(s)')
+    mark_as_unread.short_description = "❌ Marquer comme non lu"

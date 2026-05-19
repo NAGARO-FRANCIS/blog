@@ -34,6 +34,25 @@
     <link rel="stylesheet" href="{% static 'responsive.css' %}">
     
     {% block extra_css %}{% endblock %}
+    
+    <style>
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #FF6B6B;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 2px solid #fff;
+        }
+    </style>
 </head>
 <body>
 <header class="animate-fade">
@@ -53,8 +72,12 @@
                 {% if request.user.is_authenticated %}
                     {% if request.user.profile.account_type == 'individu' and request.user.profile.role != 'colocataire' or request.user.profile.account_type in 'hotel,residence' %}
                         <li><a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary btn-sm">➕ Publier</a></li>
+                        <li><a href="{% url 'logement:mes_logements' %}">📋 Mes annonces</a></li>
                     {% endif %}
                     <li><a href="{% url 'accounts:dashboard' %}">📊 Dashboard</a></li>
+                    <li style="position: relative;">
+                        <a href="{% url 'accounts:notifications' %}">🔔 Notifications<span id="notificationBadge" class="notification-badge" style="display: none;">0</span></a>
+                    </li>
                     <li><a href="{% url 'accounts:profil' %}">👤 Profil</a></li>
                     <li><a href="{% url 'accounts:logout' %}">🚪 Déconnexion</a></li>
                 {% else %}
@@ -129,6 +152,32 @@
         }
         return cookieValue;
     }
+
+    // Update notification badge
+    function updateNotificationBadge() {
+        fetch('/accounts/notifications/unread-count/')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 9 ? '9+' : data.count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.log('Notification fetch error:', error));
+    }
+
+    // Update badge on page load and every 30 seconds
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', updateNotificationBadge);
+    } else {
+        updateNotificationBadge();
+    }
+    setInterval(updateNotificationBadge, 30000);
 </script>
 {% block extra_js %}{% endblock %}
 </body>

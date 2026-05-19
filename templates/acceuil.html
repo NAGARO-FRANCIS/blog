@@ -82,37 +82,49 @@
         {% if annonces %}
             <div class="ic-listings-grid">
                 {% for annonce in annonces %}
-                    <article class="ic-listing-card">
-                        <div class="ic-listing-card__media">
-                            {% if annonce.photos.all %}
-                                <img
-                                    src="{{ annonce.photos.first.image.url }}"
-                                    alt="{{ annonce.photos.first.alt_text }}"
-                                    class="ic-listing-card__img"
-                                    loading="lazy"
-                                >
-                            {% else %}
-                                <div class="ic-listing-card__placeholder">🏠</div>
-                            {% endif %}
-                            {% if annonce.photos.count > 1 %}
-                                <span class="ic-badge">📸 {{ annonce.photos.count }} photos</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="ic-listing-card__body">
-                            <p class="ic-listing-card__price">
-                                {{ annonce.budget_mensuel|floatformat:0 }} <span>FCFA/mois</span>
-                            </p>
-                            <p class="ic-listing-card__location">
-                                📍 {{ annonce.ville }}{% if annonce.quartier %} — {{ annonce.quartier }}{% endif %}
-                            </p>
-                            <div class="ic-listing-card__tags">
-                                <span class="ic-tag">{{ annonce.nombre_chambres }} chambre{{ annonce.nombre_chambres|pluralize }}</span>
-                                <span class="ic-tag">{{ annonce.nombre_colocataires }} place{{ annonce.nombre_colocataires|pluralize }}</span>
+                    <a href="{% url 'logement:detail_logement' annonce.id %}" class="ic-listing-card-link">
+                        <article class="ic-listing-card">
+                            <div class="ic-listing-card__media">
+                                {% if annonce.photos.all %}
+                                    <img
+                                        src="{{ annonce.photos.first.image.url }}"
+                                        alt="{{ annonce.photos.first.alt_text }}"
+                                        class="ic-listing-card__img"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="ic-listing-card__placeholder">🏠</div>
+                                {% endif %}
+                                {% if annonce.photos.count > 1 %}
+                                    <span class="ic-badge">📸 {{ annonce.photos.count }} photos</span>
+                                {% endif %}
                             </div>
-                            <p class="ic-listing-card__desc">{{ annonce.description|truncatewords:15 }}</p>
-                        </div>
-                    </article>
+
+                            <div class="ic-listing-card__body">
+                                <p class="ic-listing-card__price">
+                                    {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
+                                        {{ annonce.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
+                                    {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
+                                        {{ annonce.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
+                                    {% elif annonce.prix %}
+                                        {{ annonce.prix|floatformat:0 }} <span>FCFA</span>
+                                    {% else %}
+                                        <span>Prix sur demande</span>
+                                    {% endif %}
+                                </p>
+                                <p class="ic-listing-card__location">
+                                    📍 {{ annonce.ville }}{% if annonce.quartier %} — {{ annonce.quartier }}{% endif %}
+                                </p>
+                                <div class="ic-listing-card__tags">
+                                    <span class="ic-tag">{{ annonce.nombre_chambres }} chambre{{ annonce.nombre_chambres|pluralize }}</span>
+                                    {% if annonce.capacite %}
+                                        <span class="ic-tag">Capacité: {{ annonce.capacite }}</span>
+                                    {% endif %}
+                                </div>
+                                <p class="ic-listing-card__desc">{{ annonce.description|truncatewords:15 }}</p>
+                            </div>
+                        </article>
+                    </a>
                 {% endfor %}
             </div>
 
@@ -327,6 +339,12 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
+}
+.ic-listing-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
 }
 .ic-listing-card {
     background: var(--ic-white);

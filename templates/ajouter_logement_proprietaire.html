@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Publier un logement - Propriétaire - Ivoire Connect{% endblock %}
+
+{% block content %}
+<style>
+  .fp-wrap { max-width: 680px; margin: 0 auto; padding: 1rem 0 2rem; font-family: var(--font-sans); }
+  .fp-hero { text-align: center; margin-bottom: 2rem; }
+  .fp-hero h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 6px; }
+  .fp-hero p { font-size: 14px; color: var(--color-text-secondary); margin: 0; }
+  .fp-badge-role { display: inline-block; background: #10b981; color: white; padding: 4px 12px; border-radius: 99px; font-size: 12px; margin-top: 8px; }
+  .fp-steps { display: flex; gap: 0; margin-bottom: 2rem; border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; overflow: hidden; }
+  .fp-step { flex: 1; padding: 10px 8px; text-align: center; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: white; border-right: 0.5px solid var(--color-border-tertiary); transition: background 0.15s; }
+  .fp-step:last-child { border-right: none; }
+  .fp-step.active { background: #f5f5f5; color: #111; font-weight: 500; }
+  .fp-step span { display: block; font-size: 16px; margin-bottom: 2px; }
+  .fp-section { display: none; }
+  .fp-section.visible { display: block; }
+  .fp-card { background: white; border: 0.5px solid #e0e0e0; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .fp-card h2 { font-size: 13px; font-weight: 500; color: #888; margin: 0 0 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .fp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .fp-field { display: flex; flex-direction: column; gap: 4px; }
+  .fp-field label { font-size: 13px; color: #555; }
+  .fp-field input, .fp-field select, .fp-field textarea { width: 100%; box-sizing: border-box; padding: 8px 10px; font-size: 14px; border: 0.5px solid #ccc; border-radius: 8px; background: white; color: #111; font-family: inherit; }
+  .fp-field textarea { min-height: 90px; resize: vertical; }
+  .fp-full { grid-column: 1 / -1; }
+  .fp-hint { font-size: 12px; color: #aaa; margin-top: 3px; }
+  .fp-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+  .fp-check { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 0.5px solid #e0e0e0; border-radius: 8px; cursor: pointer; background: white; transition: all 0.15s; font-size: 13px; color: #111; }
+  .fp-check:hover { border-color: #aaa; background: #fafafa; }
+  .fp-check input { width: 15px; height: 15px; margin: 0; cursor: pointer; accent-color: #10b981; }
+  .fp-photo-zone { border: 0.5px dashed #bbb; border-radius: 12px; padding: 2rem; text-align: center; color: #888; font-size: 14px; cursor: pointer; transition: background 0.15s; margin-bottom: 12px; }
+  .fp-photo-zone:hover { background: #fafafa; }
+  .fp-photo-zone p { margin: 6px 0 0; font-size: 12px; color: #aaa; }
+  .fp-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
+  .fp-nav button { padding: 9px 20px; font-size: 14px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .fp-btn-prev { background: transparent; border: 0.5px solid #ccc; color: #111; }
+  .fp-btn-next { background: #10b981; border: none; color: #fff; }
+  .fp-btn-submit { background: #10b981; border: none; color: #fff; padding: 10px 28px; font-size: 14px; border-radius: 8px; cursor: pointer; font-family: inherit; }
+  .fp-progress { height: 3px; background: #eee; border-radius: 99px; margin-bottom: 1.5rem; overflow: hidden; }
+  .fp-progress-bar { height: 100%; background: #10b981; border-radius: 99px; transition: width 0.3s; }
+  .error-message { background: #fee; border: 1px solid #fcc; color: #c33; padding: 10px; border-radius: 6px; margin-bottom: 1rem; font-size: 13px; }
+</style>
+
+<div class="fp-wrap">
+  <div class="fp-hero">
+    <h1>🏠 Publier mon logement</h1>
+    <p>Louez votre maison complète à des locataires</p>
+    <div class="fp-badge-role">👤 Propriétaire</div>
+  </div>
+
+  <div class="fp-progress"><div class="fp-progress-bar" id="progress" style="width: 25%"></div></div>
+
+  <div class="fp-steps">
+    <div class="fp-step active" onclick="goTo(0)"><span>📍</span>Infos</div>
+    <div class="fp-step" onclick="goTo(1)"><span>🏠</span>Caract.</div>
+    <div class="fp-step" onclick="goTo(2)"><span>⚙️</span>Équip.</div>
+    <div class="fp-step" onclick="goTo(3)"><span>📸</span>Photos</div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="error-message">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if form.non_field_errors %}
+      <div class="error-message">
+        {% for error in form.non_field_errors %}
+          {{ error }}<br>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if formset.non_form_errors %}
+      <div class="error-message">
+        <strong>Erreur dans les photos:</strong>
+        {% for error in formset.non_form_errors %}
+          <br>{{ error }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Étape 1 : Informations -->
+    <div class="fp-section visible" id="s0">
+      <div class="fp-card">
+        <h2>Informations principales</h2>
+        <div class="fp-grid">
+          <div class="fp-field fp-full">
+            <label>Titre de l'annonce</label>
+            {{ form.titre }}
+            {% if form.titre.errors %}<span class="error-message">{{ form.titre.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Type de logement</label>
+            {{ form.type_logement }}
+            {% if form.type_logement.errors %}<span class="error-message">{{ form.type_logement.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Ville</label>
+            {{ form.ville }}
+            {% if form.ville.errors %}<span class="error-message">{{ form.ville.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Quartier</label>
+            {{ form.quartier }}
+            {% if form.quartier.errors %}<span class="error-message">{{ form.quartier.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field fp-full">
+            <label>Description détaillée</label>
+            {{ form.description }}
+            {% if form.description.errors %}<span class="error-message">{{ form.description.errors }}</span>{% endif %}
+            <div class="fp-hint">Décrivez votre logement, l'ambiance, les points forts...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 2 : Caractéristiques -->
+    <div class="fp-section" id="s1">
+      <div class="fp-card">
+        <h2>Caractéristiques du logement</h2>
+        <div class="fp-grid">
+          <div class="fp-field">
+            <label>Surface (m²)</label>
+            {{ form.surface }}
+            {% if form.surface.errors %}<span class="error-message">{{ form.surface.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Nombre de pièces</label>
+            {{ form.nombre_pieces }}
+            {% if form.nombre_pieces.errors %}<span class="error-message">{{ form.nombre_pieces.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Chambres</label>
+            {{ form.nombre_chambres }}
+            {% if form.nombre_chambres.errors %}<span class="error-message">{{ form.nombre_chambres.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Lits</label>
+            {{ form.nombre_lits }}
+            {% if form.nombre_lits.errors %}<span class="error-message">{{ form.nombre_lits.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Salles de bain</label>
+            {{ form.nombre_salles_bain }}
+            {% if form.nombre_salles_bain.errors %}<span class="error-message">{{ form.nombre_salles_bain.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Étage</label>
+            {{ form.etage }}
+            {% if form.etage.errors %}<span class="error-message">{{ form.etage.errors }}</span>{% endif %}
+            <div class="fp-hint">Optionnel</div>
+          </div>
+          <div class="fp-field">
+            <label>Meublé</label>
+            {{ form.meuble }}
+            {% if form.meuble.errors %}<span class="error-message">{{ form.meuble.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field">
+            <label>Prix mensuel (FCFA)</label>
+            {{ form.prix }}
+            {% if form.prix.errors %}<span class="error-message">{{ form.prix.errors }}</span>{% endif %}
+          </div>
+          <div class="fp-field fp-full">
+            <label>Disponible depuis</label>
+            {{ form.disponible_depuis }}
+            {% if form.disponible_depuis.errors %}<span class="error-message">{{ form.disponible_depuis.errors }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 3 : Équipements -->
+    <div class="fp-section" id="s2">
+      <div class="fp-card">
+        <h2>Équipements et services</h2>
+        <div class="fp-checks">
+          <label class="fp-check">
+            {{ form.climatisation }}
+            <span>Climatisation</span>
+          </label>
+          <label class="fp-check">
+            {{ form.wifi }}
+            <span>Wi-Fi</span>
+          </label>
+          <label class="fp-check">
+            {{ form.garage }}
+            <span>Garage</span>
+          </label>
+          <label class="fp-check">
+            {{ form.jardin }}
+            <span>Jardin</span>
+          </label>
+          <label class="fp-check">
+            {{ form.piscine }}
+            <span>Piscine</span>
+          </label>
+          <label class="fp-check">
+            {{ form.cuisine_equipee }}
+            <span>Cuisine équipée</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 4 : Photos -->
+    <div class="fp-section" id="s3">
+      <div class="fp-card">
+        <h2>📸 Ajouter des photos</h2>
+        <div class="fp-photo-zone">
+          <span>📸</span>
+          <p>Cliquez ou déposez des photos ici</p>
+        </div>
+        <div id="formset-container">
+          {{ formset.management_form }}
+          {% for form_photo in formset %}
+            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #eee; border-radius: 8px;">
+              {% if form_photo.errors %}
+                <div class="error-message" style="margin-bottom: 10px;">
+                  {% for field, errors in form_photo.errors.items %}
+                    <strong>{{ field }}:</strong> {{ errors.0 }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {{ form_photo.image }}
+              {{ form_photo.alt_text }}
+              {{ form_photo.order }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="fp-card" style="margin-top: 1.5rem;">
+        <h2>🎬 Ajouter des vidéos (Optionnel)</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 1rem;">
+          Ajoutez des vidéos de visite pour attirer plus de locataires. Max 5 vidéos, 500 MB par vidéo.
+        </p>
+        <div id="video-formset-container">
+          {{ video_formset.management_form }}
+          {% for form_video in video_formset %}
+            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #e8d5ff; border-radius: 8px; background: #f9f6ff;">
+              {% if form_video.errors %}
+                <div class="error-message" style="margin-bottom: 10px;">
+                  {% for field, errors in form_video.errors.items %}
+                    <strong>{{ field }}:</strong> {{ errors.0 }}<br>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <div class="fp-field fp-full">
+                <label>Fichier vidéo</label>
+                {{ form_video.video }}
+              </div>
+              <div class="fp-field">
+                <label>Titre de la vidéo</label>
+                {{ form_video.titre }}
+              </div>
+              <div class="fp-field fp-full">
+                <label>Description</label>
+                {{ form_video.description }}
+              </div>
+              <div class="fp-field">
+                <label>Ordre</label>
+                {{ form_video.order }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="fp-nav">
+      <button type="button" class="fp-btn-prev" id="btnPrev" onclick="prev()" style="display:none;">← Précédent</button>
+      <button type="button" class="fp-btn-next" id="btnNext" onclick="next()">Suivant →</button>
+      <button type="submit" class="fp-btn-submit" id="btnSubmit" style="display:none;">✓ Publier</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  let currentStep = 0;
+  const totalSteps = 4;
+
+  function goTo(step) {
+    if (step >= 0 && step < totalSteps) {
+      document.querySelector(`.fp-section.visible`).classList.remove('visible');
+      document.getElementById(`s${step}`).classList.add('visible');
+      
+      document.querySelector(`.fp-step.active`).classList.remove('active');
+      document.querySelectorAll('.fp-step')[step].classList.add('active');
+      
+      currentStep = step;
+      updateProgress();
+      updateButtons();
+    }
+  }
+
+  function next() {
+    if (currentStep < totalSteps - 1) {
+      goTo(currentStep + 1);
+    }
+  }
+
+  function prev() {
+    if (currentStep > 0) {
+      goTo(currentStep - 1);
+    }
+  }
+
+  function updateProgress() {
+    const percent = ((currentStep + 1) / totalSteps) * 100;
+    document.getElementById('progress').style.width = percent + '%';
+  }
+
+  function updateButtons() {
+    document.getElementById('btnPrev').style.display = currentStep === 0 ? 'none' : 'block';
+    document.getElementById('btnNext').style.display = currentStep === totalSteps - 1 ? 'none' : 'block';
+    document.getElementById('btnSubmit').style.display = currentStep === totalSteps - 1 ? 'inline-block' : 'none';
+  }
+
+  updateButtons();
+</script>
+{% endblock %}

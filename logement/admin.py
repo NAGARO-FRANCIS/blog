@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Logement, PhotoLogement, Reservation, Paiement, DisponibiliteCalendrier
+from .models import Logement, PhotoLogement, VideoLogement, Reservation, Paiement, DisponibiliteCalendrier
 
 
 class PhotoLogementInline(admin.TabularInline):
@@ -8,13 +8,19 @@ class PhotoLogementInline(admin.TabularInline):
     fields = ['image', 'alt_text', 'order']
 
 
+class VideoLogementInline(admin.TabularInline):
+    model = VideoLogement
+    extra = 1
+    fields = ['video', 'titre', 'description', 'order']
+
+
 @admin.register(Logement)
 class LogementAdmin(admin.ModelAdmin):
-    list_display = ['titre', 'ville', 'prix', 'type_logement', 'proprietaire', 'created_at', 'photo_count']
+    list_display = ['titre', 'ville', 'prix', 'type_logement', 'proprietaire', 'created_at', 'photo_count', 'video_count']
     list_filter = ['type_logement', 'ville', 'created_at', 'climatisation', 'wifi']
     search_fields = ['titre', 'description', 'ville']
     readonly_fields = ['created_at', 'updated_at']
-    inlines = [PhotoLogementInline]
+    inlines = [PhotoLogementInline, VideoLogementInline]
     fieldsets = (
         ('Informations principales', {
             'fields': ('titre', 'description', 'type_logement', 'proprietaire')
@@ -41,12 +47,24 @@ class LogementAdmin(admin.ModelAdmin):
         return obj.photos.count()
     photo_count.short_description = 'Photos'
 
+    def video_count(self, obj):
+        return obj.videos.count()
+    video_count.short_description = 'Vidéos'
+
 
 @admin.register(PhotoLogement)
 class PhotoLogementAdmin(admin.ModelAdmin):
     list_display = ['logement', 'order', 'created_at']
     list_filter = ['created_at', 'logement']
     ordering = ['logement', 'order']
+
+
+@admin.register(VideoLogement)
+class VideoLogementAdmin(admin.ModelAdmin):
+    list_display = ['logement', 'titre', 'order', 'created_at']
+    list_filter = ['created_at', 'logement']
+    ordering = ['logement', 'order']
+    search_fields = ['titre', 'description', 'logement__titre']
 
 
 # ================================

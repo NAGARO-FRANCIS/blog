@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmation - Ivoire Connect{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Message de succès -->
+            <div class="success-card text-center p-5 bg-white rounded shadow">
+                <div class="success-icon mb-4">
+                    ✅
+                </div>
+                
+                <h1 class="mb-3">Réservation Confirmée!</h1>
+                
+                <div class="alert alert-success mb-4">
+                    <p class="mb-0">
+                        Votre réservation pour <strong>{{ reservation.logement.titre }}</strong> a été enregistrée.
+                    </p>
+                </div>
+
+                <!-- Détails de la réservation -->
+                <div class="reservation-details mb-4 p-3 bg-light rounded">
+                    <h5 class="mb-3">Détails de votre réservation</h5>
+                    
+                    <div class="detail-item mb-2">
+                        <small class="text-muted">Propriété:</small>
+                        <p class="mb-1"><strong>{{ reservation.logement.titre }}</strong></p>
+                    </div>
+                    
+                    <div class="detail-item mb-2">
+                        <small class="text-muted">Dates:</small>
+                        <p class="mb-1">
+                            <strong>{{ reservation.date_arrivee|date:'d/m/Y' }}</strong> 
+                            à 
+                            <strong>{{ reservation.date_depart|date:'d/m/Y' }}</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="detail-item mb-2">
+                        <small class="text-muted">Nombre de nuits:</small>
+                        <p class="mb-1"><strong>{{ reservation.nombre_nuits }}</strong></p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="detail-item mb-2">
+                        <small class="text-muted">Montant total:</small>
+                        <p class="mb-0">
+                            <strong class="text-success" style="font-size: 1.3rem;">
+                                {{ reservation.montant_final|floatformat:0 }} FCFA
+                            </strong>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Statut du paiement -->
+                <div class="payment-status mb-4 p-3 bg-info bg-opacity-10 rounded">
+                    <h5 class="mb-3">Statut du paiement</h5>
+                    
+                    {% if reservation.paiement %}
+                        <div class="status-badge mb-2">
+                            {% if reservation.paiement.methode == 'mouv' %}
+                                <span class="badge bg-warning">📱 MOUV</span>
+                            {% elif reservation.paiement.methode == 'orange' %}
+                                <span class="badge bg-warning">📱 Orange Money</span>
+                            {% elif reservation.paiement.methode == 'wave' %}
+                                <span class="badge bg-info">🔵 Wave</span>
+                            {% elif reservation.paiement.methode == 'stripe' %}
+                                <span class="badge bg-primary">💳 Carte Bancaire</span>
+                            {% elif reservation.paiement.methode == 'virement' %}
+                                <span class="badge bg-secondary">🏦 Virement</span>
+                            {% elif reservation.paiement.methode == 'cash' %}
+                                <span class="badge bg-success">💵 Paiement sur place</span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="mb-1">
+                            <small class="text-muted">Statut:</small>
+                        </p>
+                        <p class="mb-3">
+                            {% if reservation.paiement.statut == 'pending' %}
+                                <strong class="text-warning">⏳ En attente de paiement</strong>
+                            {% elif reservation.paiement.statut == 'completed' %}
+                                <strong class="text-success">✅ Paiement complété</strong>
+                            {% elif reservation.paiement.statut == 'failed' %}
+                                <strong class="text-danger">❌ Paiement échoué</strong>
+                            {% endif %}
+                        </p>
+                        
+                        {% if reservation.paiement.statut == 'pending' and reservation.paiement.methode == 'mouv' %}
+                            <div class="alert alert-warning small">
+                                <strong>⚠️ Action requise:</strong><br>
+                                Composez <strong>*111#</strong> sur votre téléphone MOUV et entrez le montant de 
+                                <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                            </div>
+                        {% elif reservation.paiement.statut == 'pending' and reservation.paiement.methode == 'orange' %}
+                            <div class="alert alert-warning small">
+                                <strong>⚠️ Action requise:</strong><br>
+                                Composez <strong>#144#</strong> sur votre téléphone Orange et entrez le montant de 
+                                <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                            </div>
+                        {% elif reservation.paiement.statut == 'pending' and reservation.paiement.methode == 'wave' %}
+                            <div class="alert alert-warning small">
+                                <strong>⚠️ Action requise:</strong><br>
+                                Ouvrez l'application Wave et envoyez <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                            </div>
+                        {% elif reservation.paiement.statut == 'pending' and reservation.paiement.methode == 'virement' %}
+                            <div class="alert alert-info small">
+                                <strong>ℹ️ Prochaines étapes:</strong><br>
+                                Les coordonnées bancaires ont été envoyées à <strong>{{ reservation.client_email }}</strong>
+                            </div>
+                        {% elif reservation.paiement.statut == 'pending' and reservation.paiement.methode == 'cash' %}
+                            <div class="alert alert-info small">
+                                <strong>ℹ️ Paiement à l'arrivée:</strong><br>
+                                Vous paierez le propriétaire à votre arrivée
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Numéro de confirmation -->
+                <div class="confirmation-number mb-4 p-3 bg-light rounded">
+                    <small class="text-muted">Numéro de réservation:</small>
+                    <p class="mb-0"><strong>RES-{{ reservation.id }}</strong></p>
+                </div>
+
+                <!-- Actions suivantes -->
+                <div class="next-steps mb-4">
+                    <h5 class="mb-3">Prochaines étapes</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✓ Réservation confirmée</li>
+                        <li class="mb-2">⏳ Paiement en cours de traitement</li>
+                        <li class="mb-2">📧 Confirmation envoyée à votre email</li>
+                        <li>📱 Le propriétaire vous contactera bientôt</li>
+                    </ul>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="action-buttons">
+                    <a href="{% url 'logement:detail_logement' reservation.logement.id %}" class="btn btn-primary btn-lg w-100 mb-2">
+                        👁️ Voir la propriété
+                    </a>
+                    <a href="{% url 'logement:home' %}" class="btn btn-secondary btn-lg w-100">
+                        🏠 Retour à l'accueil
+                    </a>
+                </div>
+
+                <!-- Message d'information -->
+                <div class="mt-4 text-muted small">
+                    <p>Un email de confirmation a été envoyé à <strong>{{ reservation.client_email }}</strong></p>
+                    <p>Conservez votre numéro de réservation pour toute correspondance future.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-icon {
+        font-size: 4rem;
+        line-height: 1;
+    }
+
+    .success-card {
+        border-left: 4px solid #28a745;
+    }
+
+    .detail-item small {
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .status-badge {
+        text-align: left;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .confirmation-number {
+        border: 2px dashed #28a745;
+    }
+
+    .next-steps ul li {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .btn {
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+        transform: translateY(-2px);
+    }
+
+    .alert {
+        margin-bottom: 1rem;
+        border-radius: 6px;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .alert-warning {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+
+    @media (max-width: 768px) {
+        .success-icon {
+            font-size: 3rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,438 +1,372 @@
 {% extends 'base.html' %}
 
-{% block title %}Modifier mon profil - Coloc.ai{% endblock %}
+{% block title %}Modifier mon profil — Ivoire Connect{% endblock %}
 
 {% block content %}
-<style>
-  * { box-sizing: border-box; }
+<div class="ep-wrapper">
+    <div class="ep-container">
 
-  .ep-wrap {
+        <!-- ── HEADER ── -->
+        <header class="ep-header">
+            <span class="ep-header__flag">🇨🇮</span>
+            <h1 class="ep-header__title">Modifier mon profil</h1>
+            <p class="ep-header__sub">Mettez à jour vos informations personnelles</p>
+        </header>
+
+        <div class="ep-body">
+
+            <!-- ── ERREURS ── -->
+            {% if form.non_field_errors %}
+                <div class="ep-alert">
+                    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- ── AVATAR ── -->
+                <div class="ep-avatar-card">
+                    <div class="ep-avatar" id="avatar-preview">
+                        {% if profile.photo_profil %}
+                            <img src="{{ profile.photo_profil.url }}" alt="Photo de profil">
+                        {% else %}
+                            <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="ep-avatar-card__info">
+                        <p class="ep-avatar-card__name">{{ request.user.first_name }} {{ request.user.last_name }}</p>
+                        <p class="ep-avatar-card__username">@{{ request.user.username }}</p>
+                        <label class="ep-upload-btn" for="photo-input">Changer la photo</label>
+                        <input type="file" id="photo-input" name="{{ form.photo_profil.html_name }}"
+                               accept="image/*" class="ep-upload-input" onchange="previewAvatar(this)">
+                    </div>
+                </div>
+
+                <!-- ── INFOS PERSONNELLES ── -->
+                <div class="ep-card">
+                    <h2 class="ep-card__title">Informations personnelles</h2>
+                    <div class="ep-grid">
+                        <div class="ep-field">
+                            <label class="ep-label" for="id_first_name">Nom</label>
+                            <input type="text" name="first_name" id="id_first_name"
+                                   value="{{ form.first_name.value|default:'' }}" required>
+                            {% if form.first_name.errors %}<span class="ep-error">{{ form.first_name.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="ep-field">
+                            <label class="ep-label" for="id_last_name">Prénoms</label>
+                            <input type="text" name="last_name" id="id_last_name"
+                                   value="{{ form.last_name.value|default:'' }}" required>
+                            {% if form.last_name.errors %}<span class="ep-error">{{ form.last_name.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="ep-field ep-field--full">
+                            <label class="ep-label" for="id_email">Email</label>
+                            <input type="email" name="email" id="id_email"
+                                   value="{{ form.email.value|default:'' }}" required>
+                            {% if form.email.errors %}<span class="ep-error">{{ form.email.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="ep-field ep-field--full">
+                            <label class="ep-label">Téléphone</label>
+                            {{ form.telephone }}
+                            {% if form.telephone.errors %}<span class="ep-error">{{ form.telephone.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── INFOS PROFIL ── -->
+                <div class="ep-card">
+                    <h2 class="ep-card__title">Informations du profil</h2>
+                    <div class="ep-grid">
+                        <div class="ep-field">
+                            <label class="ep-label">Ville</label>
+                            {{ form.ville }}
+                            {% if form.ville.errors %}<span class="ep-error">{{ form.ville.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="ep-field">
+                            <label class="ep-label">Quartier</label>
+                            {{ form.quartier }}
+                            {% if form.quartier.errors %}<span class="ep-error">{{ form.quartier.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="ep-field ep-field--full">
+                            <label class="ep-label">Profession</label>
+                            {{ form.profession }}
+                            {% if form.profession.errors %}<span class="ep-error">{{ form.profession.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ACTIONS ── -->
+                <div class="ep-actions">
+                    <a href="{% url 'accounts:profil' %}" class="ep-btn ep-btn--ghost">Annuler</a>
+                    <button type="submit" class="ep-btn ep-btn--primary">Enregistrer les modifications</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ── Tokens ── */
+:root {
+    --ci-orange:     #F77F00;
+    --ci-orange-dk:  #D96B00;
+    --ci-orange-lt:  #FFF3E0;
+    --ci-green:      #009A44;
+    --ci-green-dk:   #007A35;
+    --ci-green-lt:   #E6F5ED;
+    --ep-text:       #111827;
+    --ep-muted:      #6B7280;
+    --ep-border:     #E5E7EB;
+    --ep-surface:    #F9FAFB;
+    --ep-white:      #FFFFFF;
+    --ep-radius:     14px;
+    --ep-shadow:     0 2px 8px rgba(0,0,0,.07);
+    --ep-shadow-lg:  0 8px 24px rgba(0,0,0,.10);
+    --ep-transition: .2s ease;
+}
+
+/* ── Layout ── */
+.ep-wrapper {
+    background: var(--ep-surface);
+    min-height: 100vh;
+    padding: 32px 24px;
+}
+.ep-container {
     max-width: 720px;
     margin: 0 auto;
-    padding: 2rem 1rem 3rem;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-  }
-
-  /* ── HEADER ── */
-  .ep-header {
-    background: #007A5E;
+    background: var(--ep-white);
     border-radius: 20px;
-    padding: 28px 32px;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    position: relative;
+    box-shadow: var(--ep-shadow-lg);
     overflow: hidden;
-  }
+}
 
-  .ep-header::before {
+/* ── Header ── */
+.ep-header {
+    background: linear-gradient(135deg, #b85c00 0%, #F77F00 40%, #fff 68%, #009A44 100%);
+    position: relative;
+    padding: 36px 40px 32px;
+    text-align: center;
+}
+.ep-header::before {
     content: '';
     position: absolute;
-    top: -50px; right: -50px;
-    width: 180px; height: 180px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 50%;
-  }
+    inset: 0;
+    background: rgba(20,20,20,.42);
+}
+.ep-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--ci-orange) 33.3%, #fff 33.3% 66.6%, var(--ci-green) 66.6%);
+}
+.ep-header__flag,
+.ep-header__title,
+.ep-header__sub { position: relative; z-index: 1; }
+.ep-header__flag  { font-size: 1.8rem; display: block; margin-bottom: 10px; }
+.ep-header__title {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 8px;
+    letter-spacing: -.02em;
+}
+.ep-header__sub { font-size: .85rem; color: rgba(255,255,255,.8); margin: 0; }
 
-  .ep-header-icon {
-    width: 52px;
-    height: 52px;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.3);
-    border-radius: 14px;
+/* ── Body ── */
+.ep-body {
+    padding: 28px 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Alert ── */
+.ep-alert {
+    background: #FEE2E2;
+    border: 1px solid #FECACA;
+    color: #B91C1C;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: .82rem;
+}
+.ep-alert p { margin: 0; }
+
+/* ── Avatar Card ── */
+.ep-avatar-card {
+    background: var(--ep-white);
+    border: 1px solid var(--ep-border);
+    border-radius: var(--ep-radius);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: var(--ep-shadow);
+}
+.ep-avatar {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+    border-radius: 50%;
+    background: var(--ci-orange-lt);
+    border: 2px solid var(--ci-orange);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ep-header-text {
-    position: relative;
-    z-index: 1;
-  }
-
-  .ep-header-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 4px;
-  }
-
-  .ep-header-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.65);
-    margin: 0;
-  }
-
-  .ep-back-btn {
-    margin-left: auto;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: white;
-    padding: 9px 18px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-    transition: background 0.2s;
-  }
-
-  .ep-back-btn:hover { background: rgba(255,255,255,0.22); }
-
-  /* ── ERROR BANNER ── */
-  .ep-errors {
-    background: #fff0f0;
-    border: 1px solid #ffc5c5;
-    border-radius: 12px;
-    padding: 14px 18px;
-    margin-bottom: 1.5rem;
-    font-size: 13px;
-    color: #c0392b;
-  }
-
-  /* ── AVATAR SECTION ── */
-  .ep-avatar-card {
-    background: white;
-    border: 0.5px solid #e8e8e8;
-    border-radius: 18px;
-    padding: 24px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .ep-avatar-preview {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: #EEEDFE;
-    border: 3px solid #d0cef5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    flex-shrink: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--ci-orange);
     overflow: hidden;
-  }
-
-  .ep-avatar-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .ep-avatar-info { flex: 1; }
-
-  .ep-avatar-name {
-    font-size: 17px;
-    font-weight: 700;
-    color: #111;
-    margin: 0 0 4px;
-  }
-
-  .ep-avatar-sub {
-    font-size: 12px;
-    color: #aaa;
-    margin: 0 0 14px;
-  }
-
-  .ep-upload-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: #EEEDFE;
-    color: #007A5E;
-    border: 1px solid #d0cef5;
+}
+.ep-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ep-avatar-card__name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--ep-text);
+    margin: 0 0 3px;
+}
+.ep-avatar-card__username {
+    font-size: .78rem;
+    color: var(--ep-muted);
+    margin: 0 0 12px;
+}
+.ep-upload-btn {
+    display: inline-block;
+    background: var(--ci-orange-lt);
+    color: var(--ci-orange-dk);
+    border: 1px solid #fcd9a0;
     padding: 8px 16px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .ep-upload-btn:hover { background: #dddcfd; }
-
-  .ep-upload-input { display: none; }
-
-  /* ── CARD ── */
-  .ep-card {
-    background: white;
-    border: 0.5px solid #e8e8e8;
-    border-radius: 18px;
-    padding: 22px 24px;
-    margin-bottom: 14px;
-  }
-
-  .ep-card-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-    padding-bottom: 14px;
-    border-bottom: 0.5px solid #f0f0f0;
-  }
-
-  .ep-card-icon {
-    width: 32px;
-    height: 32px;
-    background: #EEEDFE;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-
-  .ep-card-title {
-    font-size: 14px;
+    border-radius: 8px;
+    font-size: .8rem;
     font-weight: 700;
-    color: #222;
-  }
+    cursor: pointer;
+    transition: background var(--ep-transition);
+}
+.ep-upload-btn:hover { background: #fde8c0; }
+.ep-upload-input { display: none; }
 
-  /* ── FORM GRID ── */
-  .ep-grid {
+/* ── Card ── */
+.ep-card {
+    background: var(--ep-white);
+    border: 1px solid var(--ep-border);
+    border-radius: var(--ep-radius);
+    padding: 20px 24px;
+    box-shadow: var(--ep-shadow);
+}
+.ep-card__title {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--ep-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 0 0 16px;
+    padding-left: 10px;
+    border-left: 3px solid var(--ci-orange);
+}
+
+/* ── Grille ── */
+.ep-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-  }
-
-  .ep-grid.cols1 { grid-template-columns: 1fr; }
-
-  .ep-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .ep-field.full { grid-column: 1 / -1; }
-
-  .ep-label {
-    font-size: 12px;
+}
+.ep-field { display: flex; flex-direction: column; gap: 5px; }
+.ep-field--full { grid-column: 1 / -1; }
+.ep-label {
+    font-size: .75rem;
     font-weight: 700;
-    color: #888;
+    color: var(--ep-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+    letter-spacing: .05em;
+}
+.ep-error { font-size: .72rem; color: #DC2626; }
 
-  .ep-field input,
-  .ep-field select,
-  .ep-field textarea {
+/* Champs Django + natifs */
+.ep-field input,
+.ep-field select,
+.ep-field textarea,
+.ep-grid input,
+.ep-grid select,
+.ep-grid textarea {
     width: 100%;
-    padding: 11px 14px;
-    border: 0.5px solid #ddd;
-    border-radius: 10px;
-    font-size: 14px;
-    color: #111;
-    background: #fafafa;
+    box-sizing: border-box;
+    padding: 10px 13px;
+    font-size: .88rem;
+    border: 1px solid var(--ep-border);
+    border-radius: 8px;
+    background: var(--ep-surface);
+    color: var(--ep-text);
     font-family: inherit;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  }
-
-  .ep-field input:focus,
-  .ep-field select:focus,
-  .ep-field textarea:focus {
+    transition: border-color var(--ep-transition), box-shadow var(--ep-transition);
+}
+.ep-field input:focus,
+.ep-field select:focus,
+.ep-field textarea:focus,
+.ep-grid input:focus,
+.ep-grid select:focus,
+.ep-grid textarea:focus {
     outline: none;
-    border-color: #007A5E;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(0,122,94,0.1);
-  }
+    border-color: var(--ci-orange);
+    background: var(--ep-white);
+    box-shadow: 0 0 0 3px rgba(247,127,0,.12);
+}
+.ep-field textarea,
+.ep-grid textarea { min-height: 80px; resize: vertical; }
 
-  .ep-field textarea { min-height: 80px; resize: vertical; }
-
-  .ep-field-error {
-    font-size: 12px;
-    color: #e74c3c;
-    margin-top: 2px;
-  }
-
-  /* ── SUBMIT ── */
-  .ep-submit-row {
+/* ── Actions ── */
+.ep-actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-top: 8px;
-  }
-
-  .ep-submit-btn {
-    background: #007A5E;
-    color: white;
-    border: none;
-    padding: 13px 32px;
-    border-radius: 12px;
-    font-size: 15px;
+    padding-top: 8px;
+    border-top: 1px solid var(--ep-border);
+}
+.ep-btn {
+    padding: 11px 24px;
+    font-size: .88rem;
     font-weight: 700;
+    border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.2s, transform 0.1s;
-  }
-
-  .ep-submit-btn:hover { background: #005244; }
-  .ep-submit-btn:active { transform: scale(0.98); }
-
-  .ep-cancel-link {
-    font-size: 13px;
-    color: #aaa;
     text-decoration: none;
-    transition: color 0.2s;
-  }
+    border: none;
+    transition: all var(--ep-transition);
+    display: inline-block;
+}
+.ep-btn--ghost {
+    background: transparent;
+    border: 1px solid var(--ep-border);
+    color: var(--ep-muted);
+}
+.ep-btn--ghost:hover { border-color: var(--ep-text); color: var(--ep-text); }
+.ep-btn--primary { background: var(--ci-orange); color: #fff; }
+.ep-btn--primary:hover { background: var(--ci-orange-dk); transform: translateY(-1px); }
 
-  .ep-cancel-link:hover { color: #007A5E; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 600px) {
-    .ep-header { flex-wrap: wrap; padding: 20px; }
-    .ep-back-btn { margin-left: 0; width: 100%; justify-content: center; }
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .ep-wrapper { padding: 0; }
+    .ep-container { border-radius: 0; }
+    .ep-body { padding: 20px 16px 32px; }
+    .ep-header { padding: 28px 20px 24px; }
     .ep-grid { grid-template-columns: 1fr; }
     .ep-avatar-card { flex-direction: column; text-align: center; }
-    .ep-submit-row { flex-direction: column; }
-    .ep-submit-btn { width: 100%; justify-content: center; }
-  }
+    .ep-actions { flex-direction: column-reverse; }
+    .ep-btn { width: 100%; text-align: center; }
+}
 </style>
 
-<div class="ep-wrap">
-
-  <!-- HEADER -->
-  <div class="ep-header">
-    <div class="ep-header-icon">✏️</div>
-    <div class="ep-header-text">
-      <div class="ep-header-title">Modifier mon profil</div>
-      <div class="ep-header-sub">Mettez à jour vos informations personnelles</div>
-    </div>
-    <a href="{% url 'accounts:profil' %}" class="ep-back-btn">← Retour</a>
-  </div>
-
-  <!-- ERREURS -->
-  {% if form.non_field_errors %}
-    <div class="ep-errors">
-      {% for error in form.non_field_errors %}
-        <p style="margin:0">{{ error }}</p>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <!-- AVATAR -->
-    <div class="ep-avatar-card">
-      <div class="ep-avatar-preview" id="avatar-preview">
-        {% if profile.photo_profil %}
-          <img src="{{ profile.photo_profil.url }}" alt="Photo actuelle" id="avatar-img">
-        {% else %}
-          <span id="avatar-placeholder">👤</span>
-        {% endif %}
-      </div>
-      <div class="ep-avatar-info">
-        <div class="ep-avatar-name">{{ request.user.first_name }} {{ request.user.last_name }}</div>
-        <div class="ep-avatar-sub">@{{ request.user.username }}</div>
-        <label class="ep-upload-btn" for="photo-input">
-          📷 Changer la photo
-        </label>
-        <input
-          type="file"
-          id="photo-input"
-          name="{{ form.photo_profil.html_name }}"
-          accept="image/*"
-          class="ep-upload-input"
-          onchange="previewAvatar(this)"
-        >
-      </div>
-    </div>
-
-    <!-- INFOS PERSONNELLES -->
-    <div class="ep-card">
-      <div class="ep-card-header">
-        <div class="ep-card-icon">📋</div>
-        <div class="ep-card-title">Informations personnelles</div>
-      </div>
-      <div class="ep-grid">
-        <div class="ep-field">
-          <label class="ep-label" for="id_first_name">Nom</label>
-          <input type="text" name="first_name" id="id_first_name"
-                 value="{{ form.first_name.value|default:'' }}" required>
-          {% if form.first_name.errors %}<span class="ep-field-error">{{ form.first_name.errors.0 }}</span>{% endif %}
-        </div>
-        <div class="ep-field">
-          <label class="ep-label" for="id_last_name">Prénoms</label>
-          <input type="text" name="last_name" id="id_last_name"
-                 value="{{ form.last_name.value|default:'' }}" required>
-          {% if form.last_name.errors %}<span class="ep-field-error">{{ form.last_name.errors.0 }}</span>{% endif %}
-        </div>
-        <div class="ep-field full">
-          <label class="ep-label" for="id_email">Email</label>
-          <input type="email" name="email" id="id_email"
-                 value="{{ form.email.value|default:'' }}" required>
-          {% if form.email.errors %}<span class="ep-field-error">{{ form.email.errors.0 }}</span>{% endif %}
-        </div>
-        <div class="ep-field full">
-          <label class="ep-label">Téléphone</label>
-          {{ form.telephone }}
-          {% if form.telephone.errors %}<span class="ep-field-error">{{ form.telephone.errors.0 }}</span>{% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- INFOS PROFIL -->
-    <div class="ep-card">
-      <div class="ep-card-header">
-        <div class="ep-card-icon">🏠</div>
-        <div class="ep-card-title">Informations du profil</div>
-      </div>
-      <div class="ep-grid">
-        <div class="ep-field">
-          <label class="ep-label">Ville</label>
-          {{ form.ville }}
-          {% if form.ville.errors %}<span class="ep-field-error">{{ form.ville.errors.0 }}</span>{% endif %}
-        </div>
-        <div class="ep-field">
-          <label class="ep-label">Quartier</label>
-          {{ form.quartier }}
-          {% if form.quartier.errors %}<span class="ep-field-error">{{ form.quartier.errors.0 }}</span>{% endif %}
-        </div>
-        <div class="ep-field full">
-          <label class="ep-label">Profession</label>
-          {{ form.profession }}
-          {% if form.profession.errors %}<span class="ep-field-error">{{ form.profession.errors.0 }}</span>{% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- SUBMIT -->
-    <div class="ep-submit-row">
-      <a href="{% url 'accounts:profil' %}" class="ep-cancel-link">← Annuler</a>
-      <button type="submit" class="ep-submit-btn">✓ Enregistrer les modifications</button>
-    </div>
-
-  </form>
-</div>
-
 <script>
-  function previewAvatar(input) {
+function previewAvatar(input) {
     if (!input.files || !input.files[0]) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
-      const preview = document.getElementById('avatar-preview');
-      preview.innerHTML = '<img src="' + e.target.result + '" alt="Aperçu" style="width:100%;height:100%;object-fit:cover;">';
+    reader.onload = e => {
+        document.getElementById('avatar-preview').innerHTML =
+            `<img src="${e.target.result}" alt="Aperçu" style="width:100%;height:100%;object-fit:cover;">`;
     };
     reader.readAsDataURL(input.files[0]);
-  }
+}
 </script>
 
 {% endblock %}

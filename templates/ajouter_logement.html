@@ -63,6 +63,31 @@
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
+    {% if messages %}
+      {% for message in messages %}
+        <div class="error-message" style="margin-bottom: 1rem;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if form.non_field_errors %}
+      <div class="error-message" style="margin-bottom: 1rem;">
+        {% for error in form.non_field_errors %}
+          {{ error }}<br>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% if formset.non_form_errors %}
+      <div class="error-message" style="margin-bottom: 1rem;">
+        <strong>Erreur dans les photos:</strong>
+        {% for error in formset.non_form_errors %}
+          <br>{{ error }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <!-- Étape 1 : Informations -->
     <div class="fp-section visible" id="s0">
       <div class="fp-card">
@@ -162,6 +187,26 @@
     <div class="fp-section" id="s3">
       <div class="fp-card">
         <h2>Photos <span class="fp-badge">max 5</span></h2>
+        
+        {% if formset.non_form_errors %}
+          <div class="error-message" style="margin-bottom: 1rem;">
+            <strong>Erreur dans les photos:</strong>
+            {% for error in formset.non_form_errors %}
+              <br>{{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+        
+        {% for form_photo in formset %}
+          {% if form_photo.errors %}
+            <div class="error-message" style="margin-bottom: 1rem;">
+              {% for field, errors in form_photo.errors.items %}
+                <strong>Photo - {{ field }}:</strong> {{ errors.0 }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
         {{ formset.management_form }}
         <div class="fp-photo-zone" onclick="document.getElementById('photo-input').click()">
           <div style="font-size: 24px;">+</div>
@@ -179,6 +224,56 @@
         {% for photo_form in formset %}
           <div style="display:none">{{ photo_form }}</div>
         {% endfor %}
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
+
+        <h2>🎬 Vidéos <span class="fp-badge">max 5</span></h2>
+        <p style="font-size: 12px; color: #999; margin-bottom: 1rem;">
+          Optionnel — Ajoutez des vidéos de visite (MP4, WebM, Ogg — max 500 MB par vidéo)
+        </p>
+
+        {% if video_formset.non_form_errors %}
+          <div class="error-message" style="margin-bottom: 1rem;">
+            <strong>Erreur dans les vidéos:</strong>
+            {% for error in video_formset.non_form_errors %}
+              <br>{{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% for form_video in video_formset %}
+          {% if form_video.errors %}
+            <div class="error-message" style="margin-bottom: 1rem;">
+              {% for field, errors in form_video.errors.items %}
+                <strong>Vidéo - {{ field }}:</strong> {{ errors.0 }}<br>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {{ video_formset.management_form }}
+        <div style="border: 1px solid #e0d5ff; background: #f9f6ff; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+          {% for form_video in video_formset %}
+            <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 6px; background: white;">
+              <div style="margin-bottom: 0.5rem;">
+                <label style="font-size: 13px; font-weight: 500;">Vidéo</label>
+                {{ form_video.video }}
+              </div>
+              <div style="margin-bottom: 0.5rem;">
+                <label style="font-size: 13px; font-weight: 500;">Titre</label>
+                {{ form_video.titre }}
+              </div>
+              <div style="margin-bottom: 0.5rem;">
+                <label style="font-size: 13px; font-weight: 500;">Description</label>
+                {{ form_video.description }}
+              </div>
+              <div>
+                <label style="font-size: 13px; font-weight: 500;">Ordre</label>
+                {{ form_video.order }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
       </div>
       <div class="fp-nav">
         <button type="button" class="fp-btn-prev" onclick="goTo(2)">← Précédent</button>
