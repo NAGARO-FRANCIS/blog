@@ -316,10 +316,27 @@ class Reservation(models.Model):
     
     def save(self, *args, **kwargs):
         """Calculer automatiquement le nombre de nuits et le montant final"""
+        # Vérifier que seules les propriétés hotel/residence peuvent être réservées
+        if self.logement.account_type not in ['hotel', 'residence']:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                "Les réservations ne sont possibles que pour les propriétés de type 'hotel' ou 'residence'."
+            )
+        
         self.nombre_nuits = (self.date_depart - self.date_arrivee).days
         self.prix_total = self.prix_par_nuit * self.nombre_nuits
         self.montant_final = self.prix_total + self.frais_service + self.frais_nettoyage_reservation
         super().save(*args, **kwargs)
+    
+    def clean(self):
+        """Valider les réservations"""
+        from django.core.exceptions import ValidationError
+        
+        # Vérifier que seules les propriétés hotel/residence peuvent être réservées
+        if self.logement.account_type not in ['hotel', 'residence']:
+            raise ValidationError(
+                "Les réservations ne sont possibles que pour les propriétés de type 'hotel' ou 'residence'."
+            )
 
 
 class Paiement(models.Model):

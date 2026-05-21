@@ -335,8 +335,8 @@ PhotoLogementFormSet = inlineformset_factory(
     Logement,
     PhotoLogement,
     form=PhotoLogementForm,
-    extra=5,
-    max_num=5,
+    extra=1,
+    max_num=10,
     can_delete=True,
     min_num=0,
     validate_min=False
@@ -389,7 +389,7 @@ VideoLogementFormSet = inlineformset_factory(
     Logement,
     VideoLogement,
     form=VideoLogementForm,
-    extra=3,
+    extra=1,
     max_num=5,
     can_delete=True,
     min_num=0,
@@ -495,6 +495,12 @@ class ReservationForm(forms.ModelForm):
         cleaned_data = super().clean()
         date_arrivee = cleaned_data.get('date_arrivee')
         date_depart = cleaned_data.get('date_depart')
+        
+        # Vérifier que le logement est un hôtel ou une résidence
+        if self.logement and self.logement.account_type not in ['hotel', 'residence']:
+            raise forms.ValidationError(
+                "Les réservations ne sont possibles que pour les hôtels et résidences."
+            )
         
         if date_arrivee and date_depart:
             if date_depart <= date_arrivee:

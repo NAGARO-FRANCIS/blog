@@ -170,8 +170,11 @@
                     <div>💰 {{ logement.prix }} FCFA/mois</div>
                 </div>
                 <div class="logement-actions">
-                    <a href="#" class="btn btn-edit">✏️ Modifier</a>
-                    <a href="#" class="btn btn-delete">🗑️ Supprimer</a>
+                    <a href="{% url 'logement:modifier_logement' logement.id %}" class="btn btn-edit">✏️ Modifier</a>
+                    <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" style="flex: 1; margin: 0; display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-delete" onclick="return confirm('❌ Êtes-vous sûr de vouloir supprimer cette annonce ?\n\nCette action est irréversible.')">🗑️ Supprimer</button>
+                    </form>
                 </div>
             </div>
         </div>

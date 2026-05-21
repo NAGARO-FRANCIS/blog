@@ -4,384 +4,646 @@
 {% block title %}Réserver - {{ logement.titre }} - Ivoire Connect{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row">
-        <!-- Informations du logement (Gauche) -->
-        <div class="col-lg-5">
-            <div class="logement-resume">
-                <h3>{{ logement.titre }}</h3>
-                
-                <!-- Photo principale -->
-                {% if logement.photos.first %}
-                    <img src="{{ logement.photos.first.image.url }}" class="img-fluid rounded mt-2 mb-3" alt="{{ logement.titre }}">
-                {% endif %}
-                
-                <div class="resume-content">
-                    <p><strong>Type:</strong> {{ logement.get_type_logement_display }}</p>
-                    <p><strong>Localisation:</strong> {{ logement.ville }}</p>
-                    <p><strong>Surface:</strong> {{ logement.surface }} m²</p>
-                    <p><strong>Chambres:</strong> {{ logement.chambres }}</p>
-                    
-                    <!-- Prix -->
-                    <div class="price-info mt-3 p-2 bg-light rounded">
-                        {% if logement.account_type == 'hotel' %}
-                            <p class="mb-0"><strong>Prix par nuit:</strong> {{ logement.prix_par_nuit|floatformat:0 }} FCFA</p>
-                            {% if logement.frais_nettoyage %}
-                                <p class="mb-0"><strong>Frais nettoyage:</strong> {{ logement.frais_nettoyage|floatformat:0 }} FCFA</p>
-                            {% endif %}
-                        {% elif logement.account_type == 'residence' %}
-                            <p class="mb-0"><strong>Prix par mois:</strong> {{ logement.prix_par_mois|floatformat:0 }} FCFA</p>
-                            {% if logement.caution_mois %}
-                                <p class="mb-0"><strong>Caution:</strong> {{ logement.caution_mois|floatformat:0 }} FCFA</p>
-                            {% endif %}
-                        {% else %}
-                            <p class="mb-0"><strong>Prix:</strong> {{ logement.prix|floatformat:0 }} FCFA</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Formulaire de Réservation (Droite) -->
-        <div class="col-lg-7">
-            <div class="reservation-form-container">
-                <h2>Formulaire de Réservation</h2>
-                
-                <form method="post" class="mt-4">
-                    {% csrf_token %}
-                    
-                    <!-- Dates -->
-                    <fieldset class="form-section">
-                        <legend>📅 Dates</legend>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.date_arrivee }}
-                                {% if form.date_arrivee.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form.date_arrivee.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.date_depart }}
-                                {% if form.date_depart.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form.date_depart.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <!-- Nombre de personnes et chambres -->
-                    <fieldset class="form-section">
-                        <legend>👥 Nombre de personnes</legend>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.nombre_personnes }}
-                            </div>
-                            {% if logement.account_type != 'hotel' %}
-                                <div class="col-md-6">
-                                    {{ form.nombre_chambres }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </fieldset>
-
-                    <!-- Informations du client -->
-                    <fieldset class="form-section">
-                        <legend>👤 Vos informations</legend>
-                        
-                        {{ form.client_nom }}
-                        {{ form.client_email }}
-                        {{ form.client_telephone }}
-                        
-                        {% if form.client_nom.errors %}
-                            <div class="alert alert-danger small mt-2">{{ form.client_nom.errors }}</div>
-                        {% endif %}
-                        {% if form.client_email.errors %}
-                            <div class="alert alert-danger small mt-2">{{ form.client_email.errors }}</div>
-                        {% endif %}
-                        {% if form.client_telephone.errors %}
-                            <div class="alert alert-danger small mt-2">{{ form.client_telephone.errors }}</div>
-                        {% endif %}
-                    </fieldset>
-
-                    <!-- Remarques -->
-                    <fieldset class="form-section">
-                        <legend>📝 Remarques</legend>
-                        {{ form.remarques }}
-                    </fieldset>
-
-                    <!-- Erreurs générales -->
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                    {% endif %}
-
-                    <!-- Bouton de soumission -->
-                    <div class="form-actions mt-5">
-                        <button type="submit" class="btn btn-primary btn-lg w-100">
-                            ✅ Continuer vers le paiement
-                        </button>
-                        <a href="{% url 'logement:detail_logement' logement.id %}" class="btn btn-secondary btn-lg w-100 mt-2">
-                            ← Retour au logement
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 
 <style>
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 var(--spacing-lg);
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .mt-5 {
-        margin-top: var(--spacing-2xl);
-    }
+  .rb-page {
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 2.5rem 1.25rem 4rem;
+    background: #F7F5F0;
+  }
 
-    .row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--spacing-xl);
-    }
+  .rb-layout {
+    max-width: 1060px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.55fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
 
-    @media (min-width: 992px) {
-        .row {
-            grid-template-columns: 1fr 1.5fr;
-        }
-    }
+  @media (max-width: 900px) {
+    .rb-layout { grid-template-columns: 1fr; }
+    .rb-aside { position: static !important; }
+  }
 
-    .col-lg-5,
-    .col-lg-7 {
-        width: 100%;
-    }
+  /* ── ASIDE ── */
+  .rb-aside {
+    position: sticky;
+    top: 1.5rem;
+  }
 
-    /* Résumé logement */
-    .logement-resume {
-        background: white;
-        padding: var(--spacing-xl);
-        border-radius: 12px;
-        border: 2px solid var(--color-light);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        position: sticky;
-        top: var(--spacing-lg);
-    }
+  .rb-aside-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #E8E4DC;
+  }
 
-    .logement-resume h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-lg);
-        color: var(--color-dark);
-    }
+  .rb-photo {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
 
-    .logement-resume img {
-        width: 100%;
-        border-radius: 8px;
-        margin: var(--spacing-md) 0;
-    }
+  .rb-photo-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #EDE9E0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #BDB8AE;
+    font-size: 3rem;
+  }
 
-    .resume-content p {
-        margin-bottom: var(--spacing-sm);
-        color: var(--color-dark);
-    }
+  .rb-aside-body { padding: 1.25rem 1.25rem 0.5rem; }
 
-    .resume-content strong {
-        font-weight: 600;
-    }
+  .rb-prop-type {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #A09880;
+    margin-bottom: 6px;
+  }
 
-    .price-info {
-        background: var(--color-light);
-        border-left: 4px solid var(--color-success);
-        padding: var(--spacing-md);
-        border-radius: 8px;
-    }
+  .rb-prop-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: #1C1813;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
 
-    .price-info p {
-        margin-bottom: var(--spacing-sm);
-        color: var(--color-dark);
-    }
+  .rb-meta-list {
+    list-style: none;
+    border-top: 1px solid #F0ECE4;
+    padding-top: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+  }
 
-    .price-info strong {
-        color: var(--color-success);
-    }
+  .rb-meta-item { display: flex; flex-direction: column; gap: 2px; }
 
-    /* Formulaire de réservation */
-    .reservation-form-container {
-        background: white;
-        padding: var(--spacing-xl);
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
+  .rb-meta-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #A09880;
+  }
 
-    .reservation-form-container h2 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-lg);
-        color: var(--color-dark);
-    }
+  .rb-meta-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #3A342A;
+  }
 
-    .form-section {
-        margin-bottom: var(--spacing-xl);
-        padding-bottom: var(--spacing-lg);
-        border-bottom: 1px solid var(--color-light);
-    }
+  .rb-price-block {
+    margin: 1.25rem 1.25rem 1.25rem;
+    background: #F7F5F0;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    border-left: 3px solid #C8A96E;
+  }
 
-    .form-section:last-of-type {
-        border-bottom: none;
-    }
+  .rb-price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
 
-    .form-section legend {
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-lg);
-        color: var(--color-dark);
-        display: block;
-    }
+  .rb-price-row:last-child { margin-bottom: 0; }
 
-    .form-input,
-    .form-textarea,
-    .form-select {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 2px solid var(--color-light);
-        border-radius: 8px;
-        margin-bottom: var(--spacing-lg);
-        font-size: 1rem;
-        transition: all var(--transition-base);
-        background: white;
-    }
+  .rb-price-label {
+    font-size: 12px;
+    color: #7A7060;
+  }
 
-    .form-input:focus,
-    .form-textarea:focus,
-    .form-select:focus {
-        outline: none;
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
+  .rb-price-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    color: #1C1813;
+    font-weight: 400;
+  }
 
-    .form-textarea {
-        resize: vertical;
-        font-family: inherit;
-        min-height: 120px;
-    }
+  .rb-price-sub {
+    font-size: 11px;
+    color: #A09880;
+  }
 
-    .row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--spacing-lg);
-    }
+  /* ── MAIN FORM CARD ── */
+  .rb-form-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E8E4DC;
+    overflow: hidden;
+  }
 
-    @media (min-width: 768px) {
-        .row {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
+  .rb-form-header {
+    padding: 1.5rem 1.75rem 1.25rem;
+    border-bottom: 1px solid #F0ECE4;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
 
-    .col-md-6 {
-        width: 100%;
-    }
+  .rb-form-header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #FBF8F2;
+    border: 1px solid #E8E4DC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
 
-    /* Boutons */
-    .btn {
-        display: inline-block;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all var(--transition-base);
-        border: none;
-        cursor: pointer;
-        width: 100%;
-        text-align: center;
-    }
+  .rb-form-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: #1C1813;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
 
-    .btn-primary {
-        background-color: var(--color-primary);
-        color: white;
-    }
+  .rb-form-subtitle { font-size: 13px; color: #A09880; }
 
-    .btn-primary:hover {
-        background-color: #0056b3;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
-    }
+  /* ── SECTIONS ── */
+  .rb-section {
+    padding: 1.5rem 1.75rem;
+    border-bottom: 1px solid #F0ECE4;
+  }
 
-    .btn-secondary {
-        background-color: var(--color-secondary);
-        color: white;
-    }
+  .rb-section:last-of-type { border-bottom: none; }
 
-    .btn-secondary:hover {
-        background-color: #5a6268;
-    }
+  .rb-section-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: #A09880;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
 
-    .btn-lg {
-        padding: var(--spacing-lg) var(--spacing-xl);
-        font-size: 1rem;
-    }
+  .rb-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #F0ECE4;
+  }
 
-    .w-100 {
-        width: 100%;
-    }
+  /* ── FIELDS ── */
+  .rb-field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
 
-    .mt-2 {
-        margin-top: var(--spacing-sm);
-    }
+  .rb-field-group.single { grid-template-columns: 1fr; }
+  .rb-field-group.triple { grid-template-columns: 1fr 1fr 1fr; }
 
-    .mt-4 {
-        margin-top: var(--spacing-lg);
-    }
+  @media (max-width: 560px) {
+    .rb-field-group,
+    .rb-field-group.triple { grid-template-columns: 1fr; }
+  }
 
-    .alert {
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: 8px;
-        margin-bottom: var(--spacing-md);
-    }
+  .rb-field { display: flex; flex-direction: column; gap: 5px; }
 
-    .alert-danger {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
+  .rb-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #5A5248;
+    padding-left: 2px;
+  }
 
-    .small {
-        font-size: 0.875rem;
-    }
+  /* Django renders inputs directly — target by type */
+  .rb-section input[type="text"],
+  .rb-section input[type="email"],
+  .rb-section input[type="tel"],
+  .rb-section input[type="number"],
+  .rb-section input[type="date"],
+  .rb-section select,
+  .rb-section textarea {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #DDD9D0;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #1C1813;
+    background: #FDFCFA;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+  }
 
-    .form-actions {
-        margin-top: var(--spacing-2xl);
-        padding-top: var(--spacing-lg);
-    }
+  .rb-section input[type="text"]:focus,
+  .rb-section input[type="email"]:focus,
+  .rb-section input[type="tel"]:focus,
+  .rb-section input[type="number"]:focus,
+  .rb-section input[type="date"]:focus,
+  .rb-section select:focus,
+  .rb-section textarea:focus {
+    outline: none;
+    border-color: #C8A96E;
+    box-shadow: 0 0 0 3px rgba(200, 169, 110, 0.12);
+  }
 
-    .mb-3 {
-        margin-bottom: var(--spacing-md);
-    }
+  .rb-section textarea {
+    resize: vertical;
+    min-height: 110px;
+    line-height: 1.5;
+  }
 
-    .p-2 {
-        padding: var(--spacing-sm);
-    }
+  .rb-section select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23A09880' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+    cursor: pointer;
+  }
 
-    .rounded {
-        border-radius: 8px;
-    }
+  /* Date input icon tint */
+  .rb-section input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+  }
 
-    .img-fluid {
-        max-width: 100%;
-        height: auto;
-    }
+  /* Errors */
+  .rb-error {
+    font-size: 12px;
+    color: #B54A4A;
+    padding: 0.45rem 0.65rem;
+    background: #FDF2F2;
+    border: 1px solid #F0CECE;
+    border-radius: 6px;
+    margin-top: 4px;
+  }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .logement-resume {
-            position: static;
-        }
+  .rb-error-global {
+    margin: 0 1.75rem 1.25rem;
+    padding: 0.75rem 1rem;
+    background: #FDF2F2;
+    border: 1px solid #F0CECE;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #832020;
+  }
 
-        .row {
-            grid-template-columns: 1fr;
-        }
-    }
+  /* ── DATE SUMMARY BAR ── */
+  .rb-date-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #FBF8F2;
+    border: 1px solid #E8E4DC;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .rb-date-cell {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    text-align: center;
+  }
+
+  .rb-date-cell-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #A09880;
+    margin-bottom: 3px;
+  }
+
+  .rb-date-cell-val {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    color: #1C1813;
+    font-weight: 400;
+  }
+
+  .rb-date-sep {
+    width: 1px;
+    align-self: stretch;
+    background: #E8E4DC;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .rb-date-sep::after {
+    content: '→';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #F7F5F0;
+    padding: 0 4px;
+    font-size: 11px;
+    color: #A09880;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ── ACTIONS ── */
+  .rb-actions {
+    padding: 1.25rem 1.75rem 1.5rem;
+    background: #FDFCFA;
+    border-top: 1px solid #F0ECE4;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rb-btn-primary {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    background: #1C1813;
+    color: #F7F5F0;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.2px;
+    text-decoration: none;
+  }
+
+  .rb-btn-primary:hover { background: #2E2720; transform: translateY(-1px); }
+  .rb-btn-primary:active { transform: translateY(0); }
+
+  .rb-btn-primary .arrow {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: transform 0.15s;
+  }
+
+  .rb-btn-primary:hover .arrow { transform: translateX(2px); }
+
+  .rb-btn-secondary {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: #7A7060;
+    border: 1px solid #DDD9D0;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.15s, border-color 0.15s;
+    text-decoration: none;
+  }
+
+  .rb-btn-secondary:hover { background: #F7F5F0; border-color: #C8C2B8; color: #3A342A; }
+
+  /* ── TRUST ROW ── */
+  .rb-trust {
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 0.75rem 1.75rem 0;
+    flex-wrap: wrap;
+  }
+
+  .rb-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #A09880;
+  }
+
+  .rb-trust-item span { font-size: 13px; }
 </style>
+
+<div class="rb-page">
+  <div class="rb-layout">
+
+    <!-- ── ASIDE : résumé logement ── -->
+    <aside class="rb-aside">
+      <div class="rb-aside-card">
+
+        {% if logement.photos.first %}
+          <img src="{{ logement.photos.first.image.url }}" class="rb-photo" alt="{{ logement.titre }}">
+        {% else %}
+          <div class="rb-photo-placeholder">🏡</div>
+        {% endif %}
+
+        <div class="rb-aside-body">
+          <p class="rb-prop-type">{{ logement.get_type_logement_display }}</p>
+          <h2 class="rb-prop-title">{{ logement.titre }}</h2>
+
+          <ul class="rb-meta-list">
+            <li class="rb-meta-item">
+              <span class="rb-meta-label">Ville</span>
+              <span class="rb-meta-value">{{ logement.ville }}</span>
+            </li>
+            <li class="rb-meta-item">
+              <span class="rb-meta-label">Surface</span>
+              <span class="rb-meta-value">{{ logement.surface }} m²</span>
+            </li>
+            <li class="rb-meta-item">
+              <span class="rb-meta-label">Chambres</span>
+              <span class="rb-meta-value">{{ logement.chambres }}</span>
+            </li>
+            <li class="rb-meta-item">
+              <span class="rb-meta-label">Type</span>
+              <span class="rb-meta-value">{{ logement.account_type|capfirst }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="rb-price-block">
+          {% if logement.account_type == 'hotel' %}
+            <div class="rb-price-row">
+              <span class="rb-price-label">Par nuit</span>
+              <span class="rb-price-value">{{ logement.prix_par_nuit|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA</small></span>
+            </div>
+            {% if logement.frais_nettoyage %}
+            <div class="rb-price-row">
+              <span class="rb-price-label">Frais nettoyage</span>
+              <span class="rb-price-sub">{{ logement.frais_nettoyage|floatformat:0 }} FCFA</span>
+            </div>
+            {% endif %}
+          {% elif logement.account_type == 'residence' %}
+            <div class="rb-price-row">
+              <span class="rb-price-label">Par mois</span>
+              <span class="rb-price-value">{{ logement.prix_par_mois|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA</small></span>
+            </div>
+            {% if logement.caution_mois %}
+            <div class="rb-price-row">
+              <span class="rb-price-label">Caution</span>
+              <span class="rb-price-sub">{{ logement.caution_mois|floatformat:0 }} FCFA</span>
+            </div>
+            {% endif %}
+          {% else %}
+            <div class="rb-price-row">
+              <span class="rb-price-label">Prix</span>
+              <span class="rb-price-value">{{ logement.prix|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA</small></span>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ── MAIN : formulaire ── -->
+    <main>
+      <div class="rb-form-card">
+
+        <div class="rb-form-header">
+          <div class="rb-form-header-icon">📋</div>
+          <div>
+            <h1 class="rb-form-title">Formulaire de réservation</h1>
+            <p class="rb-form-subtitle">Remplissez les informations ci-dessous pour continuer</p>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Dates -->
+          <section class="rb-section">
+            <p class="rb-section-label">📅 Dates de séjour</p>
+
+            <div class="rb-field-group">
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.date_arrivee.id_for_label }}">Date d'arrivée</label>
+                {{ form.date_arrivee }}
+                {% if form.date_arrivee.errors %}
+                  <div class="rb-error">{{ form.date_arrivee.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.date_depart.id_for_label }}">Date de départ</label>
+                {{ form.date_depart }}
+                {% if form.date_depart.errors %}
+                  <div class="rb-error">{{ form.date_depart.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </section>
+
+          <!-- Personnes & chambres -->
+          <section class="rb-section">
+            <p class="rb-section-label">👥 Occupation</p>
+            <div class="rb-field-group {% if logement.account_type == 'hotel' %}single{% endif %}">
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.nombre_personnes.id_for_label }}">Nombre de personnes</label>
+                {{ form.nombre_personnes }}
+              </div>
+              {% if logement.account_type != 'hotel' %}
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.nombre_chambres.id_for_label }}">Nombre de chambres</label>
+                {{ form.nombre_chambres }}
+              </div>
+              {% endif %}
+            </div>
+          </section>
+
+          <!-- Informations client -->
+          <section class="rb-section">
+            <p class="rb-section-label">👤 Vos coordonnées</p>
+
+            <div class="rb-field-group single">
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.client_nom.id_for_label }}">Nom complet</label>
+                {{ form.client_nom }}
+                {% if form.client_nom.errors %}
+                  <div class="rb-error">{{ form.client_nom.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="rb-field-group">
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.client_email.id_for_label }}">Adresse e-mail</label>
+                {{ form.client_email }}
+                {% if form.client_email.errors %}
+                  <div class="rb-error">{{ form.client_email.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="rb-field">
+                <label class="rb-label" for="{{ form.client_telephone.id_for_label }}">Téléphone</label>
+                {{ form.client_telephone }}
+                {% if form.client_telephone.errors %}
+                  <div class="rb-error">{{ form.client_telephone.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </section>
+
+          <!-- Remarques -->
+          <section class="rb-section">
+            <p class="rb-section-label">📝 Remarques <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:#BDB8AE;">(optionnel)</span></p>
+            <div class="rb-field">
+              <label class="rb-label" for="{{ form.remarques.id_for_label }}">Demandes particulières, informations utiles…</label>
+              {{ form.remarques }}
+            </div>
+          </section>
+
+          {% if form.non_field_errors %}
+            <div class="rb-error-global">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="rb-actions">
+            <button type="submit" class="rb-btn-primary">
+              Continuer vers le paiement
+              <span class="arrow">→</span>
+            </button>
+            <a href="{% url 'logement:detail_logement' logement.id %}" class="rb-btn-secondary">
+              ← Retour au logement
+            </a>
+          </div>
+
+          <div class="rb-trust">
+            <span class="rb-trust-item"><span>🔒</span> Paiement sécurisé</span>
+            <span class="rb-trust-item"><span>✓</span> Annulation flexible</span>
+            <span class="rb-trust-item"><span>📧</span> Confirmation immédiate</span>
+          </div>
+          <div style="height:1rem;"></div>
+
+        </form>
+      </div>
+    </main>
+
+  </div>
+</div>
+
 {% endblock %}

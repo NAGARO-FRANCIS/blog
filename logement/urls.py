@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
-    home, listings_all_types, ajouter_logement, mes_logements, gestion_logements,
+    home, listings_all_types, ajouter_logement, modifier_logement, supprimer_logement,
+    mes_logements, gestion_logements,
     mes_reservations, calendrier_reservations, mes_paiements,
     mes_clients, avis_clients, statistiques_professionnel,
     detail_logement, reserver_logement, paiement_reservation, confirmation_reservation
@@ -20,6 +21,8 @@ urlpatterns = [
     
     # Gestion des logements
     path('ajouter/', ajouter_logement, name='ajouter_logement'),
+    path('<int:id>/modifier/', modifier_logement, name='modifier_logement'),
+    path('<int:id>/supprimer/', supprimer_logement, name='supprimer_logement'),
     path('mes-logements/', mes_logements, name='mes_logements'),
     path('gestion/', gestion_logements, name='gestion_logements'),
     

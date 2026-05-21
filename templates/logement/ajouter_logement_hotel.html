@@ -470,6 +470,10 @@
                 <div class="step-icon">📸</div>
                 <div class="step-label">Photos</div>
             </div>
+            <div class="step" onclick="goToStep(5)">
+                <div class="step-icon">🎬</div>
+                <div class="step-label">Vidéos</div>
+            </div>
         </div>
     </div>
 
@@ -721,6 +725,76 @@
 
                 <div class="form-nav">
                     <button type="button" class="btn btn-prev" onclick="goToStep(3)">← Précédent</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(5)">Suivant →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 6: Vidéos -->
+        <div class="form-section" id="step5">
+            <div class="form-card">
+                <div class="card-title">
+                    <span class="card-title-icon">🎬</span>
+                    Ajouter des Vidéos (Optionnel)
+                </div>
+                <div class="card-description">
+                    Ajoutez des vidéos de visite pour attirer plus de clients
+                </div>
+
+                <div class="video-upload-section">
+                    <!-- Formset Management Forms -->
+                    {{ video_formset.management_form }}
+
+                    <!-- Videos Upload Zone -->
+                    <div id="video-forms-container">
+                        {% for video_form in video_formset %}
+                        <div class="video-form-item" style="margin-bottom: 20px;">
+                            <div style="border: 2px dashed #d97706; border-radius: 8px; padding: 15px; background: #fffbeb;">
+                                <div class="field-group">
+                                    <label>Fichier vidéo {{ forloop.counter }}</label>
+                                    {{ video_form.video }}
+                                    {% if video_form.video.errors %}
+                                        <div class="field-error">{{ video_form.video.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="field-group">
+                                    <label>Titre de la vidéo (ex: Visite complète)</label>
+                                    {{ video_form.titre }}
+                                    {% if video_form.titre.errors %}
+                                        <div class="field-error">{{ video_form.titre.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="field-group">
+                                    <label>Description</label>
+                                    {{ video_form.description }}
+                                </div>
+                                <div class="field-group">
+                                    <label>Ordre</label>
+                                    {{ video_form.order }}
+                                </div>
+                                {% if not forloop.first %}
+                                    <div style="margin-top: 10px;">
+                                        {{ video_form.DELETE }}
+                                        <label for="{{ video_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">Supprimer cette vidéo</label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Add More Videos Button -->
+                    <button type="button" id="add-video-form" class="btn btn-secondary" style="margin-top: 20px;">
+                        + Ajouter une autre vidéo
+                    </button>
+
+                    <div class="field-hint" style="margin-top: 20px;">
+                        💡 Conseil: Les vidéos augmentent les réservations de 70%. Max 5 vidéos, 500 MB par vidéo.
+                    </div>
+                </div>
+
+                <div class="form-nav">
+                    <button type="button" class="btn btn-prev" onclick="goToStep(4)">← Précédent</button>
                     <button type="submit" class="btn btn-submit">✓ Publier la Chambre</button>
                 </div>
             </div>
@@ -730,7 +804,7 @@
 
 <script>
     let currentStep = 0;
-    const totalSteps = 5;
+    const totalSteps = 6;
 
     function goToStep(step) {
         // Hide all sections
@@ -755,8 +829,17 @@
     document.addEventListener('DOMContentLoaded', function() {
         const addPhotoBtn = document.getElementById('add-photo-form');
         if (addPhotoBtn) {
-            addPhotoBtn.addEventListener('click', function() {
+            addPhotoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
                 addPhotoForm();
+            });
+        }
+        
+        const addVideoBtn = document.getElementById('add-video-form');
+        if (addVideoBtn) {
+            addVideoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                addVideoForm();
             });
         }
     });
@@ -822,6 +905,75 @@
             const id = element.getAttribute('id');
             if (id) {
                 const newId = id.replace(/photos-\d+-/, `photos-${index}-`);
+                element.setAttribute('id', newId);
+            }
+        });
+    }
+
+    function addVideoForm() {
+        const container = document.getElementById('video-forms-container');
+        const totalFormsInput = document.querySelector('input[name="videologement_set-TOTAL_FORMS"]');
+        
+        if (!container || !totalFormsInput) return;
+        
+        const currentForms = parseInt(totalFormsInput.value);
+        const newFormIndex = currentForms;
+        
+        // Clone the first form as a template
+        const firstForm = container.querySelector('.video-form-item');
+        if (!firstForm) return;
+        
+        const newForm = firstForm.cloneNode(true);
+        
+        // Update all field names and IDs in the cloned form
+        updateVideoFormIndices(newForm, newFormIndex);
+        
+        // Clear input values in the new form
+        newForm.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
+            input.value = '';
+        });
+        newForm.querySelectorAll('input[type="file"]').forEach(input => {
+            input.value = '';
+        });
+        newForm.querySelectorAll('textarea').forEach(textarea => {
+            textarea.value = '';
+        });
+        
+        // Remove any error messages from the clone
+        newForm.querySelectorAll('.field-error').forEach(error => {
+            error.remove();
+        });
+        
+        // Insert the new form before the add button
+        const addBtn = document.getElementById('add-video-form');
+        addBtn.parentElement.insertBefore(newForm, addBtn);
+        
+        // Increment TOTAL_FORMS
+        totalFormsInput.value = currentForms + 1;
+    }
+
+    function updateVideoFormIndices(form, index) {
+        form.querySelectorAll('[name]').forEach(field => {
+            const name = field.getAttribute('name');
+            if (name) {
+                // Replace videologement_set-X- with videologement_set-newIndex-
+                const newName = name.replace(/videologement_set-\d+-/, `videologement_set-${index}-`);
+                field.setAttribute('name', newName);
+            }
+        });
+        
+        form.querySelectorAll('[for]').forEach(label => {
+            const forAttr = label.getAttribute('for');
+            if (forAttr) {
+                const newFor = forAttr.replace(/videologement_set-\d+-/, `videologement_set-${index}-`);
+                label.setAttribute('for', newFor);
+            }
+        });
+        
+        form.querySelectorAll('[id]').forEach(element => {
+            const id = element.getAttribute('id');
+            if (id) {
+                const newId = id.replace(/videologement_set-\d+-/, `videologement_set-${index}-`);
                 element.setAttribute('id', newId);
             }
         });

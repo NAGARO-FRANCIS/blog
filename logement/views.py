@@ -151,11 +151,13 @@ def detail_logement(request, id):
     """Page de détail d'un logement"""
     logement = get_object_or_404(Logement, id=id)
     photos   = logement.photos.all()
+    videos   = logement.videos.all()
     reservations_count = logement.reservations.filter(statut='confirmed').count()
 
     context = {
         'logement':           logement,
         'photos':             photos,
+        'videos':             videos,
         'reservations_count': reservations_count,
     }
 
@@ -165,10 +167,17 @@ def detail_logement(request, id):
 @require_http_methods(["GET", "POST"])
 def reserver_logement(request, id):
     """Créer une réservation (pour hôtels et résidences)"""
+    from django.contrib import messages
+    
     logement = get_object_or_404(Logement, id=id)
 
     if logement.account_type not in ['hotel', 'residence']:
-        return redirect('logement:home')
+        messages.error(
+            request, 
+            '❌ Les annonces particulières ne sont pas réservables en ligne. '
+            'Veuillez contacter directement le propriétaire.'
+        )
+        return redirect('logement:detail_logement', id=logement.id)
 
     if request.method == 'POST':
         from .forms import ReservationForm
@@ -485,6 +494,131 @@ def ajouter_logement(request):
         'video_formset': video_formset,
         'account_type':  account_type,
     })
+
+
+# ── MODIFICATION ET SUPPRESSION DES ANNONCES ────────────────────────────────
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def modifier_logement(request, id):
+    """Modifier un logement existant"""
+    from django.contrib import messages
+    
+    logement = get_object_or_404(Logement, id=id)
+    
+    # Vérifier que l'utilisateur est le propriétaire
+    if logement.proprietaire != request.user:
+        messages.error(request, '❌ Vous n\'avez pas la permission de modifier cette annonce.')
+        return redirect('logement:detail_logement', id=logement.id)
+    
+    account_type = logement.account_type
+    
+    # Sélectionner le bon formulaire et template
+    if account_type == 'hotel':
+        FormClass = LogementHotelForm
+        template  = 'logement/modifier_logement_hotel.html'
+    elif account_type == 'residence':
+        FormClass = LogementResidenceForm
+        template  = 'logement/modifier_logement_residence.html'
+    elif account_type == 'individu':
+        FormClass = LogementProprietaireForm
+        template  = 'logement/modifier_logement.html'
+    else:
+        FormClass = LogementProprietaireForm
+        template  = 'logement/modifier_logement.html'
+    
+    if request.method == 'POST':
+        form    = FormClass(request.POST, instance=logement)
+        formset = PhotoLogementFormSet(request.POST, request.FILES, instance=logement)
+        video_formset = VideoLogementFormSet(request.POST, request.FILES, instance=logement)
+        
+        # Valider le formulaire principal et les formsets
+        form_valid = form.is_valid()
+        formset_valid = formset.is_valid()
+        video_formset_valid = video_formset.is_valid()
+        
+        if form_valid and formset_valid and video_formset_valid:
+            logement = form.save(commit=False)
+            
+            if account_type == 'hotel' and logement.prix_par_nuit:
+                logement.prix = logement.prix_par_nuit
+            elif account_type == 'residence' and logement.prix_par_mois:
+                logement.prix = logement.prix_par_mois
+            
+            logement.save()
+            
+            # Sauvegarder les photos
+            formset.instance = logement
+            formset.save()
+            
+            # Sauvegarder les vidéos
+            video_formset.instance = logement
+            video_formset.save()
+            
+            messages.success(request, '✅ Annonce mise à jour avec succès!')
+            return redirect('logement:detail_logement', id=logement.id)
+        else:
+            # Afficher les erreurs du formulaire principal
+            if not form_valid:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"❌ {field}: {error}")
+            
+            # Afficher les erreurs du formset photos
+            if not formset_valid:
+                if formset.non_form_errors():
+                    for error in formset.non_form_errors():
+                        messages.error(request, f"❌ Erreur photos: {error}")
+                for i, form_photo in enumerate(formset):
+                    if form_photo.errors:
+                        for field, errors in form_photo.errors.items():
+                            if field != '__all__':
+                                for error in errors:
+                                    messages.error(request, f"❌ Photo {i+1} - {field}: {error}")
+            
+            # Afficher les erreurs du formset vidéos
+            if not video_formset_valid:
+                if video_formset.non_form_errors():
+                    for error in video_formset.non_form_errors():
+                        messages.error(request, f"❌ Erreur vidéos: {error}")
+                for i, form_video in enumerate(video_formset):
+                    if form_video.errors:
+                        for field, errors in form_video.errors.items():
+                            if field != '__all__':
+                                for error in errors:
+                                    messages.error(request, f"❌ Vidéo {i+1} - {field}: {error}")
+    else:
+        form    = FormClass(instance=logement)
+        formset = PhotoLogementFormSet(instance=logement)
+        video_formset = VideoLogementFormSet(instance=logement)
+    
+    return render(request, template, {
+        'form':          form,
+        'formset':       formset,
+        'video_formset': video_formset,
+        'logement':      logement,
+        'is_editing':    True,
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def supprimer_logement(request, id):
+    """Supprimer une annonce"""
+    from django.contrib import messages
+    
+    logement = get_object_or_404(Logement, id=id)
+    
+    # Vérifier que l'utilisateur est le propriétaire
+    if logement.proprietaire != request.user:
+        messages.error(request, '❌ Vous n\'avez pas la permission de supprimer cette annonce.')
+        return redirect('logement:detail_logement', id=logement.id)
+    
+    titre = logement.titre
+    logement.delete()
+    
+    messages.success(request, f'✅ Annonce "{titre}" supprimée avec succès.')
+    return redirect('logement:mes_logements')
 
 
 # ── DASHBOARDS ────────────────────────────────────────────────────────

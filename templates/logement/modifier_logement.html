@@ -1,0 +1,545 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier Annonce - Ivoire Connect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'form_fields.css' %}">
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .modify-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .modify-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 16px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+    }
+
+    .modify-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .modify-header p {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .form-section {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #10b981;
+    }
+
+    .form-section legend {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1a2332;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #1a2332;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .col-md-3 { grid-column: span 1; }
+    .col-md-6 { grid-column: span 1; }
+
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: auto;
+        cursor: pointer;
+    }
+
+    .checkbox-item label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border-left: 4px solid #dc2626;
+    }
+
+    .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+        padding: 14px 28px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+        flex: 1;
+    }
+
+    .btn-primary:hover {
+        background: #059669;
+    }
+
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #1a2332;
+        flex: 1;
+    }
+
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+
+    .photo-section {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-left: 4px solid #10b981;
+    }
+
+    .photo-section h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .photo-list {
+        margin-bottom: 20px;
+    }
+
+    .photo-item {
+        background: #f9fafb;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .photo-item img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+
+    .breadcrumb {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb a {
+        color: #10b981;
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .modify-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .steps-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modify-container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{% url 'logement:home' %}">🏠 Accueil</a>
+        <span>/</span>
+        <a href="{% url 'logement:mes_logements' %}">Mes logements</a>
+        <span>/</span>
+        <span>✏️ Modifier</span>
+    </div>
+
+    <!-- Header -->
+    <div class="modify-header">
+        <h1>✏️ Modifier votre annonce</h1>
+        <p>Mettez à jour les informations de votre propriété</p>
+    </div>
+
+    <!-- Formulaire -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Messages d'erreur -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Section: Informations de Base -->
+        <fieldset class="form-section">
+            <legend>📍 Informations de Base</legend>
+            
+            <div class="form-group">
+                <label for="{{ form.titre.id_for_label }}">{{ form.titre.label }}</label>
+                {{ form.titre }}
+                {% if form.titre.errors %}
+                    <div class="alert alert-danger small">{{ form.titre.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="alert alert-danger small">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.type_logement.id_for_label }}">{{ form.type_logement.label }}</label>
+                        {{ form.type_logement }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.prix.id_for_label }}">{{ form.prix.label }}</label>
+                        {{ form.prix }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
+                        {{ form.ville }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="{{ form.quartier.id_for_label }}">{{ form.quartier.label }}</label>
+                        {{ form.quartier }}
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- Section: Caractéristiques -->
+        <fieldset class="form-section">
+            <legend>🏠 Caractéristiques</legend>
+            
+            <div class="row">
+                {% if form.surface %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.surface.id_for_label }}">{{ form.surface.label }}</label>
+                            {{ form.surface }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if form.nombre_pieces %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_pieces.id_for_label }}">{{ form.nombre_pieces.label }}</label>
+                            {{ form.nombre_pieces }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if form.nombre_chambres %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_chambres.id_for_label }}">{{ form.nombre_chambres.label }}</label>
+                            {{ form.nombre_chambres }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if form.nombre_lits %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_lits.id_for_label }}">{{ form.nombre_lits.label }}</label>
+                            {{ form.nombre_lits }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {% if form.nombre_salles_bain %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.nombre_salles_bain.id_for_label }}">{{ form.nombre_salles_bain.label }}</label>
+                            {{ form.nombre_salles_bain }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if form.etage %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.etage.id_for_label }}">{{ form.etage.label }}</label>
+                            {{ form.etage }}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if form.meuble %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.meuble.id_for_label }}">
+                                {{ form.meuble }}
+                                {{ form.meuble.label }}
+                            </label>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if form.disponible_depuis %}
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="{{ form.disponible_depuis.id_for_label }}">{{ form.disponible_depuis.label }}</label>
+                            {{ form.disponible_depuis }}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <!-- Section: Équipements -->
+        <fieldset class="form-section">
+            <legend>✨ Équipements &amp; Services</legend>
+            
+            <div class="checkbox-group">
+                {% if form.wifi %}
+                    <div class="checkbox-item">
+                        {{ form.wifi }}
+                        <label for="{{ form.wifi.id_for_label }}">{{ form.wifi.label }}</label>
+                    </div>
+                {% endif %}
+                {% if form.climatisation %}
+                    <div class="checkbox-item">
+                        {{ form.climatisation }}
+                        <label for="{{ form.climatisation.id_for_label }}">{{ form.climatisation.label }}</label>
+                    </div>
+                {% endif %}
+                {% if form.garage %}
+                    <div class="checkbox-item">
+                        {{ form.garage }}
+                        <label for="{{ form.garage.id_for_label }}">{{ form.garage.label }}</label>
+                    </div>
+                {% endif %}
+                {% if form.jardin %}
+                    <div class="checkbox-item">
+                        {{ form.jardin }}
+                        <label for="{{ form.jardin.id_for_label }}">{{ form.jardin.label }}</label>
+                    </div>
+                {% endif %}
+                {% if form.piscine %}
+                    <div class="checkbox-item">
+                        {{ form.piscine }}
+                        <label for="{{ form.piscine.id_for_label }}">{{ form.piscine.label }}</label>
+                    </div>
+                {% endif %}
+                {% if form.cuisine_equipee %}
+                    <div class="checkbox-item">
+                        {{ form.cuisine_equipee }}
+                        <label for="{{ form.cuisine_equipee.id_for_label }}">{{ form.cuisine_equipee.label }}</label>
+                    </div>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <!-- Section: Photos -->
+        <div class="photo-section">
+            <h2>📸 Photos</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">Ajoutez ou modifiez les photos de votre propriété</p>
+            {{ formset.management_form }}
+            <div class="photo-list">
+                {% for photo_form in formset %}
+                    {% if photo_form.instance.pk or forloop.last %}
+                    <div class="photo-item">
+                        <div>
+                            {% if photo_form.instance.image %}
+                                <img src="{{ photo_form.instance.image.url }}" alt="Photo" style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px;">
+                            {% endif %}
+                        </div>
+                        <div style="flex: 1;">
+                            {% if photo_form.instance.image %}
+                                <small style="color: #6b7280;">Photo actuelle</small>
+                            {% endif %}
+                            <div style="margin-top: 8px;">
+                                {{ photo_form.image }}
+                            </div>
+                            {% if photo_form.image.errors %}
+                                <div class="alert alert-danger" style="margin-top: 8px;">{{ photo_form.image.errors }}</div>
+                            {% endif %}
+                            {% if photo_form.DELETE %}
+                                <label style="margin-top: 8px; display: flex; gap: 8px; align-items: center; font-weight: normal;">
+                                    {{ photo_form.DELETE }}
+                                    <span style="color: #ef4444;">Supprimer cette photo</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Section: Vidéos -->
+        <div class="photo-section">
+            <h2>🎬 Vidéos</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">Ajoutez des vidéos de présentation (optionnel)</p>
+            {{ video_formset.management_form }}
+            <div class="photo-list">
+                {% for video_form in video_formset %}
+                    {% if video_form.instance.pk or forloop.last %}
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="margin-bottom: 10px;">
+                            {{ video_form.video }}
+                        </div>
+                        {% if video_form.titre %}
+                            <div style="margin-bottom: 10px;">
+                                <label style="font-weight: 600; display: block; margin-bottom: 5px;">{{ video_form.titre.label }}</label>
+                                {{ video_form.titre }}
+                            </div>
+                        {% endif %}
+                        {% if video_form.video.errors %}
+                            <div class="alert alert-danger" style="margin-top: 8px;">{{ video_form.video.errors }}</div>
+                        {% endif %}
+                        {% if video_form.DELETE %}
+                            <label style="margin-top: 8px; display: flex; gap: 8px; align-items: center; font-weight: normal;">
+                                {{ video_form.DELETE }}
+                                <span style="color: #ef4444;">Supprimer cette vidéo</span>
+                            </label>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <a href="{% url 'logement:detail_logement' logement.id %}" class="btn btn-secondary">
+                ← Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+                ✅ Enregistrer les modifications
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

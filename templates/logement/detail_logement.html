@@ -202,15 +202,36 @@
                 </div>
 
                 <!-- CTA Principal -->
-                <a href="{% url 'logement:reserver_logement' logement.id %}" class="dl-btn dl-btn--primary">
-                    🔗 Réserver maintenant
-                </a>
+                {% if logement.account_type in 'hotel,residence' %}
+                    <a href="{% url 'logement:reserver_logement' logement.id %}" class="dl-btn dl-btn--primary">
+                        🔗 Réserver maintenant
+                    </a>
+                {% else %}
+                    <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #0369a1;">
+                        <p style="margin: 0; font-size: 14px;">ℹ️ <strong>Les annonces particulières ne sont pas réservables en ligne.</strong><br>Veuillez contacter directement le propriétaire pour plus d'informations.</p>
+                    </div>
+                {% endif %}
 
                 <!-- Bouton d'abonnement -->
                 {% if user.is_authenticated and user != logement.proprietaire %}
                     <button class="dl-btn dl-btn--subscribe" id="subscribeBtn" onclick="toggleSubscription({{ logement.proprietaire.id }})">
                         <span id="subscribeBtnText">📢 S'abonner</span>
                     </button>
+                {% endif %}
+
+                <!-- Actions du propriétaire -->
+                {% if user.is_authenticated and user == logement.proprietaire %}
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <a href="{% url 'logement:modifier_logement' logement.id %}" class="dl-btn dl-btn--primary" style="flex: 1; background: #10b981;">
+                            ✏️ Modifier
+                        </a>
+                        <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" style="flex: 1; margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="dl-btn dl-btn--primary" style="width: 100%; background: #ef4444;" onclick="return confirm('❌ Êtes-vous sûr de vouloir supprimer cette annonce ?\n\nCette action est irréversible.')">
+                                🗑️ Supprimer
+                            </button>
+                        </form>
+                    </div>
                 {% endif %}
 
                 <!-- Actions rapides -->
