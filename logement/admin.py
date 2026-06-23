@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Logement, PhotoLogement, VideoLogement, Reservation, Paiement, DisponibiliteCalendrier
+from .models import Logement, PhotoLogement, VideoLogement, Reservation, Paiement, DisponibiliteCalendrier, FavoriLogement
 
 
 class PhotoLogementInline(admin.TabularInline):
@@ -194,3 +194,13 @@ class DisponibiliteCalendrierAdmin(admin.ModelAdmin):
         updated = queryset.update(statut='bloquer')
         self.message_user(request, f"🚫 {updated} jours marqués comme bloqués")
     marquer_bloque.short_description = "🚫 Marquer comme bloqué"
+
+
+@admin.register(FavoriLogement)
+class FavoriLogementAdmin(admin.ModelAdmin):
+    """Admin pour les favoris des logements"""
+    list_display = ['utilisateur', 'logement', 'created_at']
+    list_filter = ['created_at', 'utilisateur']
+    search_fields = ['utilisateur__username', 'logement__titre']
+    readonly_fields = ['created_at']
+    ordering = ['-created_at']

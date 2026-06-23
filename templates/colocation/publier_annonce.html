@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Publier une annonce - Coloc.ai{% endblock %}
+{% block title %}Publier une annonce de colocation - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="publish-wrapper">
     <div class="publish-container">
         <!-- Header Section -->
-        <div class="publish-header">
+        <div class="publish-header colocation-header">
+            <div class="header-info">
+                <span class="badge-type">🏠 COLOCATION</span>
+                <h1>Publier votre annonce de colocation</h1>
+                <p>Trouvez vos colocataires ou votre logement en colocation</p>
+            </div>
             <div class="header-progress">
                 <div class="progress-step active" id="step1-indicator">1</div>
                 <div class="progress-line"></div>
@@ -17,7 +22,7 @@
                 <div class="progress-line"></div>
                 <div class="progress-step" id="step4-indicator">4</div>
             </div>
-            <h1 id="step-title">Créer votre annonce</h1>
+            <h2 id="step-title">Créer votre annonce</h2>
             <p id="step-subtitle">Localisation et détails</p>
         </div>
 
@@ -309,6 +314,39 @@
         padding: 40px;
         color: white;
         text-align: center;
+    }
+
+    /* Header spécifique colocation */
+    .publish-header.colocation-header {
+        background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%);
+        text-align: center;
+        padding: 35px 40px;
+    }
+
+    .publish-header.colocation-header h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+    }
+
+    .publish-header.colocation-header p {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin-bottom: 25px;
+    }
+
+    .badge-type {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 99px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 15px;
+        backdrop-filter: blur(10px);
     }
 
     .header-progress {

@@ -2,11 +2,18 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum, Avg, Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
 from .forms import (
     LogementProprietaireForm, LogementColocataireForm, LogementHotelForm, LogementResidenceForm,
     RechercheLogementForm, PhotoLogementFormSet, VideoLogementFormSet
 )
 from .models import Logement, PhotoLogement, VideoLogement
+
+
+@login_required
+def choisir_type_annonce(request):
+    """Affiche la page de sélection du type d'annonce"""
+    return render(request, 'logement/choisir_type_annonce.html')
 
 
 def home(request):
@@ -149,19 +156,68 @@ def listings_all_types(request):
 @require_http_methods(["GET"])
 def detail_logement(request, id):
     """Page de détail d'un logement"""
+    from .models import FavoriLogement
+    
     logement = get_object_or_404(Logement, id=id)
     photos   = logement.photos.all()
     videos   = logement.videos.all()
     reservations_count = logement.reservations.filter(statut='confirmed').count()
+    
+    # Vérifier si le logement est dans les favoris de l'utilisateur
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = FavoriLogement.objects.filter(
+            utilisateur=request.user,
+            logement=logement
+        ).exists()
 
     context = {
         'logement':           logement,
         'photos':             photos,
         'videos':             videos,
         'reservations_count': reservations_count,
+        'is_favorite':        is_favorite,
     }
 
     return render(request, 'logement/detail_logement.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_favori(request, id):
+    """Toggle un logement en favoris (AJAX)"""
+    from .models import FavoriLogement
+    
+    logement = get_object_or_404(Logement, id=id)
+    favori, created = FavoriLogement.objects.get_or_create(
+        utilisateur=request.user,
+        logement=logement,
+    )
+    
+    if not created:
+        favori.delete()
+        is_favorite = False
+    else:
+        is_favorite = True
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'is_favorite': is_favorite})
+    return redirect('logement:home')
+
+
+@login_required
+@require_http_methods(["GET"])
+def mes_favoris(request):
+    """Afficher les favoris de l'utilisateur"""
+    from .models import FavoriLogement
+    
+    favoris = FavoriLogement.objects.filter(utilisateur=request.user).select_related('logement').prefetch_related('logement__photos')
+    
+    context = {
+        'favoris': favoris,
+    }
+    
+    return render(request, 'logement/mes_favoris.html', context)
 
 
 @require_http_methods(["GET", "POST"])
@@ -428,8 +484,8 @@ def ajouter_logement(request):
 
     if request.method == 'POST':
         form    = FormClass(request.POST)
-        formset = PhotoLogementFormSet(request.POST, request.FILES)
-        video_formset = VideoLogementFormSet(request.POST, request.FILES)
+        formset = PhotoLogementFormSet(request.POST, request.FILES, prefix='photos')
+        video_formset = VideoLogementFormSet(request.POST, request.FILES, prefix='videos')
 
         if form.is_valid() and formset.is_valid() and video_formset.is_valid():
             logement              = form.save(commit=False)
@@ -485,8 +541,8 @@ def ajouter_logement(request):
                         messages.error(request, f"Erreur vidéos: {error}")
     else:
         form    = FormClass()
-        formset = PhotoLogementFormSet(queryset=PhotoLogement.objects.none())
-        video_formset = VideoLogementFormSet(queryset=VideoLogement.objects.none())
+        formset = PhotoLogementFormSet(queryset=PhotoLogement.objects.none(), prefix='photos')
+        video_formset = VideoLogementFormSet(queryset=VideoLogement.objects.none(), prefix='videos')
 
     return render(request, template, {
         'form':          form,
@@ -529,8 +585,8 @@ def modifier_logement(request, id):
     
     if request.method == 'POST':
         form    = FormClass(request.POST, instance=logement)
-        formset = PhotoLogementFormSet(request.POST, request.FILES, instance=logement)
-        video_formset = VideoLogementFormSet(request.POST, request.FILES, instance=logement)
+        formset = PhotoLogementFormSet(request.POST, request.FILES, instance=logement, prefix='photos')
+        video_formset = VideoLogementFormSet(request.POST, request.FILES, instance=logement, prefix='videos')
         
         # Valider le formulaire principal et les formsets
         form_valid = form.is_valid()
@@ -589,8 +645,8 @@ def modifier_logement(request, id):
                                     messages.error(request, f"❌ Vidéo {i+1} - {field}: {error}")
     else:
         form    = FormClass(instance=logement)
-        formset = PhotoLogementFormSet(instance=logement)
-        video_formset = VideoLogementFormSet(instance=logement)
+        formset = PhotoLogementFormSet(instance=logement, prefix='photos')
+        video_formset = VideoLogementFormSet(instance=logement, prefix='videos')
     
     return render(request, template, {
         'form':          form,

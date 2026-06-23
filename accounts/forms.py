@@ -321,9 +321,13 @@ class ProfessionalSignUpForm(UserCreationForm):
     def save(self, commit=True, establishment_type='residence'):
         user = super().save(commit=commit)
         
-        # Créer le profil individu
+        # Assurer que establishment_type est valide
+        if establishment_type not in ['residence', 'hotel']:
+            establishment_type = 'residence'
+        
+        # Créer le profil avec le bon account_type
         profile, created = Profile.objects.get_or_create(user=user)
-        profile.account_type = establishment_type
+        profile.account_type = establishment_type  # ← IMPORTANT : Toujours mettre à jour
         profile.role = 'proprietaire'
         profile.ville = self.cleaned_data['establishment_city']
         profile.profession = f"Gestionnaire de {establishment_type}"

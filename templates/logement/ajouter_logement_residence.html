@@ -928,7 +928,7 @@
 
     function addVideoForm() {
         const container = document.getElementById('video-forms-container');
-        const totalFormsInput = document.querySelector('input[name="videologement_set-TOTAL_FORMS"]');
+        const totalFormsInput = document.querySelector('input[name="videos-TOTAL_FORMS"]');
         
         if (!container || !totalFormsInput) return;
         
@@ -972,8 +972,8 @@
         form.querySelectorAll('[name]').forEach(field => {
             const name = field.getAttribute('name');
             if (name) {
-                // Replace videologement_set-X- with videologement_set-newIndex-
-                const newName = name.replace(/videologement_set-\d+-/, `videologement_set-${index}-`);
+                // Replace videos-X- with videos-newIndex-
+                const newName = name.replace(/videos-\d+-/, `videos-${index}-`);
                 field.setAttribute('name', newName);
             }
         });
@@ -981,7 +981,7 @@
         form.querySelectorAll('[for]').forEach(label => {
             const forAttr = label.getAttribute('for');
             if (forAttr) {
-                const newFor = forAttr.replace(/videologement_set-\d+-/, `videologement_set-${index}-`);
+                const newFor = forAttr.replace(/videos-\d+-/, `videos-${index}-`);
                 label.setAttribute('for', newFor);
             }
         });
@@ -989,7 +989,7 @@
         form.querySelectorAll('[id]').forEach(element => {
             const id = element.getAttribute('id');
             if (id) {
-                const newId = id.replace(/videologement_set-\d+-/, `videologement_set-${index}-`);
+                const newId = id.replace(/videos-\d+-/, `videos-${index}-`);
                 element.setAttribute('id', newId);
             }
         });

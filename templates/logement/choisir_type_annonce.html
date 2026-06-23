@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Choisir votre type d'annonce - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <div class="hero-flag">
+            <span class="flag-orange"></span>
+            <span class="flag-white"></span>
+            <span class="flag-green"></span>
+        </div>
+        <h1>📢 Publier une annonce</h1>
+        <p>Choisissez le type d'annonce qui vous convient</p>
+    </div>
+
+    <div class="annonce-types-grid">
+        <!-- RÉSIDENCE -->
+        {% if user.profile.account_type == 'residence' %}
+        <div class="type-card residence-card">
+            <div class="card-icon">🏢</div>
+            <h3>Publier pour Résidence</h3>
+            <p>Publiez vos logements en résidence pour les clients</p>
+            <div class="features-list">
+                <div class="feature">✅ Tarifs mensuels</div>
+                <div class="feature">✅ Caution & frais</div>
+                <div class="feature">✅ Conditions spéciales</div>
+                <div class="feature">✅ Équipements professionnels</div>
+            </div>
+            <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-type residence">
+                Ajouter un logement →
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- HÔTEL -->
+        {% if user.profile.account_type == 'hotel' %}
+        <div class="type-card hotel-card">
+            <div class="card-icon">🏨</div>
+            <h3>Publier pour Hôtel</h3>
+            <p>Publiez vos chambres d'hôtel avec tarifs nuit</p>
+            <div class="features-list">
+                <div class="feature">✅ Tarifs par nuit</div>
+                <div class="feature">✅ Services hôteliers</div>
+                <div class="feature">✅ Disponibilités</div>
+                <div class="feature">✅ Équipements spécialisés</div>
+            </div>
+            <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-type hotel">
+                Ajouter une chambre →
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- COLOCATION (Colocataire ou Propriétaire) -->
+        {% if user.profile.account_type == 'individu' and user.profile.role in 'colocataire,proprietaire,locataire' %}
+        <div class="type-card colocation-card">
+            <div class="card-icon">🏠</div>
+            <h3>Publier en Colocation</h3>
+            <p>Trouvez des colocataires ou un logement en colocation</p>
+            <div class="features-list">
+                <div class="feature">✅ Profil recherché</div>
+                <div class="feature">✅ Conditions de vie</div>
+                <div class="feature">✅ Équipements partagés</div>
+                <div class="feature">✅ Durée minimum</div>
+            </div>
+            <a href="{% url 'colocation:publier_annonce' %}" class="btn btn-type colocation">
+                Créer une annonce →
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- PROPRIÉTAIRE INDIVIDUEL -->
+        {% if user.profile.account_type == 'individu' and user.profile.role == 'proprietaire' %}
+        <div class="type-card proprietaire-card">
+            <div class="card-icon">🔑</div>
+            <h3>Publier comme Propriétaire</h3>
+            <p>Publiez vos propriétés en tant que propriétaire individuel</p>
+            <div class="features-list">
+                <div class="feature">✅ Tarifs flexibles</div>
+                <div class="feature">✅ Équipements variés</div>
+                <div class="feature">✅ Localisation précise</div>
+                <div class="feature">✅ Détails complets</div>
+            </div>
+            <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-type proprietaire">
+                Ajouter une propriété →
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Message d'aide -->
+    <div class="help-section">
+        <h3>❓ Besoin d'aide pour choisir ?</h3>
+        <div class="help-grid">
+            <div class="help-item">
+                <strong>Résidence</strong>
+                <p>Vous gérez un ensemble d'appartements ou studios pour des locataires professionnels</p>
+            </div>
+            <div class="help-item">
+                <strong>Hôtel</strong>
+                <p>Vous proposez des chambres à court terme avec services hôteliers</p>
+            </div>
+            <div class="help-item">
+                <strong>Colocation</strong>
+                <p>Vous cherchez des colocataires ou un logement partagé</p>
+            </div>
+            <div class="help-item">
+                <strong>Propriétaire</strong>
+                <p>Vous possédez un bien que vous souhaitez louer seul</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --ci-orange:       #F77F00;
+        --ci-orange-light: #FFF3E0;
+        --ci-orange-dark:  #D46A00;
+        --ci-green:        #009A44;
+        --ci-green-light:  #E8F5E9;
+        --ci-green-dark:   #007A35;
+        --ci-blue:         #0EA5E9;
+        --ci-blue-dark:    #0284C7;
+        --ci-shadow-o: rgba(247,127,0,0.18);
+        --ci-shadow-g: rgba(0,154,68,0.18);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    /* HERO */
+    .hero {
+        text-align: center;
+        padding: 48px 20px 36px;
+        margin-bottom: 48px;
+        background: linear-gradient(135deg, #FFF8F0 0%, #FFFFFF 50%, #F0FFF6 100%);
+        border-radius: 24px;
+        border: 1px solid rgba(247,127,0,0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(to right, #F77F00 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #009A44 66.6%);
+    }
+
+    .hero-flag { display: flex; justify-content: center; gap: 4px; margin-bottom: 18px; }
+    .hero-flag span { width: 30px; height: 20px; border-radius: 3px; }
+    .flag-orange { background: #F77F00; }
+    .flag-white  { background: #FFF; border: 1px solid #ddd; }
+    .flag-green  { background: #009A44; }
+    
+    .hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, var(--ci-orange-dark), var(--ci-green-dark));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero p { font-size: 1.1rem; color: #666; }
+
+    /* GRILLE DES TYPES */
+    .annonce-types-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 28px;
+        margin-bottom: 48px;
+    }
+
+    .type-card {
+        background: white;
+        border-radius: 20px;
+        padding: 32px 24px;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .type-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+        border-color: var(--ci-orange);
+    }
+
+    .type-card.residence-card {
+        border-color: #10b981;
+        background: linear-gradient(135deg, rgba(16,185,129,0.03), rgba(16,185,129,0.02));
+    }
+
+    .type-card.residence-card:hover {
+        border-color: #10b981;
+        box-shadow: 0 16px 32px rgba(16,185,129,0.2);
+    }
+
+    .type-card.hotel-card {
+        border-color: #f59e0b;
+        background: linear-gradient(135deg, rgba(245,158,11,0.03), rgba(245,158,11,0.02));
+    }
+
+    .type-card.hotel-card:hover {
+        border-color: #f59e0b;
+        box-shadow: 0 16px 32px rgba(245,158,11,0.2);
+    }
+
+    .type-card.colocation-card {
+        border-color: #0EA5E9;
+        background: linear-gradient(135deg, rgba(14,165,233,0.03), rgba(14,165,233,0.02));
+    }
+
+    .type-card.colocation-card:hover {
+        border-color: #0EA5E9;
+        box-shadow: 0 16px 32px rgba(14,165,233,0.2);
+    }
+
+    .type-card.proprietaire-card {
+        border-color: #8b5cf6;
+        background: linear-gradient(135deg, rgba(139,92,246,0.03), rgba(139,92,246,0.02));
+    }
+
+    .type-card.proprietaire-card:hover {
+        border-color: #8b5cf6;
+        box-shadow: 0 16px 32px rgba(139,92,246,0.2);
+    }
+
+    .card-icon {
+        font-size: 3rem;
+        margin: 0 0 8px 0;
+    }
+
+    .type-card h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+        color: #1a1a1a;
+    }
+
+    .type-card p {
+        font-size: 0.95rem;
+        color: #666;
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    .features-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-align: left;
+    }
+
+    .feature {
+        font-size: 0.85rem;
+        color: #555;
+        padding: 6px 0;
+    }
+
+    .btn-type {
+        display: inline-block;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn-type.residence {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .btn-type.residence:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(16,185,129,0.3);
+    }
+
+    .btn-type.hotel {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .btn-type.hotel:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(245,158,11,0.3);
+    }
+
+    .btn-type.colocation {
+        background: linear-gradient(135deg, #0EA5E9, #0284C7);
+    }
+
+    .btn-type.colocation:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(14,165,233,0.3);
+    }
+
+    .btn-type.proprietaire {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .btn-type.proprietaire:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(139,92,246,0.3);
+    }
+
+    /* HELP SECTION */
+    .help-section {
+        background: linear-gradient(135deg, #FFF8F0, #F0FFF6);
+        border-radius: 20px;
+        padding: 36px 24px;
+        margin-top: 48px;
+        border: 1px solid rgba(247,127,0,0.12);
+    }
+
+    .help-section h3 {
+        text-align: center;
+        font-size: 1.5rem;
+        margin-bottom: 28px;
+        color: var(--ci-orange-dark);
+    }
+
+    .help-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .help-item {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(247,127,0,0.08);
+        text-align: center;
+    }
+
+    .help-item strong {
+        display: block;
+        font-size: 1rem;
+        color: var(--ci-orange-dark);
+        margin-bottom: 8px;
+    }
+
+    .help-item p {
+        font-size: 0.85rem;
+        color: #666;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .annonce-types-grid {
+            grid-template-columns: 1fr;
+        }
+        .hero h1 { font-size: 1.8rem; }
+    }
+</style>
+{% endblock %}

@@ -1,16 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Trouver une colocation - Coloc.ai{% endblock %}
+{% block title %}Toutes les annonces - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="hero">
-        <h1>🏠 Trouvez votre Colocation Idéale</h1>
-        <p>Découvrez les meilleures offres de colocation en Côte d'Ivoire</p>
+        <div class="hero-flag">
+            <span class="flag-orange"></span>
+            <span class="flag-white"></span>
+            <span class="flag-green"></span>
+        </div>
+        <h1>🏠 Tous les Logements Disponibles</h1>
+        <p>Découvrez toutes les offres sur la plateforme</p>
     </div>
 
-    <!-- Formulaire de recherche -->
     <form method="get" class="search-form">
         <div class="form-group">
             {{ form.q.label_tag }}
@@ -21,36 +25,30 @@
             {{ form.ville }}
         </div>
         <div class="form-group">
-            {{ form.budget_max.label_tag }}
-            {{ form.budget_max }}
+            {{ form.prix_max.label_tag }}
+            {{ form.prix_max }}
         </div>
         <div class="form-group">
-            {{ form.profil_recherche.label_tag }}
-            {{ form.profil_recherche }}
+            {{ form.type_logement.label_tag }}
+            {{ form.type_logement }}
         </div>
         <button type="submit">🔍 Rechercher</button>
     </form>
 
-    {% if request.user.is_authenticated %}
-       
-    {% endif %}
-
     {% if annonces %}
         <div class="annonces-grid">
             {% for annonce in annonces %}
-                <a href="{% url 'colocation:detail_annonce' annonce.id %}" class="annonce-card-link">
+                <a href="{% url 'logement:detail_logement' annonce.id %}" class="annonce-card-link">
                     <div class="annonce-card">
-                        <!-- Image principale -->
                         <div class="annonce-image">
                             {% if annonce.photos.all %}
                                 <img src="{{ annonce.photos.first.image.url }}" alt="{{ annonce.photos.first.alt_text }}" class="card-image">
                             {% else %}
                                 <div class="card-image-placeholder">🏠</div>
                             {% endif %}
-                            
-                            <!-- Bouton Favori -->
+
                             {% if request.user.is_authenticated %}
-                                <button class="favorite-btn {% if annonce.id in favoris_ids %}active{% endif %}" 
+                                <button class="favorite-btn {% if annonce.id in favoris_ids %}active{% endif %}"
                                         data-annonce-id="{{ annonce.id }}"
                                         onclick="toggleFavori(event, this, {{ annonce.id }})"
                                         type="button">
@@ -61,57 +59,56 @@
                                     🤍
                                 </button>
                             {% endif %}
-                            
+
                             {% if annonce.photos.count > 1 %}
                                 <span class="badge badge-photos">📸 {{ annonce.photos.count }}</span>
                             {% endif %}
+
+                            <span class="badge badge-type">{{ annonce.get_account_type_display }}</span>
                         </div>
-                        
+
                         <div class="annonce-content">
-                            <!-- Budget et lieu -->
                             <div class="annonce-header">
-                                <div class="annonce-prix">{{ annonce.budget_mensuel|floatformat:0 }} FCFA</div>
-                                <span class="annonce-date">{{ annonce.created_at|date:"d/m/Y" }}</span>
+                                <h3 class="annonce-titre">{{ annonce.titre }}</h3>
+                                <div class="annonce-prix">
+                                    {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
+                                        {{ annonce.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
+                                    {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
+                                        {{ annonce.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
+                                    {% elif annonce.prix %}
+                                        {{ annonce.prix|floatformat:0 }} <span>FCFA</span>
+                                    {% else %}
+                                        <span>Prix sur demande</span>
+                                    {% endif %}
+                                </div>
                             </div>
-                            
+
                             <div class="annonce-ville">
                                 📍 {{ annonce.ville }}
                                 {% if annonce.quartier %}<span class="quartier"> - {{ annonce.quartier }}</span>{% endif %}
                             </div>
-                            
-                            <!-- Caractéristiques du logement -->
+
                             <div class="annonce-features">
-                                <span class="feature">
-                                    <strong>{{ annonce.nombre_chambres }}</strong> chambre{{ annonce.nombre_chambres|pluralize }}
-                                </span>
-                                <span class="feature">
-                                    <strong>{{ annonce.nombre_colocataires }}</strong> place{{ annonce.nombre_colocataires|pluralize }}
-                                </span>
+                                <span class="feature">🏘️ <strong>{{ annonce.nombre_chambres }}</strong> chambre{{ annonce.nombre_chambres|pluralize }}</span>
+                                <span class="feature">🛏️ <strong>{{ annonce.nombre_pieces }}</strong> pièce{{ annonce.nombre_pieces|pluralize }}</span>
                                 {% if annonce.surface %}
-                                    <span class="feature">
-                                        <strong>{{ annonce.surface }}</strong> m²
-                                    </span>
+                                    <span class="feature">📐 <strong>{{ annonce.surface }}</strong> m²</span>
                                 {% endif %}
                             </div>
-                            
-                            <!-- Description -->
-                            <div class="annonce-description">{{ annonce.description|truncatewords:15 }}</div>
-                            
-                            <!-- Équipements -->
-                            {% if annonce.climatisation or annonce.wifi or annonce.cuisine_equipee %}
-                                <div class="annonce-amenities">
-                                    {% if annonce.climatisation %}<span class="amenity">❄️ AC</span>{% endif %}
-                                    {% if annonce.wifi %}<span class="amenity">📶 WiFi</span>{% endif %}
-                                    {% if annonce.cuisine_equipee %}<span class="amenity">👨‍🍳 Cuisine</span>{% endif %}
-                                </div>
-                            {% endif %}
-                            
-                            <!-- Profil recherché -->
-                            {% if annonce.profil_recherche %}
-                                <div class="annonce-profil">
-                                    <strong>Profil recherché:</strong> {{ annonce.get_profil_recherche_display }}
-                                </div>
-                            {% endif %}
+
+                            <div class="annonce-description">{{ annonce.description|truncatewords:20 }}</div>
+
+                            <div class="annonce-type">
+                                <span class="type-tag">{{ annonce.get_type_logement_display }}</span>
+                            </div>
+
+                            <div class="annonce-meta">
+                                <span class="annonce-date">{{ annonce.created_at|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="card-flag-bar">
+                            <span></span><span></span><span></span>
                         </div>
                     </div>
                 </a>
@@ -121,15 +118,60 @@
         <div class="text-center section-empty">
             <h2>Aucune annonce ne correspond à vos critères 😔</h2>
             <p class="text-muted">Essayez de modifier votre recherche ou consultez toutes les annonces</p>
-            <a href="{% url 'colocation:colocation_home' %}" class="btn btn-primary">Voir toutes les annonces</a>
+            <a href="{% url 'logement:home' %}" class="btn btn-primary">Voir toutes les annonces</a>
         </div>
     {% endif %}
 </div>
 
 <style>
+    :root {
+        --ci-orange:       #F77F00;
+        --ci-orange-light: #FFF3E0;
+        --ci-orange-dark:  #D46A00;
+        --ci-green:        #009A44;
+        --ci-green-light:  #E8F5E9;
+        --ci-green-dark:   #007A35;
+        --ci-shadow-o: rgba(247,127,0,0.18);
+        --ci-shadow-g: rgba(0,154,68,0.18);
+    }
+
+    /* HERO */
+    .hero {
+        text-align: center;
+        padding: 48px 20px 36px;
+        margin-bottom: 32px;
+        background: linear-gradient(135deg, #FFF8F0 0%, #FFFFFF 50%, #F0FFF6 100%);
+        border-radius: 24px;
+        border: 1px solid rgba(247,127,0,0.12);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(to right, #F77F00 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #009A44 66.6%);
+    }
+    .hero-flag { display: flex; justify-content: center; gap: 4px; margin-bottom: 18px; }
+    .hero-flag span { width: 30px; height: 20px; border-radius: 3px; }
+    .flag-orange { background: #F77F00; }
+    .flag-white  { background: #FFF; border: 1px solid #ddd; }
+    .flag-green  { background: #009A44; }
+    .hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, var(--ci-orange-dark), var(--ci-green-dark));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .hero p { font-size: 1.1rem; color: #666; }
+
+    /* FORMULAIRE */
     .search-form {
-        background: rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(94, 93, 255, 0.08);
+        background: #FFFFFF;
+        border: 1.5px solid rgba(247,127,0,0.18);
         border-radius: 20px;
         padding: 24px;
         margin-bottom: 32px;
@@ -137,514 +179,85 @@
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 16px;
         align-items: end;
+        box-shadow: 0 4px 20px rgba(247,127,0,0.07);
     }
-
-    .search-form .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .search-form label {
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: var(--primary);
-        font-size: 0.9rem;
-    }
-
+    .search-form .form-group { display: flex; flex-direction: column; }
+    .search-form label { font-weight: 700; margin-bottom: 8px; color: var(--ci-orange-dark); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.4px; }
     .search-form input,
-    .search-form select {
-        padding: 10px;
-        border: 1px solid rgba(94, 93, 255, 0.15);
-        border-radius: 12px;
-        font-size: 0.95rem;
-    }
+    .search-form select { padding: 10px 14px; border: 1.5px solid rgba(247,127,0,0.18); border-radius: 12px; font-size: 0.95rem; background: #FFFAF5; transition: all 0.2s; }
+    .search-form input:focus,
+    .search-form select:focus { outline: none; border-color: var(--ci-orange); box-shadow: 0 0 0 3px rgba(247,127,0,0.1); }
+    .search-form button { padding: 11px 24px; background: linear-gradient(135deg, var(--ci-orange), var(--ci-orange-dark)); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px var(--ci-shadow-o); }
+    .search-form button:hover { transform: translateY(-2px); box-shadow: 0 6px 18px var(--ci-shadow-o); }
 
-    .search-form button {
-        padding: 10px 24px;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
+    /* GRILLE */
+    .annonces-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-bottom: 48px; }
+    .annonce-card-link { text-decoration: none; color: inherit; display: block; }
+    .annonce-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07); transition: all 0.3s ease; display: flex; flex-direction: column; border: 1px solid rgba(247,127,0,0.08); }
+    .annonce-card-link:hover .annonce-card { transform: translateY(-6px); box-shadow: 0 14px 30px rgba(0,154,68,0.13), 0 4px 12px rgba(247,127,0,0.1); border-color: rgba(0,154,68,0.18); }
 
-    .search-form button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(94, 93, 255, 0.3);
-    }
+    /* IMAGE */
+    .annonce-image { position: relative; width: 100%; height: 220px; background: linear-gradient(135deg, #FFF3E0, #E8F5E9); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .card-image { width: 100%; height: 100%; object-fit: cover; }
+    .card-image-placeholder { font-size: 4rem; }
 
-    .mb-20 {
-        margin-bottom: 20px;
-    }
+    /* FAVORI */
+    .favorite-btn { position: absolute; bottom: 12px; right: 12px; background: white; border: 2px solid #FF1744; border-radius: 50%; width: 50px; height: 50px; font-size: 1.6rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 100; pointer-events: auto; padding: 0; }
+    .favorite-btn:hover { transform: scale(1.15); background: #fff5f5; box-shadow: 0 6px 16px rgba(255,23,68,0.3); }
+    .favorite-btn.active { background: #FFE0E0; border-color: #FF1744; box-shadow: 0 4px 12px rgba(255,23,68,0.25); }
+    .favorite-btn:active { transform: scale(0.95); }
 
-    .btn-primary {
-        background: var(--primary);
-        color: white;
-        padding: 12px 24px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 700;
-        transition: all 0.3s;
-    }
+    /* BADGES */
+    .badge { position: absolute; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .badge-photos { top: 12px; right: 12px; background: rgba(0,0,0,0.55); }
+    .badge-type { bottom: 12px; left: 12px; background: linear-gradient(135deg, var(--ci-orange), var(--ci-orange-dark)); }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(94, 93, 255, 0.3);
-    }
+    /* CONTENU */
+    .annonce-content { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+    .annonce-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .annonce-titre { font-size: 1.05rem; font-weight: 700; color: #1a1a1a; margin: 0; flex: 1; }
+    .annonce-prix { font-size: 1.2rem; font-weight: 800; color: var(--ci-orange-dark); white-space: nowrap; }
+    .annonce-prix span { font-size: 0.72rem; font-weight: 500; color: #999; }
+    .annonce-ville { font-size: 0.88rem; color: #777; }
+    .quartier { font-weight: 600; color: var(--ci-green-dark); }
+    .annonce-features { display: flex; flex-wrap: wrap; gap: 7px; }
+    .feature { background: #FFF8F0; color: var(--ci-orange-dark); border: 1px solid rgba(247,127,0,0.18); padding: 5px 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; }
+    .annonce-description { font-size: 0.88rem; color: #666; line-height: 1.5; flex-grow: 1; }
+    .annonce-type { display: flex; gap: 6px; }
+    .type-tag { display: inline-block; background: #F0FFF6; color: var(--ci-green-dark); border: 1px solid rgba(0,154,68,0.2); padding: 4px 10px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; }
+    .annonce-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; border-top: 1px solid #f5f5f5; }
+    .annonce-date { font-size: 0.78rem; color: #bbb; }
 
-    .annonces-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 24px;
-    }
+    /* BARRE DRAPEAU EN BAS */
+    .card-flag-bar { display: flex; height: 4px; width: 100%; }
+    .card-flag-bar span { flex: 1; }
+    .card-flag-bar span:nth-child(1) { background: #F77F00; }
+    .card-flag-bar span:nth-child(2) { background: #eee; }
+    .card-flag-bar span:nth-child(3) { background: #009A44; }
 
-    .annonce-card-link {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-        transition: none;
-    }
+    /* VIDE */
+    .text-center { text-align: center; }
+    .text-muted { color: #888; }
+    .section-empty { padding: 60px 20px; background: linear-gradient(135deg, #FFF8F0, #F0FFF6); border-radius: 24px; border: 1px dashed rgba(247,127,0,0.25); }
+    .section-empty h2 { color: var(--ci-orange-dark); margin-bottom: 12px; }
 
-    .annonce-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        cursor: pointer;
-    }
+    /* BOUTON PRIMAIRE */
+    .btn-primary { display: inline-block; background: linear-gradient(135deg, var(--ci-green), var(--ci-green-dark)); color: white; padding: 12px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; box-shadow: 0 4px 12px var(--ci-shadow-g); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px var(--ci-shadow-g); }
 
-    .annonce-card-link:hover .annonce-card {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(94, 93, 255, 0.15);
-    }
-
-    .annonce-image {
-        position: relative;
-        width: 100%;
-        height: 220px;
-        background: rgba(94, 93, 255, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-
-    .card-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .card-image-placeholder {
-        font-size: 4rem;
-        color: rgba(94, 93, 255, 0.3);
-    }
-
-    .favorite-btn {
-        position: absolute;
-        bottom: 12px;
-        right: 12px;
-        background: rgba(0, 0, 0, 0.5);
-        border: none;
-        border-radius: 50%;
-        width: 44px;
-        height: 44px;
-        font-size: 1.5rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .favorite-btn:hover {
-        background: rgba(0, 0, 0, 0.7);
-        transform: scale(1.1);
-    }
-
-    .favorite-btn.active {
-        background: rgba(255, 0, 0, 0.7);
-    }
-
-    .badge {
-        position: absolute;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .badge-photos {
-        top: 12px;
-        right: 12px;
-    }
-
-    .annonce-content {
-        padding: 20px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .annonce-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-    }
-
-    .annonce-prix {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .annonce-date {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-    }
-
-    .annonce-ville {
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        margin-bottom: 12px;
-    }
-
-    .annonce-ville .quartier {
-        font-weight: 600;
-    }
-
-    .annonce-features {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-    }
-
-    .feature {
-        background: rgba(94, 93, 255, 0.08);
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        color: var(--primary);
-    }
-
-    .feature strong {
-        color: var(--text);
-    }
-
-    .annonce-description {
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        margin-bottom: 12px;
-        flex: 1;
-    }
-
-    .annonce-amenities {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-    }
-
-    .amenity {
-        background: rgba(76, 175, 80, 0.1);
-        color: #4caf50;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .annonce-profil {
-        background: rgba(94, 93, 255, 0.08);
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        margin-bottom: 12px;
-    }
-
-    .annonce-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .annonce-actions .btn {
-        flex: 1;
-        padding: 10px;
-        text-align: center;
-        text-decoration: none;
-        border-radius: 10px;
-        font-size: 0.9rem;
-        background: var(--primary);
-        color: white;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-    }
-
-    .annonce-actions .btn:hover {
-        background: var(--primary-dark);
-    }
-
-    .text-center {
-        text-align: center;
-    }
-
-    .section-empty {
-        padding: 60px 20px;
-        background: rgba(255, 255, 255, 0.5);
-        border-radius: 20px;
-    }
-
-    .section-empty h2 {
-        color: var(--primary);
-        margin-bottom: 12px;
-    }
-
-    .text-muted {
-        color: var(--text-muted);
-    }
-
+    /* RESPONSIVE */
     @media (max-width: 768px) {
-        .search-form {
-            grid-template-columns: 1fr;
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-
-        .search-form button {
-            padding: 10px 16px;
-            width: 100%;
-        }
-
-        .annonces-grid {
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .annonce-card {
-            border-radius: 16px;
-        }
-
-        .annonce-image {
-            height: 180px;
-        }
-
-        .annonce-content {
-            padding: 16px;
-        }
-
-        .annonce-prix {
-            font-size: 1.2rem;
-        }
-
-        .feature {
-            font-size: 0.8rem;
-            padding: 4px 8px;
-        }
-
-        .section-empty {
-            padding: 40px 20px;
-        }
-
-        .section-empty h2 {
-            font-size: 1.3rem;
-        }
-
-        .mb-20 {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .mb-20 .btn-primary {
-            width: 100%;
-        }
+        .annonces-grid { grid-template-columns: 1fr; }
+        .hero h1 { font-size: 1.8rem; }
+        .search-form { grid-template-columns: 1fr; }
+        .annonce-image { height: 180px; }
     }
-
     @media (max-width: 480px) {
-        .hero {
-            padding: 20px 15px;
-            margin-bottom: 24px;
-        }
-
-        .hero h1 {
-            font-size: 1.4rem;
-        }
-
-        .hero p {
-            font-size: 0.9rem;
-        }
-
-        .search-form {
-            grid-template-columns: 1fr;
-            padding: 12px;
-            margin-bottom: 16px;
-            border-radius: 16px;
-        }
-
-        .search-form .form-group {
-            margin-bottom: 8px;
-        }
-
-        .search-form label {
-            font-size: 0.85rem;
-            margin-bottom: 6px;
-        }
-
-        .search-form input,
-        .search-form select {
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 10px;
-        }
-
-        .search-form button {
-            padding: 9px 12px;
-            font-size: 0.85rem;
-            width: 100%;
-            border-radius: 10px;
-        }
-
-        .mb-20 {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .mb-20 .btn {
-            width: 100%;
-            padding: 9px 12px;
-            font-size: 0.85rem;
-        }
-
-        .annonces-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        .annonce-card {
-            border-radius: 14px;
-            overflow: hidden;
-        }
-
-        .annonce-card-link:hover .annonce-card {
-            transform: translateY(-4px);
-        }
-
-        .annonce-image {
-            height: 160px;
-        }
-
-        .favorite-btn {
-            width: 40px;
-            height: 40px;
-            font-size: 1.3rem;
-        }
-
-        .badge-photos {
-            font-size: 0.7rem;
-            padding: 4px 8px;
-        }
-
-        .annonce-content {
-            padding: 12px;
-        }
-
-        .annonce-header {
-            gap: 8px;
-        }
-
-        .annonce-prix {
-            font-size: 1.1rem;
-        }
-
-        .annonce-date {
-            font-size: 0.7rem;
-        }
-
-        .annonce-ville {
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-        }
-
-        .annonce-features {
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-
-        .feature {
-            font-size: 0.75rem;
-            padding: 3px 6px;
-            border-radius: 6px;
-        }
-
-        .annonce-description {
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-
-        .amenity {
-            font-size: 0.75rem;
-            padding: 3px 6px;
-        }
-
-        .annonce-profil {
-            font-size: 0.8rem;
-            padding: 8px;
-        }
-
-        .section-empty {
-            padding: 30px 15px;
-            border-radius: 16px;
-        }
-
-        .section-empty h2 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        .section-empty p {
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-        }
-
-        .section-empty .btn-primary {
-            width: 100%;
-            padding: 9px 12px;
-            font-size: 0.85rem;
-        }
-    }
-
-    @media (max-width: 360px) {
-        .annonces-grid {
-            gap: 10px;
-        }
-
-        .annonce-card {
-            border-radius: 12px;
-        }
-
-        .annonce-image {
-            height: 140px;
-        }
-
-        .annonce-content {
-            padding: 10px;
-        }
-
-        .annonce-prix {
-            font-size: 1rem;
-        }
+        .hero { padding: 32px 16px 24px; }
+        .hero h1 { font-size: 1.4rem; }
+        .annonce-image { height: 160px; }
+        .annonces-grid { gap: 14px; }
+        .search-form { padding: 16px; }
     }
 </style>
 
@@ -667,30 +280,25 @@ function getCookie(name) {
 function toggleFavori(event, button, annonceId) {
     event.preventDefault();
     event.stopPropagation();
-    
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `/colocation/toggle-favori/${annonceId}/`, true);
-    xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            const response = JSON.parse(xhr.responseText);
-            if (response.is_favorite) {
-                button.classList.add('active');
-                button.textContent = '❤️';
-            } else {
-                button.classList.remove('active');
-                button.textContent = '🤍';
-            }
+
+    fetch(`/logement/${annonceId}/toggle-favori/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest',
         }
-    };
-    
-    xhr.onerror = function() {
-        console.error('Erreur lors de la mise à jour du favori');
-    };
-    
-    xhr.send();
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_favorite) {
+            button.classList.add('active');
+            button.textContent = '❤️';
+        } else {
+            button.classList.remove('active');
+            button.textContent = '🤍';
+        }
+    })
+    .catch(error => console.error('Erreur:', error));
 }
 </script>
 {% endblock %}

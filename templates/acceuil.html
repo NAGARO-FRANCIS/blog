@@ -95,6 +95,16 @@
                                 {% else %}
                                     <div class="ic-listing-card__placeholder">🏠</div>
                                 {% endif %}
+                                
+                                {% if request.user.is_authenticated %}
+                                    <button class="ic-favorite-btn {% if annonce.id in favoris_ids %}active{% endif %}"
+                                            onclick="toggleFavori(event, this, {{ annonce.id }})"
+                                            type="button"
+                                            title="Ajouter aux favoris">
+                                        {% if annonce.id in favoris_ids %}❤️{% else %}🤍{% endif %}
+                                    </button>
+                                {% endif %}
+                                
                                 {% if annonce.photos.count > 1 %}
                                     <span class="ic-badge">📸 {{ annonce.photos.count }} photos</span>
                                 {% endif %}
@@ -474,6 +484,85 @@
     .ic-section__header--row { flex-direction: column; align-items: flex-start; }
     .ic-listings-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── Bouton Favoris ─── */
+.ic-favorite-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: white;
+    border: 2px solid #FF1744;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+    pointer-events: auto;
+    padding: 0;
+}
+
+.ic-favorite-btn:hover {
+    transform: scale(1.15);
+    background: #fff5f5;
+    box-shadow: 0 6px 16px rgba(255,23,68,0.3);
+}
+
+.ic-favorite-btn.active {
+    background: #FFE0E0;
+    border-color: #FF1744;
+    box-shadow: 0 4px 12px rgba(255,23,68,0.25);
+}
+
+.ic-favorite-btn:active {
+    transform: scale(0.95);
+}
 </style>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleFavori(event, button, annonceId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    fetch(`/logement/${annonceId}/toggle-favori/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_favorite) {
+            button.classList.add('active');
+            button.textContent = '❤️';
+        } else {
+            button.classList.remove('active');
+            button.textContent = '🤍';
+        }
+    })
+    .catch(error => console.error('Erreur:', error));
+}
+</script>
 
 {% endblock %}

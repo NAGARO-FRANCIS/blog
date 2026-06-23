@@ -59,6 +59,35 @@ class LogementProprietaireForm(forms.ModelForm):
                 'type': 'date'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Rendre les champs optionnels avec valeurs par défaut
+        self.fields['surface'].required = False
+        self.fields['nombre_pieces'].required = False
+        self.fields['nombre_chambres'].required = False
+        self.fields['nombre_lits'].required = False
+        self.fields['nombre_salles_bain'].required = False
+        self.fields['etage'].required = False
+        self.fields['prix'].required = False
+    
+    def clean(self):
+        """Valider et remplir les champs optionnels avec des valeurs par défaut"""
+        cleaned_data = super().clean()
+        
+        # Remplir avec des valeurs par défaut si vides
+        if not cleaned_data.get('surface'):
+            cleaned_data['surface'] = 50
+        if not cleaned_data.get('nombre_pieces'):
+            cleaned_data['nombre_pieces'] = 2
+        if not cleaned_data.get('nombre_chambres'):
+            cleaned_data['nombre_chambres'] = 1
+        if not cleaned_data.get('nombre_salles_bain'):
+            cleaned_data['nombre_salles_bain'] = 1
+        if not cleaned_data.get('prix'):
+            cleaned_data['prix'] = 0
+        
+        return cleaned_data
 
 
 class LogementHotelForm(forms.ModelForm):
@@ -137,6 +166,38 @@ class LogementHotelForm(forms.ModelForm):
                 'type': 'date'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Rendre les champs optionnels avec valeurs par défaut
+        self.fields['surface'].required = False
+        self.fields['nombre_lits'].required = False
+        self.fields['capacite'].required = False
+        self.fields['nombre_salles_bain'].required = False
+        self.fields['etage'].required = False
+        self.fields['prix_par_nuit'].required = False
+        self.fields['frais_nettoyage'].required = False
+        self.fields['min_sejour'].required = False
+    
+    def clean(self):
+        """Valider et remplir les champs optionnels avec des valeurs par défaut"""
+        cleaned_data = super().clean()
+        
+        # Remplir avec des valeurs par défaut si vides
+        if not cleaned_data.get('surface'):
+            cleaned_data['surface'] = 20  # Valeur par défaut pour chambre d'hôtel
+        if not cleaned_data.get('nombre_lits'):
+            cleaned_data['nombre_lits'] = 1
+        if not cleaned_data.get('capacite'):
+            cleaned_data['capacite'] = 2
+        if not cleaned_data.get('nombre_salles_bain'):
+            cleaned_data['nombre_salles_bain'] = 1
+        if not cleaned_data.get('prix_par_nuit'):
+            cleaned_data['prix_par_nuit'] = 0
+        if not cleaned_data.get('min_sejour'):
+            cleaned_data['min_sejour'] = 1
+        
+        return cleaned_data
 
 
 class LogementResidenceForm(forms.ModelForm):
@@ -226,6 +287,37 @@ class LogementResidenceForm(forms.ModelForm):
                 'type': 'date'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Rendre les champs de détails optionnels avec valeurs par défaut
+        self.fields['nombre_pieces'].required = False
+        self.fields['nombre_chambres'].required = False
+        self.fields['nombre_salles_bain'].required = False
+        self.fields['etage'].required = False
+        self.fields['surface'].required = False
+        self.fields['prix_par_mois'].required = False
+        self.fields['caution_mois'].required = False
+    
+    def clean(self):
+        """Valider et remplir les champs optionnels avec des valeurs par défaut"""
+        cleaned_data = super().clean()
+        
+        # Remplir avec des valeurs par défaut si vides
+        if not cleaned_data.get('nombre_pieces'):
+            cleaned_data['nombre_pieces'] = 1
+        if not cleaned_data.get('nombre_chambres'):
+            cleaned_data['nombre_chambres'] = 1
+        if not cleaned_data.get('nombre_salles_bain'):
+            cleaned_data['nombre_salles_bain'] = 1
+        if not cleaned_data.get('surface'):
+            cleaned_data['surface'] = 30  # Valeur par défaut
+        if not cleaned_data.get('prix_par_mois'):
+            cleaned_data['prix_par_mois'] = 0
+        if not cleaned_data.get('caution_mois'):
+            cleaned_data['caution_mois'] = 2
+        
+        return cleaned_data
 
 
 class LogementColocataireForm(forms.ModelForm):
@@ -294,6 +386,36 @@ class LogementColocataireForm(forms.ModelForm):
                 'type': 'date'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Rendre les champs optionnels avec valeurs par défaut
+        self.fields['surface'].required = False
+        self.fields['nombre_pieces'].required = False
+        self.fields['nombre_chambres'].required = False
+        self.fields['nombre_lits'].required = False
+        self.fields['nombre_salles_bain'].required = False
+        self.fields['prix'].required = False
+    
+    def clean(self):
+        """Valider et remplir les champs optionnels avec des valeurs par défaut"""
+        cleaned_data = super().clean()
+        
+        # Remplir avec des valeurs par défaut si vides
+        if not cleaned_data.get('surface'):
+            cleaned_data['surface'] = 60
+        if not cleaned_data.get('nombre_pieces'):
+            cleaned_data['nombre_pieces'] = 2
+        if not cleaned_data.get('nombre_chambres'):
+            cleaned_data['nombre_chambres'] = 2
+        if not cleaned_data.get('nombre_lits'):
+            cleaned_data['nombre_lits'] = 2
+        if not cleaned_data.get('nombre_salles_bain'):
+            cleaned_data['nombre_salles_bain'] = 1
+        if not cleaned_data.get('prix'):
+            cleaned_data['prix'] = 0
+        
+        return cleaned_data
 
 
 class PhotoLogementForm(forms.ModelForm):
@@ -327,6 +449,10 @@ class PhotoLogementForm(forms.ModelForm):
                 del self.errors['alt_text']
             if 'order' in self.errors:
                 del self.errors['order']
+        
+        # Assigner une valeur par défaut à order s'il est vide
+        if not cleaned_data.get('order'):
+            cleaned_data['order'] = 0
         
         return cleaned_data
 
@@ -381,6 +507,10 @@ class VideoLogementForm(forms.ModelForm):
                 del self.errors['description']
             if 'order' in self.errors:
                 del self.errors['order']
+        
+        # Assigner une valeur par défaut à order s'il est vide
+        if not cleaned_data.get('order'):
+            cleaned_data['order'] = 0
         
         return cleaned_data
 
