@@ -1,219 +1,625 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mes Favoris - Ivoire Connect{% endblock %}
+{% block title %}Mes Favoris — Ivoire Connect{% endblock %}
 
 {% block content %}
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+{% if favoris %}
 <!-- ═══════════════════════════════════════════════════════
-     HERO SECTION
+     GRILLE DES FAVORIS
 ════════════════════════════════════════════════════════ -->
-<section class="ic-favoris-hero">
+<section class="ic-section fav-section">
     <div class="ic-container">
-        <div class="ic-favoris-hero__inner">
-            <div class="ic-favoris-hero__icon">❤️</div>
-            <h1 class="ic-favoris-hero__title">Mes Annonces Favorites</h1>
-            <p class="ic-favoris-hero__subtitle">{{ favoris|length }} annonce{{ favoris|length|pluralize }} sauvegardée{{ favoris|length|pluralize }}</p>
+        <div class="fav-grid" id="favGrid">
+            {% for fav in favoris %}
+            <div class="fav-card-wrap" id="wrap-{{ fav.logement.id }}">
+                <a href="{% url 'logement:detail_logement' fav.logement.id %}" class="fav-card-link">
+                    <article class="fav-card">
+
+                        <!-- Média -->
+                        <div class="fav-card__media">
+                            {% if fav.logement.photos.all %}
+                                <img
+                                    src="{{ fav.logement.photos.first.image.url }}"
+                                    alt="{{ fav.logement.titre }}"
+                                    class="fav-card__img"
+                                    loading="lazy"
+                                >
+                            {% else %}
+                                <div class="fav-card__placeholder">🏠</div>
+                            {% endif %}
+
+                            <!-- Badge photos -->
+                            {% if fav.logement.photos.count > 1 %}
+                                <span class="fav-badge">
+                                    📸 {{ fav.logement.photos.count }}
+                                </span>
+                            {% endif %}
+
+                            <!-- Type badge -->
+                            <span class="fav-type-badge">
+                                {% if fav.logement.account_type == 'hotel' %}Hôtel
+                                {% elif fav.logement.account_type == 'residence' %}Résidence
+                                {% else %}Location{% endif %}
+                            </span>
+
+                            <!-- Bouton retirer -->
+                            <button
+                                class="fav-remove-btn"
+                                onclick="toggleFavori(event, this, {{ fav.logement.id }})"
+                                type="button"
+                                title="Retirer des favoris"
+                                aria-label="Retirer des favoris"
+                            >
+                                <span class="fav-remove-btn__heart">❤️</span>
+                                <span class="fav-remove-btn__label">Retirer</span>
+                            </button>
+                        </div>
+
+                        <!-- Corps -->
+                        <div class="fav-card__body">
+                            <p class="fav-card__price">
+                                {% if fav.logement.account_type == 'hotel' and fav.logement.prix_par_nuit %}
+                                    <strong>{{ fav.logement.prix_par_nuit|floatformat:0 }}</strong> <span>FCFA / nuit</span>
+                                {% elif fav.logement.account_type == 'residence' and fav.logement.prix_par_mois %}
+                                    <strong>{{ fav.logement.prix_par_mois|floatformat:0 }}</strong> <span>FCFA / mois</span>
+                                {% elif fav.logement.prix %}
+                                    <strong>{{ fav.logement.prix|floatformat:0 }}</strong> <span>FCFA</span>
+                                {% else %}
+                                    <span class="fav-card__price--request">Prix sur demande</span>
+                                {% endif %}
+                            </p>
+
+                            <p class="fav-card__location">
+                                <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+                                    <path d="M6 0C3.24 0 1 2.24 1 5c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5Zm0 6.5A1.5 1.5 0 1 1 6 3.5a1.5 1.5 0 0 1 0 3Z" fill="currentColor"/>
+                                </svg>
+                                {{ fav.logement.ville }}{% if fav.logement.quartier %} — {{ fav.logement.quartier }}{% endif %}
+                            </p>
+
+                            <div class="fav-card__tags">
+                                <span class="fav-tag">{{ fav.logement.nombre_chambres }} ch.</span>
+                                {% if fav.logement.capacite %}
+                                    <span class="fav-tag">Cap. {{ fav.logement.capacite }}</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="fav-card__desc">{{ fav.logement.description|truncatewords:14 }}</p>
+
+                            <span class="fav-card__cta">Voir le détail →</span>
+                        </div>
+                    </article>
+                </a>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 
-{% if favoris %}
-    <!-- ═══════════════════════════════════════════════════════
-         FAVORIS GRID
-    ════════════════════════════════════════════════════════ -->
-    <section class="ic-section">
-        <div class="ic-container">
-            <div class="ic-favoris-grid">
-                {% for fav in favoris %}
-                    <a href="{% url 'logement:detail_logement' fav.logement.id %}" class="ic-listing-card-link">
-                        <article class="ic-listing-card">
-                            <div class="ic-listing-card__media">
-                                {% if fav.logement.photos.all %}
-                                    <img 
-                                        src="{{ fav.logement.photos.first.image.url }}"
-                                        alt="{{ fav.logement.titre }}"
-                                        class="ic-listing-card__img"
-                                        loading="lazy"
-                                    >
-                                {% else %}
-                                    <div class="ic-listing-card__placeholder">🏠</div>
-                                {% endif %}
-                                
-                                <button 
-                                    class="ic-favorite-btn active"
-                                    onclick="toggleFavori(event, this, {{ fav.logement.id }})"
-                                    type="button"
-                                    title="Retirer des favoris">
-                                    ❤️
-                                </button>
-                                
-                                {% if fav.logement.photos.count > 1 %}
-                                    <span class="ic-badge">📸 {{ fav.logement.photos.count }} photos</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="ic-listing-card__body">
-                                <p class="ic-listing-card__price">
-                                    {% if fav.logement.account_type == 'hotel' and fav.logement.prix_par_nuit %}
-                                        {{ fav.logement.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
-                                    {% elif fav.logement.account_type == 'residence' and fav.logement.prix_par_mois %}
-                                        {{ fav.logement.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
-                                    {% elif fav.logement.prix %}
-                                        {{ fav.logement.prix|floatformat:0 }} <span>FCFA</span>
-                                    {% else %}
-                                        <span>Prix sur demande</span>
-                                    {% endif %}
-                                </p>
-                                <p class="ic-listing-card__location">
-                                    📍 {{ fav.logement.ville }}{% if fav.logement.quartier %} — {{ fav.logement.quartier }}{% endif %}
-                                </p>
-                                <div class="ic-listing-card__tags">
-                                    <span class="ic-tag">{{ fav.logement.nombre_chambres }} chambre{{ fav.logement.nombre_chambres|pluralize }}</span>
-                                    {% if fav.logement.capacite %}
-                                        <span class="ic-tag">Capacité: {{ fav.logement.capacite }}</span>
-                                    {% endif %}
-                                </div>
-                                <p class="ic-listing-card__desc">{{ fav.logement.description|truncatewords:15 }}</p>
-                            </div>
-                        </article>
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
 {% else %}
-    <!-- ═══════════════════════════════════════════════════════
-         EMPTY STATE
-    ════════════════════════════════════════════════════════ -->
-    <section class="ic-section">
-        <div class="ic-container">
-            <div class="ic-empty-state ic-empty-state--favoris">
-                <div class="ic-empty-state__icon">🤍</div>
-                <h2 class="ic-empty-state__title">Aucun favori pour le moment</h2>
-                <p class="ic-empty-state__text">Commencez à ajouter vos annonces favorites pour les retrouver facilement plus tard.</p>
-                <a href="{% url 'logement:home' %}" class="ic-btn ic-btn--primary">
-                    Parcourir les annonces →
-                </a>
+<!-- ═══════════════════════════════════════════════════════
+     ÉTAT VIDE
+════════════════════════════════════════════════════════ -->
+<section class="ic-section">
+    <div class="ic-container">
+        <div class="fav-empty">
+            <div class="fav-empty__heart-wrap">
+                <span class="fav-empty__heart">🤍</span>
             </div>
+            <h2 class="fav-empty__title">Aucun favori pour le moment</h2>
+            <p class="fav-empty__text">
+                Explorez nos annonces et cliquez sur ❤️ pour sauvegarder celles qui vous intéressent.
+            </p>
+            <a href="{% url 'logement:home' %}" class="ic-btn ic-btn--primary fav-empty__cta">
+                Parcourir les annonces
+            </a>
         </div>
-    </section>
+    </div>
+</section>
 {% endif %}
+
+<!-- ═══════════════════════════════════════════════════════
+     TOAST NOTIFICATION
+════════════════════════════════════════════════════════ -->
+<div class="fav-toast" id="favToast" role="alert" aria-live="polite"></div>
 
 <!-- ═══════════════════════════════════════════════════════
      STYLES
 ════════════════════════════════════════════════════════ -->
 <style>
-/* ─── Favoris Hero ─── */
-.ic-favoris-hero {
-    background: linear-gradient(135deg, #b85c00 0%, #F77F00 40%, #ffffff 68%, #009A44 100%);
-    padding: 48px 0 40px;
-    text-align: center;
+/* ── Reset local ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Variables ── */
+:root {
+    --fav-orange:   #F77F00;
+    --fav-orange-d: #c96800;
+    --fav-green:    #009A44;
+    --fav-white:    #FAFAF8;
+    --fav-text:     #1A1A1A;
+    --fav-muted:    #6B7280;
+    --fav-border:   #E5E7EB;
+    --fav-shadow:   0 4px 24px rgba(0,0,0,.08);
+    --fav-shadow-h: 0 12px 40px rgba(0,0,0,.14);
+    --fav-radius:   16px;
+    --fav-font-d:   'Playfair Display', Georgia, serif;
+    --fav-font-b:   'Inter', system-ui, sans-serif;
+    --fav-transition: 260ms cubic-bezier(.4,0,.2,1);
 }
 
-.ic-favoris-hero__inner {
+/* ─────────────────────────────────────────
+   HERO
+───────────────────────────────────────── */
+.fav-hero {
+    position: relative;
+    padding: 60px 0 52px;
+    overflow: hidden;
+    text-align: center;
+    background: #fff;
+}
+
+/* Bandes drapeau — décoratives, derrière le contenu */
+.fav-hero__flag-stripe {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 33.333%;
+    opacity: .12;
+}
+.fav-hero__flag-stripe--orange { left: 0;      background: #F77F00; }
+.fav-hero__flag-stripe--white  { left: 33.333%; background: #E5E7EB; }
+.fav-hero__flag-stripe--green  { left: 66.666%; background: #009A44; }
+
+.fav-hero__inner {
     position: relative;
     z-index: 1;
 }
 
-.ic-favoris-hero__icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
-    display: block;
+.fav-hero__eyebrow {
+    display: inline-block;
+    font-family: var(--fav-font-b);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--fav-orange);
+    background: rgba(247,127,0,.1);
+    border: 1px solid rgba(247,127,0,.25);
+    border-radius: 100px;
+    padding: 4px 14px;
+    margin-bottom: 18px;
 }
 
-.ic-favoris-hero__title {
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
+.fav-hero__title {
+    font-family: var(--fav-font-d);
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
     font-weight: 800;
-    color: var(--ic-white);
-    margin: 0 0 12px;
+    color: var(--fav-text);
+    margin: 0 0 14px;
     letter-spacing: -.02em;
-    text-shadow: 0 2px 8px rgba(0,0,0,.15);
+    line-height: 1.1;
 }
 
-.ic-favoris-hero__subtitle {
-    font-size: 1.1rem;
-    color: rgba(255, 255, 255, .95);
+.fav-hero__subtitle {
+    font-family: var(--fav-font-b);
+    font-size: 1rem;
+    color: var(--fav-muted);
     margin: 0;
 }
 
-/* ─── Favoris Grid ─── */
-.ic-favoris-grid {
+.fav-count {
+    font-weight: 700;
+    color: var(--fav-orange);
+    font-size: 1.05rem;
+    transition: transform .25s, color .25s;
+    display: inline-block;
+}
+
+/* ─────────────────────────────────────────
+   SECTION
+───────────────────────────────────────── */
+.fav-section {
+    padding: 48px 0 64px;
+    background: var(--fav-white);
+}
+
+/* ─────────────────────────────────────────
+   GRILLE
+───────────────────────────────────────── */
+.fav-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;
-    margin-bottom: 32px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 28px;
 }
 
-/* ─── Empty State ─── */
-.ic-empty-state--favoris {
-    text-align: center;
-    padding: 60px 20px;
+/* ─────────────────────────────────────────
+   WRAPPER (pour animation de sortie)
+───────────────────────────────────────── */
+.fav-card-wrap {
+    transition: opacity var(--fav-transition), transform var(--fav-transition);
+}
+.fav-card-wrap.is-removing {
+    opacity: 0;
+    transform: scale(.92) translateY(-8px);
+    pointer-events: none;
 }
 
-.ic-empty-state__icon {
-    font-size: 4rem;
-    margin-bottom: 24px;
+/* ─────────────────────────────────────────
+   CARTE
+───────────────────────────────────────── */
+.fav-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+}
+
+.fav-card {
+    background: #fff;
+    border-radius: var(--fav-radius);
+    overflow: hidden;
+    box-shadow: var(--fav-shadow);
+    border: 1px solid var(--fav-border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: box-shadow var(--fav-transition), transform var(--fav-transition);
+    transform-origin: center bottom;
+}
+
+.fav-card-link:hover .fav-card,
+.fav-card-link:focus-visible .fav-card {
+    box-shadow: var(--fav-shadow-h);
+    transform: translateY(-4px) scale(1.005);
+}
+
+/* ── Média ── */
+.fav-card__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #f0f0ee;
+    flex-shrink: 0;
+}
+
+.fav-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s cubic-bezier(.4,0,.2,1);
     display: block;
 }
+.fav-card-link:hover .fav-card__img {
+    transform: scale(1.04);
+}
 
-.ic-empty-state__title {
-    font-size: 1.6rem;
+.fav-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #ccc;
+}
+
+/* Badge photos */
+.fav-badge {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    font-family: var(--fav-font-b);
+    font-size: .72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+}
+
+/* Badge type */
+.fav-type-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--fav-green);
+    color: #fff;
+    font-family: var(--fav-font-b);
+    font-size: .68rem;
     font-weight: 700;
-    color: var(--ic-text);
-    margin: 0 0 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
 }
 
-.ic-empty-state__text {
-    font-size: 1rem;
-    color: var(--ic-text-muted);
-    margin: 0 0 32px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+/* Bouton retirer */
+.fav-remove-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,.92);
+    border: none;
+    border-radius: 100px;
+    padding: 5px 11px 5px 8px;
+    cursor: pointer;
+    font-family: var(--fav-font-b);
+    font-size: .72rem;
+    font-weight: 600;
+    color: #e03e3e;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    transition: background var(--fav-transition), transform var(--fav-transition), color var(--fav-transition);
+    overflow: hidden;
+    max-width: 34px; /* collapsed by default — only heart visible */
 }
 
-/* ─── Responsive ─── */
+/* Expand on hover */
+.fav-card:hover .fav-remove-btn,
+.fav-remove-btn:focus-visible {
+    max-width: 120px;
+    background: rgba(255,255,255,1);
+}
+
+.fav-remove-btn:hover {
+    background: #fff0f0;
+}
+.fav-remove-btn:active {
+    transform: scale(.93);
+}
+
+.fav-remove-btn__heart {
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+.fav-remove-btn__label {
+    white-space: nowrap;
+    transition: opacity var(--fav-transition);
+}
+
+/* ── Corps ── */
+.fav-card__body {
+    padding: 18px 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.fav-card__price {
+    font-family: var(--fav-font-b);
+    margin: 0;
+    line-height: 1.2;
+}
+.fav-card__price strong {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fav-orange);
+}
+.fav-card__price span {
+    font-size: .8rem;
+    color: var(--fav-muted);
+    font-weight: 500;
+    margin-left: 2px;
+}
+.fav-card__price--request {
+    font-size: .9rem;
+    color: var(--fav-muted);
+    font-style: italic;
+}
+
+.fav-card__location {
+    font-family: var(--fav-font-b);
+    font-size: .82rem;
+    color: var(--fav-muted);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.fav-card__location svg {
+    color: var(--fav-orange);
+    flex-shrink: 0;
+}
+
+.fav-card__tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.fav-tag {
+    font-family: var(--fav-font-b);
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--fav-green);
+    background: rgba(0,154,68,.09);
+    border: 1px solid rgba(0,154,68,.2);
+    padding: 2px 9px;
+    border-radius: 100px;
+}
+
+.fav-card__desc {
+    font-family: var(--fav-font-b);
+    font-size: .82rem;
+    color: var(--fav-muted);
+    margin: 0;
+    line-height: 1.55;
+    flex: 1;
+}
+
+.fav-card__cta {
+    font-family: var(--fav-font-b);
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--fav-orange);
+    letter-spacing: .01em;
+    margin-top: auto;
+    display: block;
+    transition: letter-spacing var(--fav-transition);
+}
+.fav-card-link:hover .fav-card__cta {
+    letter-spacing: .04em;
+}
+
+/* ─────────────────────────────────────────
+   ÉTAT VIDE
+───────────────────────────────────────── */
+.fav-empty {
+    text-align: center;
+    padding: 80px 20px;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+.fav-empty__heart-wrap {
+    margin-bottom: 28px;
+}
+
+.fav-empty__heart {
+    font-size: 4.5rem;
+    display: inline-block;
+    animation: heartbeat 2.4s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    14%       { transform: scale(1.12); }
+    28%       { transform: scale(1); }
+    42%       { transform: scale(1.07); }
+    70%       { transform: scale(1); }
+}
+
+.fav-empty__title {
+    font-family: var(--fav-font-d);
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--fav-text);
+    margin: 0 0 14px;
+}
+
+.fav-empty__text {
+    font-family: var(--fav-font-b);
+    font-size: .95rem;
+    color: var(--fav-muted);
+    margin: 0 0 36px;
+    line-height: 1.65;
+}
+
+.fav-empty__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--fav-orange);
+    color: #fff;
+    font-family: var(--fav-font-b);
+    font-weight: 700;
+    font-size: .9rem;
+    padding: 13px 28px;
+    border-radius: 100px;
+    text-decoration: none;
+    transition: background var(--fav-transition), transform var(--fav-transition);
+    box-shadow: 0 4px 16px rgba(247,127,0,.35);
+}
+.fav-empty__cta:hover { background: var(--fav-orange-d); transform: translateY(-2px); }
+.fav-empty__cta:active { transform: translateY(0); }
+
+/* ─────────────────────────────────────────
+   TOAST
+───────────────────────────────────────── */
+.fav-toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--fav-text);
+    color: #fff;
+    font-family: var(--fav-font-b);
+    font-size: .88rem;
+    font-weight: 500;
+    padding: 12px 22px;
+    border-radius: 100px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .3s cubic-bezier(.4,0,.2,1);
+    white-space: nowrap;
+}
+.fav-toast.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
 @media (max-width: 768px) {
-    .ic-favoris-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 16px;
+    .fav-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 18px;
     }
-
-    .ic-favoris-hero__title {
-        font-size: 1.8rem;
-    }
+    .fav-hero { padding: 44px 0 36px; }
+    /* Toujours afficher le label sur mobile (pas de hover) */
+    .fav-remove-btn { max-width: 120px; }
 }
 
 @media (max-width: 480px) {
-    .ic-favoris-grid {
+    .fav-grid {
         grid-template-columns: 1fr;
     }
+    .fav-hero { padding: 32px 0 28px; }
+}
 
-    .ic-favoris-hero {
-        padding: 32px 0 24px;
-    }
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .fav-card, .fav-card-wrap, .fav-card__img, .fav-empty__heart { animation: none; transition: none; }
 }
 </style>
 
-<!-- ─── JavaScript for Toggle ─── -->
+<!-- ─────────────────────────────────────────
+     JAVASCRIPT
+───────────────────────────────────────── -->
 <script>
+/* ── Cookie helper ── */
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
+    return document.cookie.split(';').reduce((val, c) => {
+        const [k, v] = c.trim().split('=');
+        return k === name ? decodeURIComponent(v) : val;
+    }, null);
 }
 
+/* ── Toast ── */
+let toastTimer;
+function showToast(msg) {
+    const toast = document.getElementById('favToast');
+    toast.textContent = msg;
+    toast.classList.add('is-visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2800);
+}
+
+/* ── Mise à jour du compteur dans le hero ── */
+function updateCount(delta) {
+    const el = document.getElementById('favCount');
+    if (!el) return;
+    const prev = parseInt(el.textContent, 10) || 0;
+    const next = Math.max(0, prev + delta);
+    el.textContent = next;
+    el.style.transform = 'scale(1.25)';
+    setTimeout(() => el.style.transform = 'scale(1)', 300);
+}
+
+/* ── Toggle favori ── */
 function toggleFavori(event, button, logementId) {
     event.preventDefault();
     event.stopPropagation();
@@ -225,19 +631,26 @@ function toggleFavori(event, button, logementId) {
             'X-Requested-With': 'XMLHttpRequest',
         }
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
         if (!data.is_favorite) {
-            // Retirer l'article de la page
-            button.closest('.ic-listing-card-link').remove();
-            
-            // Si plus aucun favori, recharger la page
-            if (document.querySelectorAll('.ic-favoris-grid .ic-listing-card-link').length === 0) {
-                setTimeout(() => location.reload(), 500);
+            const wrap = document.getElementById(`wrap-${logementId}`);
+            if (wrap) {
+                wrap.classList.add('is-removing');
+                updateCount(-1);
+                showToast('Annonce retirée des favoris');
+
+                setTimeout(() => {
+                    wrap.remove();
+                    const remaining = document.querySelectorAll('.fav-card-wrap').length;
+                    if (remaining === 0) {
+                        setTimeout(() => location.reload(), 400);
+                    }
+                }, 280);
             }
         }
     })
-    .catch(error => console.error('Erreur:', error));
+    .catch(() => showToast('Une erreur est survenue, veuillez réessayer.'));
 }
 </script>
 

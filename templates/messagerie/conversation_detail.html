@@ -38,42 +38,67 @@
     </div>
 
     <div class="messages-container" id="messagesContainer">
-        {% for message in messages %}
-            <div class="message {% if message.expediteur == request.user %}sent{% else %}received{% endif %}">
-                <div class="message-avatar">
-                    {% if message.expediteur == request.user %}
-                        {% if request.user.profile.photo_profil %}
-                            <img src="{{ request.user.profile.photo_profil.url }}" alt="Votre photo">
-                        {% else %}
-                            <div class="avatar-placeholder">{{ request.user.first_name|first|upper }}</div>
-                        {% endif %}
-                    {% else %}
-                        {% if other_participant.profile.photo_profil %}
-                            <img src="{{ other_participant.profile.photo_profil.url }}" alt="Photo de {{ other_participant.get_full_name }}">
-                        {% else %}
-                            <div class="avatar-placeholder">{{ other_participant.first_name|first|upper }}</div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-
-                <div class="message-content">
-                    <div class="message-bubble">
-                        <p>{{ message.contenu|linebreaks }}</p>
-                        {% if message.attachment %}
-                            <div class="message-attachment">
-                               {{ message.attachment.name|cut:"/media/"|cut:"messagerie/" }}
-                        {% endif %}
-                    </div>
-                    <div class="message-time">
-                        {{ message.created_at|date:"d/m/Y H:i" }}
-                        {% if message.expediteur == request.user %}
-                            {% if message.lu %}
-                                <span class=\"read-status\" title=\"Lu\">✓✓</span>
+        {% regroup messages by expediteur as grouped_messages %}
+        
+        {% for group in grouped_messages %}
+            <div class="message-group {% if group.grouper == request.user %}sent-group{% else %}received-group{% endif %}">
+                <!-- Header avec avatar et nom -->
+                <div class="message-group-info">
+                    <div class="message-avatar">
+                        {% if group.grouper == request.user %}
+                            {% if request.user.profile.photo_profil %}
+                                <img src="{{ request.user.profile.photo_profil.url }}" alt="Votre photo">
                             {% else %}
-                                <span class=\"read-status\" title=\"Envoyé\">✓</span>
+                                <div class="avatar-placeholder">{{ request.user.first_name|first|upper }}</div>
+                            {% endif %}
+                        {% else %}
+                            {% if other_participant.profile.photo_profil %}
+                                <img src="{{ other_participant.profile.photo_profil.url }}" alt="Photo de {{ other_participant.get_full_name }}">
+                            {% else %}
+                                <div class="avatar-placeholder">{{ other_participant.first_name|first|upper }}</div>
                             {% endif %}
                         {% endif %}
                     </div>
+                    <div class="sender-info">
+                        <div class="sender-name">
+                            {% if group.grouper == request.user %}
+                                Vous
+                            {% else %}
+                                {{ other_participant.get_full_name|default:other_participant.username }}
+                            {% endif %}
+                        </div>
+                        <div class="sender-status">
+                            {% if group.grouper.profile.verified %}
+                                <span class="verified-badge">✓ Vérifié</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages du groupe -->
+                <div class="message-bubbles">
+                    {% for message in group.list %}
+                        <div class="message-bubble-item">
+                            <div class="message-bubble">
+                                <p>{{ message.contenu|linebreaks }}</p>
+                                {% if message.attachment %}
+                                    <div class="message-attachment">
+                                        📎 {{ message.attachment.name|cut:"/media/"|cut:"messagerie/" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="message-meta">
+                                <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
+                                {% if message.expediteur == request.user %}
+                                    {% if message.lu %}
+                                        <span class="read-status" title="Lu">✓✓</span>
+                                    {% else %}
+                                        <span class="read-status" title="Envoyé">✓</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         {% endfor %}
@@ -225,49 +250,96 @@
     }
 
     .message-avatar {
-        margin-right: 8px;
+        width: 40px;
+        height: 40px;
         flex-shrink: 0;
+        margin-right: 12px;
     }
 
     .message-avatar img {
-        width: 36px;
-        height: 36px;
+        width: 100%;
+        height: 100%;
         border-radius: 50%;
         object-fit: cover;
     }
 
-    .message .avatar-placeholder {
-        width: 36px;
-        height: 36px;
+    .avatar-placeholder {
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
-        object-fit: cover;
         background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: bold;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
     }
 
-    .message.sent {
+    /* ─── Message Grouping Styles ─── */
+    .message-group {
+        display: flex;
+        margin-bottom: 20px;
+        animation: messageSlideIn 0.3s ease-out;
+    }
+
+    .message-group.sent-group {
         flex-direction: row-reverse;
         justify-content: flex-end;
     }
 
-    .message.sent .message-avatar {
+    .message-group.sent-group .message-group-info {
+        margin-left: 12px;
         margin-right: 0;
-        margin-left: 8px;
     }
 
-    .message.sent .message-content {
-        align-items: flex-end;
-    }
-
-    .message-content {
-        max-width: 75%;
+    .message-group-info {
         display: flex;
         flex-direction: column;
+        align-items: center;
+        margin-right: 12px;
+        gap: 4px;
+    }
+
+    .sender-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        font-size: 0.75rem;
+    }
+
+    .sender-name {
+        font-weight: 600;
+        color: #1a1a1a;
+        font-size: 0.85rem;
+    }
+
+    .sender-status {
+        font-size: 0.7rem;
+        color: #65676b;
+    }
+
+    .message-group.sent-group .sender-info {
+        align-items: center;
+    }
+
+    .message-bubbles {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        max-width: 70%;
+    }
+
+    .message-bubble-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        align-items: flex-start;
+    }
+
+    .message-group.sent-group .message-bubble-item {
+        align-items: flex-end;
     }
 
     .message-bubble {
@@ -275,24 +347,24 @@
         color: #1a1a1a;
         padding: 10px 14px;
         border-radius: 18px;
-        margin-bottom: 4px;
         word-wrap: break-word;
         line-height: 1.4;
         font-size: 0.95rem;
     }
 
-    .message.sent .message-bubble {
+    .message-group.sent-group .message-bubble {
         background: var(--primary);
         color: white;
         border-radius: 18px;
     }
 
     .message-attachment {
-        margin-top: 8px;
-        font-size: 0.9rem;
+        margin-top: 6px;
+        font-size: 0.85rem;
+        opacity: 0.8;
     }
 
-    .message-time {
+    .message-meta {
         font-size: 0.75rem;
         color: #65676b;
         display: flex;
@@ -301,15 +373,16 @@
         padding: 0 4px;
     }
 
+    .message-time {
+        font-size: 0.75rem;
+        color: #65676b;
+    }
+
     .read-status {
         font-size: 0.7rem;
         font-weight: 600;
-        color: #65676b;
-        letter-spacing: -1px;
-    }
-
-    .message.sent .read-status {
         color: #7b9ae6;
+        letter-spacing: -1px;
     }
 
     .message-form-container {
