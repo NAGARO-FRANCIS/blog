@@ -93,7 +93,7 @@
   - [x] Labels interactives
   - [x] Gradients au clic
   - [x] Icônes (🏠 🔑 👥)
-  - [x] Titres (Propriétaire, Locataire, Colocataire)
+  - [x] Titres (Propriétaire, Locataire, Touriste)
   - [x] Descriptions détaillées
   - [x] Listes d'avantages
 - [x] Messages d'erreur

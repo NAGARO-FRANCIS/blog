@@ -49,24 +49,24 @@
                                 <h3 class="mt-2 mb-1">Locataire</h3>
                             </div>
                             <p class="role-description text-center text-muted mb-3 small">
-                                Je cherche un colocataire pour partager
+                                Je cherche un touriste pour partager
                             </p>
                             <ul class="role-benefits list-unstyled">
                                 <li class="mb-2">✅ Publier annonces</li>
-                                <li class="mb-2">✅ Chercher colocataire</li>
+                                <li class="mb-2">✅ Chercher touriste</li>
                                 <li class="mb-2">✅ Gérer candidatures</li>
                                 <li>✅ Tableau de bord</li>
                             </ul>
                         </label>
                     </div>
 
-                    <!-- Option 3: Colocataire -->
+                    <!-- Option 3: Touriste -->
                     <div class="role-card card">
-                        <input type="radio" id="role_colocataire" name="role" value="colocataire" required style="display: none;">
-                        <label for="role_colocataire" class="role-label-card p-4 h-100 cursor-pointer">
+                        <input type="radio" id="role_touriste" name="role" value="touriste" required style="display: none;">
+                        <label for="role_touriste" class="role-label-card p-4 h-100 cursor-pointer">
                             <div class="text-center mb-3">
                                 <div class="role-icon">👥</div>
-                                <h3 class="mt-2 mb-1">Colocataire</h3>
+                                <h3 class="mt-2 mb-1">Touriste</h3>
                             </div>
                             <p class="role-description text-center text-muted mb-3 small">
                                 Je cherche une chambre ou maison
@@ -132,14 +132,14 @@
 
     #role_proprietaire:checked + label,
     #role_locataire:checked + label,
-    #role_colocataire:checked + label {
+    #role_touriste:checked + label {
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         color: white;
     }
 
     #role_proprietaire:checked ~ .card,
     #role_locataire:checked ~ .card,
-    #role_colocataire:checked ~ .card {
+    #role_touriste:checked ~ .card {
         border-color: #007bff;
         background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     }

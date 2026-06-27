@@ -75,7 +75,8 @@ def inscription_individu_form(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.save()
             
             # Sauvegarder les champs du profil
             profile, created = Profile.objects.get_or_create(user=user)
@@ -85,8 +86,8 @@ def inscription_individu_form(request):
             profile.profession = form.cleaned_data.get('profession', '')
             profile.date_naissance = form.cleaned_data.get('date_naissance')
             profile.sexe = form.cleaned_data.get('sexe', '')
-            profile.role = role  # Utiliser le rôle de la session
             profile.account_type = 'individu'
+            profile.role = role  # Assigner le rôle AVANT de sauvegarder
             profile.type_piece_identite = form.cleaned_data.get('type_piece_identite', '')
             profile.numero_piece_identite = form.cleaned_data.get('numero_piece_identite', '')
             profile.verification_status = 'pending'
@@ -94,7 +95,7 @@ def inscription_individu_form(request):
             if 'photo_profil' in request.FILES:
                 profile.photo_profil = request.FILES['photo_profil']
             
-            profile.save()
+            profile.save()  # Sauvegarder avec le bon rôle
             
             # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
@@ -333,10 +334,10 @@ def dashboard_individu(request):
     except Exception:
         nb_messages_non_lus = 0
     
-    # Récupérer les annonces de l'utilisateur (sauf pour colocataire)
+    # Récupérer les annonces de l'utilisateur (sauf pour touriste)
     try:
         from logement.models import Logement
-        if profile.role != 'colocataire':
+        if profile.role != 'touriste':
             mes_annonces = Logement.objects.filter(proprietaire=request.user).prefetch_related('photos').order_by('-created_at')[:5]
         else:
             mes_annonces = []

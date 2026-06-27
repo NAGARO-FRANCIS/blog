@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv(Path(__file__).resolve().parent.parent / '.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +25,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8%g05@gf^wfr_j=#k#+1bilpi)veftxmq1wym-me13p9fdp_rp'
+# Charger depuis variable d'environnement en production
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'django-insecure-8%g05@gf^wfr_j=#k#+1bilpi)veftxmq1wym-me13p9fdp_rp'  # Clé dev uniquement
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# En production, toujours False
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.5']
+# Charger depuis variable d'environnement ALLOWED_HOSTS_STR="localhost,127.0.0.1,example.com"
+ALLOWED_HOSTS_STR = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
 
 # Authentication settings
 LOGIN_URL = 'accounts:login'
@@ -138,3 +150,48 @@ STATICFILES_DIRS = [
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# ===== SÉCURITÉ PRODUCTION =====
+# https://docs.djangoproject.com/en/6.0/topics/security/
+
+# Force HTTPS en production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Protection contre les attaques clickjacking
+X_FRAME_OPTIONS = 'DENY'
+
+# Protection CSRF stricte
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:8000,http://127.0.0.1:8000'
+).split(',')
+
+# Entête de sécurité Content Security Policy
+SECURE_CONTENT_SECURITY_POLICY = {
+    'default-src': ("'self'",),
+    'script-src': ("'self'", "'unsafe-inline'"),  # unsafe-inline si vous utilisez Django templates
+    'style-src': ("'self'", "'unsafe-inline'"),
+    'img-src': ("'self'", "data:", "https:"),
+    'font-src': ("'self'",),
+    'connect-src': ("'self'",),
+    'frame-ancestors': ("'none'",),
+}
+
+# Cookie httponly et samesite
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Strict'
+
+# Sécurité des redirections
+SECURE_REDIRECT_EXEMPT = []
+
+# Limiter les résultats de recherche en cas d'erreur
+DATABASES['default']['ATOMIC_REQUESTS'] = True

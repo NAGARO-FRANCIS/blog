@@ -24,8 +24,8 @@ class IndividuRoleForm(forms.Form):
     """Formulaire de choix du rôle pour les individus"""
     ROLE_CHOICES = [
         ('proprietaire', '🏠 Propriétaire - Je possède une maison et veux louer les chambres'),
-        ('locataire', '🔑 Locataire - J\'ai une maison et cherche un colocataire'),
-        ('colocataire', '👥 Colocataire - Je cherche une chambre/maison à louer'),
+        ('locataire', '🔑 Locataire - J\'ai une maison et cherche un touriste'),
+        ('touriste', '👥 Touriste - Je cherche une chambre/maison à louer'),
     ]
     
     role = forms.ChoiceField(
@@ -42,7 +42,7 @@ class IndividuRoleForm(forms.Form):
         <div style="margin-top: 1rem;">
             <p><strong>📝 Propriétaire :</strong> Vous possédez une maison et souhaitez louer les chambres à des locataires</p>
             <p><strong>📝 Locataire :</strong> Vous avez déjà une maison et cherchez quelqu'un pour partager les frais</p>
-            <p><strong>📝 Colocataire :</strong> Vous cherchez une chambre ou maison à louer (vous ne pouvez pas publier d'annonces)</p>
+            <p><strong>📝 Touriste :</strong> Vous cherchez une chambre ou maison à louer (vous ne pouvez pas publier d'annonces)</p>
         </div>
         """
 

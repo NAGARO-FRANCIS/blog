@@ -28,19 +28,19 @@ Les utilisateurs qui s'inscrivent en tant que "**Individu**" doivent maintenant 
 **Description:** J'ai déjà une maison et je cherche quelqu'un pour partager les frais
 
 **Permissions:**
-- ✅ Publier des annonces (pour chercher colocataire)
+- ✅ Publier des annonces (pour chercher touriste)
 - ✅ Gérer les candidatures
 - ✅ Accéder au tableau de bord
 - ✅ Communiquer avec les candidats
 
 **Cas d'usage:**
-- Personne en location qui cherche un colocataire
+- Personne en location qui cherche un touriste
 - Personne qui possède un appartement et veut partager
 - Étudiants partageant un logement
 
 ---
 
-### 3. 👥 COLOCATAIRE
+### 3. 👥 TOURISTE
 **Description:** Je cherche une chambre ou une maison à louer
 
 **Permissions:**
@@ -86,7 +86,7 @@ Vous pouvez uniquement consulter les annonces existantes."
 │                                         │
 │    ☑ 🏠 Propriétaire                   │
 │    ○ 🔑 Locataire                      │
-│    ○ 👥 Colocataire                    │
+│    ○ 👥 Touriste                    │
 │                                         │
 │    [Continuer]                          │
 └──────────────┬──────────────────────────┘
@@ -127,7 +127,7 @@ class IndividuRoleForm(forms.Form):
     ROLE_CHOICES = [
         ('proprietaire', '🏠 Propriétaire - Je possède une maison...'),
         ('locataire', '🔑 Locataire - J\'ai une maison et cherche...'),
-        ('colocataire', '👥 Colocataire - Je cherche une chambre...'),
+        ('touriste', '👥 Touriste - Je cherche une chambre...'),
     ]
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.RadioSelect)
 ```
@@ -178,7 +178,7 @@ if account_type == 'individu' and role == 'colocataire':
 **Comportement:**
 - Propriétaire: Accès autorisé ✅
 - Locataire: Accès autorisé ✅
-- Colocataire: Redirection + message d'erreur ❌
+- Touriste: Redirection + message d'erreur ❌
 
 ---
 
@@ -213,7 +213,7 @@ Utilisateur sélectionne rôle → Clique "Continuer"
 4. 🪪 Vérification d'identité (type pièce, numéro)
 5. 📷 Photo de profil
 
-**Badge rôle:** Affiche en haut "🏠 Propriétaire" / "🔑 Locataire" / "👥 Colocataire"
+**Badge rôle:** Affiche en haut "🏠 Propriétaire" / "🔑 Locataire" / "👥 Touriste"
 
 ---
 
@@ -224,7 +224,7 @@ Utilisateur sélectionne rôle → Clique "Continuer"
   request.session['account_type'] = 'individu'
 
 Étape 2 (Choix rôle) - NOUVEAU:
-  request.session['individu_role'] = 'proprietaire'  # ou 'locataire' ou 'colocataire'
+  request.session['individu_role'] = 'proprietaire'  # ou 'locataire' ou 'touriste'
 
 Étape 3 (Formulaire complet):
   Utilise session['individu_role'] pour remplir profile.role
@@ -280,11 +280,11 @@ Propriétaire:
   ✅ Accéder au dashboard personnel
 
 Locataire:
-  ✅ Publier des annonces (pour chercher colocataire)
+  ✅ Publier des annonces (pour chercher touriste)
   ✅ Voir les annonces
   ✅ Accéder au dashboard personnel
 
-Colocataire:
+Touriste:
   ✅ Voir les annonces (LECTURE SEULE)
   ✅ Contacter propriétaires
   ❌ Publier des annonces
@@ -297,10 +297,12 @@ Colocataire:
 
 1. **Le rôle est immutable après inscription** (peut être modifié via profil plus tard si souhaité)
 
-2. **Les colocataires voient les boutons de publication grisés/cachés** dans les templates
+2. **Les touristes voient les boutons de publication grisés/cachés** dans les templates
+   - `{% if profile.role != 'touriste' %}`
+   - "En tant que touriste, vous ne pouvez pas publier d'annonces"
 
 3. **Les notifications d'erreur sont claires et utiles:**
-   - "En tant que colocataire, vous ne pouvez pas publier d'annonces"
+   - "En tant que touriste, vous ne pouvez pas publier d'annonces"
    - "Vous pouvez uniquement consulter les annonces existantes"
 
 4. **La vérification des documents s'applique à tous les rôles** (même logique)
@@ -312,15 +314,15 @@ Colocataire:
 ## 🎯 Prochaines Étapes (Optionnel)
 
 1. **Ajouter des "super roles":**
-   - Colocataire → peut upgrades en Propriétaire/Locataire
+   - Touriste → peut upgrades en Propriétaire/Locataire
 
 2. **Email de confirmation:**
    - Envoyer email avec rôle confirmé à l'inscription
 
 3. **Dashboards spécialisés:**
    - Propriétaire: Voir les annonces publiées, réservations, analytics
-   - Locataire: Voir candidatures, messages des colocataires
-   - Colocataire: Voir mes favoris, contacts sauvegardés
+   - Locataire: Voir candidatures, messages des touristes
+   - Touriste: Voir mes favoris, contacts sauvegardés
 
 4. **Historique de rôles:**
    - Tracker les changements de rôle pour modération

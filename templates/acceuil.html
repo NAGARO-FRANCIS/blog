@@ -23,7 +23,7 @@
             {% else %}
                 <div class="ic-hero__actions">
                     <a href="{% url 'logement:home' %}" class="ic-btn ic-btn--primary">Parcourir les annonces</a>
-                    {% if user.profile.account_type == 'individu' and user.profile.role != 'colocataire' or user.profile.account_type in 'hotel,residence' %}
+                    {% if user.profile.account_type == 'individu' and user.profile.role != 'touriste' or user.profile.account_type in 'hotel,residence' %}
                         <a href="{% url 'logement:ajouter_logement' %}" class="ic-btn ic-btn--outline">Publier une annonce</a>
                     {% endif %}
                 </div>
@@ -79,77 +79,245 @@
             </a>
         </div>
 
-        {% if annonces %}
-            <div class="ic-listings-grid">
-                {% for annonce in annonces %}
-                    <a href="{% url 'logement:detail_logement' annonce.id %}" class="ic-listing-card-link">
-                        <article class="ic-listing-card">
-                            <div class="ic-listing-card__media">
-                                {% if annonce.photos.all %}
-                                    <img
-                                        src="{{ annonce.photos.first.image.url }}"
-                                        alt="{{ annonce.photos.first.alt_text }}"
-                                        class="ic-listing-card__img"
-                                        loading="lazy"
-                                    >
-                                {% else %}
-                                    <div class="ic-listing-card__placeholder">🏠</div>
-                                {% endif %}
-                                
-                                {% if request.user.is_authenticated %}
-                                    <button class="ic-favorite-btn {% if annonce.id in favoris_ids %}active{% endif %}"
-                                            onclick="toggleFavori(event, this, {{ annonce.id }})"
-                                            type="button"
-                                            title="Ajouter aux favoris">
-                                        {% if annonce.id in favoris_ids %}❤️{% else %}🤍{% endif %}
-                                    </button>
-                                {% endif %}
-                                
-                                {% if annonce.photos.count > 1 %}
-                                    <span class="ic-badge">📸 {{ annonce.photos.count }} photos</span>
-                                {% endif %}
-                            </div>
+        <!-- AFFICHAGE POUR LES TOURISTES: 4 GROUPES -->
+        {% if is_tourist %}
+            <!-- HÔTELS -->
+            {% if hotels %}
+                <div class="ic-section-group">
+                    <div class="ic-section-group__header">
+                        <h3 class="ic-section-group__title">🏨 Hôtels</h3>
+                        <p class="ic-section-group__count">{{ hotels|length }} annonce{{ hotels|length|pluralize }}</p>
+                    </div>
+                    <div class="ic-listings-grid">
+                        {% for hotel in hotels %}
+                            <a href="{% url 'logement:detail_logement' hotel.id %}" class="ic-listing-card-link">
+                                <article class="ic-listing-card">
+                                    <div class="ic-listing-card__media">
+                                        {% if hotel.photos.all %}
+                                            <img src="{{ hotel.photos.first.image.url }}" alt="{{ hotel.titre }}" class="ic-listing-card__img" loading="lazy">
+                                        {% else %}
+                                            <div class="ic-listing-card__placeholder">🏨</div>
+                                        {% endif %}
+                                        {% if request.user.is_authenticated %}
+                                            <button class="ic-favorite-btn {% if hotel.id in favoris_ids %}active{% endif %}" onclick="toggleFavori(event, this, {{ hotel.id }})" type="button" title="Ajouter aux favoris">
+                                                {% if hotel.id in favoris_ids %}❤️{% else %}🤍{% endif %}
+                                            </button>
+                                        {% endif %}
+                                        {% if hotel.photos.count > 1 %}
+                                            <span class="ic-badge">📸 {{ hotel.photos.count }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ic-listing-card__body">
+                                        <p class="ic-listing-card__price">{{ hotel.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span></p>
+                                        <p class="ic-listing-card__location">📍 {{ hotel.ville }}{% if hotel.quartier %} — {{ hotel.quartier }}{% endif %}</p>
+                                        <div class="ic-listing-card__tags">
+                                            <span class="ic-tag">{{ hotel.nombre_chambres }} chambre{{ hotel.nombre_chambres|pluralize }}</span>
+                                        </div>
+                                        <p class="ic-listing-card__desc">{{ hotel.description|truncatewords:15 }}</p>
+                                    </div>
+                                </article>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
-                            <div class="ic-listing-card__body">
-                                <p class="ic-listing-card__price">
-                                    {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
-                                        {{ annonce.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
-                                    {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
-                                        {{ annonce.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
-                                    {% elif annonce.prix %}
-                                        {{ annonce.prix|floatformat:0 }} <span>FCFA</span>
+            <!-- RÉSIDENCES -->
+            {% if residences %}
+                <div class="ic-section-group">
+                    <div class="ic-section-group__header">
+                        <h3 class="ic-section-group__title">🏢 Résidences</h3>
+                        <p class="ic-section-group__count">{{ residences|length }} annonce{{ residences|length|pluralize }}</p>
+                    </div>
+                    <div class="ic-listings-grid">
+                        {% for residence in residences %}
+                            <a href="{% url 'logement:detail_logement' residence.id %}" class="ic-listing-card-link">
+                                <article class="ic-listing-card">
+                                    <div class="ic-listing-card__media">
+                                        {% if residence.photos.all %}
+                                            <img src="{{ residence.photos.first.image.url }}" alt="{{ residence.titre }}" class="ic-listing-card__img" loading="lazy">
+                                        {% else %}
+                                            <div class="ic-listing-card__placeholder">🏢</div>
+                                        {% endif %}
+                                        {% if request.user.is_authenticated %}
+                                            <button class="ic-favorite-btn {% if residence.id in favoris_ids %}active{% endif %}" onclick="toggleFavori(event, this, {{ residence.id }})" type="button">
+                                                {% if residence.id in favoris_ids %}❤️{% else %}🤍{% endif %}
+                                            </button>
+                                        {% endif %}
+                                        {% if residence.photos.count > 1 %}
+                                            <span class="ic-badge">📸 {{ residence.photos.count }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ic-listing-card__body">
+                                        <p class="ic-listing-card__price">{{ residence.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span></p>
+                                        <p class="ic-listing-card__location">📍 {{ residence.ville }}{% if residence.quartier %} — {{ residence.quartier }}{% endif %}</p>
+                                        <div class="ic-listing-card__tags">
+                                            <span class="ic-tag">{{ residence.nombre_chambres }} chambre{{ residence.nombre_chambres|pluralize }}</span>
+                                        </div>
+                                        <p class="ic-listing-card__desc">{{ residence.description|truncatewords:15 }}</p>
+                                    </div>
+                                </article>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- LOCATAIRES (individuels) -->
+            {% if locataires %}
+                <div class="ic-section-group">
+                    <div class="ic-section-group__header">
+                        <h3 class="ic-section-group__title">🔑 Annonces de Locataires</h3>
+                        <p class="ic-section-group__count">{{ locataires|length }} annonce{{ locataires|length|pluralize }}</p>
+                    </div>
+                    <div class="ic-listings-grid">
+                        {% for logement in locataires %}
+                            <a href="{% url 'logement:detail_logement' logement.id %}" class="ic-listing-card-link">
+                                <article class="ic-listing-card">
+                                    <div class="ic-listing-card__media">
+                                        {% if logement.photos.all %}
+                                            <img src="{{ logement.photos.first.image.url }}" alt="{{ logement.titre }}" class="ic-listing-card__img" loading="lazy">
+                                        {% else %}
+                                            <div class="ic-listing-card__placeholder">🔑</div>
+                                        {% endif %}
+                                        {% if request.user.is_authenticated %}
+                                            <button class="ic-favorite-btn {% if logement.id in favoris_ids %}active{% endif %}" onclick="toggleFavori(event, this, {{ logement.id }})" type="button">
+                                                {% if logement.id in favoris_ids %}❤️{% else %}🤍{% endif %}
+                                            </button>
+                                        {% endif %}
+                                        {% if logement.photos.count > 1 %}
+                                            <span class="ic-badge">📸 {{ logement.photos.count }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ic-listing-card__body">
+                                        <p class="ic-listing-card__price">{{ logement.prix|floatformat:0 }} <span>FCFA</span></p>
+                                        <p class="ic-listing-card__location">📍 {{ logement.ville }}{% if logement.quartier %} — {{ logement.quartier }}{% endif %}</p>
+                                        <div class="ic-listing-card__tags">
+                                            <span class="ic-tag">{{ logement.nombre_chambres }} chambre{{ logement.nombre_chambres|pluralize }}</span>
+                                        </div>
+                                        <p class="ic-listing-card__desc">{{ logement.description|truncatewords:15 }}</p>
+                                    </div>
+                                </article>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- PROPRIÉTAIRES (individuels) -->
+            {% if proprietaires %}
+                <div class="ic-section-group">
+                    <div class="ic-section-group__header">
+                        <h3 class="ic-section-group__title">🏠 Annonces de Propriétaires</h3>
+                        <p class="ic-section-group__count">{{ proprietaires|length }} annonce{{ proprietaires|length|pluralize }}</p>
+                    </div>
+                    <div class="ic-listings-grid">
+                        {% for logement in proprietaires %}
+                            <a href="{% url 'logement:detail_logement' logement.id %}" class="ic-listing-card-link">
+                                <article class="ic-listing-card">
+                                    <div class="ic-listing-card__media">
+                                        {% if logement.photos.all %}
+                                            <img src="{{ logement.photos.first.image.url }}" alt="{{ logement.titre }}" class="ic-listing-card__img" loading="lazy">
+                                        {% else %}
+                                            <div class="ic-listing-card__placeholder">🏠</div>
+                                        {% endif %}
+                                        {% if request.user.is_authenticated %}
+                                            <button class="ic-favorite-btn {% if logement.id in favoris_ids %}active{% endif %}" onclick="toggleFavori(event, this, {{ logement.id }})" type="button">
+                                                {% if logement.id in favoris_ids %}❤️{% else %}🤍{% endif %}
+                                            </button>
+                                        {% endif %}
+                                        {% if logement.photos.count > 1 %}
+                                            <span class="ic-badge">📸 {{ logement.photos.count }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ic-listing-card__body">
+                                        <p class="ic-listing-card__price">{{ logement.prix|floatformat:0 }} <span>FCFA</span></p>
+                                        <p class="ic-listing-card__location">📍 {{ logement.ville }}{% if logement.quartier %} — {{ logement.quartier }}{% endif %}</p>
+                                        <div class="ic-listing-card__tags">
+                                            <span class="ic-tag">{{ logement.nombre_chambres }} chambre{{ logement.nombre_chambres|pluralize }}</span>
+                                        </div>
+                                        <p class="ic-listing-card__desc">{{ logement.description|truncatewords:15 }}</p>
+                                    </div>
+                                </article>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+        <!-- AFFICHAGE POUR LES NON-TOURISTES: LISTE UNIQUE -->
+        {% else %}
+            {% if annonces %}
+                <div class="ic-listings-grid">
+                    {% for annonce in annonces %}
+                        <a href="{% url 'logement:detail_logement' annonce.id %}" class="ic-listing-card-link">
+                            <article class="ic-listing-card">
+                                <div class="ic-listing-card__media">
+                                    {% if annonce.photos.all %}
+                                        <img
+                                            src="{{ annonce.photos.first.image.url }}"
+                                            alt="{{ annonce.photos.first.alt_text }}"
+                                            class="ic-listing-card__img"
+                                            loading="lazy"
+                                        >
                                     {% else %}
-                                        <span>Prix sur demande</span>
+                                        <div class="ic-listing-card__placeholder">🏠</div>
                                     {% endif %}
-                                </p>
-                                <p class="ic-listing-card__location">
-                                    📍 {{ annonce.ville }}{% if annonce.quartier %} — {{ annonce.quartier }}{% endif %}
-                                </p>
-                                <div class="ic-listing-card__tags">
-                                    <span class="ic-tag">{{ annonce.nombre_chambres }} chambre{{ annonce.nombre_chambres|pluralize }}</span>
-                                    {% if annonce.capacite %}
-                                        <span class="ic-tag">Capacité: {{ annonce.capacite }}</span>
+                                    
+                                    {% if request.user.is_authenticated %}
+                                        <button class="ic-favorite-btn {% if annonce.id in favoris_ids %}active{% endif %}"
+                                                onclick="toggleFavori(event, this, {{ annonce.id }})"
+                                                type="button"
+                                                title="Ajouter aux favoris">
+                                            {% if annonce.id in favoris_ids %}❤️{% else %}🤍{% endif %}
+                                        </button>
+                                    {% endif %}
+                                    
+                                    {% if annonce.photos.count > 1 %}
+                                        <span class="ic-badge">📸 {{ annonce.photos.count }} photos</span>
                                     {% endif %}
                                 </div>
-                                <p class="ic-listing-card__desc">{{ annonce.description|truncatewords:15 }}</p>
-                            </div>
-                        </article>
+
+                                <div class="ic-listing-card__body">
+                                    <p class="ic-listing-card__price">
+                                        {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
+                                            {{ annonce.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
+                                        {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
+                                            {{ annonce.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
+                                        {% elif annonce.prix %}
+                                            {{ annonce.prix|floatformat:0 }} <span>FCFA</span>
+                                        {% else %}
+                                            <span>Prix sur demande</span>
+                                        {% endif %}
+                                    </p>
+                                    <p class="ic-listing-card__location">
+                                        📍 {{ annonce.ville }}{% if annonce.quartier %} — {{ annonce.quartier }}{% endif %}
+                                    </p>
+                                    <div class="ic-listing-card__tags">
+                                        <span class="ic-tag">{{ annonce.nombre_chambres }} chambre{{ annonce.nombre_chambres|pluralize }}</span>
+                                        {% if annonce.capacite %}
+                                            <span class="ic-tag">Capacité: {{ annonce.capacite }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="ic-listing-card__desc">{{ annonce.description|truncatewords:15 }}</p>
+                                </div>
+                            </article>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <div class="ic-listings__footer">
+                    <a href="{% url 'colocation:liste_annonces' %}" class="ic-btn ic-btn--primary">
+                        Voir toutes les annonces →
                     </a>
-                {% endfor %}
-            </div>
-
-            <div class="ic-listings__footer">
-                <a href="{% url 'colocation:liste_annonces' %}" class="ic-btn ic-btn--primary">
-                    Voir toutes les annonces →
-                </a>
-            </div>
-
-        {% else %}
-            <div class="ic-empty-state">
-                <div class="ic-empty-state__icon">🏠</div>
-                <h3>Aucune annonce disponible</h3>
-                <p>Revenez bientôt pour découvrir les nouvelles annonces.</p>
-            </div>
+                </div>
+            {% else %}
+                <div class="ic-empty-state">
+                    <div class="ic-empty-state__icon">🏠</div>
+                    <h3>Aucune annonce disponible</h3>
+                    <p>Revenez bientôt pour découvrir les nouvelles annonces.</p>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 </section>
@@ -274,6 +442,29 @@
 
 /* ─── Section Base ─── */
 .ic-section { padding: 80px 0; }
+
+/* ─── Section Groups (pour les touristes) ─── */
+.ic-section-group {
+    margin-bottom: 64px;
+}
+.ic-section-group__header {
+    margin-bottom: 32px;
+    border-bottom: 2px solid var(--ic-orange);
+    padding-bottom: 16px;
+}
+.ic-section-group__title {
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 700;
+    color: var(--ic-text);
+    margin: 0 0 8px;
+    letter-spacing: -.01em;
+}
+.ic-section-group__count {
+    font-size: .85rem;
+    color: var(--ic-text-muted);
+    margin: 0;
+    font-weight: 500;
+}
 
 .ic-section__header {
     text-align: left;

@@ -13,7 +13,7 @@ class Profile(models.Model):
 
     ROLE_CHOICES = [
         ('locataire', 'Locataire'),
-        ('colocataire', 'Colocataire'),
+        ('touriste', 'Touriste'),
         ('proprietaire', 'Propriétaire'),
     ]
 

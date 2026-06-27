@@ -9,7 +9,7 @@ class ColocationAnnonceForm(forms.ModelForm):
         fields = [
             'ville', 'quartier', 'budget_mensuel', 'description',
             'surface', 'nombre_chambres', 'nombre_salles_bain',
-            'infos_logement', 'nombre_colocataires', 'profil_recherche',
+            'infos_logement', 'nombre_touristes', 'profil_recherche',
             'conditions_vie', 'meuble', 'disponible_depuis', 'durée_minimum',
             'climatisation', 'wifi', 'cuisine_equipee', 'garage', 'jardin'
         ]
@@ -22,7 +22,7 @@ class ColocationAnnonceForm(forms.ModelForm):
             'nombre_chambres': 'Nombre de chambres',
             'nombre_salles_bain': 'Nombre de salles de bain',
             'infos_logement': 'Informations sur le logement',
-            'nombre_colocataires': 'Nombre de colocataires',
+            'nombre_touristes': 'Nombre de touristes',
             'profil_recherche': 'Profil recherché',
             'conditions_vie': 'Conditions de vie',
             'meuble': 'Meublé',
@@ -63,7 +63,7 @@ class ColocationAnnonceForm(forms.ModelForm):
                 'rows': 4,
                 'placeholder': 'Informations supplémentaires...'
             }),
-            'nombre_colocataires': forms.NumberInput(attrs={'class': 'form-input'}),
+            'nombre_touristes': forms.NumberInput(attrs={'class': 'form-input'}),
             'profil_recherche': forms.Select(attrs={'class': 'form-select'}),
             'conditions_vie': forms.Textarea(attrs={
                 'class': 'form-textarea',

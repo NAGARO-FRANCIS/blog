@@ -40,8 +40,8 @@ class ColocationAnnonce(models.Model):
     description = models.TextField()
     infos_logement = models.TextField(blank=True)
     
-    # Colocataires
-    nombre_colocataires = models.PositiveSmallIntegerField(default=1, validators=[MinValueValidator(1)])
+    # Touristes
+    nombre_touristes = models.PositiveSmallIntegerField(default=1, validators=[MinValueValidator(1)])
     profil_recherche = models.CharField(max_length=20, choices=PROFIL_CHOICES, default='autre', blank=True)
     conditions_vie = models.TextField(blank=True)
     

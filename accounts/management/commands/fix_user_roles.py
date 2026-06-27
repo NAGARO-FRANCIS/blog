@@ -20,7 +20,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--role',
             type=str,
-            help='Rôle à attribuer (proprietaire, locataire, colocataire)'
+            help='Rôle à attribuer (proprietaire, locataire, touriste)'
         )
 
     def handle(self, *args, **options):
@@ -83,7 +83,7 @@ class Command(BaseCommand):
         fixes = [
             ('Ban', 'proprietaire', '[OWNER] Proprietaire'),
             ('Christelle', 'locataire', '[TENANT] Locataire'),
-            ('Elisee', 'colocataire', '[ROOMMATE] Colocataire'),
+            ('Elisee', 'touriste', '[ROOMMATE] Touriste'),
         ]
 
         self.stdout.write(self.style.SUCCESS('=== CORRECTION DES ROLES ===\n'))

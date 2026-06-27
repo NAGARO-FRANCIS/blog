@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Favoris - Ivoire Connect{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO SECTION
+════════════════════════════════════════════════════════ -->
+<section class="ic-favoris-hero">
+    <div class="ic-container">
+        <div class="ic-favoris-hero__inner">
+            <div class="ic-favoris-hero__icon">❤️</div>
+            <h1 class="ic-favoris-hero__title">Mes Annonces Favorites</h1>
+            <p class="ic-favoris-hero__subtitle">{{ favoris|length }} annonce{{ favoris|length|pluralize }} sauvegardée{{ favoris|length|pluralize }}</p>
+        </div>
+    </div>
+</section>
+
+{% if favoris %}
+    <!-- ═══════════════════════════════════════════════════════
+         FAVORIS GRID
+    ════════════════════════════════════════════════════════ -->
+    <section class="ic-section">
+        <div class="ic-container">
+            <div class="ic-favoris-grid">
+                {% for fav in favoris %}
+                    <a href="{% url 'logement:detail_logement' fav.logement.id %}" class="ic-listing-card-link">
+                        <article class="ic-listing-card">
+                            <div class="ic-listing-card__media">
+                                {% if fav.logement.photos.all %}
+                                    <img 
+                                        src="{{ fav.logement.photos.first.image.url }}"
+                                        alt="{{ fav.logement.titre }}"
+                                        class="ic-listing-card__img"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="ic-listing-card__placeholder">🏠</div>
+                                {% endif %}
+                                
+                                <button 
+                                    class="ic-favorite-btn active"
+                                    onclick="toggleFavori(event, this, {{ fav.logement.id }})"
+                                    type="button"
+                                    title="Retirer des favoris">
+                                    ❤️
+                                </button>
+                                
+                                {% if fav.logement.photos.count > 1 %}
+                                    <span class="ic-badge">📸 {{ fav.logement.photos.count }} photos</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="ic-listing-card__body">
+                                <p class="ic-listing-card__price">
+                                    {% if fav.logement.account_type == 'hotel' and fav.logement.prix_par_nuit %}
+                                        {{ fav.logement.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
+                                    {% elif fav.logement.account_type == 'residence' and fav.logement.prix_par_mois %}
+                                        {{ fav.logement.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
+                                    {% elif fav.logement.prix %}
+                                        {{ fav.logement.prix|floatformat:0 }} <span>FCFA</span>
+                                    {% else %}
+                                        <span>Prix sur demande</span>
+                                    {% endif %}
+                                </p>
+                                <p class="ic-listing-card__location">
+                                    📍 {{ fav.logement.ville }}{% if fav.logement.quartier %} — {{ fav.logement.quartier }}{% endif %}
+                                </p>
+                                <div class="ic-listing-card__tags">
+                                    <span class="ic-tag">{{ fav.logement.nombre_chambres }} chambre{{ fav.logement.nombre_chambres|pluralize }}</span>
+                                    {% if fav.logement.capacite %}
+                                        <span class="ic-tag">Capacité: {{ fav.logement.capacite }}</span>
+                                    {% endif %}
+                                </div>
+                                <p class="ic-listing-card__desc">{{ fav.logement.description|truncatewords:15 }}</p>
+                            </div>
+                        </article>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+{% else %}
+    <!-- ═══════════════════════════════════════════════════════
+         EMPTY STATE
+    ════════════════════════════════════════════════════════ -->
+    <section class="ic-section">
+        <div class="ic-container">
+            <div class="ic-empty-state ic-empty-state--favoris">
+                <div class="ic-empty-state__icon">🤍</div>
+                <h2 class="ic-empty-state__title">Aucun favori pour le moment</h2>
+                <p class="ic-empty-state__text">Commencez à ajouter vos annonces favorites pour les retrouver facilement plus tard.</p>
+                <a href="{% url 'logement:home' %}" class="ic-btn ic-btn--primary">
+                    Parcourir les annonces →
+                </a>
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════
+     STYLES
+════════════════════════════════════════════════════════ -->
+<style>
+/* ─── Favoris Hero ─── */
+.ic-favoris-hero {
+    background: linear-gradient(135deg, #b85c00 0%, #F77F00 40%, #ffffff 68%, #009A44 100%);
+    padding: 48px 0 40px;
+    text-align: center;
+}
+
+.ic-favoris-hero__inner {
+    position: relative;
+    z-index: 1;
+}
+
+.ic-favoris-hero__icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.ic-favoris-hero__title {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    color: var(--ic-white);
+    margin: 0 0 12px;
+    letter-spacing: -.02em;
+    text-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+
+.ic-favoris-hero__subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, .95);
+    margin: 0;
+}
+
+/* ─── Favoris Grid ─── */
+.ic-favoris-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* ─── Empty State ─── */
+.ic-empty-state--favoris {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.ic-empty-state__icon {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    display: block;
+}
+
+.ic-empty-state__title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ic-text);
+    margin: 0 0 12px;
+}
+
+.ic-empty-state__text {
+    font-size: 1rem;
+    color: var(--ic-text-muted);
+    margin: 0 0 32px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .ic-favoris-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+
+    .ic-favoris-hero__title {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ic-favoris-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ic-favoris-hero {
+        padding: 32px 0 24px;
+    }
+}
+</style>
+
+<!-- ─── JavaScript for Toggle ─── -->
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleFavori(event, button, logementId) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    fetch(`/logement/${logementId}/toggle-favori/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.is_favorite) {
+            // Retirer l'article de la page
+            button.closest('.ic-listing-card-link').remove();
+            
+            // Si plus aucun favori, recharger la page
+            if (document.querySelectorAll('.ic-favoris-grid .ic-listing-card-link').length === 0) {
+                setTimeout(() => location.reload(), 500);
+            }
+        }
+    })
+    .catch(error => console.error('Erreur:', error));
+}
+</script>
+
+{% endblock %}

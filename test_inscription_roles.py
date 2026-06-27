@@ -40,11 +40,11 @@ test_users = [
         'account_type': 'individu',
     },
     {
-        'username': 'colocataire_test',
+        'username': 'touriste_test',
         'email': 'coloc@example.com',
         'first_name': 'Pierre',
-        'last_name': 'Colocataire',
-        'role': 'colocataire',
+        'last_name': 'Touriste',
+        'role': 'touriste',
         'account_type': 'individu',
     }
 ]
@@ -89,7 +89,7 @@ for user in created_users:
     print(f"   role: {profile.role}")
     
     # Vérifier les permissions
-    can_publish = role != 'colocataire'
+    can_publish = role != 'touriste'
     can_view = True
     can_contact = True
     
@@ -103,20 +103,20 @@ print()
 # ============================================================
 # TEST 3: Simulation de la restriction "ajouter_logement"
 # ============================================================
-print("TEST 3: Simulation - Restriction de publication pour Colocataire")
+print("TEST 3: Simulation - Restriction de publication pour Touriste")
 print("-" * 60)
 
-colocataire_user = created_users[2]  # Pierre Colocataire
-profile = colocataire_user.profile
+touriste_user = created_users[2]  # Pierre Touriste
+profile = touriste_user.profile
 
 # Simulation du code dans ajouter_logement()
-if profile.account_type == 'individu' and profile.role == 'colocataire':
-    print(f"\n❌ Utilisateur {colocataire_user.username} est COLOCATAIRE")
+if profile.account_type == 'individu' and profile.role == 'touriste':
+    print(f"\n❌ Utilisateur {touriste_user.username} est TOURISTE")
     print("   Message d'erreur:")
-    print("   '❌ En tant que colocataire, vous ne pouvez pas publier d'annonces.'")
+    print("   '❌ En tant que touriste, vous ne pouvez pas publier d'annonces.'")
     print("   Redirection vers: /logement/home")
 else:
-    print(f"✅ Utilisateur {colocataire_user.username} PEUT publier")
+    print(f"✅ Utilisateur {touriste_user.username} PEUT publier")
 
 print()
 
@@ -128,7 +128,7 @@ print("-" * 60)
 
 for user in created_users[:2]:  # Propriétaire et Locataire
     profile = user.profile
-    if profile.account_type == 'individu' and profile.role == 'colocataire':
+    if profile.account_type == 'individu' and profile.role == 'touriste':
         print(f"❌ {profile.role.upper()}: Ne peut pas publier")
     else:
         print(f"✅ {profile.role.upper()} ({user.username}): CAN publier ✓")
@@ -145,14 +145,14 @@ total_users = User.objects.count()
 individu_users = Profile.objects.filter(account_type='individu').count()
 proprietaires = Profile.objects.filter(account_type='individu', role='proprietaire').count()
 locataires = Profile.objects.filter(account_type='individu', role='locataire').count()
-colocataires = Profile.objects.filter(account_type='individu', role='colocataire').count()
+touristes = Profile.objects.filter(account_type='individu', role='touriste').count()
 
 print(f"""
 Total utilisateurs: {total_users}
 Utilisateurs "individu": {individu_users}
   - Propriétaires: {proprietaires}
   - Locataires: {locataires}
-  - Colocataires: {colocataires}
+  - Touristes: {touristes}
 """)
 
 # ============================================================
@@ -173,7 +173,7 @@ print("""
    POST /accounts/inscription/individu/formulaire/ (form data)
    
 4. Restriction de publication:
-   GET /logement/ajouter/ (connecté comme colocataire)
+   GET /logement/ajouter/ (connecté comme touriste)
    → Devrait afficher erreur et rediriger
 """)
 

@@ -320,8 +320,8 @@ class LogementResidenceForm(forms.ModelForm):
         return cleaned_data
 
 
-class LogementColocataireForm(forms.ModelForm):
-    """Formulaire pour locataire cherchant un colocataire"""
+class LogementTouristeForm(forms.ModelForm):
+    """Formulaire pour locataire cherchant un touriste"""
     class Meta:
         model = Logement
         fields = [
@@ -341,12 +341,12 @@ class LogementColocataireForm(forms.ModelForm):
         widgets = {
             'titre': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'Ex: Cherche colocataire pour beau T3 climatisé'
+                'placeholder': 'Ex: Cherche touriste pour beau T3 climatisé'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-textarea',
                 'rows': 6,
-                'placeholder': 'Décrivez votre logement, l\'ambiance, le profil du colocataire recherché...'
+                'placeholder': 'Décrivez votre logement, l\'ambiance, le profil du touriste recherché...'
             }),
             'ville': forms.TextInput(attrs={
                 'class': 'form-input',

@@ -35,11 +35,13 @@ urlpatterns = [
     path('avis/', avis_clients, name='avis_clients'),
     path('statistiques/', statistiques_professionnel, name='statistiques'),
     
+    # Favoris (doit venir AVANT les routes avec <int:id>/)
+    path('favoris/', mes_favoris, name='mes_favoris'),
+    
     # Détail, favoris et réservation (routes dynamiques en dernier)
     path('<int:id>/', detail_logement, name='detail_logement'),
     path('<int:id>/toggle-favori/', toggle_favori, name='toggle_favori'),
     path('<int:id>/reserver/', reserver_logement, name='reserver_logement'),
-    path('favoris/', mes_favoris, name='mes_favoris'),
     path('reservation/<int:reservation_id>/paiement/', paiement_reservation, name='paiement'),
     path('reservation/<int:reservation_id>/confirmation/', confirmation_reservation, name='confirmation_reservation'),
 ]

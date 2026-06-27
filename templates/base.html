@@ -70,7 +70,7 @@
                 <li><a href="{% url 'home' %}">🏠 Accueil</a></li>
                 <li><a href="{% url 'logement:home' %}">🏘️ Annonces</a></li>
                 {% if request.user.is_authenticated %}
-                    {% if request.user.profile.account_type == 'individu' and request.user.profile.role != 'colocataire' or request.user.profile.account_type in 'hotel,residence' %}
+                    {% if request.user.profile.account_type == 'individu' and request.user.profile.role != 'touriste' or request.user.profile.account_type in 'hotel,residence' %}
                         <li><a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary btn-sm">➕ Publier</a></li>
                         <li><a href="{% url 'logement:mes_logements' %}">📋 Mes annonces</a></li>
                     {% endif %}

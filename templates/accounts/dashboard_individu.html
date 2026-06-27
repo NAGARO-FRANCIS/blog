@@ -13,7 +13,7 @@
                 <span class="di-header__flag">🇨🇮</span>
                 <div>
                     <h1 class="di-header__title">Bonjour, {{ user.first_name|default:user.username }}</h1>
-                    <p class="di-header__sub">Trouvez un logement ou un colocataire près de chez vous</p>
+                    <p class="di-header__sub">Trouvez un logement ou un touriste près de chez vous</p>
                 </div>
             </div>
             <span class="di-badge {% if profile.verified %}di-badge--verified{% endif %}">
@@ -53,7 +53,7 @@
                 <a href="{% url 'colocation:liste_annonces' %}" class="di-action">
                     <span class="di-action__icon">◎</span>
                     <div>
-                        <p class="di-action__name">Trouver un colocataire</p>
+                        <p class="di-action__name">Trouver un touriste</p>
                         <p class="di-action__desc">Rencontrez des profils compatibles</p>
                     </div>
                 </a>
@@ -66,8 +66,8 @@
                     </div>
                 </a>
 
-                <a href="{% url 'colocation:mes_favoris' %}" class="di-action">
-                    <span class="di-action__icon">♡</span>
+                <a href="{% url 'logement:mes_favoris' %}" class="di-action">
+                    <span class="di-action__icon">❤️</span>
                     <div>
                         <p class="di-action__name">Mes favoris</p>
                         <p class="di-action__desc">Vos annonces sauvegardées</p>
@@ -78,7 +78,7 @@
         </section>
 
         <!-- ── MES ANNONCES ── -->
-        {% if profile.role != 'colocataire' %}
+        {% if profile.role != 'touriste' %}
         <section class="di-section">
             <h2 class="di-section__title">Mes annonces</h2>
             {% if mes_annonces %}
@@ -128,7 +128,7 @@
                     <span class="di-guide__num">1</span>
                     <div>
                         <h3 class="di-guide__step-title">Publiez une annonce</h3>
-                        <p class="di-guide__step-desc">Cherchez un colocataire ou proposez une chambre en quelques minutes.</p>
+                        <p class="di-guide__step-desc">Cherchez un touriste ou proposez une chambre en quelques minutes.</p>
                     </div>
                 </div>
 
@@ -148,7 +148,7 @@
                     <span class="di-guide__num">3</span>
                     <div>
                         <h3 class="di-guide__step-title">Prenez contact</h3>
-                        <p class="di-guide__step-desc">Envoyez un message directement aux propriétaires ou colocataires.</p>
+                        <p class="di-guide__step-desc">Envoyez un message directement aux propriétaires ou touristes.</p>
                     </div>
                 </div>
 

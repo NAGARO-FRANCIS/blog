@@ -52,12 +52,12 @@
         </div>
         {% endif %}
 
-        <!-- COLOCATION (Colocataire ou Propriétaire) -->
-        {% if user.profile.account_type == 'individu' and user.profile.role in 'colocataire,proprietaire,locataire' %}
+        <!-- COLOCATION (Touriste ou Propriétaire) -->
+        {% if user.profile.account_type == 'individu' and user.profile.role in 'touriste,proprietaire,locataire' %}
         <div class="type-card colocation-card">
             <div class="card-icon">🏠</div>
             <h3>Publier en Colocation</h3>
-            <p>Trouvez des colocataires ou un logement en colocation</p>
+            <p>Trouvez des touristes ou un logement en colocation</p>
             <div class="features-list">
                 <div class="feature">✅ Profil recherché</div>
                 <div class="feature">✅ Conditions de vie</div>
@@ -103,7 +103,7 @@
             </div>
             <div class="help-item">
                 <strong>Colocation</strong>
-                <p>Vous cherchez des colocataires ou un logement partagé</p>
+                <p>Vous cherchez des touristes ou un logement partagé</p>
             </div>
             <div class="help-item">
                 <strong>Propriétaire</strong>

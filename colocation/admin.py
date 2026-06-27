@@ -10,7 +10,7 @@ class PhotoColocationInline(admin.TabularInline):
 
 @admin.register(ColocationAnnonce)
 class ColocationAnnonceAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'nombre_colocataires', 'proprietaire', 'created_at', 'photo_count']
+    list_display = ['__str__', 'nombre_touristes', 'proprietaire', 'created_at', 'photo_count']
     list_filter = ['ville', 'profil_recherche', 'meuble', 'created_at', 'climatisation', 'wifi']
     search_fields = ['description', 'infos_logement', 'ville', 'proprietaire__username']
     readonly_fields = ['created_at', 'updated_at']
@@ -25,8 +25,8 @@ class ColocationAnnonceAdmin(admin.ModelAdmin):
         ('Budget et logement', {
             'fields': ('budget_mensuel', 'surface', 'nombre_chambres', 'nombre_salles_bain')
         }),
-        ('Colocataires', {
-            'fields': ('nombre_colocataires', 'profil_recherche', 'durée_minimum', 'conditions_vie')
+        ('Touristes', {
+            'fields': ('nombre_touristes', 'profil_recherche', 'durée_minimum', 'conditions_vie')
         }),
         ('Équipements et conditions', {
             'fields': ('climatisation', 'wifi', 'cuisine_equipee', 'garage', 'jardin', 'meuble', 'disponible_depuis')

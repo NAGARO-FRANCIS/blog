@@ -4,7 +4,7 @@
 
 L'application dispose de **trois interfaces différentes et indépendantes** selon le type de compte de l'utilisateur:
 
-1. **Interface Individu** - Pour les chercheurs de logements et colocataires
+1. **Interface Individu** - Pour les chercheurs de logements et touristes
 2. **Interface Résidence** - Pour les gestionnaires de résidences
 3. **Interface Hôtel** - Pour les gestionnaires d'hôtels
 
@@ -45,9 +45,9 @@ Redirection vers l'interface appropriée
 **Caractéristiques:**
 - 👤 Profil utilisateur personnel
 - ❤️ Gestion des favoris
-- 💬 Conversations avec propriétaires/colocataires
+- 💬 Conversations avec propriétaires/touristes
 - 🔍 Recherche de logements
-- 👥 Recherche de colocataires
+- 👥 Recherche de touristes
 
 **Stats affichées:**
 - Nombre de favoris
@@ -56,7 +56,7 @@ Redirection vers l'interface appropriée
 
 **Actions rapides:**
 - Chercher un Logement
-- Chercher un Colocataire
+- Chercher un Touriste
 - Mes Messages
 - Mes Favoris
 

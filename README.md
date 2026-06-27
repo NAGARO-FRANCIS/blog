@@ -28,7 +28,7 @@ Ivoire Connect est une **plateforme complète** permettant aux utilisateurs de p
 - 🏠 **Propriétaires individuels** - Publier des annonces de location
 - 🏨 **Hôtels** - Gérer les réservations avec dashboards
 - 🏢 **Résidences** - Système de gestion complet
-- 👥 **Locataires/Colocataires** - Chercher et réserver
+- 👥 **Locataires/Touristes** - Chercher et réserver
 
 ---
 
@@ -105,7 +105,7 @@ http://localhost:8000
 
 #### **colocation** - Gestion des colocations
 - Publier des annonces de colocation
-- Rechercher des colocataires
+- Rechercher des touristes
 - Gérer les favoris
 
 #### **accounts** - Gestion des utilisateurs
@@ -165,7 +165,7 @@ http://localhost:8000
 - nombre_chambres: PositiveSmallIntegerField
 - nombre_salles_bain: PositiveSmallIntegerField
 - infos_logement: TextField
-- nombre_colocataires: PositiveSmallIntegerField
+- nombre_touristes: PositiveSmallIntegerField
 - profil_recherche: Choix (Étudiant, Professionnel, Couple, Famille)
 - conditions_vie: TextField
 - meuble: BooleanField

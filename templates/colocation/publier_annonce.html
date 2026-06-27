@@ -11,7 +11,7 @@
             <div class="header-info">
                 <span class="badge-type">🏠 COLOCATION</span>
                 <h1>Publier votre annonce de colocation</h1>
-                <p>Trouvez vos colocataires ou votre logement en colocation</p>
+                <p>Trouvez vos touristes ou votre logement en colocation</p>
             </div>
             <div class="header-progress">
                 <div class="progress-step active" id="step1-indicator">1</div>
@@ -141,13 +141,13 @@
             <!-- STEP 3: Roommates & Amenities -->
             <div class="publish-step" id="step3">
                 <div class="step-content">
-                    <h2 class="step-heading">👥 Colocataires & Équipements</h2>
+                    <h2 class="step-heading">👥 Touristes & Équipements</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.nombre_colocataires.id_for_label }}">👥 Nombre de colocataires *</label>
-                            {{ form.nombre_colocataires }}
-                            {% if form.nombre_colocataires.errors %}<span class="field-error">{{ form.nombre_colocataires.errors.0 }}</span>{% endif %}
+                            <label for="{{ form.nombre_touristes.id_for_label }}">👥 Nombre de touristes *</label>
+                            {{ form.nombre_touristes }}
+                            {% if form.nombre_touristes.errors %}<span class="field-error">{{ form.nombre_touristes.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
                             <label for="{{ form.durée_minimum.id_for_label }}">📅 Durée minimum (mois) *</label>
@@ -785,7 +785,7 @@
         const titles = {
             1: 'Créer votre annonce',
             2: 'Caractéristiques',
-            3: 'Colocataires & Équipements',
+            3: 'Touristes & Équipements',
             4: 'Ajouter des photos'
         };
         const subtitles = {
@@ -852,7 +852,7 @@
         const annoncFields = [
             'ville', 'quartier', 'disponible_depuis', 'description',
             'budget_mensuel', 'surface', 'nombre_chambres', 'nombre_salles_bain',
-            'infos_logement', 'nombre_colocataires', 'durée_minimum',
+            'infos_logement', 'nombre_touristes', 'durée_minimum',
             'profil_recherche', 'conditions_vie', 'meuble',
             'climatisation', 'wifi', 'cuisine_equipee', 'garage', 'jardin'
         ];

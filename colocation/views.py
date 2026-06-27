@@ -35,7 +35,7 @@ def liste_annonces(request):
 
         if account_type in ['hotel', 'residence']:
             annonces = Logement.objects.prefetch_related('photos').order_by('-created_at')
-        elif role == 'colocataire':
+        elif role == 'touriste':
             annonces = Logement.objects.filter(
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
@@ -116,7 +116,7 @@ def detail_annonce(request, annonce_id):
 @login_required
 @require_http_methods(["GET", "POST"])
 def publier_annonce(request):
-    """Publier une annonce de colocation - réservé aux colocataires et propriétaires individuels"""
+    """Publier une annonce de colocation - réservé aux touristes et propriétaires individuels"""
     try:
         profile = request.user.profile
         account_type = profile.account_type
@@ -133,8 +133,8 @@ def publier_annonce(request):
         messages.info(request, 'Vous avez accès au formulaire de publication pour votre type d\'établissement.')
         return redirect('logement:ajouter_logement')
     
-    # Les colocataires seuls peuvent publier des annonces de colocation
-    if account_type == 'individu' and role not in ['colocataire', 'proprietaire', 'locataire']:
+    # Les touristes seuls peuvent publier des annonces de colocation
+    if account_type == 'individu' and role not in ['touriste', 'proprietaire', 'locataire']:
         return render(request, 'colocation/publier_annonce.html', {
             'form': None,
             'error': 'Vous devez avoir un rôle valide pour publier une annonce.'

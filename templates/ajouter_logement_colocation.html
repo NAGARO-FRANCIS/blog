@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Cherche Colocataire — Ivoire Connect{% endblock %}
+{% block title %}Cherche Touriste — Ivoire Connect{% endblock %}
 
 {% block content %}
 <div class="fc-wrapper">
@@ -10,7 +10,7 @@
         <!-- ── HEADER ── -->
         <header class="fc-header">
             <span class="fc-header__flag">🇨🇮</span>
-            <h1 class="fc-header__title">Cherche un colocataire</h1>
+            <h1 class="fc-header__title">Cherche un touriste</h1>
             <p class="fc-header__sub">Décrivez votre logement pour trouver le profil idéal</p>
         </header>
 
@@ -71,7 +71,7 @@
                 <!-- ── ÉTAPE 1 : Informations ── -->
                 <div class="fc-section fc-section--visible" id="s0">
                     <div class="fc-info-box">
-                        Vous cherchez quelqu'un pour partager votre logement. Décrivez bien votre annonce pour attirer le bon colocataire.
+                        Vous cherchez quelqu'un pour partager votre logement. Décrivez bien votre annonce pour attirer le bon touriste.
                     </div>
                     <div class="fc-card">
                         <h2 class="fc-card__title">Informations principales</h2>
@@ -80,7 +80,7 @@
                                 <label class="fc-label">Titre de l'annonce</label>
                                 {{ form.titre }}
                                 {% if form.titre.errors %}<span class="fc-error">{{ form.titre.errors }}</span>{% endif %}
-                                <span class="fc-hint">Ex : "Cherche colocataire pour beau T3 climatisé à Cocody"</span>
+                                <span class="fc-hint">Ex : "Cherche touriste pour beau T3 climatisé à Cocody"</span>
                             </div>
                             <div class="fc-field">
                                 <label class="fc-label">Type de logement</label>
@@ -182,7 +182,7 @@
                     <div class="fc-card">
                         <h2 class="fc-card__title">Photos du logement</h2>
                         <div class="fc-info-box">
-                            Des photos de qualité augmentent vos chances de trouver rapidement un colocataire.
+                            Des photos de qualité augmentent vos chances de trouver rapidement un touriste.
                         </div>
                         <div id="formset-container">
                             {{ formset.management_form }}
@@ -206,7 +206,7 @@
                     <div class="fc-card" style="margin-top: 1.5rem;">
                         <h2 class="fc-card__title">🎬 Vidéos du logement (Optionnel)</h2>
                         <div class="fc-info-box">
-                            Ajoutez des vidéos de visite pour attirer plus de colocataires. Max 5 vidéos.
+                            Ajoutez des vidéos de visite pour attirer plus de touristes. Max 5 vidéos.
                         </div>
                         <div id="video-formset-container">
                             {{ video_formset.management_form }}

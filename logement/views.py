@@ -4,10 +4,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from .forms import (
-    LogementProprietaireForm, LogementColocataireForm, LogementHotelForm, LogementResidenceForm,
+    LogementProprietaireForm, LogementTouristeForm, LogementHotelForm, LogementResidenceForm,
     RechercheLogementForm, PhotoLogementFormSet, VideoLogementFormSet
 )
-from .models import Logement, PhotoLogement, VideoLogement
+from .models import Logement, PhotoLogement, VideoLogement, FavoriLogement
 
 
 @login_required
@@ -19,6 +19,11 @@ def choisir_type_annonce(request):
 def home(request):
     """Page d'accueil avec annonces filtrées selon le rôle"""
     form = RechercheLogementForm(request.GET or None)
+    
+    # Récupérer les favoris
+    favoris_ids = set()
+    if request.user.is_authenticated:
+        favoris_ids = set(FavoriLogement.objects.filter(utilisateur=request.user).values_list('logement_id', flat=True))
 
     if request.user.is_authenticated:
         try:
@@ -32,15 +37,17 @@ def home(request):
         if account_type in ['hotel', 'residence']:
             # Hôtel / Résidence → voient tout
             logements = Logement.objects.all()
+            is_tourist = False
 
-        elif role == 'colocataire':
-            # Colocataire → voit hôtels, résidences, propriétaires ET locataires
+        elif role == 'touriste':
+            # Touriste → voit hôtels, résidences, propriétaires ET locataires
             logements = Logement.objects.filter(
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
                  Q(proprietaire__isnull=False) & 
                  Q(proprietaire__profile__role__in=['proprietaire', 'locataire']))
             )
+            is_tourist = True
 
         elif role == 'locataire':
             # Locataire → voit hôtels, résidences, propriétaires individuels
@@ -50,6 +57,7 @@ def home(request):
                  Q(proprietaire__isnull=False) & 
                  Q(proprietaire__profile__role='proprietaire'))
             )
+            is_tourist = False
 
         elif role == 'proprietaire':
             # Propriétaire → voit hôtels, résidences ET autres propriétaires individuels
@@ -59,13 +67,16 @@ def home(request):
                  Q(proprietaire__isnull=False) & 
                  Q(proprietaire__profile__role='proprietaire'))
             )
+            is_tourist = False
 
         else:
             logements = Logement.objects.all()
+            is_tourist = False
 
     else:
         # Non connecté → voit tout
         logements = Logement.objects.all()
+        is_tourist = False
 
     # ── FILTRES DE RECHERCHE (inchangés) ─────────────────────────────
     if form.is_valid():
@@ -92,12 +103,32 @@ def home(request):
 
     logements = logements.prefetch_related('photos').order_by('-created_at')
 
-    context = {
-        'form':      form,
-        'logements': logements,
-        'annonces':  logements,  # Pour compatibilité avec le template
-        'user_type': request.user.profile.account_type if request.user.is_authenticated else 'anonymous',
-    }
+    # ── GROUPER LES ANNONCES POUR LES TOURISTES EN 4 CATÉGORIES ─────────────
+    if is_tourist:
+        hotels = [l for l in logements if l.account_type == 'hotel']
+        residences = [l for l in logements if l.account_type == 'residence']
+        locataires = [l for l in logements if l.account_type == 'individu' and l.proprietaire and l.proprietaire.profile.role == 'locataire']
+        proprietaires = [l for l in logements if l.account_type == 'individu' and l.proprietaire and l.proprietaire.profile.role == 'proprietaire']
+        
+        context = {
+            'form': form,
+            'is_tourist': True,
+            'hotels': hotels,
+            'residences': residences,
+            'locataires': locataires,
+            'proprietaires': proprietaires,
+            'favoris_ids': favoris_ids,
+            'user_type': 'touriste',
+        }
+    else:
+        context = {
+            'form': form,
+            'logements': logements,
+            'annonces': logements,  # Pour compatibilité avec le template
+            'favoris_ids': favoris_ids,
+            'user_type': request.user.profile.account_type if request.user.is_authenticated else 'anonymous',
+            'is_tourist': False,
+        }
 
     return render(request, 'acceuil.html', context)
 
@@ -476,7 +507,7 @@ def ajouter_logement(request):
         FormClass = LogementProprietaireForm
         template  = 'ajouter_logement_proprietaire.html'
     elif account_type == 'individu' and role == 'locataire':
-        FormClass = LogementColocataireForm
+        FormClass = LogementTouristeForm
         template  = 'ajouter_logement_colocation.html'
     else:
         FormClass = LogementProprietaireForm

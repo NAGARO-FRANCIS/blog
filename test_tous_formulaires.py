@@ -9,7 +9,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ivoire.settings')
 django.setup()
 
-from logement.forms import LogementHotelForm, LogementResidenceForm, LogementProprietaireForm, LogementColocataireForm
+from logement.forms import LogementHotelForm, LogementResidenceForm, LogementProprietaireForm, LogementTouristeForm
 
 # Données de test minimales (uniquement les champs obligatoires du modèle)
 minimal_data = {
@@ -73,9 +73,9 @@ else:
     for field, errors in form.errors.items():
         print(f"      - {field}: {errors}")
 
-# Test LogementColocataireForm
-print("\n4️⃣ LogementColocataireForm (COLOCATAIRE)")
-form = LogementColocataireForm(data=minimal_data)
+# Test LogementTouristeForm
+print("\n4️⃣ LogementTouristeForm (TOURISTE)")
+form = LogementTouristeForm(data=minimal_data)
 if form.is_valid():
     print("   ✅ VALIDE - Les champs optionnels ont été remplis avec des valeurs par défaut")
     cleaned = form.cleaned_data
