@@ -8,9 +8,9 @@
         <!-- Header -->
         <div class="signup-header">
             <div class="header-progress">
-                <div class="progress-step active">1</div>
-                <div class="progress-line active"></div>
-                <div class="progress-step">2</div>
+                <div class="progress-step active" data-step="1">1</div>
+                <div class="progress-line" data-line="1"></div>
+                <div class="progress-step" data-step="2">2</div>
             </div>
             <h1>Inscription Hôtel</h1>
             <p>🏨 Gestionnaire d'Hôtel</p>
@@ -25,10 +25,10 @@
             </div>
         {% endif %}
 
-        <form method="post" class="signup-form" enctype="multipart/form-data" novalidate>
+        <form method="post" class="signup-form" enctype="multipart/form-data" novalidate id="hotelSignupForm">
             {% csrf_token %}
 
-            <div class="signup-step visible">
+            <div class="signup-step visible" data-step="1">
                 <div class="step-content">
                     <h2 class="step-heading">🏨 Informations de l'Hôtel</h2>
 
@@ -84,16 +84,16 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.establishment_photo.id_for_label }}">{{ form.establishment_photo.label }}</label>
-                        <div class="photo-upload" onclick="document.getElementById('establishmentPhotoInput').click()">
+                        <label>{{ form.establishment_photo.label }}</label>
+                        <label class="photo-upload" for="{{ form.establishment_photo.id_for_label }}">
                             <span class="photo-upload-icon">📷</span>
                             <div>
                                 <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez une photo</p>
-                                <span class="upload-hint">JPG, PNG ou GIF</span>
+                                <span class="upload-hint" id="establishmentPhotoName">JPG, PNG ou GIF</span>
                             </div>
                             <img id="establishmentPhotoPreview" class="photo-preview" alt="Aperçu">
-                        </div>
-                        {{ form.establishment_photo }}
+                        </label>
+                        <div class="hidden-file-input">{{ form.establishment_photo }}</div>
                         {% if form.establishment_photo.errors %}<span class="field-error">{{ form.establishment_photo.errors.0 }}</span>{% endif %}
                     </div>
 
@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <div class="signup-step">
+            <div class="signup-step" data-step="2">
                 <div class="step-content">
                     <h2 class="step-heading">👤 Informations du Représentant</h2>
 
@@ -174,15 +174,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.legal_document.id_for_label }}">{{ form.legal_document.label }}</label>
-                        <div class="file-upload" onclick="document.getElementById('legalDocumentInput').click()">
+                        <label>{{ form.legal_document.label }}</label>
+                        <label class="file-upload" for="{{ form.legal_document.id_for_label }}">
                             <span class="file-upload-icon">📄</span>
                             <div>
                                 <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez le document</p>
-                                <span class="upload-hint">PDF ou image</span>
+                                <span class="upload-hint" id="legalDocumentName">PDF ou image</span>
                             </div>
-                        </div>
-                        {{ form.legal_document }}
+                        </label>
+                        <div class="hidden-file-input">{{ form.legal_document }}</div>
                         {% if form.legal_document.errors %}<span class="field-error">{{ form.legal_document.errors.0 }}</span>{% endif %}
                     </div>
 
@@ -391,6 +391,12 @@
         box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
     }
 
+    .form-group input.field-invalid,
+    .form-group select.field-invalid {
+        border-color: #e74c3c;
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    }
+
     .field-error {
         color: #e74c3c;
         font-size: 0.85rem;
@@ -410,8 +416,20 @@
         border: 1px solid #fee2e2;
     }
 
+    /* Le vrai input file existe toujours dans le DOM (nécessaire pour l'upload),
+       mais il est masqué visuellement — le clic passe par le <label for="..."> */
+    .hidden-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+    }
+
     .photo-upload,
     .file-upload {
+        display: block;
         border: 2px dashed #ccc;
         border-radius: 8px;
         padding: 30px;
@@ -529,47 +547,68 @@
 
 <script>
     let currentStep = 1;
+    const TOTAL_STEPS = 2;
+
+    function showStep(step) {
+        document.querySelectorAll('.signup-step').forEach(el => {
+            el.classList.toggle('visible', parseInt(el.dataset.step) === step);
+        });
+        document.querySelectorAll('.progress-step').forEach(el => {
+            el.classList.toggle('active', parseInt(el.dataset.step) <= step);
+        });
+        document.querySelectorAll('.progress-line').forEach(el => {
+            el.classList.toggle('active', parseInt(el.dataset.line) < step);
+        });
+        currentStep = step;
+    }
+
+    // Validation manuelle des champs "required" de l'étape affichée
+    // (le form a novalidate, donc on gère nous-mêmes le contrôle avant de passer à l'étape suivante)
+    function validateCurrentStep() {
+        const stepEl = document.querySelector(`.signup-step[data-step="${currentStep}"]`);
+        let valid = true;
+        stepEl.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+            field.classList.remove('field-invalid');
+            if (!field.checkValidity()) {
+                valid = false;
+                field.classList.add('field-invalid');
+            }
+        });
+        if (!valid) {
+            stepEl.querySelector('.field-invalid')?.reportValidity();
+        }
+        return valid;
+    }
 
     function nextStep() {
-        const steps = document.querySelectorAll('.signup-step');
-        if (currentStep < steps.length) {
-            steps[currentStep - 1].classList.remove('visible');
-            currentStep++;
-            steps[currentStep - 1].classList.add('visible');
-            updateProgress();
-        }
+        if (!validateCurrentStep()) return;
+        if (currentStep < TOTAL_STEPS) showStep(currentStep + 1);
     }
 
     function prevStep() {
-        if (currentStep > 1) {
-            const steps = document.querySelectorAll('.signup-step');
-            steps[currentStep - 1].classList.remove('visible');
-            currentStep--;
-            steps[currentStep - 1].classList.add('visible');
-            updateProgress();
-        }
+        if (currentStep > 1) showStep(currentStep - 1);
     }
 
-    function updateProgress() {
-        const progressSteps = document.querySelectorAll('.progress-step');
-        const progressLines = document.querySelectorAll('.progress-line');
-        for (let i = 0; i < progressSteps.length; i++) {
-            if (i < currentStep) {
-                progressSteps[i].classList.add('active');
-                if (progressLines[i]) progressLines[i].classList.add('active');
-            } else {
-                progressSteps[i].classList.remove('active');
-                if (progressLines[i]) progressLines[i].classList.remove('active');
-            }
+    // Si Django renvoie des erreurs de validation côté serveur sur l'étape 2
+    // (ex: mots de passe différents, email déjà utilisé), on affiche directement
+    // cette étape au chargement de la page, sinon l'utilisateur ne les verrait jamais.
+    document.addEventListener('DOMContentLoaded', function () {
+        const step2HasErrors = document.querySelector('.signup-step[data-step="2"] .field-error') !== null;
+        if (step2HasErrors) {
+            showStep(2);
         }
-    }
+    });
 
-    document.getElementById('establishmentPhotoInput')?.addEventListener('change', function(e) {
+    // Aperçu photo établissement + nom de fichier affiché
+    const photoInput = document.getElementById('{{ form.establishment_photo.id_for_label }}');
+    photoInput?.addEventListener('change', function (e) {
         const preview = document.getElementById('establishmentPhotoPreview');
+        const nameLabel = document.getElementById('establishmentPhotoName');
         const file = e.target.files[0];
         if (file) {
+            nameLabel.textContent = file.name;
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = function (event) {
                 preview.src = event.target.result;
                 preview.style.display = 'block';
             };
@@ -577,10 +616,12 @@
         }
     });
 
-    document.querySelectorAll('.btn-next, .btn-secondary').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-        });
+    // Nom de fichier affiché pour le document légal
+    const legalDocInput = document.getElementById('{{ form.legal_document.id_for_label }}');
+    legalDocInput?.addEventListener('change', function (e) {
+        const nameLabel = document.getElementById('legalDocumentName');
+        const file = e.target.files[0];
+        if (file) nameLabel.textContent = file.name;
     });
 </script>
 {% endblock %}

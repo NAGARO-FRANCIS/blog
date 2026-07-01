@@ -5,7 +5,24 @@
 {% block content %}
 <div class="pr-wrap">
 
-    <!-- ── HEADER ── -->
+    <!-- ── COUVERTURE + AVATAR (façon Facebook/LinkedIn) ── -->
+    <div class="pr-cover">
+        {% if profile.photo_couverture %}
+            <img src="{{ profile.photo_couverture.url }}" class="pr-cover__img" alt="Couverture">
+        {% else %}
+            <div class="pr-cover__default"></div>
+        {% endif %}
+        <div class="pr-cover__flag"></div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'accounts:edit_profil' %}" class="pr-cover__form">
+            {% csrf_token %}
+            <input type="file" id="prCoverInput" name="photo_couverture" accept="image/*" onchange="this.form.submit()">
+        </form>
+        <button type="button" class="pr-cover__edit" onclick="document.getElementById('prCoverInput').click()">
+            📷 Changer la couverture
+        </button>
+    </div>
+
     <header class="pr-header">
         <div class="pr-header__left">
             <div class="pr-avatar">
@@ -14,121 +31,136 @@
                 {% else %}
                     <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
                 {% endif %}
+                {% if profile.verified %}<span class="pr-avatar__check" title="Vérifié">✔</span>{% endif %}
             </div>
-            <div>
+            <div class="pr-header__info">
                 <h1 class="pr-header__name">{{ request.user.first_name }} {{ request.user.last_name }}</h1>
                 <p class="pr-header__username">@{{ request.user.username }}</p>
                 <div class="pr-header__badges">
                     <span class="pr-badge">{{ profile.get_role_display }}</span>
                     {% if profile.verified %}
-                        <span class="pr-badge pr-badge--verified">Vérifié</span>
+                        <span class="pr-badge pr-badge--verified">✔ Vérifié</span>
                     {% endif %}
+                    {% if profile.ville %}<span class="pr-badge pr-badge--muted">📍 {{ profile.ville }}</span>{% endif %}
                 </div>
             </div>
         </div>
-        <a href="{% url 'accounts:edit_profil' %}" class="pr-edit-btn">Modifier le profil</a>
+        <a href="{% url 'accounts:edit_profil' %}" class="pr-edit-btn">✏️ Modifier le profil</a>
     </header>
 
     <!-- ── STATS ── -->
     <div class="pr-stats">
         <div class="pr-stat">
+            <span class="pr-stat__icon">🏠</span>
             <span class="pr-stat__value">{{ nb_annonces|default:"0" }}</span>
             <span class="pr-stat__label">Annonces</span>
         </div>
         <div class="pr-stat">
+            <span class="pr-stat__icon">❤️</span>
             <span class="pr-stat__value">{{ nb_favoris|default:"0" }}</span>
             <span class="pr-stat__label">Favoris</span>
         </div>
         <div class="pr-stat">
+            <span class="pr-stat__icon">💬</span>
             <span class="pr-stat__value">{{ nb_messages|default:"0" }}</span>
             <span class="pr-stat__label">Messages</span>
         </div>
     </div>
 
-    <!-- ── INFOS PERSONNELLES ── -->
-    <div class="pr-card">
-        <div class="pr-card__header">
-            <h2 class="pr-card__title">Informations personnelles</h2>
+    <!-- ── ONGLETS ── -->
+    <div class="pr-tabs">
+        <button class="pr-tab active" data-tab="apercu" onclick="prSwitchTab('apercu')">👤 Aperçu</button>
+        <button class="pr-tab" data-tab="statut" onclick="prSwitchTab('statut')">🛡️ Vérification</button>
+    </div>
+
+    <!-- ── ONGLET APERÇU ── -->
+    <div class="pr-tab-panel active" id="pr-tab-apercu">
+
+        <div class="pr-card">
+            <div class="pr-card__header">
+                <h2 class="pr-card__title">Informations personnelles</h2>
+            </div>
+            <div class="pr-grid">
+                <div class="pr-item">
+                    <span class="pr-item__label">Email</span>
+                    <span class="pr-item__value">{{ request.user.email|default:"—" }}</span>
+                </div>
+                <div class="pr-item">
+                    <span class="pr-item__label">Téléphone</span>
+                    <span class="pr-item__value {% if not profile.telephone %}pr-item__value--empty{% endif %}">
+                        {{ profile.telephone|default:"Non renseigné" }}
+                    </span>
+                </div>
+                <div class="pr-item">
+                    <span class="pr-item__label">Date de naissance</span>
+                    <span class="pr-item__value {% if not profile.date_naissance %}pr-item__value--empty{% endif %}">
+                        {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
+                    </span>
+                </div>
+                <div class="pr-item">
+                    <span class="pr-item__label">Sexe</span>
+                    <span class="pr-item__value {% if not profile.sexe %}pr-item__value--empty{% endif %}">
+                        {{ profile.get_sexe_display|default:"Non renseigné" }}
+                    </span>
+                </div>
+            </div>
         </div>
-        <div class="pr-grid">
-            <div class="pr-item">
-                <span class="pr-item__label">Email</span>
-                <span class="pr-item__value">{{ request.user.email|default:"—" }}</span>
+
+        <div class="pr-card">
+            <div class="pr-card__header">
+                <h2 class="pr-card__title">Informations du profil</h2>
             </div>
-            <div class="pr-item">
-                <span class="pr-item__label">Téléphone</span>
-                <span class="pr-item__value {% if not profile.telephone %}pr-item__value--empty{% endif %}">
-                    {{ profile.telephone|default:"Non renseigné" }}
-                </span>
-            </div>
-            <div class="pr-item">
-                <span class="pr-item__label">Date de naissance</span>
-                <span class="pr-item__value {% if not profile.date_naissance %}pr-item__value--empty{% endif %}">
-                    {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
-                </span>
-            </div>
-            <div class="pr-item">
-                <span class="pr-item__label">Sexe</span>
-                <span class="pr-item__value {% if not profile.sexe %}pr-item__value--empty{% endif %}">
-                    {{ profile.get_sexe_display|default:"Non renseigné" }}
-                </span>
+            <div class="pr-grid">
+                <div class="pr-item">
+                    <span class="pr-item__label">Type de profil</span>
+                    <span class="pr-item__value">{{ profile.get_role_display }}</span>
+                </div>
+                <div class="pr-item">
+                    <span class="pr-item__label">Profession</span>
+                    <span class="pr-item__value {% if not profile.profession %}pr-item__value--empty{% endif %}">
+                        {{ profile.profession|default:"Non renseignée" }}
+                    </span>
+                </div>
+                <div class="pr-item">
+                    <span class="pr-item__label">Ville</span>
+                    <span class="pr-item__value {% if not profile.ville %}pr-item__value--empty{% endif %}">
+                        {{ profile.ville|default:"Non renseignée" }}
+                    </span>
+                </div>
+                <div class="pr-item">
+                    <span class="pr-item__label">Quartier</span>
+                    <span class="pr-item__value {% if not profile.quartier %}pr-item__value--empty{% endif %}">
+                        {{ profile.quartier|default:"Non renseigné" }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ── INFOS PROFIL ── -->
-    <div class="pr-card">
-        <div class="pr-card__header">
-            <h2 class="pr-card__title">Informations du profil</h2>
-        </div>
-        <div class="pr-grid">
-            <div class="pr-item">
-                <span class="pr-item__label">Type de profil</span>
-                <span class="pr-item__value">{{ profile.get_role_display }}</span>
+    <!-- ── ONGLET STATUT ── -->
+    <div class="pr-tab-panel" id="pr-tab-statut">
+        <div class="pr-card">
+            <div class="pr-card__header">
+                <h2 class="pr-card__title">Statut de vérification</h2>
             </div>
-            <div class="pr-item">
-                <span class="pr-item__label">Profession</span>
-                <span class="pr-item__value {% if not profile.profession %}pr-item__value--empty{% endif %}">
-                    {{ profile.profession|default:"Non renseignée" }}
-                </span>
-            </div>
-            <div class="pr-item">
-                <span class="pr-item__label">Ville</span>
-                <span class="pr-item__value {% if not profile.ville %}pr-item__value--empty{% endif %}">
-                    {{ profile.ville|default:"Non renseignée" }}
-                </span>
-            </div>
-            <div class="pr-item">
-                <span class="pr-item__label">Quartier</span>
-                <span class="pr-item__value {% if not profile.quartier %}pr-item__value--empty{% endif %}">
-                    {{ profile.quartier|default:"Non renseigné" }}
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── STATUT ── -->
-    <div class="pr-card">
-        <div class="pr-card__header">
-            <h2 class="pr-card__title">Statut de vérification</h2>
-        </div>
-        {% if profile.verified %}
-            <div class="pr-status pr-status--ok">
-                <div class="pr-status__icon">✓</div>
-                <div>
-                    <p class="pr-status__title">Profil vérifié</p>
-                    <p class="pr-status__sub">Vous pouvez publier des annonces sur la plateforme.</p>
+            {% if profile.verified %}
+                <div class="pr-status pr-status--ok">
+                    <div class="pr-status__icon">✓</div>
+                    <div>
+                        <p class="pr-status__title">Profil vérifié</p>
+                        <p class="pr-status__sub">Vous pouvez publier des annonces sur la plateforme.</p>
+                    </div>
                 </div>
-            </div>
-        {% else %}
-            <div class="pr-status pr-status--pending">
-                <div class="pr-status__icon">⏳</div>
-                <div>
-                    <p class="pr-status__title">En attente de vérification</p>
-                    <p class="pr-status__sub">L'administrateur vérifiera votre profil sous peu.</p>
+            {% else %}
+                <div class="pr-status pr-status--pending">
+                    <div class="pr-status__icon">⏳</div>
+                    <div>
+                        <p class="pr-status__title">En attente de vérification</p>
+                        <p class="pr-status__sub">L'administrateur vérifiera votre profil sous peu.</p>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 
 </div>
@@ -157,53 +189,82 @@
 .pr-wrap {
     max-width: 800px;
     margin: 0 auto;
-    padding: 32px 24px 48px;
+    padding: 0 24px 48px;
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
+/* ── Couverture ── */
+.pr-cover {
+    position: relative;
+    width: calc(100% + 48px);
+    margin: 0 -24px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 0 0 20px 20px;
+}
+.pr-cover__img { width: 100%; height: 100%; object-fit: cover; }
+.pr-cover__default { width: 100%; height: 100%; background: linear-gradient(135deg, var(--ci-orange), var(--ci-green)); }
+.pr-cover__flag { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, #F77F00 33.3%, #fff 33.3%, #fff 66.6%, #009A44 66.6%); }
+.pr-cover__form { display: none; }
+.pr-cover__edit {
+    position: absolute; bottom: 14px; right: 14px;
+    background: rgba(0,0,0,.5); color: #fff; border: none;
+    padding: 7px 14px; border-radius: 100px; font-size: .78rem; font-weight: 700; cursor: pointer;
+    transition: background var(--pr-transition);
+}
+.pr-cover__edit:hover { background: rgba(0,0,0,.7); }
+
 /* ── Header ── */
 .pr-header {
-    background: var(--pr-white);
-    border: 1px solid var(--pr-border);
-    border-top: 4px solid var(--ci-orange);
-    border-radius: var(--pr-radius);
-    padding: 24px 28px;
+    background: transparent;
+    padding: 0 4px;
+    margin-top: -48px;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 20px;
-    box-shadow: var(--pr-shadow);
+    flex-wrap: wrap;
 }
-.pr-header__left { display: flex; align-items: center; gap: 18px; }
+.pr-header__left { display: flex; align-items: flex-end; gap: 18px; }
 
 .pr-avatar {
-    width: 72px;
-    height: 72px;
-    min-width: 72px;
+    position: relative;
+    width: 104px;
+    height: 104px;
+    min-width: 104px;
     border-radius: 50%;
     background: var(--ci-orange-lt);
-    border: 2px solid var(--ci-orange);
+    border: 4px solid var(--pr-white);
+    box-shadow: var(--pr-shadow-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--ci-orange);
     overflow: hidden;
 }
 .pr-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pr-avatar__check {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--ci-green); color: #fff; font-size: .75rem;
+    display: flex; align-items: center; justify-content: center;
+    border: 3px solid var(--pr-white);
+}
 
+.pr-header__info { padding-bottom: 6px; }
 .pr-header__name {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: var(--pr-text);
     margin: 0 0 3px;
     letter-spacing: -.02em;
 }
 .pr-header__username {
-    font-size: .8rem;
+    font-size: .82rem;
     color: var(--pr-muted);
     margin: 0 0 10px;
 }
@@ -225,6 +286,13 @@
     color: var(--ci-green-dk);
     border-color: #a7d7b8;
 }
+.pr-badge--muted {
+    background: var(--pr-surface);
+    color: var(--pr-muted);
+    border-color: var(--pr-border);
+    text-transform: none;
+    letter-spacing: 0;
+}
 
 .pr-edit-btn {
     background: var(--ci-orange);
@@ -238,6 +306,7 @@
     text-decoration: none;
     white-space: nowrap;
     flex-shrink: 0;
+    margin-bottom: 6px;
     transition: background var(--pr-transition), transform var(--pr-transition);
 }
 .pr-edit-btn:hover {
@@ -250,33 +319,62 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
+    margin-top: 8px;
 }
 .pr-stat {
     background: var(--pr-white);
     border: 1px solid var(--pr-border);
     border-radius: var(--pr-radius);
-    padding: 18px 20px;
+    padding: 16px 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 3px;
     box-shadow: var(--pr-shadow);
     transition: transform var(--pr-transition), box-shadow var(--pr-transition);
 }
 .pr-stat:hover { transform: translateY(-3px); box-shadow: var(--pr-shadow-lg); }
+.pr-stat__icon { font-size: 1.1rem; margin-bottom: 2px; }
 .pr-stat__value {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--ci-orange);
     letter-spacing: -.03em;
     line-height: 1;
 }
 .pr-stat__label {
-    font-size: .75rem;
+    font-size: .72rem;
     color: var(--pr-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .04em;
 }
+
+/* ── Tabs ── */
+.pr-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--pr-border);
+    margin-top: 6px;
+}
+.pr-tab {
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: .85rem;
+    color: var(--pr-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color var(--pr-transition);
+}
+.pr-tab:hover { color: var(--ci-orange-dk); }
+.pr-tab.active { color: var(--ci-green-dk); border-bottom-color: var(--ci-green); }
+
+.pr-tab-panel { display: none; flex-direction: column; gap: 16px; }
+.pr-tab-panel.active { display: flex; animation: prFadeIn .25s ease; }
+@keyframes prFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ── Card ── */
 .pr-card {
@@ -379,12 +477,23 @@
 
 /* ── Responsive ── */
 @media (max-width: 600px) {
-    .pr-wrap { padding: 16px 16px 32px; }
-    .pr-header { flex-wrap: wrap; }
-    .pr-edit-btn { width: 100%; text-align: center; justify-content: center; }
+    .pr-wrap { padding: 0 16px 32px; }
+    .pr-cover { width: calc(100% + 32px); margin: 0 -16px; height: 140px; }
+    .pr-header { flex-wrap: wrap; margin-top: -40px; }
+    .pr-header__left { flex-direction: column; align-items: center; text-align: center; width: 100%; }
+    .pr-avatar { width: 84px; height: 84px; min-width: 84px; }
+    .pr-header__badges { justify-content: center; }
+    .pr-edit-btn { width: 100%; text-align: center; }
     .pr-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .pr-stat__value { font-size: 1.4rem; }
+    .pr-stat__value { font-size: 1.3rem; }
+    .pr-tabs { overflow-x: auto; }
 }
 </style>
 
+<script>
+function prSwitchTab(tab) {
+    document.querySelectorAll('.pr-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.querySelectorAll('.pr-tab-panel').forEach(el => el.classList.toggle('active', el.id === `pr-tab-${tab}`));
+}
+</script>
 {% endblock %}
