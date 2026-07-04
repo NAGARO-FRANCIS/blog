@@ -1,4 +1,6 @@
 from django.urls import include, path
+from django.urls import reverse_lazy
+from django.contrib.auth import views as auth_views
 from .views import (
     inscription, inscription_individu, inscription_individu_form, inscription_residence, inscription_hotel,
     dashboard, dashboard_individu, dashboard_residence, dashboard_hotel,
@@ -44,7 +46,10 @@ urlpatterns = [
     path('notifications/mark-all-as-read/', mark_all_as_read, name='mark_all_notifications_as_read'),
     path('notifications/unread-count/', unread_notifications_count, name='unread_notifications_count'),
     path('api/notifications/', notifications_api, name='notifications_api'),
-    
+
     # Authentication
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        success_url=reverse_lazy('accounts:password_reset_done')
+    ), name='password_reset'),
     path('', include('django.contrib.auth.urls')),
 ]

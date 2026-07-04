@@ -3,497 +3,579 @@
 {% block title %}Mon profil — {{ request.user.first_name|default:request.user.username }}{% endblock %}
 
 {% block content %}
-<div class="pr-wrap">
+<div class="ic-wrap">
 
-    <!-- ── COUVERTURE + AVATAR (façon Facebook/LinkedIn) ── -->
-    <div class="pr-cover">
-        {% if profile.photo_couverture %}
-            <img src="{{ profile.photo_couverture.url }}" class="pr-cover__img" alt="Couverture">
-        {% else %}
-            <div class="pr-cover__default"></div>
-        {% endif %}
-        <div class="pr-cover__flag"></div>
+    <!-- ══════════ BANNIÈRE ILLUSTRÉE ══════════ -->
+    <div class="ic-hero">
+        <svg class="ic-hero__svg" viewBox="0 0 1200 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="skyGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%"  stop-color="#F77F00"/>
+                    <stop offset="42%" stop-color="#FFE3C2"/>
+                    <stop offset="58%" stop-color="#EAF7EE"/>
+                    <stop offset="100%" stop-color="#009A44"/>
+                </linearGradient>
+                <linearGradient id="sunGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <rect width="1200" height="280" fill="url(#skyGrad)"/>
+            <circle cx="600" cy="90" r="140" fill="url(#sunGlow)"/>
 
-        <form method="post" enctype="multipart/form-data" action="{% url 'accounts:edit_profil' %}" class="pr-cover__form">
+            <!-- Buildings silhouette -->
+            <g fill="#0F2A22" opacity="0.30">
+                <rect x="760" y="150" width="26" height="100"/>
+                <rect x="792" y="120" width="34" height="130"/>
+                <rect x="832" y="165" width="22" height="85"/>
+                <rect x="860" y="100" width="30" height="150"/>
+                <rect x="896" y="140" width="24" height="110"/>
+                <rect x="926" y="170" width="40" height="80"/>
+                <rect x="972" y="115" width="26" height="135"/>
+                <rect x="1004" y="155" width="22" height="95"/>
+                <rect x="1032" y="90"  width="30" height="160"/>
+                <rect x="1068" y="145" width="26" height="105"/>
+                <rect x="1100" y="165" width="34" height="85"/>
+                <rect x="1140" y="130" width="24" height="120"/>
+            </g>
+
+            <!-- Pont (arche) -->
+            <g stroke="#0F2A22" stroke-width="4" fill="none" opacity="0.55">
+                <path d="M420,250 Q600,90 780,250" stroke-width="6"/>
+                <line x1="480" y1="250" x2="600" y2="140"/>
+                <line x1="540" y1="250" x2="600" y2="140"/>
+                <line x1="660" y1="250" x2="600" y2="140"/>
+                <line x1="720" y1="250" x2="600" y2="140"/>
+            </g>
+            <rect x="400" y="245" width="400" height="8" fill="#0F2A22" opacity="0.55"/>
+
+            <!-- Palmier -->
+            <g opacity="0.85">
+                <path d="M90,250 C86,200 96,150 108,110" stroke="#0F2A22" stroke-width="10" fill="none" stroke-linecap="round"/>
+                <g fill="#0F2A22">
+                    <path d="M108,110 C60,95 30,60 20,30 C60,45 95,75 112,105 Z"/>
+                    <path d="M108,110 C150,85 190,55 205,20 C170,45 130,80 106,108 Z"/>
+                    <path d="M108,110 C70,120 30,120 5,105 C45,105 90,105 106,108 Z"/>
+                    <path d="M108,110 C150,130 195,140 220,130 C180,120 135,110 108,108 Z"/>
+                    <path d="M108,110 C100,70 90,35 70,5 C95,25 112,65 112,105 Z"/>
+                </g>
+            </g>
+
+            <!-- Reflet lagune -->
+            <rect x="0" y="250" width="1200" height="30" fill="#0F2A22" opacity="0.12"/>
+        </svg>
+        <div class="ic-hero__flagline"></div>
+
+        <button type="button" class="ic-hero__editbtn" onclick="document.getElementById('icCoverInput').click()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>
+            Changer la couverture
+        </button>
+        <form method="post" enctype="multipart/form-data" action="{% url 'accounts:edit_profil' %}" style="display:none;">
             {% csrf_token %}
-            <input type="file" id="prCoverInput" name="photo_couverture" accept="image/*" onchange="this.form.submit()">
+            <input type="file" id="icCoverInput" name="photo_couverture" accept="image/*" onchange="this.form.submit()">
         </form>
-        <button type="button" class="pr-cover__edit" onclick="document.getElementById('prCoverInput').click()">
-            📷 Changer la couverture
+    </div>
+
+    <!-- ══════════ CARTE PROFIL ══════════ -->
+    <div class="ic-profilecard">
+        <div class="ic-avatar">
+            {% if profile.photo_profil %}
+                <img src="{{ profile.photo_profil.url }}" alt="{{ request.user.username }}">
+            {% else %}
+                <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+            {% endif %}
+            {% if profile.verified %}
+                <span class="ic-avatar__check">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="ic-profilecard__info">
+            <div class="ic-name-row">
+                <h1>{{ request.user.first_name }} {{ request.user.last_name }}</h1>
+                {% if profile.verified %}
+                    <svg class="ic-verified-tick" width="20" height="20" viewBox="0 0 24 24" fill="#009A44"><path d="M12 2 L15 5 L19 5 L19 9 L22 12 L19 15 L19 19 L15 19 L12 22 L9 19 L5 19 L5 15 L2 12 L5 9 L5 5 L9 5 Z"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                {% endif %}
+            </div>
+            <p class="ic-username">@{{ request.user.username }}</p>
+            <span class="ic-role-badge">
+                {% if profile.account_type == 'individu' %}{{ profile.get_role_display }}
+                {% elif profile.account_type == 'hotel' %}Gestionnaire d'Hôtel
+                {% else %}Gestionnaire de Résidence{% endif %}
+            </span>
+
+            <div class="ic-meta-row">
+                <span class="ic-meta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {% if profile.account_type == 'individu' %}{{ profile.ville|default:"Côte d'Ivoire" }}{% else %}{{ profile.establishment_city|default:"Côte d'Ivoire" }}{% endif %}
+                </span>
+                <span class="ic-meta">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Membre depuis {{ date_inscription|date:"F Y" }}
+                </span>
+            </div>
+        </div>
+
+        <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            Modifier le profil
+        </a>
+    </div>
+
+    <!-- ══════════ STATS ══════════ -->
+    <div class="ic-stats">
+        <div class="ic-stat-card">
+            <div class="ic-stat-icon ic-stat-icon--orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <div>
+                <div class="ic-stat-value">{{ vues_profil|default:"0" }}</div>
+                <div class="ic-stat-label">Vues du profil</div>
+                {% if vues_profil_delta %}<div class="ic-stat-delta">+{{ vues_profil_delta }}% ce mois</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="ic-stat-card">
+            <div class="ic-stat-icon ic-stat-icon--green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            </div>
+            <div>
+                <div class="ic-stat-value">{{ nb_annonces|default:"0" }}</div>
+                <div class="ic-stat-label">Publications</div>
+                {% if nb_annonces_delta %}<div class="ic-stat-delta">+{{ nb_annonces_delta }} ce mois</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="ic-stat-card">
+            <div class="ic-stat-icon ic-stat-icon--orange">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+            </div>
+            <div>
+                <div class="ic-stat-value">{{ nb_favoris|default:"0" }}</div>
+                <div class="ic-stat-label">Favoris</div>
+                {% if nb_favoris_delta %}<div class="ic-stat-delta">+{{ nb_favoris_delta }} ce mois</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="ic-stat-card">
+            <div class="ic-stat-icon ic-stat-icon--green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>
+            </div>
+            <div>
+                <div class="ic-stat-value">{{ note_moyenne|floatformat:1|default:"—" }}</div>
+                <div class="ic-stat-label">Note moyenne</div>
+                {% if note_moyenne %}
+                    <div class="ic-stat-stars">
+                        {% for i in "12345" %}<span class="{% if forloop.counter <= note_moyenne %}filled{% endif %}">★</span>{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ ONGLETS ══════════ -->
+    <div class="ic-tabs">
+        <button class="ic-tab active" data-tab="apercu" onclick="icSwitchTab('apercu')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+            Aperçu
+        </button>
+        <button class="ic-tab" data-tab="verification" onclick="icSwitchTab('verification')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/></svg>
+            Vérification
         </button>
     </div>
 
-    <header class="pr-header">
-        <div class="pr-header__left">
-            <div class="pr-avatar">
-                {% if profile.photo_profil %}
-                    <img src="{{ profile.photo_profil.url }}" alt="Photo de profil">
-                {% else %}
-                    <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
-                {% endif %}
-                {% if profile.verified %}<span class="pr-avatar__check" title="Vérifié">✔</span>{% endif %}
-            </div>
-            <div class="pr-header__info">
-                <h1 class="pr-header__name">{{ request.user.first_name }} {{ request.user.last_name }}</h1>
-                <p class="pr-header__username">@{{ request.user.username }}</p>
-                <div class="pr-header__badges">
-                    <span class="pr-badge">{{ profile.get_role_display }}</span>
-                    {% if profile.verified %}
-                        <span class="pr-badge pr-badge--verified">✔ Vérifié</span>
+    <!-- ══════════ ONGLET APERÇU ══════════ -->
+    <div class="ic-tabpanel active" id="ic-panel-apercu">
+        <div class="ic-columns">
+
+            <!-- COLONNE GAUCHE -->
+            <div class="ic-col-left">
+                <div class="ic-card">
+                    <h3 class="ic-card__title ic-card__title--orange">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                        Informations personnelles
+                    </h3>
+                    <div class="ic-info-row">
+                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></span>
+                        <span class="ic-info-label">Email</span>
+                        <span class="ic-info-value">{{ request.user.email|default:"—" }}</span>
+                        {% if request.user.email %}<span class="ic-info-check">✓</span>{% endif %}
+                    </div>
+                    <div class="ic-info-row">
+                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .3 2 .5 3 .7a2 2 0 0 1 1.7 2Z"/></svg></span>
+                        <span class="ic-info-label">Téléphone</span>
+                        <span class="ic-info-value {% if not profile.telephone %}ic-empty{% endif %}">{{ profile.telephone|default:"Non renseigné" }}</span>
+                        {% if profile.telephone %}<span class="ic-info-check">✓</span>{% endif %}
+                    </div>
+                    {% if profile.account_type == 'individu' %}
+                    <div class="ic-info-row">
+                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                        <span class="ic-info-label">Date de naissance</span>
+                        <span class="ic-info-value {% if not profile.date_naissance %}ic-empty{% endif %}">
+                            {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
+                        </span>
+                    </div>
+                    <div class="ic-info-row">
+                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
+                        <span class="ic-info-label">Sexe</span>
+                        <span class="ic-info-value {% if not profile.sexe %}ic-empty{% endif %}">{{ profile.get_sexe_display|default:"Non renseigné" }}</span>
+                    </div>
                     {% endif %}
-                    {% if profile.ville %}<span class="pr-badge pr-badge--muted">📍 {{ profile.ville }}</span>{% endif %}
                 </div>
-            </div>
-        </div>
-        <a href="{% url 'accounts:edit_profil' %}" class="pr-edit-btn">✏️ Modifier le profil</a>
-    </header>
 
-    <!-- ── STATS ── -->
-    <div class="pr-stats">
-        <div class="pr-stat">
-            <span class="pr-stat__icon">🏠</span>
-            <span class="pr-stat__value">{{ nb_annonces|default:"0" }}</span>
-            <span class="pr-stat__label">Annonces</span>
-        </div>
-        <div class="pr-stat">
-            <span class="pr-stat__icon">❤️</span>
-            <span class="pr-stat__value">{{ nb_favoris|default:"0" }}</span>
-            <span class="pr-stat__label">Favoris</span>
-        </div>
-        <div class="pr-stat">
-            <span class="pr-stat__icon">💬</span>
-            <span class="pr-stat__value">{{ nb_messages|default:"0" }}</span>
-            <span class="pr-stat__label">Messages</span>
-        </div>
-    </div>
-
-    <!-- ── ONGLETS ── -->
-    <div class="pr-tabs">
-        <button class="pr-tab active" data-tab="apercu" onclick="prSwitchTab('apercu')">👤 Aperçu</button>
-        <button class="pr-tab" data-tab="statut" onclick="prSwitchTab('statut')">🛡️ Vérification</button>
-    </div>
-
-    <!-- ── ONGLET APERÇU ── -->
-    <div class="pr-tab-panel active" id="pr-tab-apercu">
-
-        <div class="pr-card">
-            <div class="pr-card__header">
-                <h2 class="pr-card__title">Informations personnelles</h2>
-            </div>
-            <div class="pr-grid">
-                <div class="pr-item">
-                    <span class="pr-item__label">Email</span>
-                    <span class="pr-item__value">{{ request.user.email|default:"—" }}</span>
-                </div>
-                <div class="pr-item">
-                    <span class="pr-item__label">Téléphone</span>
-                    <span class="pr-item__value {% if not profile.telephone %}pr-item__value--empty{% endif %}">
-                        {{ profile.telephone|default:"Non renseigné" }}
-                    </span>
-                </div>
-                <div class="pr-item">
-                    <span class="pr-item__label">Date de naissance</span>
-                    <span class="pr-item__value {% if not profile.date_naissance %}pr-item__value--empty{% endif %}">
-                        {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
-                    </span>
-                </div>
-                <div class="pr-item">
-                    <span class="pr-item__label">Sexe</span>
-                    <span class="pr-item__value {% if not profile.sexe %}pr-item__value--empty{% endif %}">
-                        {{ profile.get_sexe_display|default:"Non renseigné" }}
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="pr-card">
-            <div class="pr-card__header">
-                <h2 class="pr-card__title">Informations du profil</h2>
-            </div>
-            <div class="pr-grid">
-                <div class="pr-item">
-                    <span class="pr-item__label">Type de profil</span>
-                    <span class="pr-item__value">{{ profile.get_role_display }}</span>
-                </div>
-                <div class="pr-item">
-                    <span class="pr-item__label">Profession</span>
-                    <span class="pr-item__value {% if not profile.profession %}pr-item__value--empty{% endif %}">
-                        {{ profile.profession|default:"Non renseignée" }}
-                    </span>
-                </div>
-                <div class="pr-item">
-                    <span class="pr-item__label">Ville</span>
-                    <span class="pr-item__value {% if not profile.ville %}pr-item__value--empty{% endif %}">
-                        {{ profile.ville|default:"Non renseignée" }}
-                    </span>
-                </div>
-                <div class="pr-item">
-                    <span class="pr-item__label">Quartier</span>
-                    <span class="pr-item__value {% if not profile.quartier %}pr-item__value--empty{% endif %}">
-                        {{ profile.quartier|default:"Non renseigné" }}
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── ONGLET STATUT ── -->
-    <div class="pr-tab-panel" id="pr-tab-statut">
-        <div class="pr-card">
-            <div class="pr-card__header">
-                <h2 class="pr-card__title">Statut de vérification</h2>
-            </div>
-            {% if profile.verified %}
-                <div class="pr-status pr-status--ok">
-                    <div class="pr-status__icon">✓</div>
-                    <div>
-                        <p class="pr-status__title">Profil vérifié</p>
-                        <p class="pr-status__sub">Vous pouvez publier des annonces sur la plateforme.</p>
+                <div class="ic-card">
+                    <h3 class="ic-card__title ic-card__title--green">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                        Informations du profil
+                    </h3>
+                    {% if profile.account_type == 'individu' %}
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></span>
+                            <span class="ic-info-label">Type de compte</span>
+                            <span class="ic-info-value">{{ profile.get_role_display }}</span>
+                        </div>
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
+                            <span class="ic-info-label">Profession</span>
+                            <span class="ic-info-value {% if not profile.profession %}ic-empty{% endif %}">{{ profile.profession|default:"Non renseignée" }}</span>
+                        </div>
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                            <span class="ic-info-label">Ville</span>
+                            <span class="ic-info-value {% if not profile.ville %}ic-empty{% endif %}">{{ profile.ville|default:"Non renseignée" }}</span>
+                        </div>
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
+                            <span class="ic-info-label">Quartier</span>
+                            <span class="ic-info-value {% if not profile.quartier %}ic-empty{% endif %}">{{ profile.quartier|default:"Non renseigné" }}</span>
+                        </div>
+                    {% else %}
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
+                            <span class="ic-info-label">Établissement</span>
+                            <span class="ic-info-value">{{ profile.establishment_name|default:"—" }}</span>
+                        </div>
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                            <span class="ic-info-label">Ville</span>
+                            <span class="ic-info-value">{{ profile.establishment_city|default:"Non renseignée" }}</span>
+                        </div>
+                        <div class="ic-info-row">
+                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg></span>
+                            <span class="ic-info-label">RCCM / SIRET</span>
+                            <span class="ic-info-value">{{ profile.siret_or_rccm|default:"—" }}</span>
+                        </div>
+                    {% endif %}
+                    <div class="ic-info-row">
+                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg></span>
+                        <span class="ic-info-label">Langue</span>
+                        <span class="ic-info-value">Français</span>
                     </div>
                 </div>
-            {% else %}
-                <div class="pr-status pr-status--pending">
-                    <div class="pr-status__icon">⏳</div>
-                    <div>
-                        <p class="pr-status__title">En attente de vérification</p>
-                        <p class="pr-status__sub">L'administrateur vérifiera votre profil sous peu.</p>
-                    </div>
+
+                {% if activites %}
+                <div class="ic-card">
+                    <h3 class="ic-card__title ic-card__title--orange">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Activité récente
+                    </h3>
+                    {% for activite in activites %}
+                        <div class="ic-activity-row">
+                            <span class="ic-activity-icon ic-activity-icon--{{ activite.type|default:'orange' }}">
+                                {% if activite.type == 'annonce' %}
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                                {% elif activite.type == 'photo' %}
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="4"/></svg>
+                                {% else %}
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                {% endif %}
+                            </span>
+                            <div class="ic-activity-body">
+                                <div class="ic-activity-title">{{ activite.titre }}</div>
+                                <div class="ic-activity-sub">{{ activite.description }}</div>
+                            </div>
+                            <div class="ic-activity-time">{{ activite.date|timesince }}</div>
+                        </div>
+                    {% endfor %}
+                    <a href="#" class="ic-btn-outline ic-btn-block">Voir toute l'activité</a>
                 </div>
-            {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- COLONNE DROITE -->
+            <div class="ic-col-right">
+                <div class="ic-verif-card {% if not profile.verified %}ic-verif-card--pending{% endif %}">
+                    <div class="ic-verif-icon">
+                        {% if profile.verified %}
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        {% else %}
+                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        {% endif %}
+                    </div>
+                    {% if profile.verified %}
+                        <h3>Profil vérifié</h3>
+                        <p>Félicitations ! Votre profil a été vérifié avec succès. Vous pouvez publier des annonces sans restriction et accéder à toutes les fonctionnalités.</p>
+                        <div class="ic-verif-details">
+                            <div class="ic-verif-detail">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <div><span class="ic-verif-detail__label">Vérifié le</span><br>{{ profile.date_verification|date:"d F Y"|default:"—" }}</div>
+                            </div>
+                            <div class="ic-verif-detail">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                                <div><span class="ic-verif-detail__label">Vérifié par</span><br>Admin Ivoire Connect</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <h3>Vérification en attente</h3>
+                        <p>Votre profil est en cours de vérification par notre équipe. Vous serez notifié dès que ce sera fait.</p>
+                    {% endif %}
+                    <a href="#" class="ic-btn-verif">En savoir plus sur la vérification
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </a>
+                </div>
+
+                {% if badges %}
+                <div class="ic-card">
+                    <h3 class="ic-card__title ic-card__title--orange">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 4h3v2a3 3 0 0 1-3 3M7 4H4v2a3 3 0 0 0 3 3"/></svg>
+                        Vos badges
+                    </h3>
+                    <div class="ic-badges-grid">
+                        {% for badge in badges %}
+                            <div class="ic-badge ic-badge--{{ badge.couleur|default:'orange' }}">
+                                <div class="ic-badge__icon">{{ badge.emoji|default:"🏅" }}</div>
+                                <div class="ic-badge__label">{{ badge.titre }}</div>
+                                <div class="ic-badge__sub">{{ badge.description }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <a href="#" class="ic-btn-outline ic-btn-block">Voir tous les badges</a>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
+    <!-- ══════════ ONGLET VÉRIFICATION ══════════ -->
+    <div class="ic-tabpanel" id="ic-panel-verification">
+        <div class="ic-card">
+            <h3 class="ic-card__title ic-card__title--green">Détails de la vérification</h3>
+            <p style="color:#6B7280; font-size:0.9rem;">
+                {% if profile.verified %}
+                    Ton profil a été vérifié le {{ profile.date_verification|date:"d/m/Y"|default:"—" }}. Tu as un accès complet à la plateforme.
+                {% else %}
+                    Ta pièce d'identité est en cours d'examen par notre équipe. Ce processus prend généralement 24 à 48h.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- ══════════ FOOTER VAGUE ══════════ -->
+    <div class="ic-footer-wave">
+        <svg viewBox="0 0 1200 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,40 C300,90 900,0 1200,50 L1200,90 L0,90 Z" fill="#F77F00" opacity="0.9"/>
+            <path d="M0,55 C350,20 850,90 1200,35 L1200,90 L0,90 Z" fill="#FFFFFF" opacity="0.85"/>
+            <path d="M0,65 C400,30 800,80 1200,45 L1200,90 L0,90 Z" fill="#009A44"/>
+        </svg>
+        <p>Fait avec <span class="ic-heart">❤️</span> en Côte d'Ivoire</p>
+    </div>
 </div>
 
 <style>
-/* ── Tokens ── */
 :root {
-    --ci-orange:     #F77F00;
-    --ci-orange-dk:  #D96B00;
-    --ci-orange-lt:  #FFF3E0;
-    --ci-green:      #009A44;
-    --ci-green-dk:   #007A35;
-    --ci-green-lt:   #E6F5ED;
-    --pr-text:       #111827;
-    --pr-muted:      #6B7280;
-    --pr-border:     #E5E7EB;
-    --pr-surface:    #F9FAFB;
-    --pr-white:      #FFFFFF;
-    --pr-radius:     14px;
-    --pr-shadow:     0 2px 8px rgba(0,0,0,.07);
-    --pr-shadow-lg:  0 8px 24px rgba(0,0,0,.10);
-    --pr-transition: .2s ease;
+    --ic-orange: #F77F00;
+    --ic-orange-dk: #D96B00;
+    --ic-green: #009A44;
+    --ic-green-dk: #007A35;
+    --ic-text: #111827;
+    --ic-muted: #6B7280;
+    --ic-border: #E5E7EB;
+    --ic-surface: #F9FAFB;
+    --ic-radius: 16px;
+    --ic-shadow: 0 2px 10px rgba(0,0,0,.06);
+    --ic-shadow-lg: 0 10px 28px rgba(0,0,0,.10);
 }
 
-/* ── Layout ── */
-.pr-wrap {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 24px 48px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+.ic-wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 0; }
 
-/* ── Couverture ── */
-.pr-cover {
-    position: relative;
-    width: calc(100% + 48px);
-    margin: 0 -24px;
-    height: 200px;
-    overflow: hidden;
-    border-radius: 0 0 20px 20px;
+/* HERO */
+.ic-hero { position: relative; width: calc(100% + 40px); margin: 0 -20px; height: 230px; overflow: hidden; }
+.ic-hero__svg { width: 100%; height: 100%; display: block; }
+.ic-hero__flagline { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, #F77F00 33.3%, #fff 33.3%, #fff 66.6%, #009A44 66.6%); }
+.ic-hero__editbtn {
+    position: absolute; top: 16px; right: 16px; display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,.45); color: #fff; border: none; padding: 8px 14px; border-radius: 100px;
+    font-size: .8rem; font-weight: 700; cursor: pointer;
 }
-.pr-cover__img { width: 100%; height: 100%; object-fit: cover; }
-.pr-cover__default { width: 100%; height: 100%; background: linear-gradient(135deg, var(--ci-orange), var(--ci-green)); }
-.pr-cover__flag { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, #F77F00 33.3%, #fff 33.3%, #fff 66.6%, #009A44 66.6%); }
-.pr-cover__form { display: none; }
-.pr-cover__edit {
-    position: absolute; bottom: 14px; right: 14px;
-    background: rgba(0,0,0,.5); color: #fff; border: none;
-    padding: 7px 14px; border-radius: 100px; font-size: .78rem; font-weight: 700; cursor: pointer;
-    transition: background var(--pr-transition);
-}
-.pr-cover__edit:hover { background: rgba(0,0,0,.7); }
+.ic-hero__editbtn:hover { background: rgba(0,0,0,.65); }
 
-/* ── Header ── */
-.pr-header {
-    background: transparent;
-    padding: 0 4px;
-    margin-top: -48px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
+/* CARTE PROFIL */
+.ic-profilecard {
+    background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow-lg);
+    margin: -70px 0 0; padding: 20px 28px 20px 130px; position: relative;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
 }
-.pr-header__left { display: flex; align-items: flex-end; gap: 18px; }
+.ic-avatar {
+    position: absolute; left: 24px; top: -55px; width: 130px; height: 130px; border-radius: 50%;
+    border: 5px solid white; box-shadow: var(--ic-shadow-lg); overflow: hidden; background: var(--ic-orange);
+    display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; color: white;
+}
+.ic-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ic-avatar__check {
+    position: absolute; bottom: 4px; right: 4px; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--ic-green); border: 3px solid white; display: flex; align-items: center; justify-content: center;
+}
+.ic-profilecard__info { flex: 1; min-width: 220px; }
+.ic-name-row { display: flex; align-items: center; gap: 8px; }
+.ic-name-row h1 { font-size: 1.5rem; font-weight: 800; color: var(--ic-text); margin: 0; }
+.ic-verified-tick { flex-shrink: 0; }
+.ic-username { color: var(--ic-muted); font-size: .88rem; margin: 2px 0 8px; }
+.ic-role-badge {
+    display: inline-block; background: #FFF1DE; color: var(--ic-orange-dk);
+    font-weight: 700; font-size: .78rem; padding: 4px 14px; border-radius: 100px; border: 1px solid #FBD9A8;
+}
+.ic-meta-row { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
+.ic-meta { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--ic-muted); }
+.ic-meta svg { color: var(--ic-orange); flex-shrink: 0; }
 
-.pr-avatar {
-    position: relative;
-    width: 104px;
-    height: 104px;
-    min-width: 104px;
-    border-radius: 50%;
-    background: var(--ci-orange-lt);
-    border: 4px solid var(--pr-white);
-    box-shadow: var(--pr-shadow-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: var(--ci-orange);
-    overflow: hidden;
+.ic-editprofile-btn {
+    display: flex; align-items: center; gap: 7px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-orange-dk));
+    color: white; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: .9rem; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(247,127,0,.3); flex-shrink: 0; transition: transform .2s;
 }
-.pr-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.pr-avatar__check {
-    position: absolute; bottom: 2px; right: 2px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: var(--ci-green); color: #fff; font-size: .75rem;
-    display: flex; align-items: center; justify-content: center;
-    border: 3px solid var(--pr-white);
-}
+.ic-editprofile-btn:hover { transform: translateY(-2px); }
 
-.pr-header__info { padding-bottom: 6px; }
-.pr-header__name {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--pr-text);
-    margin: 0 0 3px;
-    letter-spacing: -.02em;
+/* STATS */
+.ic-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
+.ic-stat-card {
+    background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow); padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px; transition: transform .2s, box-shadow .2s;
 }
-.pr-header__username {
-    font-size: .82rem;
-    color: var(--pr-muted);
-    margin: 0 0 10px;
-}
-.pr-header__badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.ic-stat-card:hover { transform: translateY(-3px); box-shadow: var(--ic-shadow-lg); }
+.ic-stat-icon { width: 46px; height: 46px; min-width: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.ic-stat-icon--orange { background: var(--ic-orange); }
+.ic-stat-icon--green { background: var(--ic-green); }
+.ic-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--ic-text); line-height: 1; }
+.ic-stat-label { font-size: .78rem; color: var(--ic-muted); margin-top: 2px; }
+.ic-stat-delta { font-size: .74rem; color: var(--ic-green-dk); font-weight: 700; margin-top: 3px; }
+.ic-stat-stars { margin-top: 2px; font-size: .8rem; color: #ddd; }
+.ic-stat-stars .filled { color: #FFB100; }
 
-.pr-badge {
-    font-size: .7rem;
-    font-weight: 700;
-    padding: 3px 12px;
-    border-radius: 100px;
-    background: var(--ci-orange-lt);
-    color: var(--ci-orange-dk);
-    border: 1px solid #fcd9a0;
-    text-transform: uppercase;
-    letter-spacing: .04em;
+/* TABS */
+.ic-tabs { display: flex; gap: 8px; margin-top: 26px; border-bottom: 2px solid var(--ic-border); }
+.ic-tab {
+    display: flex; align-items: center; gap: 7px; background: none; border: none; padding: 12px 6px;
+    font-weight: 700; font-size: .92rem; color: var(--ic-muted); cursor: pointer; border-bottom: 3px solid transparent;
+    margin-bottom: -2px; margin-right: 20px; transition: color .2s;
 }
-.pr-badge--verified {
-    background: var(--ci-green-lt);
-    color: var(--ci-green-dk);
-    border-color: #a7d7b8;
-}
-.pr-badge--muted {
-    background: var(--pr-surface);
-    color: var(--pr-muted);
-    border-color: var(--pr-border);
-    text-transform: none;
-    letter-spacing: 0;
-}
+.ic-tab:hover { color: var(--ic-orange-dk); }
+.ic-tab.active { color: var(--ic-orange-dk); border-bottom-color: var(--ic-orange); }
 
-.pr-edit-btn {
-    background: var(--ci-orange);
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: .84rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-bottom: 6px;
-    transition: background var(--pr-transition), transform var(--pr-transition);
-}
-.pr-edit-btn:hover {
-    background: var(--ci-orange-dk);
-    transform: translateY(-1px);
-}
+.ic-tabpanel { display: none; padding-top: 22px; }
+.ic-tabpanel.active { display: block; animation: icFade .25s ease; }
+@keyframes icFade { from { opacity: 0; } to { opacity: 1; } }
 
-/* ── Stats ── */
-.pr-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-top: 8px;
-}
-.pr-stat {
-    background: var(--pr-white);
-    border: 1px solid var(--pr-border);
-    border-radius: var(--pr-radius);
-    padding: 16px 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    box-shadow: var(--pr-shadow);
-    transition: transform var(--pr-transition), box-shadow var(--pr-transition);
-}
-.pr-stat:hover { transform: translateY(-3px); box-shadow: var(--pr-shadow-lg); }
-.pr-stat__icon { font-size: 1.1rem; margin-bottom: 2px; }
-.pr-stat__value {
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: var(--ci-orange);
-    letter-spacing: -.03em;
-    line-height: 1;
-}
-.pr-stat__label {
-    font-size: .72rem;
-    color: var(--pr-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-}
+/* COLUMNS */
+.ic-columns { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+.ic-col-left, .ic-col-right { display: flex; flex-direction: column; gap: 20px; }
 
-/* ── Tabs ── */
-.pr-tabs {
-    display: flex;
-    gap: 4px;
-    border-bottom: 2px solid var(--pr-border);
-    margin-top: 6px;
-}
-.pr-tab {
-    background: none;
-    border: none;
-    padding: 10px 16px;
-    font-weight: 700;
-    font-size: .85rem;
-    color: var(--pr-muted);
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    transition: color var(--pr-transition);
-}
-.pr-tab:hover { color: var(--ci-orange-dk); }
-.pr-tab.active { color: var(--ci-green-dk); border-bottom-color: var(--ci-green); }
+/* CARD */
+.ic-card { background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow); padding: 22px 24px; }
+.ic-card__title { display: flex; align-items: center; gap: 8px; font-size: .92rem; font-weight: 800; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--ic-border); }
+.ic-card__title--orange { color: var(--ic-orange-dk); }
+.ic-card__title--green { color: var(--ic-green-dk); }
 
-.pr-tab-panel { display: none; flex-direction: column; gap: 16px; }
-.pr-tab-panel.active { display: flex; animation: prFadeIn .25s ease; }
-@keyframes prFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.ic-info-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #F3F4F6; font-size: .88rem; }
+.ic-info-row:last-child { border-bottom: none; }
+.ic-info-icon { color: var(--ic-muted); flex-shrink: 0; }
+.ic-info-label { color: var(--ic-muted); min-width: 140px; }
+.ic-info-value { color: var(--ic-text); font-weight: 600; flex: 1; }
+.ic-empty { color: #C4C9D4; font-style: italic; font-weight: 400; }
+.ic-info-check { color: var(--ic-green); font-weight: 800; }
 
-/* ── Card ── */
-.pr-card {
-    background: var(--pr-white);
-    border: 1px solid var(--pr-border);
-    border-radius: var(--pr-radius);
-    padding: 22px 24px;
-    box-shadow: var(--pr-shadow);
-}
-.pr-card__header {
-    margin-bottom: 16px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--pr-border);
-}
-.pr-card__title {
-    font-size: .9rem;
-    font-weight: 700;
-    color: var(--pr-text);
-    margin: 0;
-    padding-left: 10px;
-    border-left: 3px solid var(--ci-orange);
-}
+/* ACTIVITY */
+.ic-activity-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
+.ic-activity-row:last-of-type { border-bottom: none; }
+.ic-activity-icon { width: 32px; height: 32px; min-width: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.ic-activity-icon--orange { background: var(--ic-orange); }
+.ic-activity-icon--green { background: var(--ic-green); }
+.ic-activity-body { flex: 1; }
+.ic-activity-title { font-weight: 700; font-size: .86rem; color: var(--ic-text); }
+.ic-activity-sub { font-size: .78rem; color: var(--ic-muted); margin-top: 2px; }
+.ic-activity-time { font-size: .74rem; color: #B0B5BE; white-space: nowrap; }
 
-/* ── Info Grid ── */
-.pr-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 10px;
+.ic-btn-outline {
+    display: block; text-align: center; margin-top: 14px; padding: 10px; border-radius: 10px;
+    border: 1.5px solid var(--ic-orange); color: var(--ic-orange-dk); font-weight: 700; font-size: .86rem;
+    text-decoration: none; transition: background .2s;
 }
-.pr-item {
-    background: var(--pr-surface);
-    border: 1px solid var(--pr-border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    transition: border-color var(--pr-transition);
-}
-.pr-item:hover { border-color: #fcd9a0; }
-.pr-item__label {
-    font-size: .7rem;
-    color: var(--pr-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-}
-.pr-item__value {
-    font-size: .88rem;
-    color: var(--pr-text);
-    font-weight: 500;
-    word-break: break-word;
-}
-.pr-item__value--empty {
-    color: #C4C9D4;
-    font-style: italic;
-    font-weight: 400;
-}
+.ic-btn-outline:hover { background: #FFF3E0; }
+.ic-btn-block { width: 100%; box-sizing: border-box; }
 
-/* ── Statut ── */
-.pr-status {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 18px;
-    border-radius: 10px;
+/* VERIF CARD */
+.ic-verif-card {
+    background: linear-gradient(160deg, #E6F5ED, #F3FCF6); border: 1px solid #CDEBD9; border-radius: var(--ic-radius);
+    padding: 30px 26px; text-align: center; box-shadow: var(--ic-shadow);
 }
-.pr-status--ok {
-    background: var(--ci-green-lt);
-    border: 1px solid #a7d7b8;
+.ic-verif-card--pending { background: linear-gradient(160deg, #FFF7E6, #FFFBF0); border-color: #FDE9B8; }
+.ic-verif-icon {
+    width: 74px; height: 74px; border-radius: 50%; background: var(--ic-green); margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,154,68,.3);
 }
-.pr-status--pending {
-    background: #FFFBEB;
-    border: 1px solid #FDE68A;
+.ic-verif-card--pending .ic-verif-icon { background: #F5A623; box-shadow: 0 6px 18px rgba(245,166,35,.3); }
+.ic-verif-card h3 { color: var(--ic-green-dk); font-size: 1.15rem; margin: 0 0 10px; }
+.ic-verif-card--pending h3 { color: #92610C; }
+.ic-verif-card p { color: #4B5563; font-size: .85rem; line-height: 1.55; margin: 0 0 20px; }
+.ic-verif-details { display: flex; gap: 12px; margin-bottom: 20px; }
+.ic-verif-detail {
+    flex: 1; background: white; border-radius: 12px; padding: 12px; display: flex; gap: 8px; align-items: flex-start;
+    font-size: .78rem; color: var(--ic-text); text-align: left; box-shadow: var(--ic-shadow);
 }
-.pr-status__icon {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 700;
+.ic-verif-detail svg { color: var(--ic-green); margin-top: 2px; flex-shrink: 0; }
+.ic-verif-detail__label { color: var(--ic-muted); font-size: .72rem; }
+.ic-btn-verif {
+    display: inline-flex; align-items: center; gap: 7px; background: var(--ic-green); color: white;
+    padding: 11px 22px; border-radius: 10px; font-weight: 700; font-size: .85rem; text-decoration: none;
+    transition: background .2s;
 }
-.pr-status--ok .pr-status__icon { background: #bbf0d0; color: var(--ci-green-dk); }
-.pr-status--pending .pr-status__icon { background: #FEF3C7; color: #92400E; }
-.pr-status__title {
-    font-size: .88rem;
-    font-weight: 700;
-    color: var(--pr-text);
-    margin: 0 0 3px;
-}
-.pr-status__sub {
-    font-size: .78rem;
-    color: var(--pr-muted);
-    margin: 0;
-}
+.ic-btn-verif:hover { background: var(--ic-green-dk); }
 
-/* ── Responsive ── */
+/* BADGES */
+.ic-badges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+.ic-badge { text-align: center; padding: 14px 6px; border-radius: 14px; border: 2px solid; }
+.ic-badge--orange { border-color: #FBD9A8; background: #FFF8F0; }
+.ic-badge--green { border-color: #A7D7B8; background: #F0FFF6; }
+.ic-badge__icon { font-size: 1.8rem; margin-bottom: 6px; }
+.ic-badge__label { font-size: .78rem; font-weight: 800; color: var(--ic-text); }
+.ic-badge__sub { font-size: .68rem; color: var(--ic-muted); margin-top: 2px; }
+
+/* FOOTER WAVE */
+.ic-footer-wave { position: relative; margin-top: 40px; text-align: center; }
+.ic-footer-wave svg { width: 100%; height: 70px; display: block; }
+.ic-footer-wave p { margin: -6px 0 20px; font-size: .85rem; color: var(--ic-muted); font-weight: 600; }
+.ic-heart { color: #F77F00; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .ic-columns { grid-template-columns: 1fr; }
+    .ic-stats { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 600px) {
-    .pr-wrap { padding: 0 16px 32px; }
-    .pr-cover { width: calc(100% + 32px); margin: 0 -16px; height: 140px; }
-    .pr-header { flex-wrap: wrap; margin-top: -40px; }
-    .pr-header__left { flex-direction: column; align-items: center; text-align: center; width: 100%; }
-    .pr-avatar { width: 84px; height: 84px; min-width: 84px; }
-    .pr-header__badges { justify-content: center; }
-    .pr-edit-btn { width: 100%; text-align: center; }
-    .pr-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .pr-stat__value { font-size: 1.3rem; }
-    .pr-tabs { overflow-x: auto; }
+    .ic-profilecard { padding: 70px 20px 20px; flex-direction: column; align-items: flex-start; }
+    .ic-avatar { left: 50%; transform: translateX(-50%); top: -55px; }
+    .ic-profilecard__info { text-align: left; width: 100%; }
+    .ic-editprofile-btn { width: 100%; justify-content: center; }
+    .ic-stats { grid-template-columns: 1fr 1fr; }
+    .ic-verif-details { flex-direction: column; }
 }
 </style>
 
 <script>
-function prSwitchTab(tab) {
-    document.querySelectorAll('.pr-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
-    document.querySelectorAll('.pr-tab-panel').forEach(el => el.classList.toggle('active', el.id === `pr-tab-${tab}`));
+function icSwitchTab(tab) {
+    document.querySelectorAll('.ic-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.querySelectorAll('.ic-tabpanel').forEach(el => el.classList.toggle('active', el.id === `ic-panel-${tab}`));
 }
 </script>
 {% endblock %}

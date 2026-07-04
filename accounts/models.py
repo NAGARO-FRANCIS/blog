@@ -58,6 +58,7 @@ class Profile(models.Model):
 
     # Photo de profil
     photo_profil = models.ImageField(upload_to='profiles/', blank=True, null=True, help_text="Photo de profil")
+    photo_couverture = models.ImageField(upload_to='profile_covers/', blank=True, null=True, help_text="Photo de couverture")
 
     # Pièce d'identité
     type_piece_identite = models.CharField(
@@ -103,6 +104,67 @@ class Profile(models.Model):
     @property
     def est_verifie(self):
         return self.verification_status == 'verified'
+
+    def _professional_profile(self):
+        try:
+            return self.professional_profile
+        except ProfessionalProfile.DoesNotExist:
+            return None
+
+    @property
+    def establishment_name(self):
+        prof = self._professional_profile()
+        return prof.establishment_name if prof else None
+
+    @property
+    def siret_or_rccm(self):
+        prof = self._professional_profile()
+        return prof.siret_or_rccm if prof else None
+
+    @property
+    def establishment_address(self):
+        prof = self._professional_profile()
+        return prof.establishment_address if prof else None
+
+    @property
+    def establishment_city(self):
+        prof = self._professional_profile()
+        return prof.establishment_city if prof else None
+
+    @property
+    def establishment_postal_code(self):
+        prof = self._professional_profile()
+        return prof.establishment_postal_code if prof else None
+
+    @property
+    def establishment_country(self):
+        prof = self._professional_profile()
+        return prof.establishment_country if prof else None
+
+    @property
+    def establishment_photo(self):
+        prof = self._professional_profile()
+        return prof.establishment_photo if prof else None
+
+    @property
+    def establishment_type(self):
+        prof = self._professional_profile()
+        return prof.establishment_type if prof else None
+
+    @property
+    def establishment_website(self):
+        prof = self._professional_profile()
+        return prof.website if prof else None
+
+    @property
+    def establishment_number_of_rooms(self):
+        prof = self._professional_profile()
+        return prof.number_of_rooms if prof else None
+
+    @property
+    def establishment_number_of_floors(self):
+        prof = self._professional_profile()
+        return prof.number_of_floors if prof else None
 
     @property
     def ville_residence(self):

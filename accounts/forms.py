@@ -400,6 +400,7 @@ class ProfileEditForm(forms.ModelForm):
             'quartier',
             'profession',
             'photo_profil',
+            'photo_couverture',
             'type_piece_identite',
             'numero_piece_identite'
         ]
@@ -416,6 +417,7 @@ class ProfileEditForm(forms.ModelForm):
             'quartier': 'Quartier',
             'profession': 'Profession',
             'photo_profil': 'Photo de profil',
+            'photo_couverture': 'Photo de couverture',
             'type_piece_identite': 'Type de pièce d\'identité',
             'numero_piece_identite': 'Numéro de pièce d\'identité',
         }
