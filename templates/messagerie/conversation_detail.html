@@ -10,7 +10,7 @@
                 {% if other_participant.profile.photo_profil %}
                     <img src="{{ other_participant.profile.photo_profil.url }}" alt="Photo de {{ other_participant.get_full_name }}">
                 {% else %}
-                    <div class="avatar-placeholder">{{ other_participant.first_name|first|upper }}</div>
+                    <div class="avatar-placeholder">{{ other_participant.get_full_name|default:other_participant.username|first|upper }}</div>
                 {% endif %}
             </div>
             <div class="participant-details">
@@ -31,85 +31,64 @@
             <a href="{% url 'messagerie:mes_conversations' %}" class="btn secondary">
                 ← Retour aux conversations
             </a>
-            <button class="btn danger" onclick="confirmerSuppression()">
+            <button type="button" class="btn danger" onclick="confirmerSuppression()">
                 🗑️ Supprimer la conversation
             </button>
         </div>
     </div>
 
     <div class="messages-container" id="messagesContainer">
-        {% regroup messages by expediteur as grouped_messages %}
-        
-        {% for group in grouped_messages %}
-            <div class="message-group {% if group.grouper == request.user %}sent-group{% else %}received-group{% endif %}">
-                <!-- Header avec avatar et nom -->
-                <div class="message-group-info">
-                    <div class="message-avatar">
-                        {% if group.grouper == request.user %}
-                            {% if request.user.profile.photo_profil %}
-                                <img src="{{ request.user.profile.photo_profil.url }}" alt="Votre photo">
+        {% for message in conversation_messages %}
+            <div class="message-row {% if message.expediteur == request.user %}sent{% else %}received{% endif %}">
+                <div class="message-bubble-item">
+                    <div class="message-bubble">
+                        {% if message.contenu %}
+                            <p>{{ message.contenu|linebreaks }}</p>
+                        {% endif %}
+                        {% if message.attachment %}
+                            {% if message.is_audio %}
+                                <div class="message-attachment audio-attachment">
+                                    <span class="attachment-label-inline">🎤 Message vocal</span>
+                                    <audio controls preload="metadata" src="{{ message.attachment.url }}"></audio>
+                                </div>
                             {% else %}
-                                <div class="avatar-placeholder">{{ request.user.first_name|first|upper }}</div>
-                            {% endif %}
-                        {% else %}
-                            {% if other_participant.profile.photo_profil %}
-                                <img src="{{ other_participant.profile.photo_profil.url }}" alt="Photo de {{ other_participant.get_full_name }}">
-                            {% else %}
-                                <div class="avatar-placeholder">{{ other_participant.first_name|first|upper }}</div>
+                                <div class="message-attachment">
+                                    📎 <a href="{{ message.attachment.url }}" target="_blank" rel="noopener">{{ message.attachment_filename }}</a>
+                                </div>
                             {% endif %}
                         {% endif %}
                     </div>
-                    <div class="sender-info">
-                        <div class="sender-name">
-                            {% if group.grouper == request.user %}
-                                Vous
+                    <div class="message-meta">
+                        <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
+                        {% if message.expediteur == request.user %}
+                            {% if message.lu %}
+                                <span class="read-status" title="Lu">✓✓</span>
                             {% else %}
-                                {{ other_participant.get_full_name|default:other_participant.username }}
+                                <span class="read-status" title="Envoyé">✓</span>
                             {% endif %}
-                        </div>
-                        <div class="sender-status">
-                            {% if group.grouper.profile.verified %}
-                                <span class="verified-badge">✓ Vérifié</span>
-                            {% endif %}
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
-
-                <!-- Messages du groupe -->
-                <div class="message-bubbles">
-                    {% for message in group.list %}
-                        <div class="message-bubble-item">
-                            <div class="message-bubble">
-                                <p>{{ message.contenu|linebreaks }}</p>
-                                {% if message.attachment %}
-                                    <div class="message-attachment">
-                                        📎 {{ message.attachment.name|cut:"/media/"|cut:"messagerie/" }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="message-meta">
-                                <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
-                                {% if message.expediteur == request.user %}
-                                    {% if message.lu %}
-                                        <span class="read-status" title="Lu">✓✓</span>
-                                    {% else %}
-                                        <span class="read-status" title="Envoyé">✓</span>
-                                    {% endif %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
             </div>
+        {% empty %}
+            <div class="empty-chat">Aucun message pour le moment. Démarrez la conversation.</div>
         {% endfor %}
     </div>
 
     <div class="message-form-container">
-        <form method="post" action="{% url 'messagerie:envoyer_message' %}" class="message-form" id="messageForm">
+        <form method="post" action="{% url 'messagerie:envoyer_message' %}" class="message-form" id="messageForm" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
             <div class="form-group">
-                <textarea name="contenu" id="messageContent" placeholder="Tapez votre message..." required></textarea>
+                <textarea name="contenu" id="messageContent" placeholder="Tapez votre message..." rows="1"></textarea>
+                <label for="messageAttachment" class="attachment-label" title="Joindre un fichier">
+                    📎
+                    <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
+                </label>
+            </div>
+            <div class="message-tools">
+                <button type="button" id="voiceRecorderBtn" class="voice-btn" title="Envoyer un message vocal">🎤</button>
+                <span id="voiceStatus" class="voice-status">Enregistrer un vocal</span>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn">📤 Envoyer</button>
@@ -124,8 +103,11 @@
         <h3>Supprimer la conversation ?</h3>
         <p>Cette action est irréversible. Tous les messages seront supprimés.</p>
         <div class="modal-actions">
-            <button class="btn secondary" onclick="fermerModal()">Annuler</button>
-            <a href="{% url 'messagerie:supprimer_conversation' conversation.id %}" class="btn danger">Supprimer</a>
+            <button type="button" class="btn secondary" onclick="fermerModal()">Annuler</button>
+            <form method="post" action="{% url 'messagerie:supprimer_conversation' conversation.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn danger">Supprimer</button>
+            </form>
         </div>
     </div>
 </div>
@@ -231,13 +213,6 @@
         flex-direction: column;
     }
 
-    .message {
-        display: flex;
-        margin-bottom: 12px;
-        align-items: flex-end;
-        animation: messageSlideIn 0.3s ease-out;
-    }
-
     @keyframes messageSlideIn {
         from {
             opacity: 0;
@@ -247,20 +222,6 @@
             opacity: 1;
             transform: translateY(0);
         }
-    }
-
-    .message-avatar {
-        width: 40px;
-        height: 40px;
-        flex-shrink: 0;
-        margin-right: 12px;
-    }
-
-    .message-avatar img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
     }
 
     .avatar-placeholder {
@@ -276,70 +237,34 @@
         font-size: 0.9rem;
     }
 
-    /* ─── Message Grouping Styles ─── */
-    .message-group {
+    /* ─── Alternating Message Styles ─── */
+    .message-row {
         display: flex;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         animation: messageSlideIn 0.3s ease-out;
     }
 
-    .message-group.sent-group {
-        flex-direction: row-reverse;
+    .message-row.sent {
         justify-content: flex-end;
     }
 
-    .message-group.sent-group .message-group-info {
-        margin-left: 12px;
-        margin-right: 0;
-    }
-
-    .message-group-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-right: 12px;
-        gap: 4px;
-    }
-
-    .sender-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        font-size: 0.75rem;
-    }
-
-    .sender-name {
-        font-weight: 600;
-        color: #1a1a1a;
-        font-size: 0.85rem;
-    }
-
-    .sender-status {
-        font-size: 0.7rem;
-        color: #65676b;
-    }
-
-    .message-group.sent-group .sender-info {
-        align-items: center;
-    }
-
-    .message-bubbles {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        max-width: 70%;
+    .message-row.received {
+        justify-content: flex-start;
     }
 
     .message-bubble-item {
         display: flex;
         flex-direction: column;
         gap: 2px;
-        align-items: flex-start;
+        max-width: 72%;
     }
 
-    .message-group.sent-group .message-bubble-item {
+    .message-row.sent .message-bubble-item {
         align-items: flex-end;
+    }
+
+    .message-row.received .message-bubble-item {
+        align-items: flex-start;
     }
 
     .message-bubble {
@@ -352,16 +277,44 @@
         font-size: 0.95rem;
     }
 
-    .message-group.sent-group .message-bubble {
+    .message-row.sent .message-bubble {
         background: var(--primary);
         color: white;
         border-radius: 18px;
     }
 
+    .empty-chat {
+        text-align: center;
+        color: #65676b;
+        padding: 20px 0;
+        font-size: 0.95rem;
+    }
+
     .message-attachment {
         margin-top: 6px;
         font-size: 0.85rem;
-        opacity: 0.8;
+        opacity: 0.9;
+    }
+
+    .audio-attachment {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .attachment-label-inline {
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    .message-attachment audio {
+        width: 220px;
+        max-width: 100%;
+    }
+
+    .message-attachment a {
+        color: inherit;
+        text-decoration: underline;
     }
 
     .message-meta {
@@ -401,19 +354,39 @@
 
     .form-group {
         flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .message-form textarea {
         width: 100%;
         min-height: 44px;
         max-height: 100px;
-        padding: 10px 14px;
+        padding: 10px 44px 10px 14px;
         border: 1px solid #d0d0d0;
         border-radius: 20px;
         resize: vertical;
         font-family: inherit;
         font-size: 0.95rem;
         color: #1a1a1a;
+    }
+
+    .attachment-label {
+        position: absolute;
+        right: 10px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        opacity: 0.7;
+    }
+
+    .attachment-label:hover {
+        opacity: 1;
+    }
+
+    .attachment-label input[type="file"] {
+        display: none;
     }
 
     .message-form textarea::placeholder {
@@ -424,6 +397,36 @@
         outline: none;
         border-color: var(--primary);
         box-shadow: 0 0 0 2px rgba(94, 93, 255, 0.1);
+    }
+
+    .message-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .voice-btn {
+        border: none;
+        background: #eef2ff;
+        color: var(--primary);
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .voice-btn.recording {
+        background: #ef4444;
+        color: white;
+        animation: pulse 1s infinite;
+    }
+
+    .voice-status {
+        color: #65676b;
+        font-size: 0.85rem;
+        white-space: nowrap;
     }
 
     .form-actions {
@@ -467,6 +470,11 @@
         }
     }
 
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+    }
+
     .modal-content {
         background: white;
         padding: 28px;
@@ -495,9 +503,13 @@
         justify-content: center;
     }
 
-    .modal-actions .btn {
+    .modal-actions .btn,
+    .modal-actions form {
         flex: 1;
-        padding: 10px 16px;
+    }
+
+    .modal-actions form .btn {
+        width: 100%;
     }
 
     @media (max-width: 768px) {
@@ -568,6 +580,86 @@
             document.getElementById('messageForm').submit();
         }
     });
+
+    // Enregistrement vocal
+    const voiceButton = document.getElementById('voiceRecorderBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const messageForm = document.getElementById('messageForm');
+    const messageContent = document.getElementById('messageContent');
+    let mediaRecorder;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    async function ensureMicrophoneAccess() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            voiceStatus.textContent = 'Micro indisponible';
+            voiceButton.disabled = true;
+            return false;
+        }
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            return true;
+        } catch (error) {
+            voiceStatus.textContent = 'Autorisez l’accès au micro';
+            voiceButton.disabled = true;
+            return false;
+        }
+    }
+
+    async function toggleRecording() {
+        if (!await ensureMicrophoneAccess()) {
+            return;
+        }
+
+        if (!isRecording) {
+            recordedChunks = [];
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) recordedChunks.push(event.data);
+            };
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(recordedChunks, { type: 'audio/ogg' });
+                await sendVoiceMessage(blob);
+                stream.getTracks().forEach(track => track.stop());
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            voiceButton.classList.add('recording');
+            voiceStatus.textContent = 'Enregistrement…';
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+            voiceButton.classList.remove('recording');
+            voiceStatus.textContent = 'Envoi du vocal…';
+        }
+    }
+
+    async function sendVoiceMessage(blob) {
+        const formData = new FormData(messageForm);
+        formData.set('contenu', messageContent.value.trim());
+        formData.set('attachment', blob, 'voice-message.ogg');
+        formData.set('message_type', 'audio');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const response = await fetch('{% url "messagerie:envoyer_message" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            voiceStatus.textContent = 'Échec de l’envoi du vocal';
+        }
+    }
+
+    if (voiceButton) {
+        voiceButton.addEventListener('click', toggleRecording);
+    }
 </script>
 
 {% endblock %}

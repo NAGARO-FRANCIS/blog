@@ -37,6 +37,7 @@ def liste_annonces(request):
             annonces = Logement.objects.prefetch_related('photos').order_by('-created_at')
         elif role == 'touriste':
             annonces = Logement.objects.filter(
+                Q(proprietaire=user) |
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
                  Q(proprietaire__isnull=False) & 
@@ -44,6 +45,7 @@ def liste_annonces(request):
             ).prefetch_related('photos').order_by('-created_at')
         elif role == 'locataire':
             annonces = Logement.objects.filter(
+                Q(proprietaire=user) |
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
                  Q(proprietaire__isnull=False) & 

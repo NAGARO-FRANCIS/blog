@@ -41,7 +41,9 @@ def home(request):
 
         elif role == 'touriste':
             # Touriste → voit hôtels, résidences, propriétaires ET locataires
+            # mais voit aussi ses propres annonces s'il en publie
             logements = Logement.objects.filter(
+                Q(proprietaire=request.user) |
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
                  Q(proprietaire__isnull=False) & 
@@ -51,7 +53,9 @@ def home(request):
 
         elif role == 'locataire':
             # Locataire → voit hôtels, résidences, propriétaires individuels
+            # mais voit aussi ses propres annonces s'il en publie
             logements = Logement.objects.filter(
+                Q(proprietaire=request.user) |
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
                  Q(proprietaire__isnull=False) & 
@@ -61,7 +65,9 @@ def home(request):
 
         elif role == 'proprietaire':
             # Propriétaire → voit hôtels, résidences ET autres propriétaires individuels
+            # mais voit aussi ses propres annonces
             logements = Logement.objects.filter(
+                Q(proprietaire=request.user) |
                 Q(account_type__in=['hotel', 'residence']) |
                 (Q(account_type='individu') & 
                  Q(proprietaire__isnull=False) & 
@@ -486,6 +492,15 @@ def ajouter_logement(request):
         profile      = request.user.profile
         account_type = profile.account_type
         role         = profile.role
+
+        # Sécurisation pour les comptes résidence/hôtel déjà créés avec un type incohérent
+        professional_profile = getattr(profile, 'professional_profile', None)
+        if professional_profile and account_type not in ['hotel', 'residence']:
+            account_type = professional_profile.establishment_type or account_type
+            profile.account_type = account_type
+            profile.role = 'proprietaire'
+            profile.save(update_fields=['account_type', 'role'])
+
     except Exception:
         account_type = 'individu'
         role         = None

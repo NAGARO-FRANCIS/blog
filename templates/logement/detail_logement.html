@@ -239,9 +239,15 @@
                     <a href="tel:{{ logement.proprietaire.profile.telephone }}" class="dl-action-btn" title="Appeler">
                         ☎️ Appeler
                     </a>
-                    <a href="https://wa.me/{{ logement.proprietaire.profile.telephone|slice:'2:' }}" target="_blank" class="dl-action-btn" title="WhatsApp">
-                        💬 Message
-                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'messagerie:envoyer_message_annonce' 'logement' logement.id %}" class="dl-action-btn" title="Envoyer un message dans l’application">
+                            💬 Message
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'logement:detail_logement' logement.id %}" class="dl-action-btn" title="Se connecter pour envoyer un message">
+                            💬 Message
+                        </a>
+                    {% endif %}
                 </div>
 
                 <!-- Propriétaire -->

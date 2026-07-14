@@ -334,13 +334,10 @@ def dashboard_individu(request):
     except Exception:
         nb_messages_non_lus = 0
     
-    # Récupérer les annonces de l'utilisateur (sauf pour touriste)
+    # Récupérer les annonces de l'utilisateur, y compris pour les profils tourist/locataire
     try:
         from logement.models import Logement
-        if profile.role != 'touriste':
-            mes_annonces = Logement.objects.filter(proprietaire=request.user).prefetch_related('photos').order_by('-created_at')[:5]
-        else:
-            mes_annonces = []
+        mes_annonces = Logement.objects.filter(proprietaire=request.user).prefetch_related('photos').order_by('-created_at')[:5]
     except Exception:
         mes_annonces = []
     

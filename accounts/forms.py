@@ -2,6 +2,24 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile, ProfessionalProfile
+from io import BytesIO
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
+
+
+def process_image(uploaded, size=(512, 512)):
+    if not uploaded:
+        return None
+    try:
+        image = Image.open(uploaded)
+        image = image.convert('RGB')
+        image.thumbnail(size, Image.LANCZOS)
+        thumb_io = BytesIO()
+        image.save(thumb_io, format='JPEG', quality=85)
+        thumb_io.seek(0)
+        return SimpleUploadedFile(uploaded.name, thumb_io.read(), content_type='image/jpeg')
+    except Exception:
+        return uploaded
 
 
 class AccountTypeForm(forms.Form):
@@ -155,6 +173,26 @@ class SignUpForm(UserCreationForm):
                 raise forms.ValidationError("Ce numéro de pièce d'identité est déjà enregistré.")
         return numero
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Cet email est déjà utilisé.')
+        return email
+
+    def _process_image(self, uploaded, size=(512, 512)):
+        if not uploaded:
+            return None
+        try:
+            image = Image.open(uploaded)
+            image = image.convert('RGB')
+            image.thumbnail(size, Image.LANCZOS)
+            thumb_io = BytesIO()
+            image.save(thumb_io, format='JPEG', quality=85)
+            thumb_io.seek(0)
+            return SimpleUploadedFile(uploaded.name, thumb_io.read(), content_type='image/jpeg')
+        except Exception:
+            return uploaded
+
     def save(self, commit=True):
         user = super().save(commit=commit)
         # Use get_or_create to safely handle profile creation
@@ -171,7 +209,9 @@ class SignUpForm(UserCreationForm):
         profile.sexe = self.cleaned_data['sexe']
         profile.profession = self.cleaned_data['profession']
         profile.telephone = self.cleaned_data['telephone']
-        profile.photo_profil = self.cleaned_data['photo_profil']
+        photo = self.cleaned_data.get('photo_profil')
+        if photo:
+            profile.photo_profil = self._process_image(photo)
         profile.type_piece_identite = self.cleaned_data['type_piece_identite']
         profile.numero_piece_identite = self.cleaned_data['numero_piece_identite']
         if commit:
@@ -318,6 +358,12 @@ class ProfessionalSignUpForm(UserCreationForm):
             raise forms.ValidationError("Ce numéro de pièce d'identité est déjà enregistré.")
         return numero
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Cet email est déjà utilisé.')
+        return email
+
     def save(self, commit=True, establishment_type='residence'):
         user = super().save(commit=commit)
         
@@ -327,8 +373,9 @@ class ProfessionalSignUpForm(UserCreationForm):
         
         # Créer le profil avec le bon account_type
         profile, created = Profile.objects.get_or_create(user=user)
-        profile.account_type = establishment_type  # ← IMPORTANT : Toujours mettre à jour
+        profile.account_type = establishment_type
         profile.role = 'proprietaire'
+        profile.profession = f"Gestionnaire de {establishment_type}"
         profile.ville = self.cleaned_data['establishment_city']
         profile.profession = f"Gestionnaire de {establishment_type}"
         profile.telephone = self.cleaned_data['telephone']
@@ -352,7 +399,7 @@ class ProfessionalSignUpForm(UserCreationForm):
             'number_of_floors': self.cleaned_data.get('number_of_floors'),
             'website': self.cleaned_data.get('website', ''),
             'legal_document': self.cleaned_data['legal_document'],
-            'establishment_photo': self.cleaned_data['establishment_photo'],
+            'establishment_photo': process_image(self.cleaned_data['establishment_photo']),
         }
         
         # Utiliser get_or_create avec les defaults pour créer avec tous les champs requis
@@ -438,6 +485,13 @@ class ProfileEditForm(forms.ModelForm):
             self.user.email = self.cleaned_data['email']
             if commit:
                 self.user.save()
+        # Process uploaded images
+        photo = self.cleaned_data.get('photo_profil')
+        if photo:
+            profile.photo_profil = process_image(photo)
+        cover = self.cleaned_data.get('photo_couverture')
+        if cover:
+            profile.photo_couverture = process_image(cover, size=(1200, 400))
         if commit:
             profile.save()
         return profile

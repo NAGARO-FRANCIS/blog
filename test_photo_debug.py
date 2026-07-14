@@ -54,6 +54,7 @@ formset = PhotoLogementFormSet(
     data=formset_data,
     files=formset_data
 )
+if formset.is_valid():
     print("✅ Formset is VALID")
     print(f"   Forms with data: {sum(1 for form in formset if form.cleaned_data)}")
 else:
@@ -155,6 +156,8 @@ try:
         'photos-0-image': create_test_image('test.jpg'),
         'photos-0-alt_text': 'Test',
         'photos-0-order': '0',
+    }
+    print("✅ Prepared form_data for client POST (not sending)")
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback

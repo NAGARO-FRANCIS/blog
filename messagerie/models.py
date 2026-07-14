@@ -91,6 +91,7 @@ class Message(models.Model):
         ('text', 'Texte'),
         ('image', 'Image'),
         ('file', 'Fichier'),
+        ('audio', 'Audio'),
         ('system', 'Système'),
     ]
     message_type = models.CharField(
@@ -135,6 +136,16 @@ class Message(models.Model):
     @property
     def is_file(self):
         return self.message_type == 'file'
+
+    @property
+    def is_audio(self):
+        return self.message_type == 'audio'
+
+    @property
+    def attachment_filename(self):
+        if not self.attachment:
+            return ''
+        return self.attachment.name.split('/')[-1]
 
 
 class MessageLu(models.Model):

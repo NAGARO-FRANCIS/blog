@@ -54,7 +54,7 @@ def conversation_detail(request, conversation_id):
 
     return render(request, 'messagerie/conversation_detail.html', {
         'conversation': conversation,
-        'messages': messages,
+        'conversation_messages': messages,
         'other_participant': other_participant,
     })
 
@@ -97,26 +97,48 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
 
     if request.method == 'POST':
         contenu = request.POST.get('contenu', '').strip()
+        attachment = request.FILES.get('attachment')
 
-        if not contenu:
+        if not contenu and not attachment:
             django_messages.error(request, "Le message ne peut pas être vide.")
             return redirect(request.META.get('HTTP_REFERER', 'messagerie:mes_conversations'))
 
         try:
             # Créer ou récupérer la conversation
             if annonce:
-                # Conversation liée à une annonce
-                sujet = f"Colocation à {annonce.ville}"
-                if annonce.quartier:
-                    sujet += f" - {annonce.quartier}"
-                
-                conversation, created = Conversation.objects.get_or_create(
-                    annonce=annonce,
-                    defaults={'sujet': sujet}
-                )
-                if created:
-                    # Ajouter les participants
-                    conversation.participants.add(request.user, destinataire)
+                # Conversation liée à une annonce.
+                # Les conversations sont stockées avec une relation vers des annonces de colocation,
+                # donc pour les logements on crée une conversation simple avec un sujet adapté.
+                if annonce_type == 'colocation':
+                    sujet = f"Colocation à {annonce.ville}"
+                    if annonce.quartier:
+                        sujet += f" - {annonce.quartier}"
+
+                    conversation, created = Conversation.objects.get_or_create(
+                        annonce=annonce,
+                        defaults={'sujet': sujet}
+                    )
+                    if created:
+                        conversation.participants.add(request.user, destinataire)
+                else:
+                    sujet = f"Logement à {annonce.ville}"
+                    if getattr(annonce, 'quartier', None):
+                        sujet += f" - {annonce.quartier}"
+
+                    conversation = Conversation.objects.filter(
+                        participants=request.user
+                    ).filter(
+                        participants=destinataire
+                    ).filter(
+                        annonce__isnull=True
+                    ).first()
+
+                    if conversation:
+                        created = False
+                    else:
+                        conversation = Conversation.objects.create(sujet=sujet)
+                        conversation.participants.add(request.user, destinataire)
+                        created = True
             else:
                 # Conversation directe (sans annonce)
                 # Chercher une conversation existante entre ces deux utilisateurs
@@ -135,11 +157,24 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
                     conversation.participants.add(request.user, destinataire)
                     created = True
 
+            message_type = 'text'
+            if attachment:
+                content_type = getattr(attachment, 'content_type', '') or ''
+                filename = getattr(attachment, 'name', '').lower()
+                if content_type.startswith('audio/') or filename.endswith(('.ogg', '.mp3', '.wav', '.m4a', '.webm', '.aac')):
+                    message_type = 'audio'
+                elif content_type.startswith('image/') or filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')):
+                    message_type = 'image'
+                else:
+                    message_type = 'file'
+
             # Créer le message
             message = Message.objects.create(
                 conversation=conversation,
                 expediteur=request.user,
-                contenu=contenu
+                contenu=contenu or '',
+                attachment=attachment,
+                message_type=message_type,
             )
 
             django_messages.success(request, "Message envoyé avec succès.")
