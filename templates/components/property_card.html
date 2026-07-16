@@ -6,10 +6,22 @@
     <div class="property-card-header">
         <!-- Property Image -->
         <div class="property-image">
-            {% if logement.photos.all %}
-                <img src="{{ logement.photos.first.image.url }}" 
-                     alt="{{ logement.titre }}"
-                     loading="lazy">
+            {% if logement.photos.exists %}
+                {% if logement.photos.first.image %}
+                    <img src="{{ logement.photos.first.image.url }}" 
+                         alt="{{ logement.titre }}"
+                         loading="lazy">
+                {% else %}
+                    <div class="card-image-placeholder" style="height: 200px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%); font-size: 3rem;">
+                        {% if logement.account_type == 'hotel' %}
+                            🏨
+                        {% elif logement.account_type == 'residence' %}
+                            🏢
+                        {% else %}
+                            🏠
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="card-image-placeholder" style="height: 200px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%); font-size: 3rem;">
                     {% if logement.account_type == 'hotel' %}

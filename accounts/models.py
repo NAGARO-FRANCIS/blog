@@ -85,6 +85,8 @@ class Profile(models.Model):
     verified = models.BooleanField(default=False)
     verification_date = models.DateTimeField(null=True, blank=True)
     
+    activation_token = models.CharField(max_length=100, blank=True, default='')
+    activation_token_created_at = models.DateTimeField(null=True, blank=True)
     date_creation = models.DateTimeField(auto_now_add=True)
     derniere_connexion = models.DateTimeField(auto_now=True)
 

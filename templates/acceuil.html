@@ -58,8 +58,12 @@
                 <div class="feed-card" style="animation-delay: {% widthratio forloop.counter0 1 0.04 %}s">
                     <a href="{% url 'logement:detail_logement' annonce.id %}" class="feed-card-media-link">
                         <div class="feed-card-media">
-                            {% if annonce.photos.all %}
-                                <img src="{{ annonce.photos.first.image.url }}" alt="{{ annonce.photos.first.alt_text }}" class="feed-img" loading="lazy">
+                            {% if annonce.photos.exists %}
+                                {% if annonce.photos.first.image %}
+                                    <img src="{{ annonce.photos.first.image.url }}" alt="{{ annonce.photos.first.alt_text|default:annonce.titre }}" class="feed-img" loading="lazy">
+                                {% else %}
+                                    <div class="feed-img-placeholder">🏠</div>
+                                {% endif %}
                             {% else %}
                                 <div class="feed-img-placeholder">🏠</div>
                             {% endif %}

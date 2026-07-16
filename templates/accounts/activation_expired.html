@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Lien d'activation expiré - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+    <h1>⏰ Lien d'activation expiré</h1>
+    <p>Ce lien d'activation a expiré. Merci de recommencer l'inscription.</p>
+    <a href="{% url 'accounts:inscription' %}" class="btn">Recommencer</a>
+</div>
+{% endblock %}

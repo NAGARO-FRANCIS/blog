@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Lien d'activation invalide - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+    <h1>⚠️ Lien d'activation invalide</h1>
+    <p>Ce lien est invalide ou a déjà été utilisé.</p>
+    <a href="{% url 'accounts:inscription' %}" class="btn">Recommencer l'inscription</a>
+</div>
+{% endblock %}

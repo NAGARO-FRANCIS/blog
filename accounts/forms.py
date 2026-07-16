@@ -194,13 +194,13 @@ class SignUpForm(UserCreationForm):
             return uploaded
 
     def save(self, commit=True):
-        user = super().save(commit=commit)
-        # Use get_or_create to safely handle profile creation
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+
         profile, created = Profile.objects.get_or_create(user=user)
-        # Only set role if it's in cleaned_data (it comes from session in the view)
         if 'role' in self.cleaned_data:
             profile.role = self.cleaned_data['role']
-        # Only set account_type if it's in cleaned_data (it comes from session in the view)
         if 'account_type' in self.cleaned_data:
             profile.account_type = self.cleaned_data.get('account_type', 'individu')
         profile.ville = self.cleaned_data['ville']

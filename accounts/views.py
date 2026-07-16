@@ -1,9 +1,17 @@
 # accounts/views.py
 import hashlib
+import secrets
+from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 from .models import Profile, DocumentVerification, VerificationLog
 from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileEditForm, IndividuRoleForm
 
@@ -75,29 +83,31 @@ def inscription_individu_form(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.save()
-            
-            # Sauvegarder les champs du profil
-            profile, created = Profile.objects.get_or_create(user=user)
-            profile.telephone = form.cleaned_data.get('telephone', '')
-            profile.ville = form.cleaned_data.get('ville', '')
-            profile.quartier = form.cleaned_data.get('quartier', '')
-            profile.profession = form.cleaned_data.get('profession', '')
-            profile.date_naissance = form.cleaned_data.get('date_naissance')
-            profile.sexe = form.cleaned_data.get('sexe', '')
+            user = form.save(commit=True)
+            user.is_active = False
+            user.save(update_fields=['is_active'])
+
+            profile = user.profile
             profile.account_type = 'individu'
-            profile.role = role  # Assigner le rôle AVANT de sauvegarder
-            profile.type_piece_identite = form.cleaned_data.get('type_piece_identite', '')
-            profile.numero_piece_identite = form.cleaned_data.get('numero_piece_identite', '')
+            profile.role = role
             profile.verification_status = 'pending'
+            profile.save(update_fields=['account_type', 'role', 'verification_status'])
+
+            token = secrets.token_urlsafe(32)
+            profile.activation_token = token
+            profile.activation_token_created_at = timezone.now()
+            profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+
+            site = get_current_site(request)
+            activation_link = f"http://{site.domain}/accounts/activer/{urlsafe_base64_encode(force_bytes(user.pk))}/{token}/"
+            subject = 'Activation de votre compte Coloc.ai'
+            message = render_to_string('accounts/emails/activation_email.html', {
+                'user': user,
+                'activation_link': activation_link,
+                'site_name': site.name,
+            })
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
             
-            if 'photo_profil' in request.FILES:
-                profile.photo_profil = request.FILES['photo_profil']
-            
-            profile.save()  # Sauvegarder avec le bon rôle
-            
-            # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
             role_label = dict(Profile.ROLE_CHOICES).get(role, role)
             VerificationLog.objects.create(
@@ -107,16 +117,13 @@ def inscription_individu_form(request):
                 ip_address=client_ip
             )
             
-            login(request, user)
-            
             # Nettoyer la session
             if 'account_type' in request.session:
                 del request.session['account_type']
             if 'individu_role' in request.session:
                 del request.session['individu_role']
             
-            # Rediriger vers la page de vérification des documents
-            return redirect('accounts:verification_docs')
+            return redirect('accounts:inscription_pending')
     else:
         form = SignUpForm()
 
@@ -126,6 +133,33 @@ def inscription_individu_form(request):
         'role_label': dict(Profile.ROLE_CHOICES).get(role, role),
     }
     return render(request, 'accounts/inscription_individu_form.html', context)
+
+
+def inscription_pending(request):
+    """Page affichée après une inscription réussie mais avant activation du compte."""
+    return render(request, 'accounts/inscription_pending.html')
+
+
+def activate_account(request, uidb64, token):
+    """Active un compte utilisateur à partir du lien envoyé par email."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and user.profile.activation_token == token and user.profile.activation_token_created_at:
+        if timezone.now() - user.profile.activation_token_created_at > timezone.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS):
+            return render(request, 'accounts/activation_expired.html')
+
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+        user.profile.activation_token = ''
+        user.profile.activation_token_created_at = None
+        user.profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+        return render(request, 'accounts/activation_success.html')
+
+    return render(request, 'accounts/activation_invalid.html')
 
 
 def inscription_residence(request):

@@ -14,10 +14,10 @@
             {% for conv_info in conversations %}
                 <div class="conversation-item {% if conv_info.unread_count > 0 %}unread{% endif %}">
                     <div class="conversation-avatar">
-                        {% if conv_info.other_participant.profile.photo_profil %}
-                            <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="Photo de {{ conv_info.other_participant.get_full_name }}">
+                        {% if conv_info.other_participant.profile and conv_info.other_participant.profile.photo_profil %}
+                            <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="Photo de {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}">
                         {% else %}
-                            <div class="avatar-placeholder">{{ conv_info.other_participant.first_name|first|upper }}</div>
+                            <div class="avatar-placeholder">{{ conv_info.other_participant.first_name|default:conv_info.other_participant.username|first|upper }}</div>
                         {% endif %}
                     </div>
 

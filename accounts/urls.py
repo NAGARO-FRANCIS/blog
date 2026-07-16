@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth import views as auth_views
 from .views import (
     inscription, inscription_individu, inscription_individu_form, inscription_residence, inscription_hotel,
+    inscription_pending, activate_account,
     dashboard, dashboard_individu, dashboard_residence, dashboard_hotel,
     profil, edit_profil, verification_docs, upload_document
 )
@@ -21,6 +22,8 @@ urlpatterns = [
     path('inscription/individu/formulaire/', inscription_individu_form, name='inscription_individu_form'),
     path('inscription/residence/', inscription_residence, name='inscription_residence'),
     path('inscription/hotel/', inscription_hotel, name='inscription_hotel'),
+    path('inscription/pending/', inscription_pending, name='inscription_pending'),
+    path('activer/<uidb64>/<token>/', activate_account, name='activate_account'),
     
     # Dashboard
     path('dashboard/', dashboard, name='dashboard'),

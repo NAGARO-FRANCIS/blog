@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Vérifiez votre email - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+    <h1>📧 Vérifiez votre boîte mail</h1>
+    <p>Votre compte a bien été créé, mais il doit encore être activé avant de pouvoir se connecter.</p>
+    <p>Un email d’activation a été envoyé à l’adresse que vous avez fournie.</p>
+    <p>Si vous ne voyez pas l’email, vérifiez vos spams ou demandez un nouvel envoi.</p>
+    <a href="{% url 'accounts:login' %}" class="btn">Retour à la connexion</a>
+</div>
+{% endblock %}
