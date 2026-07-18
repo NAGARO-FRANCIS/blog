@@ -5,15 +5,45 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from .models import Profile, DocumentVerification, VerificationLog
+from .models import Profile, DocumentVerification, VerificationLog, ProfileVerification, Subscription
 from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileEditForm, IndividuRoleForm
+from django.contrib import messages
+import logging
+from django.http import HttpResponseRedirect
+
+logger = logging.getLogger(__name__)
+
+
+class PasswordResetView(DjangoPasswordResetView):
+    """Enregistre l'email utilisé pour permettre un nouveau lien après 30 secondes."""
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        self.request.session['password_reset_email'] = email
+        return super().form_valid(form)
+
+
+def send_sms(phone_number: str, message: str):
+    """Envoie un SMS via le backend configuré. Par défaut, affiche dans la console pour le dev."""
+    backend = getattr(settings, 'SMS_BACKEND', '')
+    if not backend or backend == 'console':
+        # Afficher dans la console / logs pour le développement
+        logger.info(f"[SMS -> {phone_number}] {message}")
+        print(f"[SMS -> {phone_number}] {message}")
+        return True
+
+    # Placeholder: intégration avec Twilio ou autre service peut être ajoutée ici
+    # Si aucun backend connu n'est configuré, journaliser et échouer proprement
+    logger.warning('Aucun backend SMS pris en charge n\'est configuré; message non envoyé.')
+    return False
 
 
 def get_file_hash(file_obj):
@@ -83,6 +113,7 @@ def inscription_individu_form(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST, request.FILES)
         if form.is_valid():
+            # Save user as inactive and start phone verification flow
             user = form.save(commit=True)
             user.is_active = False
             user.save(update_fields=['is_active'])
@@ -93,37 +124,34 @@ def inscription_individu_form(request):
             profile.verification_status = 'pending'
             profile.save(update_fields=['account_type', 'role', 'verification_status'])
 
-            token = secrets.token_urlsafe(32)
-            profile.activation_token = token
-            profile.activation_token_created_at = timezone.now()
-            profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+            # Générer un code SMS à 6 chiffres
+            code = '{:06d}'.format(secrets.randbelow(1000000))
+            profile.phone_verification_code = code
+            profile.phone_verification_created_at = timezone.now()
+            profile.save(update_fields=['phone_verification_code', 'phone_verification_created_at'])
 
-            site = get_current_site(request)
-            activation_link = f"http://{site.domain}/accounts/activer/{urlsafe_base64_encode(force_bytes(user.pk))}/{token}/"
-            subject = 'Activation de votre compte Coloc.ai'
-            message = render_to_string('accounts/emails/activation_email.html', {
-                'user': user,
-                'activation_link': activation_link,
-                'site_name': site.name,
-            })
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
-            
+            # Envoyer le SMS (console fallback)
+            send_sms(profile.telephone, f"Votre code Coloc.ai : {code}")
+
             client_ip = get_client_ip(request)
             role_label = dict(Profile.ROLE_CHOICES).get(role, role)
             VerificationLog.objects.create(
                 profile=profile,
                 action='created',
-                details=f"Inscription (Individu - {role_label}) complétée. Pièce: {profile.type_piece_identite}, Numéro: {profile.numero_piece_identite}",
+                details=f"Inscription (Individu - {role_label}) complétée. Code SMS envoyé au {profile.telephone}",
                 ip_address=client_ip
             )
-            
-            # Nettoyer la session
+
+            # Conserver l'utilisateur en attente dans la session
+            request.session['pending_user_id'] = user.pk
+
+            # Nettoyer la session temporaire
             if 'account_type' in request.session:
                 del request.session['account_type']
             if 'individu_role' in request.session:
                 del request.session['individu_role']
-            
-            return redirect('accounts:inscription_pending')
+
+            return redirect('accounts:verify_phone')
     else:
         form = SignUpForm()
 
@@ -137,6 +165,48 @@ def inscription_individu_form(request):
 
 def inscription_pending(request):
     """Page affichée après une inscription réussie mais avant activation du compte."""
+    return render(request, 'accounts/inscription_pending.html')
+
+
+def resend_activation(request):
+    """Permet à l'utilisateur de demander le renvoi de l'email d'activation."""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if not email:
+            messages.error(request, "Veuillez fournir une adresse email.")
+            return redirect('accounts:inscription_pending')
+
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            messages.error(request, "Aucun compte trouvé pour cette adresse email.")
+            return redirect('accounts:inscription_pending')
+
+        if user.is_active:
+            messages.info(request, "Ce compte est déjà activé. Vous pouvez vous connecter.")
+            return redirect('accounts:login')
+
+        # Générer un nouveau token et envoyer l'email
+        token = secrets.token_urlsafe(32)
+        profile = user.profile
+        profile.activation_token = token
+        profile.activation_token_created_at = timezone.now()
+        profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+
+        site = get_current_site(request)
+        activation_link = f"http://{site.domain}/accounts/activer/{urlsafe_base64_encode(force_bytes(user.pk))}/{token}/"
+        subject = 'Activation de votre compte Coloc.ai - Renvoyé'
+        message = render_to_string('accounts/emails/activation_email.html', {
+            'user': user,
+            'activation_link': activation_link,
+            'site_name': site.name,
+        })
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
+
+        messages.success(request, "Un nouvel email d'activation a été envoyé.")
+        return redirect('accounts:inscription_pending')
+
+    # GET -> afficher la page avec formulaire simple
     return render(request, 'accounts/inscription_pending.html')
 
 
@@ -160,6 +230,86 @@ def activate_account(request, uidb64, token):
         return render(request, 'accounts/activation_success.html')
 
     return render(request, 'accounts/activation_invalid.html')
+
+
+def verify_phone(request):
+    """Vérifier le code envoyé par SMS pour activer le compte."""
+    pending_id = request.session.get('pending_user_id')
+    if not pending_id:
+        return redirect('accounts:inscription')
+
+    try:
+        user = User.objects.get(pk=pending_id)
+    except User.DoesNotExist:
+        messages.error(request, "Compte introuvable.")
+        return redirect('accounts:inscription')
+
+    profile = user.profile
+
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip()
+        if not code:
+            messages.error(request, "Veuillez saisir le code reçu par SMS.")
+            return render(request, 'accounts/verify_phone.html', {'phone': profile.telephone})
+
+        # Vérifier expiration (15 minutes)
+        if profile.phone_verification_created_at and timezone.now() - profile.phone_verification_created_at > timezone.timedelta(minutes=15):
+            messages.error(request, "Le code a expiré. Demandez un nouveau code.")
+            return redirect('accounts:inscription_pending')
+
+        if code == profile.phone_verification_code:
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+
+            profile.phone_verified = True
+            profile.phone_verification_code = ''
+            profile.phone_verification_created_at = None
+            profile.save(update_fields=['phone_verified', 'phone_verification_code', 'phone_verification_created_at'])
+
+            # Nettoyer la session
+            if 'pending_user_id' in request.session:
+                del request.session['pending_user_id']
+
+            login(request, user)
+            messages.success(request, "Votre numéro a été vérifié et votre compte activé.")
+            return redirect('accounts:dashboard')
+        else:
+            messages.error(request, "Code invalide. Vérifiez et réessayez.")
+
+    return render(request, 'accounts/verify_phone.html', {'phone': profile.telephone})
+
+
+def resend_phone_code(request):
+    """Renvoyer le code SMS pour un compte en attente."""
+    if request.method != 'POST':
+        return redirect('accounts:inscription_pending')
+
+    phone = request.POST.get('phone', '').strip()
+    if not phone:
+        messages.error(request, "Veuillez fournir un numéro de téléphone.")
+        return redirect('accounts:inscription_pending')
+
+    try:
+        profile = Profile.objects.get(telephone=phone)
+        user = profile.user
+    except Profile.DoesNotExist:
+        messages.error(request, "Aucun compte trouvé pour ce numéro.")
+        return redirect('accounts:inscription_pending')
+
+    if user.is_active:
+        messages.info(request, "Le compte lié à ce numéro est déjà activé.")
+        return redirect('accounts:login')
+
+    code = '{:06d}'.format(secrets.randbelow(1000000))
+    profile.phone_verification_code = code
+    profile.phone_verification_created_at = timezone.now()
+    profile.save(update_fields=['phone_verification_code', 'phone_verification_created_at'])
+
+    send_sms(profile.telephone, f"Votre nouveau code Coloc.ai : {code}")
+    messages.success(request, "Un nouveau code a été envoyé par SMS.")
+    # Si le compte est celui en attente, mettre à jour la session
+    request.session['pending_user_id'] = user.pk
+    return redirect('accounts:inscription_pending')
 
 
 def inscription_residence(request):
@@ -242,6 +392,20 @@ def verification_docs(request):
         'verification_status': profile.verification_status,
     }
     return render(request, 'accounts/verification_docs.html', context)
+
+
+@login_required
+def verify_profile(request, user_id):
+    """Permet à un utilisateur de vérifier un autre profil."""
+    target_user = User.objects.filter(pk=user_id).first()
+    if not target_user or target_user == request.user:
+        messages.error(request, 'Impossible de vérifier ce profil.')
+        return redirect('accounts:profil')
+
+    target_profile = target_user.profile
+    ProfileVerification.objects.get_or_create(verifier=request.user, verified_profile=target_profile)
+    messages.success(request, f'Vous avez vérifié le profil de {target_user.get_full_name() or target_user.username}.')
+    return redirect('accounts:profil')
 
 
 @login_required
@@ -492,7 +656,7 @@ def dashboard_hotel(request):
 
 @login_required
 def profil(request):
-    """Affiche le profil de l'utilisateur"""
+    """Affiche le profil de l'utilisateur connecté."""
     profile, created = Profile.objects.get_or_create(user=request.user)
 
     # Compteurs
@@ -511,11 +675,64 @@ def profil(request):
     except Exception:
         nb_messages = 0
 
+    current_user_has_verified_profile = False
+    if request.user.is_authenticated:
+        current_user_has_verified_profile = profile.has_verified_by(request.user)
+
     context = {
         'profile': profile,
         'nb_annonces': nb_annonces,
         'nb_favoris': nb_favoris,
         'nb_messages': nb_messages,
+        'current_user_has_verified_profile': current_user_has_verified_profile,
+        'viewed_user': request.user,
+        'is_following': False,
+        'subscriber_count': 0,
+    }
+    return render(request, 'accounts/profil.html', context)
+
+
+@login_required
+def profil_user(request, user_id):
+    """Affiche le profil d'un autre utilisateur avec un bouton d'abonnement visible."""
+    if request.user.id == user_id:
+        return redirect('accounts:profil')
+
+    target_user = get_object_or_404(User, pk=user_id)
+    profile, created = Profile.objects.get_or_create(user=target_user)
+
+    try:
+        nb_annonces = target_user.logements.count()
+    except Exception:
+        nb_annonces = 0
+
+    try:
+        nb_favoris = target_user.favoris.count()
+    except Exception:
+        nb_favoris = 0
+
+    try:
+        nb_messages = target_user.messages_envoyes.count()
+    except Exception:
+        nb_messages = 0
+
+    current_user_has_verified_profile = profile.has_verified_by(request.user)
+    is_following = Subscription.objects.filter(
+        subscriber=request.user,
+        creator=target_user,
+        is_active=True
+    ).exists()
+    subscriber_count = Subscription.objects.filter(creator=target_user, is_active=True).count()
+
+    context = {
+        'profile': profile,
+        'nb_annonces': nb_annonces,
+        'nb_favoris': nb_favoris,
+        'nb_messages': nb_messages,
+        'current_user_has_verified_profile': current_user_has_verified_profile,
+        'viewed_user': target_user,
+        'is_following': is_following,
+        'subscriber_count': subscriber_count,
     }
     return render(request, 'accounts/profil.html', context)
 

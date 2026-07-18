@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Vérification SMS - Coloc.ai{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:500px;margin:3rem auto;padding:2rem;background:white;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+    <h1>📱 Vérifiez votre numéro</h1>
+    <p>Nous avons envoyé un code au numéro : <strong>{{ phone }}</strong></p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="code">Code de vérification</label>
+        <input id="code" name="code" type="text" placeholder="000000" required style="width:100%;padding:8px;margin:8px 0;" />
+        <button type="submit" class="btn">Vérifier mon compte</button>
+    </form>
+    <p style="margin-top:12px">Vous n'avez pas reçu le code ? <a href="{% url 'accounts:inscription_pending' %}">Demander un nouveau code</a></p>
+</div>
+{% endblock %}

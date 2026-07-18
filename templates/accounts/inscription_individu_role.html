@@ -4,158 +4,500 @@
 {% block title %}Choisissez votre rôle - Inscription - Ivoire Connect{% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
-    <div class="row">
-        <div class="col-12 text-center mb-5">
-            <!-- Titre -->
-            <h1 class="mb-2">👥 Quel est votre rôle ?</h1>
-            <p class="text-muted text-lg">Sélectionnez l'option qui correspond à votre situation</p>
+<div class="role-page">
+    <div class="role-shell">
+
+        <!-- Indicateur d'étape -->
+        <div class="role-progress" aria-label="Étape 2 sur 2">
+            <div class="role-progress-step is-done">
+                <span class="role-progress-dot">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="role-progress-label">Compte créé</span>
+            </div>
+            <div class="role-progress-line"></div>
+            <div class="role-progress-step is-active">
+                <span class="role-progress-dot">2</span>
+                <span class="role-progress-label">Choisissez votre rôle</span>
+            </div>
         </div>
-    </div>
 
-    <div class="row mt-5 mb-5">
-        <div class="col-12">
+        <header class="role-header">
+            <h1>Quel chemin vous ressemble?</h1>
+            <p>Votre réponse ajuste tout: ce que vous voyez en premier, et ce que vous pouvez faire sur Ivoire Connect.</p>
+        </header>
 
-            <form method="post" class="role-selection-form">
-                {% csrf_token %}
+        <form method="post" class="role-selection-form" novalidate>
+            {% csrf_token %}
 
-                <div class="role-options-grid">
-                    <!-- Option 1: Propriétaire -->
-                    <div class="role-card card">
-                        <input type="radio" id="role_proprietaire" name="role" value="proprietaire" required style="display: none;">
-                        <label for="role_proprietaire" class="role-label-card p-4 h-100 cursor-pointer">
-                            <div class="text-center mb-3">
-                                <div class="role-icon">🏠</div>
-                                <h3 class="mt-2 mb-1">Propriétaire</h3>
-                            </div>
-                            <p class="role-description text-center text-muted mb-3 small">
-                                Je possède une maison et veux louer les chambres
-                            </p>
-                            <ul class="role-benefits list-unstyled">
-                                <li class="mb-2">✅ Publier des annonces</li>
-                                <li class="mb-2">✅ Gérer réservations</li>
-                                <li class="mb-2">✅ Tableau de bord</li>
-                                <li>✅ Recevoir paiements</li>
-                            </ul>
-                        </label>
-                    </div>
+            <div class="role-options-grid">
 
-                    <!-- Option 2: Locataire -->
-                    <div class="role-card card">
-                        <input type="radio" id="role_locataire" name="role" value="locataire" required style="display: none;">
-                        <label for="role_locataire" class="role-label-card p-4 h-100 cursor-pointer">
-                            <div class="text-center mb-3">
-                                <div class="role-icon">🔑</div>
-                                <h3 class="mt-2 mb-1">Locataire</h3>
-                            </div>
-                            <p class="role-description text-center text-muted mb-3 small">
-                                Je cherche un touriste pour partager
-                            </p>
-                            <ul class="role-benefits list-unstyled">
-                                <li class="mb-2">✅ Publier annonces</li>
-                                <li class="mb-2">✅ Chercher touriste</li>
-                                <li class="mb-2">✅ Gérer candidatures</li>
-                                <li>✅ Tableau de bord</li>
-                            </ul>
-                        </label>
-                    </div>
-
-                    <!-- Option 3: Touriste -->
-                    <div class="role-card card">
-                        <input type="radio" id="role_touriste" name="role" value="touriste" required style="display: none;">
-                        <label for="role_touriste" class="role-label-card p-4 h-100 cursor-pointer">
-                            <div class="text-center mb-3">
-                                <div class="role-icon">👥</div>
-                                <h3 class="mt-2 mb-1">Touriste</h3>
-                            </div>
-                            <p class="role-description text-center text-muted mb-3 small">
-                                Je cherche une chambre ou maison
-                            </p>
-                            <ul class="role-benefits list-unstyled">
-                                <li class="mb-2">✅ Consulter annonces</li>
-                                <li class="mb-2">✅ Contacter propriétaires</li>
-                                <li class="mb-2">✅ Profil public</li>
-                                <li>❌ Pas de publication</li>
-                            </ul>
-                        </label>
-                    </div>
+                <!-- Option 1 : Propriétaire -->
+                <div class="role-card" data-accent="owner">
+                    <input class="role-input" type="radio" id="role_proprietaire" name="role" value="proprietaire" required>
+                    <label for="role_proprietaire" class="role-label-card">
+                        <span class="role-check" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none"><path d="M5 10.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="role-icon" aria-hidden="true">
+                            <svg viewBox="0 0 40 40" fill="none">
+                                <path d="M6 19L20 7l14 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M9 17v14a1 1 0 0 0 1 1h20a1 1 0 0 0 1-1V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M17 32v-8h6v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <h3>Propriétaire</h3>
+                        <p class="role-description">Vous avez une maison ou des chambres à louer.</p>
+                        <ul class="role-benefits">
+                            <li>Publier des annonces</li>
+                            <li>Gérer les réservations</li>
+                            <li>Suivre vos revenus</li>
+                            <li>Tableau de bord dédié</li>
+                        </ul>
+                    </label>
                 </div>
 
-                <!-- Messages de validation -->
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger mt-4">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                <!-- Boutons -->
-                <div class="mt-5 pt-4 d-flex gap-3 justify-center">
-                    <a href="{% url 'accounts:inscription' %}" class="btn btn-secondary">
-                        ← Retour
-                    </a>
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        ✅ Continuer
-                    </button>
+                <!-- Option 2 : Locataire -->
+                <div class="role-card" data-accent="tenant">
+                    <input class="role-input" type="radio" id="role_locataire" name="role" value="locataire" required>
+                    <label for="role_locataire" class="role-label-card">
+                        <span class="role-check" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none"><path d="M5 10.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="role-icon" aria-hidden="true">
+                            <svg viewBox="0 0 40 40" fill="none">
+                                <circle cx="16" cy="16" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M21 21l11 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M28 28l3-3M32 32l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <h3>Locataire</h3>
+                        <p class="role-description">Vous avez de la place et cherchez à la partager.</p>
+                        <ul class="role-benefits">
+                            <li>Publier une annonce de colocation</li>
+                            <li>Trouver un colocataire</li>
+                            <li>Gérer les candidatures</li>
+                            <li>Tableau de bord dédié</li>
+                        </ul>
+                    </label>
                 </div>
-            </form>
-        </div>
+
+                <!-- Option 3 : Touriste -->
+                <div class="role-card" data-accent="tourist">
+                    <input class="role-input" type="radio" id="role_touriste" name="role" value="touriste" required>
+                    <label for="role_touriste" class="role-label-card">
+                        <span class="role-check" aria-hidden="true">
+                            <svg viewBox="0 0 20 20" fill="none"><path d="M5 10.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="role-icon" aria-hidden="true">
+                            <svg viewBox="0 0 40 40" fill="none">
+                                <rect x="10" y="15" width="20" height="15" rx="2" stroke="currentColor" stroke-width="2"/>
+                                <path d="M16 15v-3a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M10 21h20" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </span>
+                        <h3>Touriste</h3>
+                        <p class="role-description">Vous cherchez une chambre pour un séjour.</p>
+                        <ul class="role-benefits">
+                            <li>Consulter toutes les annonces</li>
+                            <li>Contacter les propriétaires</li>
+                            <li>Profil public simplifié</li>
+                            <li>Sans publication d'annonce</li>
+                        </ul>
+                    </label>
+                </div>
+
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="role-alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="role-actions">
+                <a href="{% url 'accounts:inscription' %}" class="role-btn role-btn-ghost">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Retour
+                </a>
+                <button type="submit" class="role-btn role-btn-primary">
+                    Continuer
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8 4l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+    .role-page {
+        --bg: #F5F8F4;
+        --surface: #FFFFFF;
+        --ink: #14231D;
+        --ink-muted: #5B6B62;
+        --border: #DDE7DF;
+        --owner: #0B6E4F;
+        --tenant: #E86A1C;
+        --tourist: #1C7C8C;
+
+        background: var(--bg);
+        min-height: 100vh;
+        padding: 56px 20px 72px;
+        display: flex;
+        justify-content: center;
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: var(--ink);
+    }
+
+    .role-shell {
+        width: 100%;
+        max-width: 960px;
+    }
+
+    /* ---- Progress ---- */
+    .role-progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+    }
+
+    .role-progress-step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .role-progress-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'Space Grotesk', sans-serif;
+        flex-shrink: 0;
+    }
+
+    .role-progress-step.is-done .role-progress-dot {
+        background: var(--owner);
+        color: white;
+    }
+
+    .role-progress-step.is-done .role-progress-dot svg { width: 12px; height: 12px; }
+
+    .role-progress-step.is-active .role-progress-dot {
+        background: transparent;
+        border: 2px solid var(--owner);
+        color: var(--owner);
+    }
+
+    .role-progress-step.is-done .role-progress-label {
+        color: var(--ink-muted);
+    }
+
+    .role-progress-step.is-active .role-progress-label {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .role-progress-label {
+        font-size: 0.85rem;
+    }
+
+    .role-progress-line {
+        width: 32px;
+        height: 1px;
+        background: var(--border);
+    }
+
+    /* ---- Header ---- */
+    .role-header {
+        text-align: center;
+        max-width: 560px;
+        margin: 0 auto 48px;
+    }
+
+    .role-header h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+        color: var(--ink);
+    }
+
+    .role-header p {
+        color: var(--ink-muted);
+        font-size: 1.05rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* ---- Grid ---- */
     .role-options-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 2rem;
-        margin-bottom: 2rem;
+        gap: 24px;
+        margin-bottom: 40px;
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 860px) {
         .role-options-grid {
             grid-template-columns: repeat(3, 1fr);
         }
     }
 
+    /* ---- Card ---- */
     .role-card {
         position: relative;
-        overflow: visible !important;
+        opacity: 0;
+        animation: role-card-in 0.5s ease forwards;
+    }
+
+    .role-card:nth-child(1) { animation-delay: 0.05s; }
+    .role-card:nth-child(2) { animation-delay: 0.15s; }
+    .role-card:nth-child(3) { animation-delay: 0.25s; }
+
+    @keyframes role-card-in {
+        from { opacity: 0; transform: translateY(14px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .role-card { animation: none; opacity: 1; }
+    }
+
+    .role-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        white-space: nowrap;
+        border: 0;
     }
 
     .role-label-card {
-        display: block;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 999px 999px 20px 20px;
+        padding: 40px 28px 28px;
         cursor: pointer;
-        user-select: none;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.3s ease;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
 
-    #role_proprietaire:checked + label,
-    #role_locataire:checked + label,
-    #role_touriste:checked + label {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        color: white;
+    .role-label-card::after {
+        content: '';
+        position: absolute;
+        left: 20px;
+        right: 20px;
+        bottom: 0;
+        height: 3px;
+        border-radius: 2px 2px 0 0;
+        background: var(--accent, transparent);
+        transform: scaleX(0);
+        transform-origin: center;
+        transition: transform 0.3s ease;
     }
 
-    #role_proprietaire:checked ~ .card,
-    #role_locataire:checked ~ .card,
-    #role_touriste:checked ~ .card {
-        border-color: #007bff;
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    .role-card[data-accent="owner"] .role-label-card { --accent: var(--owner); }
+    .role-card[data-accent="tenant"] .role-label-card { --accent: var(--tenant); }
+    .role-card[data-accent="tourist"] .role-label-card { --accent: var(--tourist); }
+
+    .role-label-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(20, 35, 29, 0.08);
+        border-color: var(--accent);
+    }
+
+    .role-label-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .role-input:focus-visible + .role-label-card {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+    }
+
+    .role-input:checked + .role-label-card {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+        box-shadow: 0 16px 32px rgba(20, 35, 29, 0.1);
+    }
+
+    .role-input:checked + .role-label-card::after {
+        transform: scaleX(1);
+    }
+
+    .role-check {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--accent, var(--owner));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.6);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .role-check svg { width: 13px; height: 13px; }
+
+    .role-input:checked + .role-label-card .role-check {
+        opacity: 1;
+        transform: scale(1);
     }
 
     .role-icon {
-        font-size: 3rem;
-        line-height: 1;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--accent, var(--owner)) 10%, var(--surface));
+        color: var(--accent, var(--owner));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .role-icon svg { width: 30px; height: 30px; }
+
+    .role-input:checked + .role-label-card .role-icon {
+        background: var(--accent);
+        color: white;
+    }
+
+    .role-label-card h3 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-align: center;
+        margin: 0 0 8px;
+        color: var(--ink);
+    }
+
+    .role-description {
+        text-align: center;
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+        margin: 0 0 22px;
+    }
+
+    .role-benefits {
+        list-style: none;
+        margin: 0;
+        padding: 18px 0 0;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .role-benefits li {
-        font-size: 0.9rem;
-        color: inherit;
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+        padding-left: 20px;
+        position: relative;
     }
 
-    .cursor-pointer {
+    .role-benefits li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent, var(--owner));
+        opacity: 0.55;
+    }
+
+    /* ---- Alert ---- */
+    .role-alert {
+        max-width: 560px;
+        margin: 0 auto 24px;
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: #FDF1EC;
+        border: 1px solid #F3C9B4;
+        color: #9A3B12;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    /* ---- Actions ---- */
+    .role-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+    }
+
+    .role-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 26px;
+        border-radius: 999px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        border: none;
         cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .role-btn svg { width: 16px; height: 16px; }
+
+    .role-btn-ghost {
+        background: transparent;
+        color: var(--ink-muted);
+        border: 1.5px solid var(--border);
+    }
+
+    .role-btn-ghost:hover {
+        border-color: var(--ink-muted);
+        color: var(--ink);
+    }
+
+    .role-btn-primary {
+        background: var(--owner);
+        color: white;
+        flex-direction: row-reverse;
+    }
+
+    .role-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(11, 110, 79, 0.3);
+    }
+
+    .role-btn-primary:active {
+        transform: translateY(0);
+    }
+
+    @media (max-width: 480px) {
+        .role-page { padding: 36px 14px 56px; }
+        .role-label-card { padding: 34px 20px 22px; }
+        .role-actions { flex-direction: column-reverse; width: 100%; }
+        .role-btn { width: 100%; justify-content: center; }
     }
 </style>
 {% endblock %}

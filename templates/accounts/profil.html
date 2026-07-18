@@ -115,6 +115,20 @@
                     Membre depuis {{ date_inscription|date:"F Y" }}
                 </span>
             </div>
+
+            <div class="ic-trust-row">
+                <span class="ic-trust-badge">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/><path d="m9 12 2 2 4-4"/></svg>
+                    {{ profile.verified_by_count }} vérification{{ profile.verified_by_count|pluralize }}
+                </span>
+                {% if request.user.is_authenticated and request.user != viewed_user %}
+                    {% if current_user_has_verified_profile %}
+                        <span class="ic-trust-status">✓ Vérifié par vous</span>
+                    {% else %}
+                        <a href="{% url 'accounts:verify_profile' user_id=viewed_user.id %}" class="ic-trust-btn">Vérifier ce profil</a>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
 
         <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
@@ -336,6 +350,22 @@
                     </a>
                 </div>
 
+                {% if request.user.is_authenticated and request.user != viewed_user %}
+                <div class="ic-follow-card">
+                    <h3 class="ic-card__title ic-card__title--orange">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+                        Suivre ce profil
+                    </h3>
+                    <p class="ic-follow-copy">Recevez ses nouvelles annonces et restez informé de ses publications.</p>
+                    <button type="button" id="profileFollowBtn" class="ic-follow-btn{% if is_following %} ic-follow-btn--active{% endif %}" onclick="toggleProfileFollow({{ viewed_user.id }})">
+                        <span id="profileFollowBtnText">{% if is_following %}✅ Abonné{% else %}🔔 Suivre ce profil{% endif %}</span>
+                    </button>
+                    <div class="ic-follow-meta">
+                        <span id="profileFollowCount">{{ subscriber_count|default:0 }}</span> abonné{% if subscriber_count != 1 %}s{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
                 {% if badges %}
                 <div class="ic-card">
                     <h3 class="ic-card__title ic-card__title--orange">
@@ -439,6 +469,10 @@
 .ic-meta-row { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
 .ic-meta { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--ic-muted); }
 .ic-meta svg { color: var(--ic-orange); flex-shrink: 0; }
+.ic-trust-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.ic-trust-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: #ecfdf3; color: #166534; border-radius: 999px; font-size: .85rem; font-weight: 700; }
+.ic-trust-status { color: #0f766e; font-size: .9rem; font-weight: 700; }
+.ic-trust-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-green)); color: white; text-decoration: none; font-size: .9rem; font-weight: 700; }
 
 .ic-editprofile-btn {
     display: flex; align-items: center; gap: 7px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-orange-dk));
@@ -494,6 +528,22 @@
 .ic-info-value { color: var(--ic-text); font-weight: 600; flex: 1; }
 .ic-empty { color: #C4C9D4; font-style: italic; font-weight: 400; }
 .ic-info-check { color: var(--ic-green); font-weight: 800; }
+
+/* FOLLOW CTA */
+.ic-follow-card {
+    background: linear-gradient(135deg, #fff7ed, #fff);
+    border: 1px solid #ffd7aa;
+    border-radius: var(--ic-radius);
+    box-shadow: var(--ic-shadow);
+    padding: 22px 24px;
+}
+.ic-follow-copy { color: var(--ic-muted); font-size: .9rem; margin: 0 0 12px; }
+.ic-follow-btn {
+    width: 100%; border: none; border-radius: 999px; padding: 10px 14px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-green));
+    color: white; font-weight: 700; cursor: pointer;
+}
+.ic-follow-btn--active { background: linear-gradient(135deg, var(--ic-green), #0f766e); }
+.ic-follow-meta { margin-top: 10px; color: var(--ic-muted); font-size: .82rem; font-weight: 600; }
 
 /* ACTIVITY */
 .ic-activity-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
@@ -573,6 +623,36 @@
 </style>
 
 <script>
+function toggleProfileFollow(creatorId) {
+    const btn = document.getElementById('profileFollowBtn');
+    const txtSpan = document.getElementById('profileFollowBtnText');
+    const countSpan = document.getElementById('profileFollowCount');
+
+    if (!btn || !txtSpan) return;
+
+    fetch(`/accounts/is-subscribed/${creatorId}/`)
+        .then(response => response.json())
+        .then(data => {
+            const endpoint = data.is_subscribed ? `/accounts/unsubscribe/${creatorId}/` : `/accounts/subscribe/${creatorId}/`;
+            return fetch(endpoint, { method: 'POST' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        if (result.is_subscribed) {
+                            btn.classList.add('ic-follow-btn--active');
+                            txtSpan.textContent = '✅ Abonné';
+                        } else {
+                            btn.classList.remove('ic-follow-btn--active');
+                            txtSpan.textContent = '🔔 Suivre ce profil';
+                        }
+                        if (countSpan && typeof result.subscriber_count !== 'undefined') {
+                            countSpan.textContent = result.subscriber_count;
+                        }
+                    }
+                });
+        });
+}
+
 function icSwitchTab(tab) {
     document.querySelectorAll('.ic-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
     document.querySelectorAll('.ic-tabpanel').forEach(el => el.classList.toggle('active', el.id === `ic-panel-${tab}`));

@@ -1,13 +1,29 @@
 {% extends 'base.html' %}
 
-{% block title %}Vérifiez votre email - Coloc.ai{% endblock %}
+{% block title %}Vérifiez votre téléphone - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 700px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-    <h1>📧 Vérifiez votre boîte mail</h1>
-    <p>Votre compte a bien été créé, mais il doit encore être activé avant de pouvoir se connecter.</p>
-    <p>Un email d’activation a été envoyé à l’adresse que vous avez fournie.</p>
-    <p>Si vous ne voyez pas l’email, vérifiez vos spams ou demandez un nouvel envoi.</p>
+    <h1>📱 Vérifiez votre téléphone</h1>
+    <p>Votre compte a bien été créé, mais il doit encore être activé par SMS avant de pouvoir se connecter.</p>
+    <p>Un code de vérification a été envoyé au numéro de téléphone que vous avez fourni.</p>
+    <p>Si vous ne recevez pas le SMS, vérifiez votre réseau ou demandez un nouveau code ci-dessous.</p>
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 1rem;">
+        <form method="post" action="{% url 'accounts:resend_phone_code' %}">
+            {% csrf_token %}
+            <label for="resend_phone">Numéro de téléphone pour renvoi</label>
+            <input id="resend_phone" type="text" name="phone" placeholder="+225XXXXXXXX" required style="width:100%; padding:8px; margin:8px 0;" />
+            <button type="submit" class="btn">Renvoyer le code SMS</button>
+        </form>
+    </div>
     <a href="{% url 'accounts:login' %}" class="btn">Retour à la connexion</a>
 </div>
 {% endblock %}

@@ -461,8 +461,8 @@ PhotoLogementFormSet = inlineformset_factory(
     Logement,
     PhotoLogement,
     form=PhotoLogementForm,
-    extra=1,
-    max_num=10,
+    extra=3,
+    max_num=20,
     can_delete=True,
     min_num=0,
     validate_min=False
@@ -519,8 +519,8 @@ VideoLogementFormSet = inlineformset_factory(
     Logement,
     VideoLogement,
     form=VideoLogementForm,
-    extra=1,
-    max_num=5,
+    extra=3,
+    max_num=10,
     can_delete=True,
     min_num=0,
     validate_min=False

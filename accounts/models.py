@@ -2,6 +2,21 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+
+
+class ProfileVerification(models.Model):
+    """Relation de vérification mutuelle entre profils."""
+    verifier = models.ForeignKey(User, on_delete=models.CASCADE, related_name='verifications_given')
+    verified_profile = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='verifications_received')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('verifier', 'verified_profile')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.verifier} a vérifié {self.verified_profile}'
 
 
 class Profile(models.Model):
@@ -87,6 +102,10 @@ class Profile(models.Model):
     
     activation_token = models.CharField(max_length=100, blank=True, default='')
     activation_token_created_at = models.DateTimeField(null=True, blank=True)
+    # Vérification par téléphone
+    phone_verification_code = models.CharField(max_length=10, blank=True, default='')
+    phone_verification_created_at = models.DateTimeField(null=True, blank=True)
+    phone_verified = models.BooleanField(default=False)
     date_creation = models.DateTimeField(auto_now_add=True)
     derniere_connexion = models.DateTimeField(auto_now=True)
 
@@ -106,6 +125,15 @@ class Profile(models.Model):
     @property
     def est_verifie(self):
         return self.verification_status == 'verified'
+
+    @property
+    def verified_by_count(self):
+        return self.verifications_received.count()
+
+    def has_verified_by(self, user):
+        if not user or not user.is_authenticated:
+            return False
+        return self.verifications_received.filter(verifier=user).exists()
 
     def _professional_profile(self):
         try:
@@ -473,7 +501,7 @@ class Notification(models.Model):
         """Marquer la notification comme lue"""
         if not self.is_read:
             self.is_read = True
-            self.read_at = models.DateTimeField.now()
+            self.read_at = timezone.now()
             self.save(update_fields=['is_read', 'read_at'])
     
     @property

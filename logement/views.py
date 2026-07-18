@@ -305,11 +305,19 @@ def reserver_logement(request, id):
 def paiement_reservation(request, reservation_id):
     """Page de paiement avec support multi-méthodes (MOUV, Orange Money, Wave, Stripe, Virement, Cash)"""
     from .models import Reservation, Paiement
-    import stripe
+    import importlib
     import os
     import json
     from django.http import JsonResponse
     from django.contrib import messages
+
+    stripe = None
+    try:
+        stripe_spec = importlib.util.find_spec('stripe')
+        if stripe_spec is not None:
+            stripe = importlib.import_module('stripe')
+    except Exception:
+        stripe = None
 
     reservation = get_object_or_404(Reservation, id=reservation_id)
 
@@ -317,7 +325,8 @@ def paiement_reservation(request, reservation_id):
         if request.user != reservation.logement.proprietaire:
             return redirect('logement:home')
 
-    stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')
+    if stripe is not None:
+        stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')
 
     # Traitement POST (traitement du paiement)
     if request.method == 'POST':
