@@ -143,8 +143,9 @@ def notifications_api(request):
         recipient=request.user,
         is_read=False
     ).values('id', 'title', 'message', 'notification_type', 'created_at', 'actor__username')[:10]
+    notifications = list(notifications)
     
     return JsonResponse({
-        'notifications': list(notifications),
-        'count': len(list(notifications))
+        'notifications': notifications,
+        'count': len(notifications)
     })

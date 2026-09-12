@@ -23,6 +23,7 @@ from colocation.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('', home, name='home'),
     path('logement/', include('logement.urls')),
     path('colocation/', include('colocation.urls')),

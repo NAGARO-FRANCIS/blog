@@ -14,6 +14,12 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+# Load local development settings first, then allow a parent .env to provide
+# shared deployment settings without overwriting values already defined locally.
+PROJECT_DIR = Path(__file__).resolve().parent
+load_dotenv(PROJECT_DIR / '.env.local')
+load_dotenv(PROJECT_DIR / '.env')
+
 # Load environment variables from .env file
 load_dotenv(Path(__file__).resolve().parent.parent / '.env')
 

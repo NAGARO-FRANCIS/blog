@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}Mon profil — {{ request.user.first_name|default:request.user.username }}{% endblock %}
 
@@ -285,7 +286,18 @@
                     <div class="ic-info-row">
                         <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg></span>
                         <span class="ic-info-label">Langue</span>
-                        <span class="ic-info-value">Français</span>
+                        <form method="post" action="{% url 'set_language' %}" class="ic-language-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <label for="profile-language-select" class="sr-only">Langue</label>
+                            <select id="profile-language-select" name="language" onchange="this.form.submit()">
+                                {% get_current_language as CURRENT_LANGUAGE %}
+                                {% get_available_languages as AVAILABLE_LANGUAGES %}
+                                {% for language_code, language_name in AVAILABLE_LANGUAGES %}
+                                    <option value="{{ language_code }}"{% if language_code == CURRENT_LANGUAGE %} selected{% endif %}>{{ language_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
                     </div>
                 </div>
 
@@ -444,12 +456,13 @@
 /* CARTE PROFIL */
 .ic-profilecard {
     background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow-lg);
-    margin: -70px 0 0; padding: 20px 28px 20px 130px; position: relative;
-    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    margin: -48px 0 0; padding: 24px 28px 24px 164px; position: relative;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 22px;
+    min-height: 146px;
 }
 .ic-avatar {
-    position: absolute; left: 24px; top: -55px; width: 130px; height: 130px; border-radius: 50%;
-    border: 5px solid white; box-shadow: var(--ic-shadow-lg); overflow: hidden; background: var(--ic-orange);
+    position: absolute; left: 28px; top: -40px; width: 112px; height: 112px; border-radius: 50%;
+    border: 4px solid white; box-shadow: 0 8px 22px rgba(17,24,39,.18); overflow: hidden; background: var(--ic-orange);
     display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; color: white;
 }
 .ic-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -457,9 +470,9 @@
     position: absolute; bottom: 4px; right: 4px; width: 30px; height: 30px; border-radius: 50%;
     background: var(--ic-green); border: 3px solid white; display: flex; align-items: center; justify-content: center;
 }
-.ic-profilecard__info { flex: 1; min-width: 220px; }
-.ic-name-row { display: flex; align-items: center; gap: 8px; }
-.ic-name-row h1 { font-size: 1.5rem; font-weight: 800; color: var(--ic-text); margin: 0; }
+.ic-profilecard__info { min-width: 0; }
+.ic-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ic-name-row h1 { font-size: 1.5rem; line-height: 1.15; font-weight: 800; color: var(--ic-text); margin: 0; overflow-wrap: anywhere; }
 .ic-verified-tick { flex-shrink: 0; }
 .ic-username { color: var(--ic-muted); font-size: .88rem; margin: 2px 0 8px; }
 .ic-role-badge {
@@ -475,9 +488,9 @@
 .ic-trust-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-green)); color: white; text-decoration: none; font-size: .9rem; font-weight: 700; }
 
 .ic-editprofile-btn {
-    display: flex; align-items: center; gap: 7px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-orange-dk));
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-orange-dk));
     color: white; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: .9rem; text-decoration: none;
-    box-shadow: 0 4px 14px rgba(247,127,0,.3); flex-shrink: 0; transition: transform .2s;
+    box-shadow: 0 4px 14px rgba(247,127,0,.3); white-space: nowrap; transition: transform .2s;
 }
 .ic-editprofile-btn:hover { transform: translateY(-2px); }
 
@@ -612,11 +625,15 @@
     .ic-columns { grid-template-columns: 1fr; }
     .ic-stats { grid-template-columns: repeat(2, 1fr); }
 }
+@media (max-width: 780px) {
+    .ic-profilecard { grid-template-columns: 1fr; padding-right: 20px; }
+    .ic-editprofile-btn { width: 100%; }
+}
 @media (max-width: 600px) {
-    .ic-profilecard { padding: 70px 20px 20px; flex-direction: column; align-items: flex-start; }
-    .ic-avatar { left: 50%; transform: translateX(-50%); top: -55px; }
+    .ic-profilecard { display: block; padding: 76px 20px 20px; }
+    .ic-avatar { left: 50%; transform: translateX(-50%); top: -42px; }
     .ic-profilecard__info { text-align: left; width: 100%; }
-    .ic-editprofile-btn { width: 100%; justify-content: center; }
+    .ic-editprofile-btn { width: 100%; margin-top: 18px; }
     .ic-stats { grid-template-columns: 1fr 1fr; }
     .ic-verif-details { flex-direction: column; }
 }
@@ -630,11 +647,18 @@ function toggleProfileFollow(creatorId) {
 
     if (!btn || !txtSpan) return;
 
+    const csrfToken = getCookie('csrftoken');
+    const postOptions = {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken},
+        credentials: 'same-origin'
+    };
+
     fetch(`/accounts/is-subscribed/${creatorId}/`)
         .then(response => response.json())
         .then(data => {
             const endpoint = data.is_subscribed ? `/accounts/unsubscribe/${creatorId}/` : `/accounts/subscribe/${creatorId}/`;
-            return fetch(endpoint, { method: 'POST' })
+            return fetch(endpoint, postOptions)
                 .then(response => response.json())
                 .then(result => {
                     if (result.success) {
@@ -648,8 +672,14 @@ function toggleProfileFollow(creatorId) {
                         if (countSpan && typeof result.subscriber_count !== 'undefined') {
                             countSpan.textContent = result.subscriber_count;
                         }
+                    } else {
+                        throw new Error(result.message || 'Impossible de modifier l’abonnement');
                     }
                 });
+        })
+        .catch(error => {
+            console.error('Erreur abonnement:', error);
+            alert(error.message || 'Impossible de modifier l’abonnement.');
         });
 }
 

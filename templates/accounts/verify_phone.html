@@ -6,12 +6,20 @@
 <div class="container" style="max-width:500px;margin:3rem auto;padding:2rem;background:white;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
     <h1>📱 Vérifiez votre numéro</h1>
     <p>Nous avons envoyé un code au numéro : <strong>{{ phone }}</strong></p>
-    <form method="post">
+    {% if debug_code %}
+        <p style="padding:10px 12px;border-left:4px solid #008f68;border-radius:6px;background:#e8f9f1;color:#28604f;">
+            Mode développement : votre code est <strong>{{ debug_code }}</strong>.
+        </p>
+    {% endif %}
+    <form method="post" action="{% url 'accounts:verify_phone' %}">
         {% csrf_token %}
         <label for="code">Code de vérification</label>
-        <input id="code" name="code" type="text" placeholder="000000" required style="width:100%;padding:8px;margin:8px 0;" />
+        <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" required style="width:100%;padding:8px;margin:8px 0;" />
         <button type="submit" class="btn">Vérifier mon compte</button>
     </form>
-    <p style="margin-top:12px">Vous n'avez pas reçu le code ? <a href="{% url 'accounts:inscription_pending' %}">Demander un nouveau code</a></p>
+    <form method="post" action="{% url 'accounts:resend_phone_code' %}" style="margin-top:12px;">
+        {% csrf_token %}
+        <button type="submit" class="btn" style="background:transparent;color:#008f68;border:0;padding:0;cursor:pointer;">Demander un nouveau code</button>
+    </form>
 </div>
 {% endblock %}

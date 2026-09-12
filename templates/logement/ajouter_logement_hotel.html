@@ -227,6 +227,44 @@
         margin-top: 6px;
     }
 
+    .room-type-guidance {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 13px;
+    }
+
+    .establishment-summary {
+        display: grid;
+        gap: 8px;
+        margin: -20px 0 30px;
+        padding: 18px 22px;
+        border-left: 4px solid #009a44;
+        border-radius: 10px;
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .establishment-summary strong {
+        font-size: 1.1rem;
+    }
+
+    .establishment-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .establishment-categories a {
+        color: #b45309;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
     /* Amenities/Features Grid */
     .amenities-grid {
         display: grid;
@@ -438,8 +476,23 @@
     <!-- Header -->
     <div class="publish-header">
         <h1>🏨 Publier une Chambre d'Hôtel</h1>
-        <p>Présentez votre établissement de manière professionnel</p>
+        <p>Ajoutez une catégorie de chambre à votre établissement</p>
         <div class="badge">Pour les hôtels et établissements officiels</div>
+    </div>
+
+    <div class="establishment-summary">
+        <strong>{{ etablissement.nom|default:"Votre établissement" }}</strong>
+        <span>Chaque publication ajoute une catégorie distincte avec son prix, ses caractéristiques et ses photos.</span>
+        {% if etablissement_categories %}
+            <div class="establishment-categories">
+                <span>Catégories déjà publiées :</span>
+                {% for category in etablissement_categories %}
+                    <a href="{% url 'logement:detail_logement' category.id %}">{{ category.get_type_logement_display }}</a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <span>Aucune catégorie publiée pour le moment. Commencez par la première chambre.</span>
+        {% endif %}
     </div>
 
     <!-- Progress -->
@@ -494,9 +547,9 @@
 
                 <div class="fields-grid full">
                     <div class="field-group required">
-                        <label>Nom de l'établissement</label>
+                        <label>Nom de la chambre ou de la suite</label>
                         {{ form.titre }}
-                        <div class="field-hint">Exemple: "Chambre Double Climatisée" ou "Suite Presidio"</div>
+                        <div class="field-hint">Cette publication concerne une chambre précise, pas tout l'hôtel. Exemple : « Chambre 204 » ou « Suite Présidentielle ».</div>
                     </div>
                 </div>
 
@@ -533,18 +586,23 @@
                     Caractéristiques de la Chambre
                 </div>
                 <div class="card-description">
-                    Spécifiez les détails de votre chambre ou suite
+                    Ces informations décrivent uniquement la chambre ou la suite publiée.
                 </div>
 
                 <div class="fields-grid">
                     <div class="field-group required">
                         <label>Type de Chambre</label>
                         {{ form.type_logement }}
-                        <div class="field-hint">Exemple: Chambre simple, Double, Suite...</div>
+                        <div class="field-hint" id="room-type-hint">Choisissez le type qui déterminera les indications affichées ci-dessous.</div>
                     </div>
                     <div class="field-group required">
                         <label>Surface (m²)</label>
                         {{ form.surface }}
+                    </div>
+                    <div class="field-group" id="room-spaces-field">
+                        <label>Nombre d'espaces / pièces</label>
+                        {{ form.nombre_pieces }}
+                        <div class="field-hint">Pour une suite ou un duplex : comptez les espaces distincts de la chambre.</div>
                     </div>
                     <div class="field-group required">
                         <label>Nombre de Lits</label>
@@ -559,9 +617,14 @@
                         {{ form.nombre_salles_bain }}
                     </div>
                     <div class="field-group required">
-                        <label>Étage</label>
+                        <label>Étage de l'hôtel</label>
                         {{ form.etage }}
+                        <div class="field-hint">Étage du bâtiment où se trouve la chambre, pas un étage intérieur à la chambre. Optionnel.</div>
                     </div>
+                </div>
+
+                <div class="room-type-guidance" id="room-type-guidance" aria-live="polite">
+                    Sélectionnez un type de chambre pour afficher les indications adaptées.
                 </div>
 
                 <div class="form-nav">
@@ -827,6 +890,47 @@
 
     // Photo form management
     document.addEventListener('DOMContentLoaded', function() {
+        const roomType = document.getElementById('{{ form.type_logement.id_for_label }}');
+        const roomTypeHint = document.getElementById('room-type-hint');
+        const roomTypeGuidance = document.getElementById('room-type-guidance');
+        const roomSpacesField = document.getElementById('room-spaces-field');
+        const roomGuidance = {
+            simple: {
+                hint: 'Pour une personne ou un court séjour, indiquez le lit et la capacité réels.',
+                guidance: 'Chambre simple : vérifiez surtout le nombre de lits, la capacité et la salle de bain privative.'
+            },
+            double: {
+                hint: 'Pour deux personnes, précisez si la chambre comporte un grand lit ou deux lits séparés.',
+                guidance: 'Chambre double : indiquez la configuration des lits dans la description et la capacité maximale réelle.'
+            },
+            duplex: {
+                hint: 'Pour une chambre sur deux niveaux, précisez les espaces et l’accès entre les niveaux dans la description.',
+                guidance: 'Duplex : l’étage ci-dessus concerne le bâtiment; décrivez les niveaux intérieurs de la chambre dans la description.'
+            },
+            suite: {
+                hint: 'Pour une suite, décrivez les espaces distincts et les équipements compris.',
+                guidance: 'Suite : indiquez la surface totale, la capacité, le nombre de salles de bain et les espaces séparés dans la description.'
+            },
+            familiale: {
+                hint: 'Pour une chambre familiale, indiquez les lits et la capacité totale pour les adultes et les enfants.',
+                guidance: 'Chambre familiale : vérifiez que la capacité correspond bien au nombre et au type de lits proposés.'
+            }
+        };
+
+        function updateRoomGuidance() {
+            const selected = roomGuidance[roomType.value];
+            roomTypeHint.textContent = selected ? selected.hint : 'Choisissez le type qui déterminera les indications affichées ci-dessous.';
+            roomTypeGuidance.textContent = selected ? selected.guidance : 'Sélectionnez un type de chambre pour afficher les indications adaptées.';
+            if (roomSpacesField) {
+                roomSpacesField.style.display = ['duplex', 'suite', 'familiale'].includes(roomType.value) ? '' : 'none';
+            }
+        }
+
+        if (roomType) {
+            roomType.addEventListener('change', updateRoomGuidance);
+            updateRoomGuidance();
+        }
+
         const addPhotoBtn = document.getElementById('add-photo-form');
         if (addPhotoBtn) {
             addPhotoBtn.addEventListener('click', function(e) {

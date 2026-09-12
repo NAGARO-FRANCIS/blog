@@ -99,7 +99,7 @@ class LogementHotelForm(forms.ModelForm):
             'titre', 'description', 'ville', 'quartier',
             
             # Caractéristiques de la chambre
-            'type_logement', 'surface', 'nombre_lits', 'capacite',
+            'type_logement', 'surface', 'nombre_pieces', 'nombre_lits', 'capacite',
             'nombre_salles_bain', 'etage',
             
             # Tarification hôtel
@@ -132,6 +132,10 @@ class LogementHotelForm(forms.ModelForm):
             'surface': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'placeholder': '0 m²'
+            }),
+            'nombre_pieces': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nombre d espaces'
             }),
             'nombre_lits': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -169,8 +173,17 @@ class LogementHotelForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['type_logement'].choices = [
+            ('', 'Sélectionnez le type de chambre'),
+            ('simple', 'Chambre simple'),
+            ('double', 'Chambre double'),
+            ('duplex', 'Duplex'),
+            ('suite', 'Suite'),
+            ('familiale', 'Chambre familiale'),
+        ]
         # Rendre les champs optionnels avec valeurs par défaut
         self.fields['surface'].required = False
+        self.fields['nombre_pieces'].required = False
         self.fields['nombre_lits'].required = False
         self.fields['capacite'].required = False
         self.fields['nombre_salles_bain'].required = False

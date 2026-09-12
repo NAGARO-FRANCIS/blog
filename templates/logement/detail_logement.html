@@ -68,6 +68,23 @@
                 <p class="dl-location">📍 {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</p>
             </div>
 
+            {% if etablissement %}
+                <div class="dl-section">
+                    <h2 class="dl-section__title">{{ etablissement.nom }}</h2>
+                    <p class="dl-desc">Cette fiche présente une catégorie de chambre de cet établissement.</p>
+                    {% if etablissement_categories %}
+                        <div class="dl-related-categories">
+                            <strong>Autres catégories disponibles</strong>
+                            {% for category in etablissement_categories %}
+                                <a href="{% url 'logement:detail_logement' category.id %}">
+                                    {{ category.get_type_logement_display }}{% if category.prix_par_nuit %} · {{ category.prix_par_nuit|floatformat:0 }} FCFA/nuit{% endif %}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
             <!-- Caractéristiques -->
             <div class="dl-section">
                 <h2 class="dl-section__title">Caractéristiques</h2>
@@ -244,7 +261,7 @@
                             💬 Message
                         </a>
                     {% else %}
-                        <a href="{% url 'login' %}?next={% url 'logement:detail_logement' logement.id %}" class="dl-action-btn" title="Se connecter pour envoyer un message">
+                        <a href="/accounts/login/?next={% url 'logement:detail_logement' logement.id %}" class="dl-action-btn" title="Se connecter pour envoyer un message">
                             💬 Message
                         </a>
                     {% endif %}
@@ -451,6 +468,26 @@
     font-size: .9rem;
     color: var(--dl-text);
     line-height: 1.7;
+}
+
+.dl-related-categories {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.dl-related-categories a {
+    color: #b45309;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.dl-related-categories a:hover {
+    text-decoration: underline;
 }
 
 /* Équipements */
@@ -680,6 +717,11 @@ function switchPhoto(thumb, url) {
 function toggleSubscription(creatorId) {
     const btn = document.getElementById('subscribeBtn');
     const txtSpan = document.getElementById('subscribeBtnText');
+    const postOptions = {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+        credentials: 'same-origin'
+    };
     
     // Vérifier si déjà abonné
     fetch(`/accounts/is-subscribed/${creatorId}/`)
@@ -687,25 +729,33 @@ function toggleSubscription(creatorId) {
         .then(data => {
             if (data.is_subscribed) {
                 // Désabonner
-                fetch(`/accounts/unsubscribe/${creatorId}/`, {method: 'POST'})
+                fetch(`/accounts/unsubscribe/${creatorId}/`, postOptions)
                     .then(response => response.json())
                     .then(result => {
                         if (result.success) {
                             btn.classList.remove('subscribed');
                             txtSpan.textContent = '📢 S\'abonner';
+                        } else {
+                            throw new Error(result.message || 'Impossible de modifier l’abonnement');
                         }
                     });
             } else {
                 // S'abonner
-                fetch(`/accounts/subscribe/${creatorId}/`, {method: 'POST'})
+                fetch(`/accounts/subscribe/${creatorId}/`, postOptions)
                     .then(response => response.json())
                     .then(result => {
                         if (result.success) {
                             btn.classList.add('subscribed');
                             txtSpan.textContent = '✅ Abonné';
+                        } else {
+                            throw new Error(result.message || 'Impossible de modifier l’abonnement');
                         }
                     });
             }
+        })
+        .catch(error => {
+            console.error('Erreur abonnement:', error);
+            alert(error.message || 'Impossible de modifier l’abonnement.');
         });
 }
 

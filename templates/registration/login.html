@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Connexion - Coloc.ai{% endblock %}
+{% block title %}{% translate "Connexion" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="login-wrapper">
@@ -9,13 +10,13 @@
         <div class="login-header">
             <div class="logo-large">🏠</div>
             <h1>Coloc.ai</h1>
-            <p>Trouvez votre colocation idéale</p>
+            <p>{% translate "Trouvez votre colocation idéale" %}</p>
         </div>
 
         <!-- Login Form -->
         <div class="login-form-container">
-            <h2>Bienvenue</h2>
-            <p class="subtitle">Connectez-vous à votre compte</p>
+            <h2>{% translate "Bienvenue" %}</h2>
+            <p class="subtitle">{% translate "Connectez-vous à votre compte" %}</p>
 
             {% if form.non_field_errors %}
                 <div class="alert alert-danger">
@@ -30,7 +31,7 @@
                 
                 <div class="form-group">
                     <label for="{{ form.username.id_for_label }}">
-                        👤 Nom d'utilisateur ou Email
+                        👤 {% translate "Nom d'utilisateur ou Email" %}
                     </label>
                     <div class="input-wrapper">
                         {{ form.username }}
@@ -42,7 +43,7 @@
 
                 <div class="form-group">
                     <label for="{{ form.password.id_for_label }}">
-                        🔑 Mot de passe
+                        🔑 {% translate "Mot de passe" %}
                     </label>
                     <div class="input-wrapper">
                         {{ form.password }}
@@ -52,13 +53,13 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-login">Se connecter</button>
+                <button type="submit" class="btn btn-login">{% translate "Se connecter" %}</button>
             </form>
 
             <!-- Sign up link -->
             <div class="auth-footer">
-                <p>Pas encore inscrit ? <a href="{% url 'accounts:inscription' %}">Créer un compte</a></p>
-                <p><a href="{% url 'accounts:password_reset' %}">Mot de passe oublié ?</a></p>
+                <p>{% translate "Pas encore inscrit ?" %} <a href="{% url 'accounts:inscription' %}">{% translate "Créer un compte" %}</a></p>
+                <p><a href="{% url 'accounts:password_reset' %}">{% translate "Mot de passe oublié ?" %}</a></p>
             </div>
         </div>
 
@@ -66,15 +67,15 @@
         <div class="login-features">
             <div class="feature-item">
                 <span class="feature-icon">🔒</span>
-                <span class="feature-text">Sécurisé</span>
+                <span class="feature-text">{% translate "Sécurisé" %}</span>
             </div>
             <div class="feature-item">
                 <span class="feature-icon">⚡</span>
-                <span class="feature-text">Rapide</span>
+                <span class="feature-text">{% translate "Rapide" %}</span>
             </div>
             <div class="feature-item">
                 <span class="feature-icon">🌍</span>
-                <span class="feature-text">Pour tous</span>
+                <span class="feature-text">{% translate "Pour tous" %}</span>
             </div>
         </div>
     </div>

@@ -1,5 +1,17 @@
 from django.contrib import admin
-from .models import Logement, PhotoLogement, VideoLogement, Reservation, Paiement, DisponibiliteCalendrier, FavoriLogement
+from .models import Etablissement, Logement, PhotoLogement, VideoLogement, Reservation, Paiement, DisponibiliteCalendrier, FavoriLogement
+
+
+@admin.register(Etablissement)
+class EtablissementAdmin(admin.ModelAdmin):
+    list_display = ['nom', 'type_etablissement', 'proprietaire', 'ville', 'category_count']
+    list_filter = ['type_etablissement', 'ville']
+    search_fields = ['nom', 'proprietaire__username', 'ville']
+    readonly_fields = ['created_at', 'updated_at']
+
+    def category_count(self, obj):
+        return obj.categories.count()
+    category_count.short_description = 'Categories'
 
 
 class PhotoLogementInline(admin.TabularInline):
@@ -23,7 +35,7 @@ class LogementAdmin(admin.ModelAdmin):
     inlines = [PhotoLogementInline, VideoLogementInline]
     fieldsets = (
         ('Informations principales', {
-            'fields': ('titre', 'description', 'type_logement', 'proprietaire')
+            'fields': ('titre', 'description', 'type_logement', 'proprietaire', 'etablissement')
         }),
         ('Localisation', {
             'fields': ('ville', 'quartier')

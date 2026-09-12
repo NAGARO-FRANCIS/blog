@@ -3,6 +3,36 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
+class Etablissement(models.Model):
+    """Etablissement professionnel regroupant ses categories de logements."""
+
+    TYPE_CHOICES = [
+        ('hotel', 'Hotel'),
+        ('residence', 'Residence'),
+    ]
+
+    proprietaire = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='etablissement_logement',
+    )
+    nom = models.CharField(max_length=200)
+    type_etablissement = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    description = models.TextField(blank=True)
+    ville = models.CharField(max_length=100)
+    quartier = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['nom']
+        verbose_name = 'Etablissement'
+        verbose_name_plural = 'Etablissements'
+
+    def __str__(self):
+        return self.nom
+
+
 class Logement(models.Model):
     TYPE_LOGEMENT = [
         ('appartement', 'Appartement'),
@@ -10,6 +40,11 @@ class Logement(models.Model):
         ('studio', 'Studio'),
         ('villa', 'Villa'),
         ('chambre', 'Chambre'),
+        ('simple', 'Chambre simple'),
+        ('double', 'Chambre double'),
+        ('duplex', 'Duplex'),
+        ('suite', 'Suite'),
+        ('familiale', 'Chambre familiale'),
     ]
     
     ACCOUNT_TYPE = [
@@ -134,6 +169,14 @@ class Logement(models.Model):
         null=True,
         blank=True,
         related_name='logements',
+    )
+    etablissement = models.ForeignKey(
+        Etablissement,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='categories',
+        help_text='Etablissement auquel cette chambre ou ce logement appartient',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

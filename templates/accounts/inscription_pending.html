@@ -24,6 +24,14 @@
             <button type="submit" class="btn">Renvoyer le code SMS</button>
         </form>
     </div>
+    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+        <form method="post" action="{% url 'accounts:resend_activation' %}">
+            {% csrf_token %}
+            <label for="resend_activation_email">Adresse email pour renvoyer le lien d'activation</label>
+            <input id="resend_activation_email" type="email" name="email" placeholder="vous@example.com" required style="width:100%; padding:8px; margin:8px 0;" />
+            <button type="submit" class="btn">Renvoyer l'email d'activation</button>
+        </form>
+    </div>
     <a href="{% url 'accounts:login' %}" class="btn">Retour à la connexion</a>
 </div>
 {% endblock %}

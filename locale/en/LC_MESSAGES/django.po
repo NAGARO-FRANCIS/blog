@@ -1,0 +1,107 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Toggle menu"
+msgstr "Toggle menu"
+
+msgid "Accueil"
+msgstr "Home"
+
+msgid "Annonces"
+msgstr "Listings"
+
+msgid "Publier"
+msgstr "Publish"
+
+msgid "Mes annonces"
+msgstr "My listings"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Profil"
+msgstr "Profile"
+
+msgid "Langue"
+msgstr "Language"
+
+msgid "Déconnexion"
+msgstr "Log out"
+
+msgid "Connexion"
+msgstr "Log in"
+
+msgid "S'inscrire"
+msgstr "Sign up"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Trouvez votre colocation idéale"
+msgstr "Find your ideal shared home"
+
+msgid "Bienvenue"
+msgstr "Welcome"
+
+msgid "Connectez-vous à votre compte"
+msgstr "Sign in to your account"
+
+msgid "Nom d'utilisateur ou Email"
+msgstr "Username or email"
+
+msgid "Mot de passe"
+msgstr "Password"
+
+msgid "Se connecter"
+msgstr "Log in"
+
+msgid "Pas encore inscrit ?"
+msgstr "Not registered yet?"
+
+msgid "Créer un compte"
+msgstr "Create an account"
+
+msgid "Mot de passe oublié ?"
+msgstr "Forgot your password?"
+
+msgid "Sécurisé"
+msgstr "Secure"
+
+msgid "Rapide"
+msgstr "Fast"
+
+msgid "Pour tous"
+msgstr "For everyone"
+
+msgid "Lien envoyé"
+msgstr "Link sent"
+
+msgid "Vérifiez votre boîte mail"
+msgstr "Check your inbox"
+
+msgid "Si l’adresse est enregistrée, vous recevrez un lien de réinitialisation sous peu. Vérifiez aussi votre dossier Spam ou courrier indésirable si l’e-mail n’apparaît pas immédiatement."
+msgstr "If the address is registered, you will receive a password reset link shortly. Also check your spam or junk folder if the email does not appear immediately."
+
+msgid "Vous pouvez demander un nouveau lien dans"
+msgstr "You can request a new link in"
+
+msgid "secondes."
+msgstr "seconds."
+
+msgid "Recevoir un nouveau lien"
+msgstr "Request a new link"
+
+msgid "Le délai est écoulé. Vous pouvez demander un nouveau lien."
+msgstr "The waiting period is over. You can request a new link."
+
+msgid "Retour à la"
+msgstr "Back to the"
+
+msgid "page de connexion"
+msgstr "login page"

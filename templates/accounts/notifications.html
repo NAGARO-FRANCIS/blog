@@ -287,7 +287,11 @@
 
 <script>
 function markAsRead(notificationId) {
-    fetch(`/accounts/notifications/mark-as-read/${notificationId}/`, {method: 'POST'})
+    fetch(`/accounts/notifications/mark-as-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+        credentials: 'same-origin'
+    })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -300,12 +304,17 @@ function markAsRead(notificationId) {
                         btn.remove();
                     }
                 }
+                updateNotificationBadge();
             }
         });
 }
 
 function markAllAsRead() {
-    fetch('/accounts/notifications/mark-all-as-read/', {method: 'POST'})
+    fetch('/accounts/notifications/mark-all-as-read/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+        credentials: 'same-origin'
+    })
         .then(response => response.json())
         .then(data => {
             if (data.success) {

@@ -7,7 +7,7 @@ from .forms import (
     LogementProprietaireForm, LogementTouristeForm, LogementHotelForm, LogementResidenceForm,
     RechercheLogementForm, PhotoLogementFormSet, VideoLogementFormSet
 )
-from .models import Logement, PhotoLogement, VideoLogement, FavoriLogement
+from .models import Etablissement, Logement, PhotoLogement, VideoLogement, FavoriLogement
 
 
 @login_required
@@ -214,6 +214,11 @@ def detail_logement(request, id):
         'videos':             videos,
         'reservations_count': reservations_count,
         'is_favorite':        is_favorite,
+        'etablissement':      logement.etablissement,
+        'etablissement_categories': (
+            logement.etablissement.categories.exclude(id=logement.id)
+            if logement.etablissement else []
+        ),
     }
 
     return render(request, 'logement/detail_logement.html', context)
@@ -547,6 +552,24 @@ def ajouter_logement(request):
             logement.proprietaire = request.user
             logement.account_type = account_type
 
+            if account_type in ['hotel', 'residence']:
+                professional_profile = getattr(request.user.profile, 'professional_profile', None)
+                establishment_name = (
+                    professional_profile.establishment_name
+                    if professional_profile and professional_profile.establishment_name
+                    else request.user.get_full_name() or request.user.username
+                )
+                establishment, _ = Etablissement.objects.get_or_create(
+                    proprietaire=request.user,
+                    defaults={
+                        'nom': establishment_name,
+                        'type_etablissement': account_type,
+                        'ville': logement.ville,
+                        'quartier': logement.quartier,
+                    },
+                )
+                logement.etablissement = establishment
+
             if account_type == 'hotel' and logement.prix_par_nuit:
                 logement.prix = logement.prix_par_nuit
             elif account_type == 'residence' and logement.prix_par_mois:
@@ -599,11 +622,20 @@ def ajouter_logement(request):
         formset = PhotoLogementFormSet(queryset=PhotoLogement.objects.none(), prefix='photos')
         video_formset = VideoLogementFormSet(queryset=VideoLogement.objects.none(), prefix='videos')
 
+    etablissement = None
+    etablissement_categories = []
+    if account_type in ['hotel', 'residence']:
+        etablissement = Etablissement.objects.filter(proprietaire=request.user).first()
+        if etablissement:
+            etablissement_categories = etablissement.categories.order_by('type_logement', 'titre')
+
     return render(request, template, {
         'form':          form,
         'formset':       formset,
         'video_formset': video_formset,
         'account_type':  account_type,
+        'etablissement': etablissement,
+        'etablissement_categories': etablissement_categories,
     })
 
 

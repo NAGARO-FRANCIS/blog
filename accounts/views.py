@@ -9,6 +9,7 @@ from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetVi
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -65,10 +66,31 @@ def get_client_ip(request):
     return ip
 
 
+def send_activation_email(request, user, subject='Activation de votre compte Coloc.ai'):
+    """Create a time-limited activation token and send its link by email."""
+    token = secrets.token_urlsafe(32)
+    profile = user.profile
+    profile.activation_token = token
+    profile.activation_token_created_at = timezone.now()
+    profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+
+    activation_path = reverse('accounts:activate_account', kwargs={
+        'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': token,
+    })
+    activation_link = request.build_absolute_uri(activation_path)
+    message = render_to_string('accounts/emails/activation_email.html', {
+        'user': user,
+        'activation_link': activation_link,
+        'site_name': get_current_site(request).name,
+    })
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
+
+
 def inscription(request):
     # Étape 1: Choisir le type de compte
+    account_type_form = AccountTypeForm(request.POST or None)
     if request.method == 'POST' and 'account_type' in request.POST:
-        account_type_form = AccountTypeForm(request.POST)
         if account_type_form.is_valid():
             account_type = account_type_form.cleaned_data['account_type']
             request.session['account_type'] = account_type
@@ -82,7 +104,6 @@ def inscription(request):
                 return redirect('accounts:inscription_hotel')
     
     # Afficher le formulaire de choix du type de compte
-    account_type_form = AccountTypeForm()
     return render(request, 'accounts/inscription.html', {'account_type_form': account_type_form})
 
 
@@ -132,6 +153,7 @@ def inscription_individu_form(request):
 
             # Envoyer le SMS (console fallback)
             send_sms(profile.telephone, f"Votre code Coloc.ai : {code}")
+            send_activation_email(request, user)
 
             client_ip = get_client_ip(request)
             role_label = dict(Profile.ROLE_CHOICES).get(role, role)
@@ -186,22 +208,7 @@ def resend_activation(request):
             messages.info(request, "Ce compte est déjà activé. Vous pouvez vous connecter.")
             return redirect('accounts:login')
 
-        # Générer un nouveau token et envoyer l'email
-        token = secrets.token_urlsafe(32)
-        profile = user.profile
-        profile.activation_token = token
-        profile.activation_token_created_at = timezone.now()
-        profile.save(update_fields=['activation_token', 'activation_token_created_at'])
-
-        site = get_current_site(request)
-        activation_link = f"http://{site.domain}/accounts/activer/{urlsafe_base64_encode(force_bytes(user.pk))}/{token}/"
-        subject = 'Activation de votre compte Coloc.ai - Renvoyé'
-        message = render_to_string('accounts/emails/activation_email.html', {
-            'user': user,
-            'activation_link': activation_link,
-            'site_name': site.name,
-        })
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
+        send_activation_email(request, user, 'Activation de votre compte Coloc.ai - Renvoyé')
 
         messages.success(request, "Un nouvel email d'activation a été envoyé.")
         return redirect('accounts:inscription_pending')
@@ -247,10 +254,20 @@ def verify_phone(request):
     profile = user.profile
 
     if request.method == 'POST':
-        code = request.POST.get('code', '').strip()
+        code = ''.join(request.POST.get('code', '').split())
         if not code:
             messages.error(request, "Veuillez saisir le code reçu par SMS.")
-            return render(request, 'accounts/verify_phone.html', {'phone': profile.telephone})
+            return render(request, 'accounts/verify_phone.html', {
+                'phone': profile.telephone,
+                'debug_code': profile.phone_verification_code if settings.DEBUG else '',
+            })
+
+        if not code.isdigit() or len(code) != 6:
+            messages.error(request, "Le code doit contenir exactement 6 chiffres.")
+            return render(request, 'accounts/verify_phone.html', {
+                'phone': profile.telephone,
+                'debug_code': profile.phone_verification_code if settings.DEBUG else '',
+            })
 
         # Vérifier expiration (15 minutes)
         if profile.phone_verification_created_at and timezone.now() - profile.phone_verification_created_at > timezone.timedelta(minutes=15):
@@ -272,11 +289,15 @@ def verify_phone(request):
 
             login(request, user)
             messages.success(request, "Votre numéro a été vérifié et votre compte activé.")
-            return redirect('accounts:dashboard')
+            destination = request.session.pop('pending_post_verification_redirect', 'accounts:dashboard')
+            return redirect(destination)
         else:
             messages.error(request, "Code invalide. Vérifiez et réessayez.")
 
-    return render(request, 'accounts/verify_phone.html', {'phone': profile.telephone})
+    return render(request, 'accounts/verify_phone.html', {
+        'phone': profile.telephone,
+        'debug_code': profile.phone_verification_code if settings.DEBUG else '',
+    })
 
 
 def resend_phone_code(request):
@@ -284,17 +305,27 @@ def resend_phone_code(request):
     if request.method != 'POST':
         return redirect('accounts:inscription_pending')
 
-    phone = request.POST.get('phone', '').strip()
-    if not phone:
-        messages.error(request, "Veuillez fournir un numéro de téléphone.")
-        return redirect('accounts:inscription_pending')
+    pending_id = request.session.get('pending_user_id')
+    if pending_id:
+        try:
+            user = User.objects.select_related('profile').get(pk=pending_id)
+            profile = user.profile
+        except User.DoesNotExist:
+            user = None
+    else:
+        user = None
 
-    try:
-        profile = Profile.objects.get(telephone=phone)
-        user = profile.user
-    except Profile.DoesNotExist:
-        messages.error(request, "Aucun compte trouvé pour ce numéro.")
-        return redirect('accounts:inscription_pending')
+    if user is None:
+        phone = request.POST.get('phone', '').strip()
+        if not phone:
+            messages.error(request, "Veuillez fournir un numéro de téléphone.")
+            return redirect('accounts:inscription_pending')
+        try:
+            profile = Profile.objects.select_related('user').get(telephone=phone)
+            user = profile.user
+        except Profile.DoesNotExist:
+            messages.error(request, "Aucun compte trouvé pour ce numéro.")
+            return redirect('accounts:inscription_pending')
 
     if user.is_active:
         messages.info(request, "Le compte lié à ce numéro est déjà activé.")
@@ -309,7 +340,7 @@ def resend_phone_code(request):
     messages.success(request, "Un nouveau code a été envoyé par SMS.")
     # Si le compte est celui en attente, mettre à jour la session
     request.session['pending_user_id'] = user.pk
-    return redirect('accounts:inscription_pending')
+    return redirect('accounts:verify_phone')
 
 
 def inscription_residence(request):
@@ -321,10 +352,20 @@ def inscription_residence(request):
         form = ProfessionalSignUpForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save(establishment_type='residence')
+            user.is_active = False
+            user.save(update_fields=['is_active'])
+            profile = user.profile
+            profile.verification_status = 'pending'
+            profile.phone_verification_code = '{:06d}'.format(secrets.randbelow(1000000))
+            profile.phone_verification_created_at = timezone.now()
+            profile.save(update_fields=[
+                'verification_status', 'phone_verification_code', 'phone_verification_created_at'
+            ])
+            send_sms(profile.telephone, f"Votre code Coloc.ai : {profile.phone_verification_code}")
+            send_activation_email(request, user)
             
             # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
-            profile = user.profile
             VerificationLog.objects.create(
                 profile=profile,
                 action='created',
@@ -332,14 +373,12 @@ def inscription_residence(request):
                 ip_address=client_ip
             )
             
-            login(request, user)
-            
             # Supprimer le type de compte de la session
             if 'account_type' in request.session:
                 del request.session['account_type']
-            
-            # Rediriger vers la page de vérification des documents
-            return redirect('accounts:verification_docs')
+            request.session['pending_user_id'] = user.pk
+            request.session['pending_post_verification_redirect'] = 'accounts:verification_docs'
+            return redirect('accounts:verify_phone')
     else:
         form = ProfessionalSignUpForm()
 
@@ -355,10 +394,20 @@ def inscription_hotel(request):
         form = ProfessionalSignUpForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save(establishment_type='hotel')
+            user.is_active = False
+            user.save(update_fields=['is_active'])
+            profile = user.profile
+            profile.verification_status = 'pending'
+            profile.phone_verification_code = '{:06d}'.format(secrets.randbelow(1000000))
+            profile.phone_verification_created_at = timezone.now()
+            profile.save(update_fields=[
+                'verification_status', 'phone_verification_code', 'phone_verification_created_at'
+            ])
+            send_sms(profile.telephone, f"Votre code Coloc.ai : {profile.phone_verification_code}")
+            send_activation_email(request, user)
             
             # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
-            profile = user.profile
             VerificationLog.objects.create(
                 profile=profile,
                 action='created',
@@ -366,14 +415,12 @@ def inscription_hotel(request):
                 ip_address=client_ip
             )
             
-            login(request, user)
-            
             # Supprimer le type de compte de la session
             if 'account_type' in request.session:
                 del request.session['account_type']
-            
-            # Rediriger vers la page de vérification des documents
-            return redirect('accounts:verification_docs')
+            request.session['pending_user_id'] = user.pk
+            request.session['pending_post_verification_redirect'] = 'accounts:verification_docs'
+            return redirect('accounts:verify_phone')
     else:
         form = ProfessionalSignUpForm()
 
