@@ -1,89 +1,116 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Calendrier des Réservations{% endblock %}
-
-{% block extra_css %}
-<style>
-    .page-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-        padding: 40px 30px;
-        margin-bottom: 30px;
-        border-radius: 0 0 15px 15px;
-    }
-    
-    .page-header h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-    
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-    
-    .content-section {
-        background: white;
-        border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        text-align: center;
-    }
-    
-    .coming-soon {
-        font-size: 3rem;
-        margin-bottom: 20px;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #d97706;
-        margin-bottom: 10px;
-    }
-    
-    .section-desc {
-        color: #6b7280;
-        font-size: 1rem;
-        margin-bottom: 30px;
-        line-height: 1.6;
-    }
-    
-    .back-link {
-        display: inline-block;
-        background: #f59e0b;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .back-link:hover {
-        background: #d97706;
-    }
-</style>
-{% endblock %}
+{% block title %}{{ titre }}{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>📅 Calendrier des Réservations</h1>
-    <p>Visualisez et gérez vos réservations de manière visuelle</p>
-</div>
+<style>
+    .calendar-page { max-width: 1180px; margin: 0 auto; padding: 32px 20px 56px; }
+    .calendar-header { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 24px; }
+    .calendar-header h1 { margin: 0; color: #17202a; }
+    .calendar-header p { margin: 6px 0 0; color: #6b7280; }
+    .calendar-layout { display: grid; grid-template-columns: 270px 1fr; gap: 24px; align-items: start; }
+    .calendar-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; box-shadow: 0 3px 12px rgba(15,23,42,.06); }
+    .calendar-panel h2 { margin: 0 0 14px; font-size: 1rem; }
+    .calendar-panel label { display: block; margin: 12px 0 5px; font-size: .85rem; font-weight: 600; color: #374151; }
+    .calendar-panel select, .calendar-panel input, .calendar-panel button { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #d1d5db; border-radius: 7px; background: #fff; }
+    .calendar-panel button { margin-top: 14px; background: #059669; border-color: #059669; color: #fff; font-weight: 700; cursor: pointer; }
+    .inventory { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 18px 0; }
+    .inventory div { padding: 10px 6px; background: #f8fafc; border-radius: 8px; text-align: center; }
+    .inventory strong { display: block; font-size: 1.25rem; color: #111827; }
+    .inventory span { color: #6b7280; font-size: .72rem; }
+    .calendar-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .calendar-toolbar h2 { margin: 0; text-transform: capitalize; }
+    .calendar-toolbar a { color: #047857; text-decoration: none; font-weight: 700; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .weekday { text-align: center; color: #6b7280; font-size: .75rem; font-weight: 700; padding: 7px 0; }
+    .day { min-height: 74px; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; }
+    .day-empty { border-color: transparent; background: transparent; }
+    .day-number { font-weight: 800; color: #111827; }
+    .day-label { display: block; margin-top: 8px; font-size: .68rem; line-height: 1.2; }
+    .day-available { background: #ecfdf5; border-color: #a7f3d0; }
+    .day-available .day-label { color: #047857; }
+    .day-reserved { background: #fef2f2; border-color: #fecaca; }
+    .day-reserved .day-label { color: #b91c1c; }
+    .day-pending { background: #fff7ed; border-color: #fed7aa; }
+    .day-pending .day-label { color: #c2410c; }
+    .day-blocked { background: #f3f4f6; border-color: #9ca3af; }
+    .day-blocked .day-label { color: #374151; }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; color: #4b5563; font-size: .8rem; }
+    .legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 50%; background: currentColor; }
+    .legend-available { color: #059669; }.legend-reserved { color: #dc2626; }.legend-pending { color: #ea580c; }.legend-blocked { color: #4b5563; }
+    @media (max-width: 760px) { .calendar-layout { grid-template-columns: 1fr; } .calendar-header { display: block; } .calendar-header .calendar-panel { margin-top: 16px; } .day { min-height: 60px; padding: 5px; } .day-label { font-size: .6rem; } }
+</style>
 
-<div class="container">
-    <div class="content-section">
-        <div class="coming-soon">📆</div>
-        <h2 class="section-title">Calendrier Interactif</h2>
-        <p class="section-desc">
-            Bientôt disponible: Un calendrier interactif pour voir tous vos réservations,<br>
-            ajouter des événements, et gérer les disponibilités de vos propriétés.
-        </p>
-        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
+<div class="calendar-page">
+    <div class="calendar-header">
+        <div>
+            <h1>📆 {{ titre }}</h1>
+            <p>Suivez l'inventaire et bloquez les dates de vos chambres ou appartements.</p>
+        </div>
+    </div>
+
+    <div class="calendar-layout">
+        <aside class="calendar-panel">
+            <h2>Logement professionnel</h2>
+            <form method="get">
+                <label for="calendar-logement">Catégorie</label>
+                <select id="calendar-logement" name="logement" onchange="this.form.submit()">
+                    {% for item in logements %}
+                        <option value="{{ item.id }}" {% if logement.id == item.id %}selected{% endif %}>{{ item.titre }}</option>
+                    {% empty %}
+                        <option>Aucun logement professionnel</option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            {% if logement %}
+                <div class="inventory">
+                    <div><strong>{{ inventory_total }}</strong><span>Total</span></div>
+                    <div><strong>{{ inventory_reserved }}</strong><span>Réservées</span></div>
+                    <div><strong>{{ inventory_available }}</strong><span>Disponibles</span></div>
+                </div>
+            {% endif %}
+
+            <h2>Bloquer une période</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ blocage_form.logement.as_hidden }}
+                <label for="{{ blocage_form.date_debut.id_for_label }}">Du</label>
+                {{ blocage_form.date_debut }}
+                <label for="{{ blocage_form.date_fin.id_for_label }}">Au</label>
+                {{ blocage_form.date_fin }}
+                <label for="{{ blocage_form.motif.id_for_label }}">Motif</label>
+                {{ blocage_form.motif }}
+                <button type="submit">Bloquer les dates</button>
+            </form>
+        </aside>
+
+        <section class="calendar-panel">
+            <div class="calendar-toolbar">
+                <a href="?year={{ previous_month.year }}&month={{ previous_month.month }}&logement={{ logement.id }}">←</a>
+                <h2>{{ calendar_month|date:'F Y' }}</h2>
+                <a href="?year={{ next_month.year }}&month={{ next_month.month }}&logement={{ logement.id }}">→</a>
+            </div>
+            <div class="calendar-grid">
+                {% for day_name in weekdays %}<div class="weekday">{{ day_name }}</div>{% endfor %}
+                {% for day in days %}
+                    {% if day %}
+                        <div class="day day-{{ day.status }}" title="{{ day.label }}">
+                            <span class="day-number">{{ day.number }}</span>
+                            <span class="day-label">{{ day.label }}</span>
+                        </div>
+                    {% else %}
+                        <div class="day day-empty"></div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="legend">
+                <span class="legend-available">Disponible</span>
+                <span class="legend-reserved">Réservé</span>
+                <span class="legend-pending">En attente</span>
+                <span class="legend-blocked">Indisponible</span>
+            </div>
+        </section>
     </div>
 </div>
 {% endblock %}

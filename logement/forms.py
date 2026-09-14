@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Logement, PhotoLogement, VideoLogement, Reservation
+from .models import BlocageCalendrier, Logement, PhotoLogement, VideoLogement, Reservation
 from datetime import datetime, timedelta
 
 class LogementProprietaireForm(forms.ModelForm):
@@ -99,11 +99,11 @@ class LogementHotelForm(forms.ModelForm):
             'titre', 'description', 'ville', 'quartier',
             
             # Caractéristiques de la chambre
-            'type_logement', 'surface', 'nombre_pieces', 'nombre_lits', 'capacite',
+            'type_logement', 'surface', 'nombre_pieces', 'nombre_lits', 'capacite', 'unites_totales',
             'nombre_salles_bain', 'etage',
             
             # Tarification hôtel
-            'prix_par_nuit', 'frais_nettoyage', 'min_sejour',
+            'prix_par_nuit', 'frais_nettoyage', 'min_sejour', 'politique_annulation', 'heure_arrivee', 'heure_depart',
             'disponible_depuis',
             
             # Équipements
@@ -222,12 +222,12 @@ class LogementResidenceForm(forms.ModelForm):
             'titre', 'description', 'ville', 'quartier',
             
             # Caractéristiques du logement
-            'type_logement', 'surface', 'nombre_pieces', 'nombre_chambres',
+            'type_logement', 'surface', 'nombre_pieces', 'nombre_chambres', 'unites_totales',
             'nombre_salles_bain', 'etage', 'meuble',
             
             # Tarification résidence
             'prix_par_mois', 'caution_mois', 'frais_agence',
-            'duree_min_bail', 'type_charge', 'conditions_speciales',
+            'duree_min_bail', 'type_charge', 'conditions_speciales', 'politique_annulation', 'heure_arrivee', 'heure_depart',
             'disponible_depuis',
             
             # Équipements
@@ -669,3 +669,23 @@ class ReservationForm(forms.ModelForm):
                     )
         
         return cleaned_data
+
+
+class BlocageCalendrierForm(forms.ModelForm):
+    class Meta:
+        model = BlocageCalendrier
+        fields = ['logement', 'date_debut', 'date_fin', 'motif']
+        widgets = {
+            'date_debut': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
+            'date_fin': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
+            'motif': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Travaux, fermeture annuelle...'}),
+            'logement': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get('date_debut') and cleaned_data.get('date_fin') and cleaned_data['date_fin'] <= cleaned_data['date_debut']:
+            raise forms.ValidationError('La date de fin doit être après la date de début.')
+        return cleaned_data
+
+

@@ -449,6 +449,9 @@ class Notification(models.Model):
         ('subscription', 'Nouvel abonné'),
         ('message', 'Nouveau message'),
         ('reservation', 'Nouvelle réservation'),
+        ('payment', 'Paiement reçu'),
+        ('favorite', 'Ajout aux favoris'),
+        ('approval', 'Annonce approuvée'),
         ('system', 'Notification système'),
     ]
     
@@ -480,6 +483,8 @@ class Notification(models.Model):
     
     # Liens
     related_listing_id = models.PositiveIntegerField(null=True, blank=True)
+    related_reservation_id = models.PositiveIntegerField(null=True, blank=True)
+    related_payment_id = models.PositiveIntegerField(null=True, blank=True)
     related_subscription_id = models.PositiveIntegerField(null=True, blank=True)
     
     # Statut

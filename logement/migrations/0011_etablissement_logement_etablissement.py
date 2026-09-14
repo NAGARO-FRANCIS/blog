@@ -21,10 +21,11 @@ def attach_existing_professional_listings(apps, schema_editor):
             continue
 
         owner = first_listing.proprietaire
+        full_name = f"{owner.first_name} {owner.last_name}".strip()
         establishment, _ = Etablissement.objects.get_or_create(
             proprietaire_id=owner_id,
             defaults={
-                'nom': owner.get_full_name() or owner.username,
+                'nom': full_name or owner.username,
                 'type_etablissement': first_listing.account_type,
                 'ville': first_listing.ville,
                 'quartier': first_listing.quartier,

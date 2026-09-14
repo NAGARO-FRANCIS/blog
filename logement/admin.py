@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Etablissement, Logement, PhotoLogement, VideoLogement, Reservation, Paiement, DisponibiliteCalendrier, FavoriLogement
+from .models import (
+    AvisLogement, BlocageCalendrier, Etablissement, Logement, PhotoLogement, VideoLogement,
+    Reservation, Paiement, DisponibiliteCalendrier, FavoriLogement,
+    SignalementAvis,
+)
 
 
 @admin.register(Etablissement)
@@ -38,7 +42,7 @@ class LogementAdmin(admin.ModelAdmin):
             'fields': ('titre', 'description', 'type_logement', 'proprietaire', 'etablissement')
         }),
         ('Localisation', {
-            'fields': ('ville', 'quartier')
+            'fields': ('ville', 'commune', 'quartier', 'latitude', 'longitude', 'distance_universite', 'distance_hopital')
         }),
         ('Caractéristiques', {
             'fields': ('surface', 'nombre_pieces', 'nombre_chambres', 'nombre_salles_bain', 'etage', 'meuble')
@@ -47,7 +51,7 @@ class LogementAdmin(admin.ModelAdmin):
             'fields': ('prix', 'disponible_depuis')
         }),
         ('Équipements', {
-            'fields': ('climatisation', 'wifi', 'cuisine_equipee', 'garage', 'jardin', 'piscine')
+            'fields': ('climatisation', 'wifi', 'cuisine_equipee', 'garage', 'jardin', 'piscine', 'eau', 'electricite')
         }),
         ('Métadonnées', {
             'fields': ('created_at', 'updated_at'),
@@ -133,6 +137,22 @@ class ReservationAdmin(admin.ModelAdmin):
     client_display.short_description = 'Client'
 
 
+@admin.register(AvisLogement)
+class AvisLogementAdmin(admin.ModelAdmin):
+    list_display = ['logement', 'auteur', 'note_logement', 'note_proprietaire', 'est_visible', 'created_at']
+    list_filter = ['est_visible', 'created_at']
+    search_fields = ['logement__titre', 'auteur__username', 'commentaire']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(SignalementAvis)
+class SignalementAvisAdmin(admin.ModelAdmin):
+    list_display = ['avis', 'auteur', 'motif', 'traite', 'created_at']
+    list_filter = ['traite', 'created_at']
+    search_fields = ['avis__commentaire', 'auteur__username', 'motif']
+    readonly_fields = ['created_at']
+
+
 @admin.register(Paiement)
 class PaiementAdmin(admin.ModelAdmin):
     """Admin pour les paiements"""
@@ -170,6 +190,14 @@ class PaiementAdmin(admin.ModelAdmin):
         if obj and obj.statut == 'completed':
             readonly.extend(['montant', 'methode', 'reservation'])
         return readonly
+
+
+@admin.register(BlocageCalendrier)
+class BlocageCalendrierAdmin(admin.ModelAdmin):
+    list_display = ['logement', 'date_debut', 'date_fin', 'motif', 'created_at']
+    list_filter = ['date_debut', 'date_fin']
+    search_fields = ['logement__titre', 'motif']
+    readonly_fields = ['created_at']
 
 
 @admin.register(DisponibiliteCalendrier)

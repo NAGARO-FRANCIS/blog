@@ -22,14 +22,28 @@
                         {{ form.ville.label_tag }}
                         {{ form.ville }}
                     </div>
+                    <div class="adv-group">{{ form.commune.label_tag }}{{ form.commune }}</div>
+                    <div class="adv-group">{{ form.quartier.label_tag }}{{ form.quartier }}</div>
+                    <div class="adv-group">{{ form.prix_min.label_tag }}{{ form.prix_min }}</div>
                     <div class="adv-group">
                         {{ form.prix_max.label_tag }}
                         {{ form.prix_max }}
                     </div>
+                    <div class="adv-group">{{ form.nombre_chambres_min.label_tag }}{{ form.nombre_chambres_min }}</div>
                     <div class="adv-group">
                         {{ form.type_logement.label_tag }}
                         {{ form.type_logement }}
                     </div>
+                    <div class="adv-group">{{ form.meuble.label_tag }}{{ form.meuble }}</div>
+                    <div class="adv-group">{{ form.wifi.label_tag }}{{ form.wifi }}</div>
+                    <div class="adv-group">{{ form.garage.label_tag }}{{ form.garage }}</div>
+                    <div class="adv-group">{{ form.climatisation.label_tag }}{{ form.climatisation }}</div>
+                    <div class="adv-group">{{ form.securite.label_tag }}{{ form.securite }}</div>
+                    <div class="adv-group">{{ form.eau.label_tag }}{{ form.eau }}</div>
+                    <div class="adv-group">{{ form.electricite.label_tag }}{{ form.electricite }}</div>
+                    <div class="adv-group">{{ form.distance_universite_max.label_tag }}{{ form.distance_universite_max }}</div>
+                    <div class="adv-group">{{ form.distance_hopital_max.label_tag }}{{ form.distance_hopital_max }}</div>
+                    <label class="adv-check">{{ form.disponible_immediatement }} Disponible immédiatement</label>
                     <button type="submit" class="adv-submit">Appliquer</button>
                 </div>
             </form>

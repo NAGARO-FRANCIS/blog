@@ -4,7 +4,7 @@ from .views import (
     mes_logements, gestion_logements,
     mes_reservations, calendrier_reservations, mes_paiements,
     mes_clients, avis_clients, statistiques_professionnel,
-    detail_logement, toggle_favori, mes_favoris, reserver_logement, paiement_reservation, confirmation_reservation
+    detail_logement, toggle_favori, mes_favoris, reserver_logement, paiement_reservation, confirmation_reservation,
 )
 
 app_name = 'logement'
@@ -34,7 +34,7 @@ urlpatterns = [
     # Avis et statistiques
     path('avis/', avis_clients, name='avis_clients'),
     path('statistiques/', statistiques_professionnel, name='statistiques'),
-    
+
     # Favoris (doit venir AVANT les routes avec <int:id>/)
     path('favoris/', mes_favoris, name='mes_favoris'),
     

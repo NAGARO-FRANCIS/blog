@@ -176,6 +176,8 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
                 attachment=attachment,
                 message_type=message_type,
             )
+            from accounts.notification_service import message_sent
+            message_sent(message)
 
             django_messages.success(request, "Message envoyé avec succès.")
             return redirect('messagerie:conversation_detail', conversation_id=conversation.id)

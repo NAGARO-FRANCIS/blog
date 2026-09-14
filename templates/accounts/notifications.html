@@ -20,7 +20,7 @@
                 {% for notification in notifications %}
                     <div class="notification-item {% if notification.is_read %}notification-item--read{% else %}notification-item--unread{% endif %}" data-notification-id="{{ notification.id }}">
                         <div class="notification-icon">
-                            {% if notification.notification_type == 'new_listing' %}📢{% elif notification.notification_type == 'subscription' %}👥{% elif notification.notification_type == 'message' %}💬{% elif notification.notification_type == 'reservation' %}📅{% else %}ℹ️{% endif %}
+                            {% if notification.notification_type == 'new_listing' %}📢{% elif notification.notification_type == 'subscription' %}👥{% elif notification.notification_type == 'message' %}💬{% elif notification.notification_type == 'reservation' %}📅{% elif notification.notification_type == 'payment' %}💳{% elif notification.notification_type == 'favorite' %}❤️{% elif notification.notification_type == 'approval' %}🏠{% else %}ℹ️{% endif %}
                         </div>
 
                         <div class="notification-content">

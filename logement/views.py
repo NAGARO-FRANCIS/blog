@@ -1,3 +1,7 @@
+import calendar as calendar_module
+from datetime import date, timedelta
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum, Avg, Count
 from django.shortcuts import render, redirect, get_object_or_404
@@ -5,9 +9,79 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from .forms import (
     LogementProprietaireForm, LogementTouristeForm, LogementHotelForm, LogementResidenceForm,
-    RechercheLogementForm, PhotoLogementFormSet, VideoLogementFormSet
+    BlocageCalendrierForm, RechercheLogementForm, PhotoLogementFormSet, VideoLogementFormSet,
 )
-from .models import Etablissement, Logement, PhotoLogement, VideoLogement, FavoriLogement
+from .models import (
+    BlocageCalendrier, Etablissement, FavoriLogement, Logement, PhotoLogement, Reservation,
+    VideoLogement,
+)
+
+
+def _apply_logement_filters(logements, cleaned_data):
+    """Applique les filtres de recherche directement à la requête SQL."""
+    q = cleaned_data.get('q')
+    if q:
+        logements = logements.filter(
+            Q(titre__icontains=q) |
+            Q(description__icontains=q) |
+            Q(ville__icontains=q) |
+            Q(commune__icontains=q) |
+            Q(quartier__icontains=q)
+        )
+
+    for field in ('ville', 'commune', 'quartier'):
+        value = cleaned_data.get(field)
+        if value:
+            logements = logements.filter(**{f'{field}__icontains': value})
+
+    price_fields = ('prix', 'prix_par_nuit', 'prix_par_mois')
+    prix_min = cleaned_data.get('prix_min')
+    prix_max = cleaned_data.get('prix_max')
+    if prix_min is not None:
+        logements = logements.filter(
+            Q(prix__gte=prix_min) | Q(prix_par_nuit__gte=prix_min) | Q(prix_par_mois__gte=prix_min)
+        )
+    if prix_max is not None:
+        logements = logements.filter(
+            Q(prix__lte=prix_max) | Q(prix_par_nuit__lte=prix_max) | Q(prix_par_mois__lte=prix_max)
+        )
+
+    type_logement = cleaned_data.get('type_logement')
+    if type_logement:
+        logements = logements.filter(type_logement=type_logement)
+    chambres_min = cleaned_data.get('nombre_chambres_min')
+    if chambres_min is not None:
+        logements = logements.filter(nombre_chambres__gte=chambres_min)
+
+    for field in ('meuble', 'wifi', 'garage', 'climatisation', 'securite', 'eau', 'electricite'):
+        value = cleaned_data.get(field)
+        if value in ('0', '1'):
+            logements = logements.filter(**{field: value == '1'})
+
+    if cleaned_data.get('disponible_immediatement'):
+        logements = logements.filter(disponible_depuis__lte=date.today())
+    distance_universite_max = cleaned_data.get('distance_universite_max')
+    if distance_universite_max is not None:
+        logements = logements.filter(distance_universite__lte=distance_universite_max)
+    distance_hopital_max = cleaned_data.get('distance_hopital_max')
+    if distance_hopital_max is not None:
+        logements = logements.filter(distance_hopital__lte=distance_hopital_max)
+
+    return logements.distinct()
+
+
+def _map_items(logements):
+    return [
+        {
+            'id': logement.id,
+            'title': logement.titre,
+            'lat': float(logement.latitude),
+            'lng': float(logement.longitude),
+            'url': f'/logement/{logement.id}/',
+        }
+        for logement in logements
+        if logement.latitude is not None and logement.longitude is not None
+    ]
 
 
 @login_required
@@ -84,30 +158,11 @@ def home(request):
         logements = Logement.objects.all()
         is_tourist = False
 
-    # ── FILTRES DE RECHERCHE (inchangés) ─────────────────────────────
     if form.is_valid():
-        q             = form.cleaned_data.get('q')
-        ville         = form.cleaned_data.get('ville')
-        prix_max      = form.cleaned_data.get('prix_max')
-        type_logement = form.cleaned_data.get('type_logement')
-
-        if q:
-            logements = logements.filter(
-                Q(titre__icontains=q) | Q(description__icontains=q)
-            )
-        if ville:
-            logements = logements.filter(ville__icontains=ville)
-        if prix_max:
-            logements_filtered = []
-            for logement in logements:
-                prix = logement.prix_par_nuit or logement.prix_par_mois or logement.prix
-                if prix and prix <= prix_max:
-                    logements_filtered.append(logement)
-            logements = logements_filtered
-        if type_logement:
-            logements = logements.filter(type_logement=type_logement)
+        logements = _apply_logement_filters(logements, form.cleaned_data)
 
     logements = logements.prefetch_related('photos').order_by('-created_at')
+    map_items = _map_items(logements)
 
     # ── GROUPER LES ANNONCES POUR LES TOURISTES EN 4 CATÉGORIES ─────────────
     if is_tourist:
@@ -125,6 +180,7 @@ def home(request):
             'proprietaires': proprietaires,
             'favoris_ids': favoris_ids,
             'user_type': 'touriste',
+            'map_items': map_items,
         }
     else:
         context = {
@@ -134,6 +190,7 @@ def home(request):
             'favoris_ids': favoris_ids,
             'user_type': request.user.profile.account_type if request.user.is_authenticated else 'anonymous',
             'is_tourist': False,
+            'map_items': map_items,
         }
 
     return render(request, 'acceuil.html', context)
@@ -149,30 +206,9 @@ def listings_all_types(request):
 
     form = RechercheLogementForm(request.GET or None)
     if form.is_valid():
-        q             = form.cleaned_data.get('q')
-        ville         = form.cleaned_data.get('ville')
-        prix_max      = form.cleaned_data.get('prix_max')
-        type_logement = form.cleaned_data.get('type_logement')
-
-        if q:
-            hotels      = hotels.filter(Q(titre__icontains=q) | Q(description__icontains=q))
-            residences  = residences.filter(Q(titre__icontains=q) | Q(description__icontains=q))
-            individuals = individuals.filter(Q(titre__icontains=q) | Q(description__icontains=q))
-        if ville:
-            hotels      = hotels.filter(ville__icontains=ville)
-            residences  = residences.filter(ville__icontains=ville)
-            individuals = individuals.filter(ville__icontains=ville)
-        if type_logement:
-            hotels      = hotels.filter(type_logement=type_logement)
-            residences  = residences.filter(type_logement=type_logement)
-            individuals = individuals.filter(type_logement=type_logement)
-        if prix_max:
-            hotels_filtered      = [h for h in hotels      if h.prix_par_nuit  and h.prix_par_nuit  <= prix_max]
-            residences_filtered  = [r for r in residences  if r.prix_par_mois  and r.prix_par_mois  <= prix_max]
-            individuals_filtered = [i for i in individuals if (i.prix or 0)    and i.prix           <= prix_max]
-            hotels      = hotels_filtered
-            residences  = residences_filtered
-            individuals = individuals_filtered
+        hotels = _apply_logement_filters(hotels, form.cleaned_data)
+        residences = _apply_logement_filters(residences, form.cleaned_data)
+        individuals = _apply_logement_filters(individuals, form.cleaned_data)
 
     context = {
         'form':             form,
@@ -241,6 +277,8 @@ def toggle_favori(request, id):
         is_favorite = False
     else:
         is_favorite = True
+        from accounts.notification_service import favorite_added
+        favorite_added(favori)
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'is_favorite': is_favorite})
@@ -295,6 +333,8 @@ def reserver_logement(request, id):
                 reservation.client_nom   = request.user.get_full_name() or request.user.username
                 reservation.client_email = request.user.email
             reservation.save()
+            from accounts.notification_service import reservation_created
+            reservation_created(reservation)
             return redirect('logement:paiement', reservation_id=reservation.id)
     else:
         from .forms import ReservationForm
@@ -449,6 +489,8 @@ def paiement_reservation(request, reservation_id):
                 # Marquer la réservation comme confirmée en attente
                 reservation.statut = 'confirmed'
                 reservation.save()
+                from accounts.notification_service import reservation_confirmed
+                reservation_confirmed(reservation)
                 
                 messages.success(request, '✅ Réservation confirmée. Paiement à l\'arrivée.')
                 return JsonResponse({
@@ -800,7 +842,84 @@ def mes_reservations(request):
 def calendrier_reservations(request):
     profile = request.user.profile
     titre   = 'Calendrier — Hôtel' if profile.account_type == 'hotel' else 'Calendrier — Résidence'
-    return render(request, 'logement/calendrier_reservations.html', {'titre': titre})
+    logements = Logement.objects.filter(
+        proprietaire=request.user,
+        account_type__in=['hotel', 'residence'],
+    ).order_by('titre')
+
+    try:
+        year = int(request.GET.get('year', date.today().year))
+        month = int(request.GET.get('month', date.today().month))
+        if month < 1 or month > 12:
+            raise ValueError
+    except (TypeError, ValueError):
+        year, month = date.today().year, date.today().month
+
+    selected_id = request.GET.get('logement')
+    logement = logements.filter(id=selected_id).first() if selected_id else logements.first()
+    form = BlocageCalendrierForm(
+        request.POST or None,
+        initial={'logement': logement.id if logement else None},
+    )
+    form.fields['logement'].queryset = logements
+
+    if request.method == 'POST' and form.is_valid():
+        blocage = form.save(commit=False)
+        if logements.filter(id=blocage.logement_id).exists():
+            blocage.save()
+            return redirect(f'{request.path}?year={blocage.date_debut.year}&month={blocage.date_debut.month}&logement={blocage.logement_id}')
+
+    days = []
+    if logement:
+        month_days = calendar_module.Calendar(firstweekday=0).monthdayscalendar(year, month)
+        reservations = logement.reservations.filter(
+            date_arrivee__lt=date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1),
+            date_depart__gt=date(year, month, 1),
+            statut__in=['pending', 'confirmed'],
+        )
+        blocks = logement.blocages.filter(
+            date_debut__lt=date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1),
+            date_fin__gt=date(year, month, 1),
+        )
+        overrides = {item.date: item for item in logement.disponibilites.filter(date__year=year, date__month=month)}
+        for week in month_days:
+            for day_number in week:
+                if not day_number:
+                    days.append(None)
+                    continue
+                current = date(year, month, day_number)
+                block = next((item for item in blocks if item.date_debut <= current < item.date_fin), None)
+                reservation = next((item for item in reservations if item.date_arrivee <= current < item.date_depart), None)
+                override = overrides.get(current)
+                if block or (override and override.statut == 'bloquer'):
+                    status = 'blocked'
+                    label = block.motif if block else 'Indisponible'
+                elif reservation and reservation.statut == 'confirmed':
+                    status, label = 'reserved', 'Réservé'
+                elif reservation and reservation.statut == 'pending':
+                    status, label = 'pending', 'En attente'
+                elif override and override.statut == 'occupe':
+                    status, label = 'reserved', 'Occupé'
+                else:
+                    status, label = 'available', f'{logement.available_units_for_date(current)} disponible(s)'
+                days.append({'number': day_number, 'status': status, 'label': label})
+
+    previous = (date(year, month, 1) - timedelta(days=1)).replace(day=1)
+    next_month = (date(year, month, 28) + timedelta(days=4)).replace(day=1)
+    return render(request, 'logement/calendrier_reservations.html', {
+        'titre': titre,
+        'logements': logements,
+        'logement': logement,
+        'blocage_form': form,
+        'days': days,
+        'calendar_month': date(year, month, 1),
+        'previous_month': previous,
+        'next_month': next_month,
+        'weekdays': ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        'inventory_total': logement.unites_totales if logement else 0,
+        'inventory_reserved': logement.reserved_units_for_date(date.today()) if logement else 0,
+        'inventory_available': logement.available_units_for_date(date.today()) if logement else 0,
+    })
 
 
 @login_required

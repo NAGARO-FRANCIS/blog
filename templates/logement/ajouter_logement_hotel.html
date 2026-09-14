@@ -562,6 +562,13 @@
                         <label>Quartier / District</label>
                         {{ form.quartier }}
                     </div>
+                    <div class="field-group"><label>Commune</label>{{ form.commune }}</div>
+                    <div class="field-group"><label>Latitude</label>{{ form.latitude }}</div>
+                    <div class="field-group"><label>Longitude</label>{{ form.longitude }}</div>
+                    <div class="field-group"><label>Distance université (km)</label>{{ form.distance_universite }}</div>
+                    <div class="field-group"><label>Distance hôpital (km)</label>{{ form.distance_hopital }}</div>
+                    <div class="field-group"><label>{{ form.eau }} Eau disponible</label></div>
+                    <div class="field-group"><label>{{ form.electricite }} Électricité disponible</label></div>
                 </div>
 
                 <div class="fields-grid full">
@@ -660,6 +667,13 @@
                             <label>Séjour Minimum (nuits)</label>
                             {{ form.min_sejour }}
                         </div>
+                        <div class="field-group">
+                            <label>Nombre total de chambres</label>
+                            {{ form.unites_totales }}
+                        </div>
+                        <div class="field-group"><label>Heure d'arrivée</label>{{ form.heure_arrivee }}</div>
+                        <div class="field-group"><label>Heure de départ</label>{{ form.heure_depart }}</div>
+                        <div class="field-group full"><label>Politique d'annulation</label>{{ form.politique_annulation }}</div>
                         <div class="field-group">
                             <label>Disponible à partir du</label>
                             {{ form.disponible_depuis }}
