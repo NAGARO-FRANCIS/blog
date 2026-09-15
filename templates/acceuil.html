@@ -319,10 +319,15 @@ document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => {
         const val = chip.dataset.filter;
         const url = new URL(window.location.href);
-        if (val) {
+        if (val === 'hotel') {
+            url.searchParams.delete('type_logement');
+            url.searchParams.set('account_type', 'hotel');
+        } else if (val) {
+            url.searchParams.delete('account_type');
             url.searchParams.set('type_logement', val);
         } else {
             url.searchParams.delete('type_logement');
+            url.searchParams.delete('account_type');
         }
         window.location.href = url.toString();
     });

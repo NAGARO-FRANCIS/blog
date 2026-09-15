@@ -129,17 +129,18 @@ LOGOUT_REDIRECT_URL = 'home'
 EMAIL_BACKEND_ENV = os.getenv('EMAIL_BACKEND', '').strip()
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com').strip()
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
 
 if EMAIL_BACKEND_ENV:
     EMAIL_BACKEND = EMAIL_BACKEND_ENV
-elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD and os.getenv('EMAIL_HOST'):
+elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-EMAIL_HOST = os.getenv('EMAIL_HOST', '')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT')) if os.getenv('EMAIL_PORT') else None
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False').lower() in ('true', '1', 'yes')
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '20'))
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@localhost')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 ACCOUNT_ACTIVATION_DAYS = 7

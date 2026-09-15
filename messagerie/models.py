@@ -67,6 +67,31 @@ class ParticipationConversation(models.Model):
         return f"{self.user.username} dans {self.conversation}"
 
 
+class AppelSession(models.Model):
+    """Session WebRTC etatisee pour un appel entre les participants."""
+    STATUS_CHOICES = [
+        ('ringing', 'Sonnerie'),
+        ('active', 'Actif'),
+        ('ended', 'Termine'),
+    ]
+
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='appels')
+    caller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appels_lances')
+    callee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appels_recus')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ringing')
+    media_type = models.CharField(max_length=5, default='video')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class AppelSignal(models.Model):
+    session = models.ForeignKey(AppelSession, on_delete=models.CASCADE, related_name='signals')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    kind = models.CharField(max_length=20)
+    payload = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Message(models.Model):
     """Modèle pour les messages individuels"""
     conversation = models.ForeignKey(
@@ -92,6 +117,7 @@ class Message(models.Model):
         ('image', 'Image'),
         ('file', 'Fichier'),
         ('audio', 'Audio'),
+        ('video', 'Vidéo'),
         ('system', 'Système'),
     ]
     message_type = models.CharField(
@@ -140,6 +166,10 @@ class Message(models.Model):
     @property
     def is_audio(self):
         return self.message_type == 'audio'
+
+    @property
+    def is_video(self):
+        return self.message_type == 'video'
 
     @property
     def attachment_filename(self):

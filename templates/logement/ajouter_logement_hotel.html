@@ -20,14 +20,14 @@
     .hotel-publish-container {
         max-width: 1100px;
         margin: 0 auto;
-        padding: 40px 20px;
+        padding: 32px 20px 96px;
     }
 
     /* Header Premium */
     .publish-header {
         background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         color: white;
-        padding: 60px 40px;
+        padding: 44px 32px;
         border-radius: 20px;
         margin-bottom: 40px;
         box-shadow: 0 20px 60px rgba(245, 158, 11, 0.2);
@@ -35,7 +35,7 @@
     }
 
     .publish-header h1 {
-        font-size: 2.8rem;
+        font-size: clamp(2rem, 4vw, 2.8rem);
         font-weight: 800;
         margin-bottom: 10px;
         letter-spacing: -0.02em;
@@ -78,7 +78,7 @@
     /* Steps */
     .steps-container {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 15px;
         margin-bottom: 30px;
     }
@@ -88,7 +88,8 @@
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        padding: 20px;
+        min-height: 112px;
+        padding: 16px 10px;
         background: white;
         border: 2px solid #e5e7eb;
         border-radius: 12px;
@@ -137,7 +138,7 @@
     .form-card {
         background: white;
         border-radius: 16px;
-        padding: 40px;
+        padding: 32px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         margin-bottom: 30px;
     }
@@ -172,6 +173,93 @@
 
     .fields-grid.full {
         grid-template-columns: 1fr;
+    }
+
+    .location-details {
+        display: grid;
+        gap: 22px;
+        margin-bottom: 25px;
+    }
+
+    .location-group {
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fcfcfd;
+    }
+
+    .location-group .fields-grid {
+        margin-bottom: 0;
+    }
+
+    .location-group-title {
+        margin: 0 0 16px;
+        color: #1a2332;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .inherited-value {
+        display: flex;
+        align-items: center;
+        min-height: 50px;
+        padding: 14px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .availability-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .availability-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 74px;
+        padding: 14px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        background: white;
+        color: #6b7280;
+    }
+
+    .availability-option.is-available {
+        border-color: #86efac;
+        background: #f0fdf4;
+        color: #166534;
+    }
+
+    .availability-status {
+        display: grid;
+        flex: 0 0 26px;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
+        font-weight: 800;
+    }
+
+    .is-available .availability-status {
+        background: #16a34a;
+        color: white;
+    }
+
+    .availability-option span:last-child {
+        display: grid;
+        gap: 3px;
+    }
+
+    .availability-option small {
+        color: #6b7280;
+        font-size: .78rem;
+        font-weight: 400;
     }
 
     .field-group {
@@ -221,6 +309,26 @@
         resize: vertical;
     }
 
+    .form-errors {
+        margin-bottom: 24px;
+        padding: 16px 18px;
+        border: 1px solid #fca5a5;
+        border-left: 4px solid #dc2626;
+        border-radius: 10px;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    .form-errors strong {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .form-errors ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
     .field-hint {
         font-size: 0.85rem;
         color: #9ca3af;
@@ -237,33 +345,9 @@
         font-size: 13px;
     }
 
-    .establishment-summary {
-        display: grid;
-        gap: 8px;
-        margin: -20px 0 30px;
-        padding: 18px 22px;
-        border-left: 4px solid #009a44;
-        border-radius: 10px;
-        background: #f0fdf4;
-        color: #166534;
-    }
+   
 
-    .establishment-summary strong {
-        font-size: 1.1rem;
-    }
-
-    .establishment-categories {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .establishment-categories a {
-        color: #b45309;
-        font-weight: 700;
-        text-decoration: none;
-    }
+    
 
     /* Amenities/Features Grid */
     .amenities-grid {
@@ -468,6 +552,44 @@
             width: 100%;
         }
     }
+
+    @media (min-width: 769px) and (max-width: 1050px) {
+        .steps-container {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 520px) {
+        .hotel-publish-container {
+            padding: 20px 12px 112px;
+        }
+
+        .publish-header {
+            padding: 32px 18px;
+            border-radius: 14px;
+        }
+
+        .publish-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .form-card {
+            padding: 22px 16px;
+            border-radius: 12px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+        }
+
+        .amenities-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .availability-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -480,20 +602,7 @@
         <div class="badge">Pour les hôtels et établissements officiels</div>
     </div>
 
-    <div class="establishment-summary">
-        <strong>{{ etablissement.nom|default:"Votre établissement" }}</strong>
-        <span>Chaque publication ajoute une catégorie distincte avec son prix, ses caractéristiques et ses photos.</span>
-        {% if etablissement_categories %}
-            <div class="establishment-categories">
-                <span>Catégories déjà publiées :</span>
-                {% for category in etablissement_categories %}
-                    <a href="{% url 'logement:detail_logement' category.id %}">{{ category.get_type_logement_display }}</a>
-                {% endfor %}
-            </div>
-        {% else %}
-            <span>Aucune catégorie publiée pour le moment. Commencez par la première chambre.</span>
-        {% endif %}
-    </div>
+   
 
     <!-- Progress -->
     <div class="progress-section">
@@ -534,6 +643,20 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
+        {% if form.errors or formset.non_form_errors or video_formset.non_form_errors %}
+            <div class="form-errors" role="alert">
+                <strong>Votre annonce n'a pas encore été publiée.</strong>
+                <ul>
+                    {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                    {% for field in form %}
+                        {% for error in field.errors %}<li>{{ field.label }} : {{ error }}</li>{% endfor %}
+                    {% endfor %}
+                    {% for error in formset.non_form_errors %}<li>Photos : {{ error }}</li>{% endfor %}
+                    {% for error in video_formset.non_form_errors %}<li>Vidéos : {{ error }}</li>{% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
         <!-- Step 1: Localisation -->
         <div class="form-section active" id="step0">
             <div class="form-card">
@@ -553,25 +676,51 @@
                     </div>
                 </div>
 
-                <div class="fields-grid">
-                    <div class="field-group required">
-                        <label>Ville</label>
-                        {{ form.ville }}
+                <div class="location-details">
+                    <div class="location-group">
+                        <h3 class="location-group-title">Adresse précise</h3>
+                        <div class="fields-grid">
+                            <div class="field-group required">
+                                <label for="{{ form.ville.id_for_label }}">Ville</label>
+                                {{ form.ville }}
+                            </div>
+                            <div class="field-group required">
+                                <label for="{{ form.quartier.id_for_label }}">Quartier / District</label>
+                                {{ form.quartier }}
+                            </div>
+                            <div class="field-group">
+                                <label>Commune</label>
+                                <div class="inherited-value">{{ etablissement.commune|default:"À préciser dans l'établissement" }}</div>
+                            </div>
+                            <div class="field-group">
+                                <label for="{{ form.latitude.id_for_label }}">Latitude</label>
+                                {{ form.latitude }}
+                            </div>
+                            <div class="field-group">
+                                <label for="{{ form.longitude.id_for_label }}">Longitude</label>
+                                {{ form.longitude }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="field-group required">
-                        <label>Quartier / District</label>
-                        {{ form.quartier }}
+
+                    <div class="location-group">
+                        <h3 class="location-group-title">Distances utiles</h3>
+                        <div class="fields-grid">
+                            <div class="field-group">
+                                <label for="{{ form.distance_universite.id_for_label }}">Distance université (km)</label>
+                                {{ form.distance_universite }}
+                            </div>
+                            <div class="field-group">
+                                <label for="{{ form.distance_hopital.id_for_label }}">Distance hôpital (km)</label>
+                                {{ form.distance_hopital }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="field-group"><label>Commune</label>{{ form.commune }}</div>
-                    <div class="field-group"><label>Latitude</label>{{ form.latitude }}</div>
-                    <div class="field-group"><label>Longitude</label>{{ form.longitude }}</div>
-                    <div class="field-group"><label>Distance université (km)</label>{{ form.distance_universite }}</div>
-                    <div class="field-group"><label>Distance hôpital (km)</label>{{ form.distance_hopital }}</div>
-                    <div class="field-group"><label>{{ form.eau }} Eau disponible</label></div>
-                    <div class="field-group"><label>{{ form.electricite }} Électricité disponible</label></div>
+
+                   
                 </div>
 
-                <div class="fields-grid full">
+                <div class="fields-grid location-description">
                     <div class="field-group required">
                         <label>Description Complète</label>
                         {{ form.description }}
@@ -671,9 +820,6 @@
                             <label>Nombre total de chambres</label>
                             {{ form.unites_totales }}
                         </div>
-                        <div class="field-group"><label>Heure d'arrivée</label>{{ form.heure_arrivee }}</div>
-                        <div class="field-group"><label>Heure de départ</label>{{ form.heure_depart }}</div>
-                        <div class="field-group full"><label>Politique d'annulation</label>{{ form.politique_annulation }}</div>
                         <div class="field-group">
                             <label>Disponible à partir du</label>
                             {{ form.disponible_depuis }}

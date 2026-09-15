@@ -2,9 +2,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages as django_messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET, require_POST
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from .models import Conversation, Message, ParticipationConversation
+from .models import AppelSession, AppelSignal, Conversation, Message, ParticipationConversation
+import json
 from colocation.models import ColocationAnnonce
 from logement.models import Logement
 
@@ -57,6 +60,89 @@ def conversation_detail(request, conversation_id):
         'conversation_messages': messages,
         'other_participant': other_participant,
     })
+
+
+def _conversation_for_user(request, conversation_id):
+    return get_object_or_404(Conversation, pk=conversation_id, participants=request.user)
+
+
+@login_required
+@require_POST
+def demarrer_appel(request):
+    conversation = _conversation_for_user(request, request.POST.get('conversation_id'))
+    callee = conversation.get_other_participant(request.user)
+    if not callee:
+        return JsonResponse({'error': 'Aucun destinataire.'}, status=400)
+    AppelSession.objects.filter(conversation=conversation, status__in=['ringing', 'active']).update(status='ended')
+    media_type = request.POST.get('media_type', 'video')
+    if media_type not in ('audio', 'video'):
+        return JsonResponse({'error': 'Type d’appel invalide.'}, status=400)
+    session = AppelSession.objects.create(
+        conversation=conversation,
+        caller=request.user,
+        callee=callee,
+        media_type=media_type,
+    )
+    return JsonResponse({'session_id': session.id})
+
+
+@login_required
+@require_GET
+def appels_actifs(request):
+    conversation = _conversation_for_user(request, request.GET.get('conversation_id'))
+    session = AppelSession.objects.filter(
+        conversation=conversation,
+        status__in=['ringing', 'active'],
+    ).exclude(caller=request.user).select_related('caller').first()
+    if not session:
+        return JsonResponse({'call': None})
+    return JsonResponse({'call': {
+        'id': session.id,
+        'media_type': session.media_type,
+        'caller': session.caller.get_full_name() or session.caller.username,
+    }})
+
+
+@login_required
+@require_GET
+def etat_appel(request, session_id):
+    session = get_object_or_404(AppelSession, pk=session_id)
+    if request.user not in (session.caller, session.callee):
+        return JsonResponse({'error': 'Acces refuse.'}, status=403)
+    after_id = int(request.GET.get('after', 0))
+    signals = AppelSignal.objects.filter(session=session, id__gt=after_id).exclude(sender=request.user).order_by('id')
+    return JsonResponse({
+        'status': session.status,
+        'signals': [{'id': signal.id, 'kind': signal.kind, 'payload': signal.payload} for signal in signals],
+    })
+
+
+@login_required
+@require_POST
+def signaler_appel(request, session_id):
+    session = get_object_or_404(AppelSession, pk=session_id)
+    if request.user not in (session.caller, session.callee) or session.status == 'ended':
+        return JsonResponse({'error': 'Appel indisponible.'}, status=403)
+    data = json.loads(request.body or '{}')
+    kind = data.get('kind')
+    if kind not in ('offer', 'answer', 'candidate', 'hold'):
+        return JsonResponse({'error': 'Signal invalide.'}, status=400)
+    AppelSignal.objects.create(session=session, sender=request.user, kind=kind, payload=json.dumps(data.get('payload')))
+    if kind == 'answer':
+        session.status = 'active'
+        session.save(update_fields=['status', 'updated_at'])
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def terminer_appel(request, session_id):
+    session = get_object_or_404(AppelSession, pk=session_id)
+    if request.user not in (session.caller, session.callee):
+        return JsonResponse({'error': 'Acces refuse.'}, status=403)
+    session.status = 'ended'
+    session.save(update_fields=['status', 'updated_at'])
+    return JsonResponse({'ok': True})
 
 
 @login_required
@@ -159,10 +245,16 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
 
             message_type = 'text'
             if attachment:
-                content_type = getattr(attachment, 'content_type', '') or ''
-                filename = getattr(attachment, 'name', '').lower()
-                if content_type.startswith('audio/') or filename.endswith(('.ogg', '.mp3', '.wav', '.m4a', '.webm', '.aac')):
+                forced_type = (request.POST.get('message_type') or '').strip().lower()
+                content_type = (getattr(attachment, 'content_type', '') or '').lower()
+                filename = (getattr(attachment, 'name', '') or '').lower()
+
+                if forced_type in {'audio', 'video', 'image', 'file'}:
+                    message_type = forced_type
+                elif content_type.startswith('audio/') or filename.endswith(('.ogg', '.mp3', '.wav', '.m4a', '.aac', '.webm')):
                     message_type = 'audio'
+                elif content_type.startswith('video/') or filename.endswith(('.mp4', '.mov', '.avi', '.mkv', '.m4v')):
+                    message_type = 'video'
                 elif content_type.startswith('image/') or filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')):
                     message_type = 'image'
                 else:

@@ -38,6 +38,56 @@ class MessagerieTests(TestCase):
         self.assertTrue(message.attachment)
         self.assertEqual(message.message_type, 'audio')
 
+    def test_send_message_with_webm_audio_attachment_is_classified_as_audio(self):
+        self.client.login(username='alice', password='pass1234')
+        conversation = Conversation.objects.create()
+        conversation.participants.add(self.user1, self.user2)
+
+        attachment = SimpleUploadedFile(
+            'voice-message.webm',
+            b'audio-webm-bytes',
+            content_type='audio/webm;codecs=opus',
+        )
+
+        response = self.client.post(
+            reverse('messagerie:envoyer_message'),
+            {
+                'conversation_id': conversation.id,
+                'contenu': '',
+                'attachment': attachment,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        message = Message.objects.get(conversation=conversation, expediteur=self.user1)
+        self.assertEqual(message.message_type, 'audio')
+        self.assertTrue(message.is_audio)
+
+    def test_send_message_with_video_attachment_saves_file(self):
+        self.client.login(username='alice', password='pass1234')
+        conversation = Conversation.objects.create()
+        conversation.participants.add(self.user1, self.user2)
+
+        attachment = SimpleUploadedFile(
+            'visit.mp4',
+            b'video-bytes',
+            content_type='video/mp4',
+        )
+
+        response = self.client.post(
+            reverse('messagerie:envoyer_message'),
+            {
+                'conversation_id': conversation.id,
+                'contenu': '',
+                'attachment': attachment,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        message = Message.objects.get(conversation=conversation, expediteur=self.user1)
+        self.assertEqual(message.message_type, 'video')
+        self.assertTrue(message.is_video)
+
     def test_conversation_detail_renders_messages(self):
         self.client.login(username='alice', password='pass1234')
         conversation = Conversation.objects.create()

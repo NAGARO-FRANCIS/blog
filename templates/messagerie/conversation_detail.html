@@ -31,6 +31,8 @@
             <a href="{% url 'messagerie:mes_conversations' %}" class="btn secondary">
                 ← Retour aux conversations
             </a>
+            <button type="button" class="btn call-btn" id="videoCallBtn">📹 Appel vidéo</button>
+            <button type="button" class="btn call-btn" id="audioCallBtn">📞 Appel vocal</button>
             <button type="button" class="btn danger" onclick="confirmerSuppression()">
                 🗑️ Supprimer la conversation
             </button>
@@ -50,6 +52,11 @@
                                 <div class="message-attachment audio-attachment">
                                     <span class="attachment-label-inline">🎤 Message vocal</span>
                                     <audio controls preload="metadata" src="{{ message.attachment.url }}"></audio>
+                                </div>
+                            {% elif message.is_video %}
+                                <div class="message-attachment video-attachment">
+                                    <span class="attachment-label-inline">🎥 Message vidéo</span>
+                                    <video controls preload="metadata" src="{{ message.attachment.url }}"></video>
                                 </div>
                             {% else %}
                                 <div class="message-attachment">
@@ -83,7 +90,7 @@
                 <textarea name="contenu" id="messageContent" placeholder="Tapez votre message..." rows="1"></textarea>
                 <label for="messageAttachment" class="attachment-label" title="Joindre un fichier">
                     📎
-                    <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx">
+                    <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
                 </label>
             </div>
             <div class="message-tools">
@@ -94,6 +101,24 @@
                 <button type="submit" class="btn">📤 Envoyer</button>
             </div>
         </form>
+    </div>
+
+    <div class="call-panel" id="callPanel" hidden>
+        <div class="call-panel-header">
+            <strong id="callStatus">Appel en cours</strong>
+            <button type="button" class="btn hold-btn" id="holdCallBtn">⏸ Mettre en attente</button>
+            <button type="button" class="btn danger" id="endCallBtn">Raccrocher</button>
+        </div>
+        <div class="call-videos">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay muted playsinline></video>
+        </div>
+    </div>
+
+    <div class="incoming-call" id="incomingCall" hidden>
+        <span id="incomingCallText">Appel entrant</span>
+        <button type="button" class="btn" id="acceptCallBtn">📞 Décrocher</button>
+        <button type="button" class="btn secondary" id="rejectCallBtn">☎️ Raccrocher</button>
     </div>
 </div>
 
@@ -199,6 +224,60 @@
     .conversation-actions .btn {
         padding: 8px 16px;
         font-size: 0.9rem;
+    }
+
+    .call-panel,
+    .incoming-call {
+        background: #111827;
+        color: white;
+        border-radius: 12px;
+        padding: 14px;
+        margin: 12px 0;
+    }
+
+    .call-panel[hidden],
+    .incoming-call[hidden] {
+        display: none !important;
+    }
+
+    .call-panel-header,
+    .incoming-call {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: space-between;
+    }
+
+    .call-videos {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .call-videos video {
+        width: 100%;
+        min-height: 120px;
+        max-height: 360px;
+        object-fit: cover;
+        border-radius: 8px;
+        background: #030712;
+    }
+
+    #audioCallBtn {
+        background: #059669;
+        color: white;
+    }
+
+    .hold-btn {
+        background: #f59e0b;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .call-videos {
+            grid-template-columns: 1fr;
+        }
     }
 
     .messages-container {
@@ -310,6 +389,20 @@
     .message-attachment audio {
         width: 220px;
         max-width: 100%;
+    }
+
+    .video-attachment {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .message-attachment video {
+        display: block;
+        width: min(360px, 100%);
+        max-height: 280px;
+        border-radius: 8px;
+        background: #111827;
     }
 
     .message-attachment a {
@@ -591,54 +684,60 @@
     let isRecording = false;
 
     async function ensureMicrophoneAccess() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
             voiceStatus.textContent = 'Micro indisponible';
             voiceButton.disabled = true;
             return false;
         }
-        try {
-            await navigator.mediaDevices.getUserMedia({ audio: true });
-            return true;
-        } catch (error) {
-            voiceStatus.textContent = 'Autorisez l’accès au micro';
-            voiceButton.disabled = true;
-            return false;
-        }
+        return true;
     }
 
     async function toggleRecording() {
-        if (!await ensureMicrophoneAccess()) {
-            return;
-        }
-
-        if (!isRecording) {
-            recordedChunks = [];
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.ondataavailable = event => {
-                if (event.data.size > 0) recordedChunks.push(event.data);
-            };
-            mediaRecorder.onstop = async () => {
-                const blob = new Blob(recordedChunks, { type: 'audio/ogg' });
-                await sendVoiceMessage(blob);
-                stream.getTracks().forEach(track => track.stop());
-            };
-            mediaRecorder.start();
-            isRecording = true;
-            voiceButton.classList.add('recording');
-            voiceStatus.textContent = 'Enregistrement…';
-        } else {
-            mediaRecorder.stop();
+        try {
+            if (!await ensureMicrophoneAccess()) return;
+            if (!isRecording) {
+                recordedChunks = [];
+                const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+                const mimeType = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm']
+                    .find(type => MediaRecorder.isTypeSupported(type));
+                mediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : undefined);
+                const extension = mimeType && mimeType.includes('ogg') ? 'ogg' : 'webm';
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) recordedChunks.push(event.data);
+                };
+                mediaRecorder.onstop = async () => {
+                    try {
+                        const blob = new Blob(recordedChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
+                        await sendVoiceMessage(blob, `voice-message.${extension}`);
+                    } catch (error) {
+                        voiceStatus.textContent = 'Échec de l’envoi du vocal';
+                    } finally {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                voiceButton.classList.add('recording');
+                voiceStatus.textContent = 'Enregistrement…';
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                voiceButton.classList.remove('recording');
+                voiceStatus.textContent = 'Envoi du vocal…';
+            }
+        } catch (error) {
+            voiceStatus.textContent = error.name === 'NotAllowedError'
+                ? 'Autorisez le micro dans le navigateur'
+                : 'Micro indisponible';
             isRecording = false;
             voiceButton.classList.remove('recording');
-            voiceStatus.textContent = 'Envoi du vocal…';
         }
     }
 
-    async function sendVoiceMessage(blob) {
+    async function sendVoiceMessage(blob, filename) {
         const formData = new FormData(messageForm);
         formData.set('contenu', messageContent.value.trim());
-        formData.set('attachment', blob, 'voice-message.ogg');
+        formData.set('attachment', blob, filename);
         formData.set('message_type', 'audio');
 
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -660,6 +759,186 @@
     if (voiceButton) {
         voiceButton.addEventListener('click', toggleRecording);
     }
+
+    // Appels WebRTC avec signalisation Django par polling.
+    const conversationId = '{{ conversation.id }}';
+    const callPanel = document.getElementById('callPanel');
+    const incomingCall = document.getElementById('incomingCall');
+    const callStatus = document.getElementById('callStatus');
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    let callSessionId = null;
+    let peerConnection = null;
+    let localStream = null;
+    let lastSignalId = 0;
+    let isCaller = false;
+    let callMode = 'video';
+    let isCallOnHold = false;
+    const pendingCandidates = [];
+
+    function csrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    async function callRequest(url, options = {}) {
+        const response = await fetch(url, {
+            ...options,
+            headers: {'X-CSRFToken': csrfToken(), ...(options.headers || {})},
+        });
+        if (!response.ok) throw new Error('appel indisponible');
+        return response.json();
+    }
+
+    async function preparePeer() {
+        localStream = await navigator.mediaDevices.getUserMedia({audio: true, video: callMode === 'video'});
+        localVideo.srcObject = localStream;
+        localVideo.style.display = callMode === 'video' ? 'block' : 'none';
+        peerConnection = new RTCPeerConnection({iceServers: [{urls: 'stun:stun.l.google.com:19302'}]});
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        peerConnection.ontrack = event => { remoteVideo.srcObject = event.streams[0]; };
+        peerConnection.onicecandidate = event => {
+            if (event.candidate && callSessionId) {
+                callRequest(`/messagerie/appels/${callSessionId}/signaler/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({kind: 'candidate', payload: event.candidate}),
+                }).catch(() => {});
+            }
+        };
+        callPanel.hidden = false;
+    }
+
+    async function addPendingCandidates() {
+        while (pendingCandidates.length && peerConnection.remoteDescription) {
+            await peerConnection.addIceCandidate(pendingCandidates.shift());
+        }
+    }
+
+    async function startCall(mode) {
+        if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia) {
+            alert('Les appels ne sont pas pris en charge par ce navigateur.');
+            return;
+        }
+        callMode = mode;
+        isCaller = true;
+        const data = await callRequest('{% url "messagerie:demarrer_appel" %}', {
+            method: 'POST', body: new URLSearchParams({conversation_id: conversationId, media_type: mode}),
+        });
+        callSessionId = data.session_id;
+        await preparePeer();
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        await callRequest(`/messagerie/appels/${callSessionId}/signaler/`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({kind: 'offer', payload: offer}),
+        });
+        callStatus.textContent = 'En attente de réponse…';
+        pollCall();
+    }
+
+    async function acceptCall() {
+        callSessionId = incomingCall.dataset.sessionId;
+        callMode = incomingCall.dataset.mediaType || 'video';
+        incomingCall.hidden = true;
+        isCaller = false;
+        await preparePeer();
+        callStatus.textContent = 'Connexion…';
+        pollCall();
+    }
+
+    async function pollCall() {
+        if (!callSessionId) return;
+        try {
+            const state = await callRequest(`/messagerie/appels/${callSessionId}/etat/?after=${lastSignalId}`);
+            for (const signal of state.signals) {
+                lastSignalId = signal.id;
+                const payload = JSON.parse(signal.payload);
+                if (signal.kind === 'offer' && !isCaller) {
+                    await peerConnection.setRemoteDescription(payload);
+                    await addPendingCandidates();
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    await callRequest(`/messagerie/appels/${callSessionId}/signaler/`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({kind: 'answer', payload: answer})});
+                } else if (signal.kind === 'answer' && isCaller) {
+                    await peerConnection.setRemoteDescription(payload);
+                    await addPendingCandidates();
+                } else if (signal.kind === 'candidate' && peerConnection.remoteDescription) {
+                    await peerConnection.addIceCandidate(payload);
+                } else if (signal.kind === 'candidate') {
+                    pendingCandidates.push(payload);
+                } else if (signal.kind === 'hold') {
+                    callStatus.textContent = payload.on_hold ? 'L’appel est en attente' : 'Appel en cours';
+                }
+            }
+            if (state.status === 'ended') endCall(false);
+        } catch (error) {
+            callStatus.textContent = 'Connexion interrompue';
+        }
+        if (callSessionId) setTimeout(pollCall, 1000);
+    }
+
+    async function endCall(notify = true) {
+        const sessionId = callSessionId;
+        callSessionId = null;
+        isCallOnHold = false;
+        incomingCall.hidden = true;
+        document.getElementById('holdCallBtn').textContent = '⏸ Mettre en attente';
+        callStatus.textContent = 'Appel terminé';
+        if (notify && sessionId) await callRequest(`/messagerie/appels/${sessionId}/terminer/`, {method: 'POST'}).catch(() => {});
+        peerConnection?.close();
+        localStream?.getTracks().forEach(track => track.stop());
+        peerConnection = null;
+        localStream = null;
+        callPanel.hidden = true;
+    }
+
+    async function toggleHold() {
+        if (!localStream || !callSessionId) return;
+        isCallOnHold = !isCallOnHold;
+        localStream.getTracks().forEach(track => { track.enabled = !isCallOnHold; });
+        const holdButton = document.getElementById('holdCallBtn');
+        holdButton.textContent = isCallOnHold ? '▶ Reprendre l’appel' : '⏸ Mettre en attente';
+        callStatus.textContent = isCallOnHold ? 'Votre appel est en attente' : 'Appel en cours';
+        await callRequest(`/messagerie/appels/${callSessionId}/signaler/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({kind: 'hold', payload: {on_hold: isCallOnHold}}),
+        }).catch(() => {});
+    }
+
+    function showCallError(message) {
+        callStatus.textContent = message;
+        callPanel.hidden = false;
+    }
+
+    document.getElementById('videoCallBtn').addEventListener('click', () => startCall('video').catch(error => {
+        showCallError(error.message === 'appel indisponible' ? 'Le serveur d’appel est indisponible.' : 'Autorisez la caméra et le micro pour appeler.');
+    }));
+    document.getElementById('audioCallBtn').addEventListener('click', () => startCall('audio').catch(error => {
+        showCallError(error.message === 'appel indisponible' ? 'Le serveur d’appel est indisponible.' : 'Autorisez le micro pour appeler.');
+    }));
+    document.getElementById('endCallBtn').addEventListener('click', () => endCall(true));
+    document.getElementById('holdCallBtn').addEventListener('click', () => toggleHold().catch(() => showCallError('Impossible de modifier l’état de l’appel.')));
+    document.getElementById('acceptCallBtn').addEventListener('click', () => acceptCall().catch(() => showCallError('Impossible de rejoindre cet appel.')));
+    document.getElementById('rejectCallBtn').addEventListener('click', async () => {
+        const sessionId = incomingCall.dataset.sessionId;
+        incomingCall.hidden = true;
+        if (sessionId) {
+            await callRequest(`/messagerie/appels/${sessionId}/terminer/`, {method: 'POST'}).catch(() => {});
+        }
+    });
+
+    async function checkIncomingCall() {
+        if (callSessionId) return;
+        const data = await callRequest(`{% url "messagerie:appels_actifs" %}?conversation_id=${conversationId}`);
+        if (data.call) {
+            incomingCall.dataset.sessionId = data.call.id;
+            incomingCall.dataset.mediaType = data.call.media_type;
+            document.getElementById('incomingCallText').textContent = `${data.call.caller} vous appelle`;
+            incomingCall.hidden = false;
+        }
+    }
+    setInterval(() => checkIncomingCall().catch(() => {}), 2000);
 </script>
 
 {% endblock %}

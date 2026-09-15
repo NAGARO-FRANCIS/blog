@@ -49,6 +49,9 @@ def _apply_logement_filters(logements, cleaned_data):
     type_logement = cleaned_data.get('type_logement')
     if type_logement:
         logements = logements.filter(type_logement=type_logement)
+    account_type = cleaned_data.get('account_type')
+    if account_type:
+        logements = logements.filter(account_type=account_type)
     chambres_min = cleaned_data.get('nombre_chambres_min')
     if chambres_min is not None:
         logements = logements.filter(nombre_chambres__gte=chambres_min)
@@ -174,6 +177,7 @@ def home(request):
         context = {
             'form': form,
             'is_tourist': True,
+            'annonces': list(logements),
             'hotels': hotels,
             'residences': residences,
             'locataires': locataires,

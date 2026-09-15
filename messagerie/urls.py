@@ -5,6 +5,7 @@ from .views import (
     envoyer_message,
     demarrer_conversation,
     supprimer_conversation
+    , demarrer_appel, appels_actifs, etat_appel, signaler_appel, terminer_appel
 )
 
 app_name = 'messagerie'
@@ -16,4 +17,9 @@ urlpatterns = [
     path('envoyer/<str:annonce_type>/<int:annonce_id>/', envoyer_message, name='envoyer_message_annonce'),
     path('demarrer/<int:user_id>/', demarrer_conversation, name='demarrer_conversation'),
     path('supprimer/<int:conversation_id>/', supprimer_conversation, name='supprimer_conversation'),
+    path('appels/demarrer/', demarrer_appel, name='demarrer_appel'),
+    path('appels/actifs/', appels_actifs, name='appels_actifs'),
+    path('appels/<int:session_id>/etat/', etat_appel, name='etat_appel'),
+    path('appels/<int:session_id>/signaler/', signaler_appel, name='signaler_appel'),
+    path('appels/<int:session_id>/terminer/', terminer_appel, name='terminer_appel'),
 ]

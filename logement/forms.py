@@ -97,6 +97,7 @@ class LogementHotelForm(forms.ModelForm):
         fields = [
             # Informations de base
             'titre', 'description', 'ville', 'quartier',
+            'latitude', 'longitude', 'distance_universite', 'distance_hopital',
             
             # Caractéristiques de la chambre
             'type_logement', 'surface', 'nombre_pieces', 'nombre_lits', 'capacite', 'unites_totales',
@@ -127,6 +128,28 @@ class LogementHotelForm(forms.ModelForm):
             'quartier': forms.TextInput(attrs={
                 'class': 'form-input',
                 'placeholder': 'Ex: Plateaux'
+            }),
+            'latitude': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: 5.3364',
+                'step': 'any'
+            }),
+            'longitude': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: -4.0267',
+                'step': 'any'
+            }),
+            'distance_universite': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: 2.5',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'distance_hopital': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: 1.8',
+                'step': '0.01',
+                'min': '0'
             }),
             'type_logement': forms.Select(attrs={'class': 'form-select'}),
             'surface': forms.NumberInput(attrs={
@@ -557,6 +580,9 @@ class RechercheLogementForm(forms.Form):
             'placeholder': 'Ville'
         })
     )
+    commune = forms.CharField(label='Commune', required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Commune'}))
+    quartier = forms.CharField(label='Quartier', required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Quartier'}))
+    prix_min = forms.DecimalField(label='Prix minimum', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Prix min'}))
     prix_max = forms.DecimalField(
         label='Prix maximum',
         required=False,
@@ -565,12 +591,29 @@ class RechercheLogementForm(forms.Form):
             'placeholder': 'Prix max'
         })
     )
+    nombre_chambres_min = forms.IntegerField(label='Chambres minimum', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0'}))
     type_logement = forms.ChoiceField(
         label='Type de logement',
         required=False,
         choices=[('', 'Tous les types')] + list(Logement.TYPE_LOGEMENT),
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    account_type = forms.ChoiceField(
+        required=False,
+        choices=[('', 'Tous les comptes')] + list(Logement.ACCOUNT_TYPE),
+        widget=forms.HiddenInput()
+    )
+    _availability_choices = [('', 'Indifférent'), ('1', 'Oui'), ('0', 'Non')]
+    meuble = forms.ChoiceField(label='Meublé', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    wifi = forms.ChoiceField(label='WiFi', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    garage = forms.ChoiceField(label='Garage', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    climatisation = forms.ChoiceField(label='Climatisation', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    securite = forms.ChoiceField(label='Sécurité', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    eau = forms.ChoiceField(label='Eau', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    electricite = forms.ChoiceField(label='Électricité', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    distance_universite_max = forms.DecimalField(label='Distance université maximale', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'step': '0.01'}))
+    distance_hopital_max = forms.DecimalField(label='Distance hôpital maximale', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'step': '0.01'}))
+    disponible_immediatement = forms.BooleanField(label='Disponible immédiatement', required=False)
 
 
 class ReservationForm(forms.ModelForm):
