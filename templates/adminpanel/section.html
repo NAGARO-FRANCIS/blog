@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ section_title }} - Administration{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="brand">
+            <span class="brand-main">Ivoire</span> <span class="brand-accent">Connect</span>
+        </div>
+
+        <nav class="admin-menu">
+            <div class="menu-title">Principal</div>
+            <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
+            <a href="{% url 'adminpanel:users' %}">👥 Utilisateurs</a>
+            <a href="{% url 'adminpanel:logements' %}">🏠 Logements</a>
+            <a href="{% url 'adminpanel:colocations' %}">🤝 Colocations</a>
+
+            <div class="menu-title">Gestion</div>
+            <a href="{% url 'adminpanel:hotels_residences' %}">🏨 Hôtels & Résidences</a>
+            <a href="{% url 'adminpanel:reservations' %}">📅 Réservations</a>
+            <a href="{% url 'adminpanel:finance' %}">💰 Finance</a>
+            <a href="{% url 'adminpanel:verifications' %}">🪪 Vérifications</a>
+            <a href="{% url 'adminpanel:avis' %}">⭐ Avis</a>
+            <a href="{% url 'adminpanel:signalements' %}">🚨 Signalements</a>
+
+            <div class="menu-title">Système</div>
+            <a href="{% url 'adminpanel:notifications' %}">🔔 Notifications</a>
+            <a href="{% url 'adminpanel:statistiques' %}">📈 Statistiques</a>
+            <a href="{% url 'adminpanel:parametres' %}">⚙️ Paramètres</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <h1>{{ section_title }}</h1>
+            <div class="topbar-user">
+                <div>
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <small>Administrateur</small>
+                </div>
+                <div class="avatar">{{ request.user.username|slice:':1'|upper }}</div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="section-card">
+                <h2>{{ section_title }}</h2>
+                <p>Cette section est activée et fonctionne correctement.</p>
+                <div class="action-row">
+                    <button type="button" class="primary-btn" data-action="add">Ajouter</button>
+                    <button type="button" class="secondary-btn" data-action="export">Exporter</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box"><span>Éléments</span><strong>0</strong></div>
+                <div class="stat-box"><span>À traiter</span><strong>0</strong></div>
+                <div class="stat-box"><span>Validés</span><strong>0</strong></div>
+                <div class="stat-box"><span>En attente</span><strong>0</strong></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const addBtn = document.querySelector('[data-action="add"]');
+        const exportBtn = document.querySelector('[data-action="export"]');
+
+        if (addBtn) {
+            addBtn.addEventListener('click', function () {
+                const path = window.location.pathname;
+                if (path.includes('utilisateurs')) {
+                    window.location.href = '{% url "adminpanel:users" %}';
+                } else if (path.includes('logements')) {
+                    window.location.href = '{% url "logement:ajouter_logement" %}';
+                } else if (path.includes('colocations')) {
+                    window.location.href = '{% url "logement:ajouter_logement" %}';
+                } else {
+                    window.location.href = '{% url "logement:ajouter_logement" %}';
+                }
+            });
+        }
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function () {
+                const rows = Array.from(document.querySelectorAll('table tbody tr'));
+                let csv = 'Section;Valeur\n';
+                rows.forEach((row) => {
+                    const cols = Array.from(row.querySelectorAll('td')).map((cell) => cell.innerText.trim().replace(/\s+/g, ' '));
+                    if (cols.length) {
+                        csv += `"${cols.join('";"')}"\n`;
+                    }
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'export-admin.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+        }
+    });
+</script>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fb;
+        font-family: Arial, sans-serif;
+        color: #172033;
+    }
+
+    .admin-shell {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .admin-sidebar {
+        width: 250px;
+        background: #101828;
+        color: white;
+        padding: 24px 16px;
+    }
+
+    .brand {
+        font-size: 24px;
+        font-weight: 800;
+        padding: 0 10px 20px;
+    }
+
+    .brand-accent {
+        color: #f77f00;
+    }
+
+    .admin-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .menu-title {
+        color: #98a2b3;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 18px 10px 8px;
+    }
+
+    .admin-menu a {
+        color: #d0d5dd;
+        text-decoration: none;
+        padding: 12px 12px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .admin-menu a:hover,
+    .admin-menu a.active {
+        background: #f77f00;
+        color: white;
+    }
+
+    .admin-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .admin-topbar {
+        height: 72px;
+        background: white;
+        border-bottom: 1px solid #eaecf0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 28px;
+    }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-user small {
+        display: block;
+        color: #667085;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f77f00;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .admin-content {
+        padding: 28px;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #eaecf0;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .section-card h2 {
+        margin-bottom: 8px;
+        font-size: 28px;
+    }
+
+    .section-card p {
+        color: #667085;
+        margin-bottom: 18px;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 12px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 16px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .primary-btn {
+        background: #f77f00;
+        color: white;
+    }
+
+    .secondary-btn {
+        background: #eef2ff;
+        color: #1f2937;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        gap: 16px;
+    }
+
+    .stat-box {
+        background: white;
+        border: 1px solid #eaecf0;
+        border-radius: 12px;
+        padding: 18px;
+        min-height: 110px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .stat-box span {
+        color: #667085;
+        font-size: 13px;
+    }
+
+    .stat-box strong {
+        font-size: 32px;
+    }
+
+    @media (max-width: 900px) {
+        .admin-shell {
+            flex-direction: column;
+        }
+
+        .admin-sidebar {
+            width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,428 @@
+{% extends 'base.html' %}
+
+{% block title %}Utilisateurs - Administration{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="brand">
+            <span class="brand-main">Ivoire</span> <span class="brand-accent">Connect</span>
+        </div>
+
+        <nav class="admin-menu">
+            <div class="menu-title">Principal</div>
+            <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
+            <a href="{% url 'adminpanel:users' %}" class="active">👥 Utilisateurs</a>
+            <a href="{% url 'adminpanel:logements' %}">🏠 Logements</a>
+            <a href="{% url 'adminpanel:colocations' %}">🤝 Colocations</a>
+
+            <div class="menu-title">Gestion</div>
+            <a href="{% url 'adminpanel:hotels_residences' %}">🏨 Hôtels & Résidences</a>
+            <a href="{% url 'adminpanel:reservations' %}">📅 Réservations</a>
+            <a href="{% url 'adminpanel:finance' %}">💰 Finance</a>
+            <a href="{% url 'adminpanel:verifications' %}">🪪 Vérifications</a>
+            <a href="{% url 'adminpanel:avis' %}">⭐ Avis</a>
+            <a href="{% url 'adminpanel:signalements' %}">🚨 Signalements</a>
+
+            <div class="menu-title">Système</div>
+            <a href="{% url 'adminpanel:notifications' %}">🔔 Notifications</a>
+            <a href="{% url 'adminpanel:statistiques' %}">📈 Statistiques</a>
+            <a href="{% url 'adminpanel:parametres' %}">⚙️ Paramètres</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <h1>Utilisateurs</h1>
+            <div class="topbar-user">
+                <div>
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <small>Administrateur</small>
+                </div>
+                <div class="avatar">{{ request.user.username|slice:':1'|upper }}</div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="stats-bar">
+                <div class="mini-card">
+                    <span>Total</span>
+                    <strong>{{ total_users }}</strong>
+                </div>
+                <div class="mini-card success">
+                    <span>Actifs</span>
+                    <strong>{{ active_users }}</strong>
+                </div>
+                <div class="mini-card warning">
+                    <span>En attente</span>
+                    <strong>{{ pending_users }}</strong>
+                </div>
+                <div class="mini-card danger">
+                    <span>Inactifs</span>
+                    <strong>{{ inactive_users }}</strong>
+                </div>
+            </div>
+
+            <div class="filters-panel">
+                <form method="get" action="{{ request.path }}" class="filters-form">
+                    <input type="text" name="q" value="{{ search }}" placeholder="Rechercher un utilisateur...">
+
+                    <select name="account_type">
+                        <option value="">Type de compte</option>
+                        <option value="individu" {% if account_type == 'individu' %}selected{% endif %}>Individu</option>
+                        <option value="hotel" {% if account_type == 'hotel' %}selected{% endif %}>Hôtel</option>
+                        <option value="residence" {% if account_type == 'residence' %}selected{% endif %}>Résidence</option>
+                    </select>
+
+                    <select name="role">
+                        <option value="">Rôle</option>
+                        <option value="proprietaire" {% if role == 'proprietaire' %}selected{% endif %}>Propriétaire</option>
+                        <option value="locataire" {% if role == 'locataire' %}selected{% endif %}>Locataire</option>
+                        <option value="touriste" {% if role == 'touriste' %}selected{% endif %}>Touriste</option>
+                    </select>
+
+                    <select name="status">
+                        <option value="">Statut</option>
+                        <option value="active" {% if status == 'active' %}selected{% endif %}>Actif</option>
+                        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactif</option>
+                        <option value="verified" {% if status == 'verified' %}selected{% endif %}>Vérifié</option>
+                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>En attente</option>
+                        <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejeté</option>
+                    </select>
+
+                    <button type="submit">Filtrer</button>
+                </form>
+            </div>
+
+            <div class="table-panel">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Rôle</th>
+                            <th>Type</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="avatar small">{{ user.username|slice:':1'|upper }}</div>
+                                        <div>
+                                            <strong>{{ user.get_full_name|default:user.username }}</strong><br>
+                                            <small>@{{ user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user.email|default:'—' }}</td>
+                                <td>{{ user.profile.role|default:'—' }}</td>
+                                <td>{{ user.profile.account_type|default:'—' }}</td>
+                                <td>
+                                    {% if user.is_active %}
+                                        <span class="badge ok">Actif</span>
+                                    {% else %}
+                                        <span class="badge off">Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="action-btn" type="button" onclick="window.location.href='{{ request.path }}?q={{ user.username }}'">Voir</button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="empty-state">Aucun utilisateur trouvé.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search }}{% endif %}{% if account_type %}&account_type={{ account_type }}{% endif %}{% if role %}&role={{ role }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Précédent</a>
+                {% endif %}
+                <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search }}{% endif %}{% if account_type %}&account_type={{ account_type }}{% endif %}{% if role %}&role={{ role }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Suivant</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<style>
+    body {
+        margin: 0;
+        background: #f5f7fb;
+        font-family: Arial, sans-serif;
+        color: #172033;
+    }
+
+    .admin-shell {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .admin-sidebar {
+        width: 250px;
+        background: #101828;
+        color: white;
+        padding: 24px 16px;
+    }
+
+    .brand {
+        font-size: 24px;
+        font-weight: 800;
+        padding: 0 10px 20px;
+    }
+
+    .brand-accent {
+        color: #f77f00;
+    }
+
+    .admin-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .menu-title {
+        color: #98a2b3;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 18px 10px 8px;
+    }
+
+    .admin-menu a {
+        color: #d0d5dd;
+        text-decoration: none;
+        padding: 12px 12px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .admin-menu a:hover,
+    .admin-menu a.active {
+        background: #f77f00;
+        color: white;
+    }
+
+    .admin-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .admin-topbar {
+        height: 72px;
+        background: white;
+        border-bottom: 1px solid #eaecf0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 28px;
+    }
+
+    .topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .topbar-user small {
+        display: block;
+        color: #667085;
+    }
+
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f77f00;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .avatar.small {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .admin-content {
+        padding: 26px 28px 40px;
+    }
+
+    .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .mini-card {
+        background: white;
+        border: 1px solid #eaecf0;
+        border-radius: 12px;
+        padding: 16px 18px;
+    }
+
+    .mini-card span {
+        display: block;
+        color: #667085;
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .mini-card strong {
+        font-size: 28px;
+    }
+
+    .mini-card.success strong {
+        color: #12b76a;
+    }
+
+    .mini-card.warning strong {
+        color: #f79009;
+    }
+
+    .mini-card.danger strong {
+        color: #f04438;
+    }
+
+    .filters-panel,
+    .table-panel {
+        background: white;
+        border: 1px solid #eaecf0;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .filters-form {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 18px 20px;
+    }
+
+    .filters-form input,
+    .filters-form select,
+    .filters-form button {
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #d0d5dd;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+
+    .filters-form input {
+        min-width: 220px;
+        flex: 1;
+    }
+
+    .filters-form button {
+        background: #f77f00;
+        border-color: #f77f00;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 16px 20px;
+        border-bottom: 1px solid #f2f4f7;
+        vertical-align: middle;
+    }
+
+    th {
+        font-size: 12px;
+        color: #667085;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge.ok {
+        background: #dcfae6;
+        color: #067647;
+    }
+
+    .badge.off {
+        background: #fee4e2;
+        color: #b42318;
+    }
+
+    .action-btn {
+        border: 1px solid #d0d5dd;
+        background: white;
+        border-radius: 8px;
+        padding: 7px 12px;
+        cursor: pointer;
+    }
+
+    .empty-state {
+        text-align: center;
+        color: #667085;
+        padding: 26px 20px;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 0 0;
+        color: #667085;
+    }
+
+    .pagination a {
+        color: #f77f00;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+        .admin-shell {
+            flex-direction: column;
+        }
+
+        .admin-sidebar {
+            width: 100%;
+        }
+
+        .stats-bar {
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+        }
+    }
+</style>
+{% endblock %}

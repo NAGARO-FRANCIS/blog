@@ -21,11 +21,8 @@ from django.conf.urls.static import static
 from .demo_views import DemoPremiumView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),*
-    path(
-    "admin-ivoire/",
-    include("adminpanel.urls")
-),
+    path('admin/', admin.site.urls),
+    path('admin-ivoire/', include('adminpanel.urls')),
     path('demo-premium/', DemoPremiumView.as_view(), name='demo_premium'),
     path('', include('logement.urls')),
     path('colocation/', include('colocation.urls')),

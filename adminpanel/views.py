@@ -241,11 +241,27 @@ def dashboard(request):
 # ==============================
 
 def _dashboard_placeholder(request, section_name):
+    labels = {
+        "dashboard": "Dashboard",
+        "users": "Utilisateurs",
+        "logements": "Logements",
+        "colocations": "Colocations",
+        "hotels_residences": "Hôtels & Résidences",
+        "reservations": "Réservations",
+        "finance": "Finance",
+        "verifications": "Vérifications",
+        "avis": "Avis",
+        "signalements": "Signalements",
+        "notifications": "Notifications",
+        "statistiques": "Statistiques",
+        "parametres": "Paramètres",
+    }
     context = {
         "active_section": section_name,
         "placeholder_section": section_name,
+        "section_title": labels.get(section_name, "Gestion"),
     }
-    return render(request, "adminpanel/dashboard.html", context)
+    return render(request, "adminpanel/section.html", context)
 
 
 @user_passes_test(is_staff)
