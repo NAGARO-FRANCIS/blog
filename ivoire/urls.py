@@ -29,6 +29,7 @@ urlpatterns = [
     path('colocation/', include('colocation.urls')),
     path('messagerie/', include('messagerie.urls')),
     path('accounts/', include('accounts.urls')),
+    path("admin-ivoire/", include("adminpanel.urls")),
 ]
 
 # Servir les fichiers media en développement

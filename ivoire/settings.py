@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'colocation',
     'messagerie',
     'accounts',
+    'adminpanel',
 ]
 
 MIDDLEWARE = [
