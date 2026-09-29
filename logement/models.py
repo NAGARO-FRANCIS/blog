@@ -523,9 +523,10 @@ class SignalementAvis(models.Model):
 class Paiement(models.Model):
     """Modèle pour tracer les paiements (Stripe, Mobile Money, Virement, Cash)"""
     METHODE_CHOICES = [
-        ('mouv', '🟠 MOUV (Étoile)'),
-        ('orange', '🟠 Orange Money'),
-        ('wave', '🔵 Wave'),
+        ('mobile_money', '📱 Mobile Money (Orange, MOUV, Moov, Wave)'),
+        ('mouv', '🟠 MOUV (ancien)'),
+        ('orange', '🟠 Orange Money (ancien)'),
+        ('wave', '🔵 Wave (ancien)'),
         ('stripe', '💳 Carte bancaire (Stripe)'),
         ('virement', '🏦 Virement bancaire'),
         ('cash', '💵 Paiement sur place'),
@@ -565,6 +566,20 @@ class Paiement(models.Model):
     stripe_charge_id = models.CharField(
         max_length=255,
         blank=True
+    )
+
+    # Références CinetPay
+    cinetpay_payment_token = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="payment_token renvoyé par CinetPay à l'initialisation"
+    )
+    transaction_id = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text='Identifiant unique envoyé à CinetPay pour cette transaction'
     )
     
     # Détails

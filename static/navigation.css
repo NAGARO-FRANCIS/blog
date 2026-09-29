@@ -8,8 +8,7 @@
 header {
     background: var(--gradient-primary);
     box-shadow: var(--shadow-lg);
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: var(--z-fixed);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }

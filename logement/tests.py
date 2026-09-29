@@ -43,6 +43,72 @@ class PaymentViewTests(TestCase):
         self.assertContains(response, 'Paiement de votre réservation')
 
 
+class ReservationSecurityTests(TestCase):
+    def test_reservation_utilise_le_prix_legacy_si_prix_par_nuit_est_vide(self):
+        logement = Logement.objects.create(
+            titre='Annonce legacy',
+            description='Description test',
+            ville='Abidjan',
+            quartier='Plateaux',
+            account_type='hotel',
+            prix=10000,
+            proprietaire=User.objects.create_user(
+                username='owner_legacy',
+                password='StrongPassword123!',
+            ),
+        )
+
+        response = self.client.post(
+            reverse('logement:reserver_logement', args=[logement.id]),
+            {
+                'date_arrivee': '2026-10-10',
+                'date_depart': '2026-10-12',
+                'nombre_personnes': 1,
+                'nombre_chambres': 1,
+                'client_nom': 'Client Legacy',
+                'client_email': 'legacy@example.com',
+                'client_telephone': '+2250700000000',
+                'remarques': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        reservation = Reservation.objects.get(logement=logement)
+        self.assertEqual(reservation.prix_par_nuit, 10000)
+        self.assertEqual(reservation.montant_final, 20000)
+
+    def test_un_proprietaire_ne_peut_pas_reserver_son_propre_logement(self):
+        owner = User.objects.create_user(username='owner_resa', password='StrongPassword123!')
+        logement = Logement.objects.create(
+            titre='Villa du propriétaire',
+            description='Description test',
+            ville='Abidjan',
+            quartier='Plateaux',
+            account_type='hotel',
+            prix_par_nuit=15000,
+            nombre_chambres=1,
+            proprietaire=owner,
+        )
+
+        self.client.login(username='owner_resa', password='StrongPassword123!')
+        response = self.client.post(
+            reverse('logement:reserver_logement', args=[logement.id]),
+            {
+                'date_arrivee': '2026-10-10',
+                'date_depart': '2026-10-12',
+                'nombre_personnes': 2,
+                'nombre_chambres': 1,
+                'client_nom': 'Owner Test',
+                'client_email': 'owner@example.com',
+                'client_telephone': '+2250700000000',
+                'remarques': 'Essai interdit',
+            },
+        )
+
+        self.assertEqual(Reservation.objects.filter(logement=logement).count(), 0)
+        self.assertContains(response, 'Vous ne pouvez pas réserver votre propre annonce')
+
+
 class AvisLogementTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create_user(username='owner_reviews', password='StrongPassword123!')

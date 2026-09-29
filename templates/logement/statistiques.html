@@ -76,18 +76,249 @@
 </div>
 
 <div class="container">
-    <div class="content-section">
-        <div class="coming-soon">📈</div>
-        <h2 class="section-title">Tableaux de Bord Analytiques</h2>
-        <p class="section-desc">
-            Bientôt disponible:<br>
-            • Graphiques de revenus<br>
-            • Taux d'occupation et tendances<br>
-            • Analyses de performance<br>
-            • Comparaisons mensuelles/annuelles<br>
-            • Rapports exportables en PDF/Excel
-        </p>
+    <div class="stats-grid">
+        <div class="stat-card green">
+            <span class="label">Logements</span>
+            <strong>{{ total_logements|default:0 }}</strong>
+        </div>
+        <div class="stat-card orange">
+            <span class="label">Réservations</span>
+            <strong>{{ total_reservations|default:0 }}</strong>
+        </div>
+        <div class="stat-card blue">
+            <span class="label">Taux d'occupation</span>
+            <strong>{{ taux_occupation|default:0 }}%</strong>
+        </div>
+        <div class="stat-card purple">
+            <span class="label">Revenu total</span>
+            <strong>{{ revenu_total|default:0 }} FCFA</strong>
+        </div>
+        <div class="stat-card yellow">
+            <span class="label">Note moyenne</span>
+            <strong>{{ note_moyenne|default:0 }}/5</strong>
+        </div>
+    </div>
+
+    {{ chart_data|json_script:"professional-analytics-data" }}
+    <section class="analytics-section" aria-labelledby="analytics-title">
+        <div class="analytics-heading">
+            <div>
+                <span class="eyebrow">Performance sur 12 mois</span>
+                <h2 id="analytics-title">Vue analytique de votre activité</h2>
+            </div>
+            <span class="analytics-period">Données mises à jour à l'ouverture</span>
+        </div>
+
+        <div class="chart-grid">
+            <article class="chart-panel chart-panel-wide">
+                <div class="chart-title-row">
+                    <div>
+                        <h3>Revenus et réservations</h3>
+                        <p>Évolution mensuelle de votre activité commerciale</p>
+                    </div>
+                    <span class="chart-key chart-key-green">Revenus</span>
+                    <span class="chart-key chart-key-orange">Réservations</span>
+                </div>
+                <div class="chart-container"><canvas id="revenueBookingsChart" aria-label="Graphique des revenus et réservations"></canvas></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-title-row">
+                    <div>
+                        <h3>Taux d'occupation</h3>
+                        <p>Capacité utilisée par mois</p>
+                    </div>
+                </div>
+                <div class="chart-container"><canvas id="occupancyChart" aria-label="Courbe du taux d'occupation"></canvas></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-title-row">
+                    <div>
+                        <h3>Satisfaction client</h3>
+                        <p>Note moyenne des avis reçus</p>
+                    </div>
+                </div>
+                <div class="chart-container"><canvas id="reviewsChart" aria-label="Courbe de la note moyenne des avis"></canvas></div>
+            </article>
+
+            <article class="chart-panel">
+                <div class="chart-title-row">
+                    <div>
+                        <h3>État des réservations</h3>
+                        <p>Répartition de toutes vos demandes</p>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-doughnut"><canvas id="statusChart" aria-label="Répartition des statuts de réservation"></canvas></div>
+            </article>
+
+            <article class="chart-panel chart-panel-wide">
+                <div class="chart-title-row">
+                    <div>
+                        <h3>Revenus par logement</h3>
+                        <p>Comparaison des revenus cumulés par annonce</p>
+                    </div>
+                </div>
+                <div class="chart-container chart-container-property"><canvas id="propertyRevenueChart" aria-label="Revenus par logement"></canvas></div>
+            </article>
+        </div>
+    </section>
+
+    <div class="panel">
+        <h2>Réservations récentes</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Logement</th>
+                    <th>Arrivée</th>
+                    <th>Départ</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.client_user.get_full_name|default:reservation.client_nom }}</td>
+                    <td>{{ reservation.logement.titre }}</td>
+                    <td>{{ reservation.date_arrivee|date:'d/m/Y' }}</td>
+                    <td>{{ reservation.date_depart|date:'d/m/Y' }}</td>
+                    <td>{{ reservation.montant_final }} FCFA</td>
+                    <td>{{ reservation.get_statut_display }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-row">Aucune réservation enregistrée.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions-row">
         <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
     </div>
 </div>
+
+<style>
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 24px; }
+    .stat-card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; }
+    .stat-card.green { border-top: 4px solid #10b981; }
+    .stat-card.orange { border-top: 4px solid #f59e0b; }
+    .stat-card.blue { border-top: 4px solid #3b82f6; }
+    .stat-card.purple { border-top: 4px solid #8b5cf6; }
+    .stat-card.yellow { border-top: 4px solid #eab308; }
+    .label { color: #6b7280; font-weight: 600; }
+    .stat-card strong { font-size: 1.6rem; color: #111827; }
+    .panel { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 18px 20px; }
+    .panel h2 { margin: 0 0 16px; font-size: 1.05rem; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th, .data-table td { padding: 12px 10px; border-bottom: 1px solid #eef2f7; text-align: left; }
+    .data-table th { background: #f8fafc; color: #374151; text-transform: uppercase; font-size: .75rem; }
+    .empty-row { text-align: center; color: #6b7280; padding: 28px; }
+    .actions-row { margin-top: 22px; }
+    .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+    .analytics-section { margin: 0 0 26px; }
+    .analytics-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin: 10px 0 18px; }
+    .analytics-heading h2 { margin: 5px 0 0; color: #111827; font-size: 1.45rem; }
+    .eyebrow { color: #059669; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .analytics-period { color: #6b7280; font-size: .8rem; }
+    .chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .chart-panel { min-width: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px; box-shadow: 0 4px 14px rgba(15, 23, 42, .06); }
+    .chart-panel-wide { grid-column: span 2; }
+    .chart-title-row { display: flex; align-items: start; flex-wrap: wrap; gap: 8px 16px; min-height: 52px; }
+    .chart-title-row h3 { margin: 0; color: #17202a; font-size: 1rem; }
+    .chart-title-row p { margin: 5px 0 0; color: #6b7280; font-size: .8rem; }
+    .chart-key { margin-left: auto; padding-left: 14px; position: relative; color: #4b5563; font-size: .75rem; font-weight: 700; }
+    .chart-key + .chart-key { margin-left: 0; }
+    .chart-key::before { content: ''; width: 8px; height: 8px; border-radius: 50%; position: absolute; left: 0; top: 4px; }
+    .chart-key-green::before { background: #059669; }
+    .chart-key-orange::before { background: #f59e0b; }
+    .chart-container { position: relative; height: 280px; margin-top: 12px; }
+    .chart-container-doughnut { height: 270px; }
+    .chart-container-property { height: 300px; }
+    @media (max-width: 760px) {
+        .analytics-heading { display: block; }
+        .analytics-period { display: block; margin-top: 8px; }
+        .chart-grid { grid-template-columns: 1fr; }
+        .chart-panel-wide { grid-column: span 1; }
+        .chart-key { margin-left: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+    (() => {
+        const dataElement = document.getElementById('professional-analytics-data');
+        if (!dataElement || typeof Chart === 'undefined') return;
+
+        const data = JSON.parse(dataElement.textContent);
+        const colors = {
+            green: '#059669',
+            greenFill: 'rgba(5, 150, 105, .14)',
+            orange: '#f59e0b',
+            blue: '#2563eb',
+            purple: '#7c3aed',
+            grid: 'rgba(148, 163, 184, .18)',
+            text: '#64748b'
+        };
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: { padding: 12, cornerRadius: 8 }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: colors.text, maxRotation: 0 } },
+                y: { beginAtZero: true, grid: { color: colors.grid }, ticks: { color: colors.text } }
+            }
+        };
+        const lineDataset = (label, values, borderColor, backgroundColor, yAxisID = 'y') => ({
+            label, data: values, borderColor, backgroundColor, yAxisID,
+            borderWidth: 3, pointRadius: 3, pointHoverRadius: 6, tension: .35, fill: true
+        });
+
+        new Chart(document.getElementById('revenueBookingsChart'), {
+            type: 'line',
+            data: { labels: data.labels, datasets: [
+                lineDataset('Revenus (FCFA)', data.revenus, colors.green, colors.greenFill),
+                { ...lineDataset('Réservations', data.reservations, colors.orange, 'rgba(245, 158, 11, .08)', 'y1'), fill: false }
+            ] },
+            options: { ...commonOptions, scales: {
+                ...commonOptions.scales,
+                y: { ...commonOptions.scales.y, ticks: { ...commonOptions.scales.y.ticks, callback: value => `${Number(value).toLocaleString('fr-FR')} F` } },
+                y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: colors.text, precision: 0 } }
+            } }
+        });
+
+        new Chart(document.getElementById('occupancyChart'), {
+            type: 'line', data: { labels: data.labels, datasets: [lineDataset('Occupation (%)', data.occupation, colors.blue, 'rgba(37, 99, 235, .12)')] },
+            options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, max: 100, ticks: { ...commonOptions.scales.y.ticks, callback: value => `${value}%` } } } }
+        });
+
+        new Chart(document.getElementById('reviewsChart'), {
+            type: 'line', data: { labels: data.labels, datasets: [lineDataset('Note moyenne', data.avis, colors.purple, 'rgba(124, 58, 237, .12)')] },
+            options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: 0, max: 5, ticks: { ...commonOptions.scales.y.ticks, stepSize: 1 } } } }
+        });
+
+        const statusLabels = data.statuts.map(item => item.label);
+        const statusValues = data.statuts.map(item => item.value);
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut', data: { labels: statusLabels, datasets: [{ data: statusValues, backgroundColor: [colors.orange, colors.green, '#ef4444', colors.blue], borderWidth: 0, hoverOffset: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, color: colors.text } }, tooltip: { padding: 12, cornerRadius: 8 } } }
+        });
+
+        const propertyLabels = data.logements.map(item => item.label);
+        const propertyValues = data.logements.map(item => item.value);
+        new Chart(document.getElementById('propertyRevenueChart'), {
+            type: 'bar', data: { labels: propertyLabels, datasets: [{ label: 'Revenus (FCFA)', data: propertyValues, backgroundColor: colors.green, borderRadius: 5, maxBarThickness: 48 }] },
+            options: { ...commonOptions, indexAxis: propertyLabels.length > 5 ? 'y' : 'x', plugins: { ...commonOptions.plugins, legend: { display: false } }, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, ticks: { ...commonOptions.scales.y.ticks, callback: value => `${Number(value).toLocaleString('fr-FR')} F` } } } }
+        });
+    })();
+</script>
 {% endblock %}

@@ -76,18 +76,57 @@
 </div>
 
 <div class="container">
-    <div class="content-section">
-        <div class="coming-soon">⭐</div>
-        <h2 class="section-title">Avis Clients</h2>
-        <p class="section-desc">
-            Cette page affichera:<br>
-            • Tous les avis reçus<br>
-            • Les notes moyennes<br>
-            • Les commentaires des clients<br>
-            • Les tendances d'évaluation<br>
-            • Les réponses aux avis
-        </p>
+    <div class="summary-grid">
+        <div class="stat-box green">
+            <div class="stat-kpi">{{ note_moyenne|default:0 }}/5</div>
+            <div class="stat-label">Note moyenne</div>
+        </div>
+        <div class="stat-box orange">
+            <div class="stat-kpi">{{ nb_avis|default:0 }}</div>
+            <div class="stat-label">Avis reçus</div>
+        </div>
+    </div>
+
+    <div class="reviews-list">
+        {% for item in avis %}
+        <article class="review-card">
+            <div class="review-header">
+                <div>
+                    <h3>{{ item.auteur.get_full_name|default:item.auteur.username }}</h3>
+                    <p>{{ item.logement.titre }}</p>
+                </div>
+                <div class="stars">{% for i in '12345' %}{% if forloop.counter <= item.note_logement %}★{% else %}☆{% endif %}{% endfor %}</div>
+            </div>
+            <blockquote>{{ item.commentaire }}</blockquote>
+            <div class="review-meta">{{ item.created_at|date:'d/m/Y' }} • Séjour: {{ item.reservation.date_arrivee|date:'d/m/Y' }} → {{ item.reservation.date_depart|date:'d/m/Y' }}</div>
+        </article>
+        {% empty %}
+        <div class="empty-state">Aucun avis client pour le moment.</div>
+        {% endfor %}
+    </div>
+
+    <div class="actions-row">
         <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
     </div>
 </div>
+
+<style>
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 24px; }
+    .stat-box { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
+    .stat-box.green { border-top: 4px solid #10b981; }
+    .stat-box.orange { border-top: 4px solid #f59e0b; }
+    .stat-kpi { font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 8px; }
+    .stat-label { color: #6b7280; font-weight: 600; }
+    .reviews-list { display: grid; gap: 18px; }
+    .review-card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .review-header { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .review-header h3 { margin: 0; font-size: 1.05rem; }
+    .review-header p { margin: 6px 0 0; color: #6b7280; }
+    .stars { color: #f59e0b; font-size: 1.2rem; letter-spacing: 2px; }
+    blockquote { margin: 0; color: #374151; line-height: 1.7; }
+    .review-meta { margin-top: 12px; color: #6b7280; font-size: .82rem; }
+    .empty-state { text-align: center; padding: 28px; background: white; border-radius: 14px; color: #6b7280; }
+    .actions-row { margin-top: 22px; }
+    .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+</style>
 {% endblock %}

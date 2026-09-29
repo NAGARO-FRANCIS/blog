@@ -289,8 +289,22 @@
                 credentials: 'same-origin',  // Important pour les cookies CSRF
             });
             
-            // Lire le contenu de la réponse
-            const data = await response.json();
+            // Lire le contenu avant de le décoder pour éviter "Unexpected token '<'"
+            const responseText = await response.text();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                throw new Error(
+                    response.ok
+                        ? 'Le serveur a renvoyé une réponse invalide.'
+                        : `Le serveur a renvoyé une erreur HTTP ${response.status}.`
+                );
+            }
+
+            if (!response.ok) {
+                throw new Error(data.message || `Erreur HTTP ${response.status}.`);
+            }
             
             if (data.success) {
                 document.getElementById("payment-message").innerHTML = 

@@ -13,7 +13,7 @@ from .forms import (
 )
 from .models import (
     BlocageCalendrier, Etablissement, FavoriLogement, Logement, PhotoLogement, Reservation,
-    VideoLogement,
+    VideoLogement, Paiement, AvisLogement,
 )
 
 
@@ -311,6 +311,13 @@ def reserver_logement(request, id):
     
     logement = get_object_or_404(Logement, id=id)
 
+    if request.user.is_authenticated and logement.proprietaire_id == request.user.id:
+        messages.error(
+            request,
+            '❌ Vous ne pouvez pas réserver votre propre annonce.'
+        )
+        return redirect('logement:detail_logement', id=logement.id)
+
     if logement.account_type not in ['hotel', 'residence']:
         messages.error(
             request, 
@@ -327,8 +334,8 @@ def reserver_logement(request, id):
             reservation          = form.save(commit=False)
             reservation.logement = logement
             
-            # Remplir les champs de pricing depuis le logement
-            reservation.prix_par_nuit = logement.prix_par_nuit or 0
+            # Les anciennes annonces peuvent encore stocker leur tarif dans `prix`.
+            reservation.prix_par_nuit = logement.prix_par_nuit or logement.prix or 0
             if logement.frais_nettoyage:
                 reservation.frais_nettoyage_reservation = logement.frais_nettoyage
             
@@ -372,6 +379,11 @@ def paiement_reservation(request, reservation_id):
 
     if request.user.is_authenticated and reservation.client_user != request.user:
         if request.user != reservation.logement.proprietaire:
+            if request.method == 'POST':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Vous n\'êtes pas autorisé à payer cette réservation.'
+                }, status=403)
             return redirect('logement:home')
 
     if stripe is not None:
@@ -382,18 +394,24 @@ def paiement_reservation(request, reservation_id):
         payment_method = request.POST.get('payment_method', 'stripe')
         
         # Créer ou mettre à jour le paiement
-        paiement, created = Paiement.objects.get_or_create(
-            reservation=reservation,
-            defaults={
-                'montant': reservation.montant_final,
-                'methode': payment_method,
-                'statut': 'pending'
-            }
-        )
-        
-        if not created:
-            paiement.methode = payment_method
-            paiement.save()
+        try:
+            paiement, created = Paiement.objects.get_or_create(
+                reservation=reservation,
+                defaults={
+                    'montant': reservation.montant_final,
+                    'methode': payment_method,
+                    'statut': 'pending'
+                }
+            )
+
+            if not created:
+                paiement.methode = payment_method
+                paiement.save()
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Impossible de préparer le paiement: {str(e)}'
+            }, status=500)
         
         # Traiter selon la méthode
         try:
@@ -836,9 +854,15 @@ def mes_reservations(request):
     titre    = 'Réservations — Hôtel' if profile.account_type == 'hotel' else 'Réservations — Résidence'
     template = 'logement/reservations_hotel.html' if profile.account_type == 'hotel' else 'logement/reservations_residence.html'
 
+    reservations = Reservation.objects.filter(
+        logement__proprietaire=request.user,
+        logement__account_type__in=['hotel', 'residence'],
+    ).select_related('logement', 'client_user').order_by('-created_at')
+
     return render(request, template, {
         'titre':        titre,
-        'reservations': [],
+        'reservations': reservations,
+        'nb_reservations': reservations.count(),
     })
 
 
@@ -928,29 +952,178 @@ def calendrier_reservations(request):
 
 @login_required
 def mes_paiements(request):
-    return render(request, 'logement/mes_paiements.html', {'paiements': []})
+    paiements = (
+        Paiement.objects.filter(reservation__logement__proprietaire=request.user)
+        .select_related('reservation', 'reservation__logement', 'reservation__client_user')
+        .order_by('-created_at')
+    )
+
+    total_recu = sum((p.montant for p in paiements if p.statut == 'completed'), 0)
+    total_en_attente = sum((p.montant for p in paiements if p.statut == 'pending'), 0)
+
+    return render(request, 'logement/mes_paiements.html', {
+        'paiements': paiements,
+        'total_recu': total_recu,
+        'total_en_attente': total_en_attente,
+        'nb_paiements': paiements.count(),
+    })
 
 
 @login_required
 def mes_clients(request):
     profile = request.user.profile
     titre   = 'Clients — Hôtel' if profile.account_type == 'hotel' else 'Locataires — Résidence'
+    reservations = Reservation.objects.filter(
+        logement__proprietaire=request.user,
+        logement__account_type__in=['hotel', 'residence'],
+    ).select_related('logement', 'client_user').order_by('-created_at')
+
+    clients = {}
+    for reservation in reservations:
+        key = reservation.client_user_id or reservation.client_email
+        if key not in clients:
+            clients[key] = {
+                'client_name': reservation.client_user.get_full_name() or reservation.client_user.username if reservation.client_user else reservation.client_nom,
+                'email': reservation.client_email,
+                'telephone': reservation.client_telephone,
+                'derniere_reservation': reservation.date_depart,
+                'total_depense': 0,
+                'nb_reservations': 0,
+                'logements': [],
+            }
+
+        client = clients[key]
+        client['total_depense'] += reservation.montant_final
+        client['nb_reservations'] += 1
+        client['logements'].append(reservation.logement.titre)
+        if reservation.date_depart > client['derniere_reservation']:
+            client['derniere_reservation'] = reservation.date_depart
+
+    client_list = sorted(clients.values(), key=lambda item: item['total_depense'], reverse=True)
+
     return render(request, 'logement/mes_clients.html', {
         'titre':   titre,
-        'clients': [],
+        'clients': client_list,
+        'nb_clients': len(client_list),
     })
 
 
 @login_required
 def avis_clients(request):
-    return render(request, 'logement/avis_clients.html', {'avis': []})
+    avis = AvisLogement.objects.filter(
+        logement__proprietaire=request.user,
+    ).select_related('logement', 'reservation', 'auteur').order_by('-created_at')
+
+    note_moyenne = 0
+    if avis.exists():
+        notes = [item.note_logement for item in avis if item.note_logement is not None]
+        if notes:
+            note_moyenne = round(sum(notes) / len(notes), 1)
+
+    return render(request, 'logement/avis_clients.html', {
+        'avis': avis,
+        'note_moyenne': note_moyenne,
+        'nb_avis': avis.count(),
+    })
 
 
 @login_required
 def statistiques_professionnel(request):
+    logements = Logement.objects.filter(proprietaire=request.user, account_type__in=['hotel', 'residence'])
+    reservations = Reservation.objects.filter(logement__proprietaire=request.user).select_related('logement')
+    avis = AvisLogement.objects.filter(logement__proprietaire=request.user)
+
+    total_logements = logements.count()
+    total_reservations = reservations.count()
+    revenu_total = sum((reservation.montant_final for reservation in reservations if reservation.statut in ['confirmed', 'completed']), 0)
+
+    note_moyenne = 0
+    notes = [item.note_logement for item in avis if item.note_logement is not None]
+    if notes:
+        note_moyenne = round(sum(notes) / len(notes), 1)
+
+    occupied_nights = sum((reservation.nombre_nuits or 0 for reservation in reservations if reservation.statut in ['confirmed', 'completed']))
+    available_nights = max(total_logements * 30, 1)
+    taux_occupation = round((occupied_nights / available_nights) * 100, 1) if available_nights else 0
+
+    # Build a stable twelve-month series so the dashboard remains useful even
+    # when the database contains sparse or incomplete historical data.
+    today = date.today()
+    months = []
+    for offset in range(11, -1, -1):
+        month_index = today.year * 12 + today.month - 1 - offset
+        month_year, month_number = divmod(month_index, 12)
+        month_number += 1
+        month_start = date(month_year, month_number, 1)
+        if month_number == 12:
+            month_end = date(month_year + 1, 1, 1)
+        else:
+            month_end = date(month_year, month_number + 1, 1)
+        months.append((month_start, month_end))
+
+    month_labels = [month_start.strftime('%b %Y') for month_start, _ in months]
+    monthly_revenue = []
+    monthly_reservations = []
+    monthly_occupancy = []
+    monthly_reviews = []
+
+    for month_start, month_end in months:
+        month_reservations = [
+            reservation for reservation in reservations
+            if month_start <= reservation.date_arrivee < month_end
+        ]
+        completed_month_reservations = [
+            reservation for reservation in month_reservations
+            if reservation.statut in ['confirmed', 'completed']
+        ]
+        month_nights = sum(
+            (reservation.nombre_nuits or 0) for reservation in completed_month_reservations
+        )
+        days_in_month = (month_end - month_start).days
+        capacity = max(sum(logement.unites_totales for logement in logements) * days_in_month, 1)
+        month_reviews = [
+            review for review in avis
+            if month_start <= review.created_at.date() < month_end
+            and review.note_logement is not None
+        ]
+
+        monthly_revenue.append(float(sum(
+            reservation.montant_final for reservation in completed_month_reservations
+        )))
+        monthly_reservations.append(len(month_reservations))
+        monthly_occupancy.append(round(min((month_nights / capacity) * 100, 100), 1))
+        monthly_reviews.append(round(
+            sum(review.note_logement for review in month_reviews) / len(month_reviews), 1
+        ) if month_reviews else 0)
+
+    reservation_statuses = [
+        {'label': label, 'value': reservations.filter(statut=value).count()}
+        for value, label in Reservation.STATUT_CHOICES
+    ]
+    property_revenue = []
+    for logement in logements:
+        amount = sum(
+            reservation.montant_final for reservation in reservations
+            if reservation.logement_id == logement.id
+            and reservation.statut in ['confirmed', 'completed']
+        )
+        property_revenue.append({'label': logement.titre, 'value': float(amount)})
+
     return render(request, 'logement/statistiques.html', {
-        'total_logements': 0,
-        'taux_occupation': 0,
-        'revenu_total':    0,
-        'note_moyenne':    0,
+        'total_logements': total_logements,
+        'total_reservations': total_reservations,
+        'taux_occupation': taux_occupation,
+        'revenu_total': revenu_total,
+        'note_moyenne': note_moyenne,
+        'nb_avis': avis.count(),
+        'reservations': reservations.order_by('-created_at')[:10],
+        'chart_data': {
+            'labels': month_labels,
+            'revenus': monthly_revenue,
+            'reservations': monthly_reservations,
+            'occupation': monthly_occupancy,
+            'avis': monthly_reviews,
+            'statuts': reservation_statuses,
+            'logements': property_revenue,
+        },
     })

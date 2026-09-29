@@ -22,13 +22,43 @@ load_dotenv(PROJECT_ROOT / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 BASE_DIR = PROJECT_ROOT
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8%g05@gf^wfr_j=#k#+1bilpi)veftxmq1wym-me13p9fdp_rp'
+# La cle est desormais lue depuis .env.local / .env — jamais codee en dur.
+# Genere une vraie cle avec:
+#   python manage.py shell -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY manquant. Definis-le dans .env.local (dev) ou dans les variables "
+        "d'environnement du serveur (production)."
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').strip().lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+# En dev: localhost/127.0.0.1 par defaut. En prod: definir ALLOWED_HOSTS dans .env
+# (liste separee par des virgules, ex: ALLOWED_HOSTS=monsite.ci,www.monsite.ci)
+_allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '').strip()
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(',') if h.strip()]
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+
+# CSRF_TRUSTED_ORIGINS (necessaire en prod HTTPS derriere un domaine, ex: https://monsite.ci)
+_csrf_trusted_env = os.getenv('CSRF_TRUSTED_ORIGINS', '').strip()
+if _csrf_trusted_env:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted_env.split(',') if o.strip()]
+
+# Durcissement HTTPS/cookies — actif uniquement quand DEBUG=False
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').strip().lower() in ('true', '1', 'yes')
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = 'DENY'
 
 
 # Application definition
@@ -123,7 +153,7 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 
 TIME_ZONE = 'UTC'
 
-LOGIN_URL = 'login'
+LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:dashboard'
 LOGOUT_REDIRECT_URL = 'home'
 

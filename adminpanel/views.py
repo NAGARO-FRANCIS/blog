@@ -6,7 +6,7 @@ from django.db.models import Sum
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import Q
-from accounts.models import Profile, DocumentVerification
+from accounts.models import Profile, DocumentVerification, Notification
 from logement.models import (
     Logement,
     Etablissement,
@@ -14,6 +14,28 @@ from logement.models import (
     Paiement,
 )
 from colocation.models import ColocationAnnonce
+
+
+def _get_recent_notifications(user):
+    return (
+        Notification.objects.filter(recipient=user)
+        .select_related('actor')
+        .order_by('-created_at')[:8]
+    )
+
+
+def _build_section_context(request, section_name, title, items=None, stats=None):
+    context = {
+        "active_section": section_name,
+        "placeholder_section": section_name,
+        "section_title": title,
+        "recent_notifications": _get_recent_notifications(request.user),
+    }
+    if stats:
+        context.update(stats)
+    if items is not None:
+        context["items"] = items
+    return context
 
 
 def is_staff(user):
@@ -179,6 +201,8 @@ def dashboard(request):
         .order_by("-created_at")[:6]
     )
 
+    recent_notifications = _get_recent_notifications(request.user)
+
     # ==============================
     # CONTEXTE
     # ==============================
@@ -229,6 +253,7 @@ def dashboard(request):
         "derniers_utilisateurs": derniers_utilisateurs,
         "dernieres_reservations": dernieres_reservations,
         "derniers_paiements": derniers_paiements,
+        "recent_notifications": recent_notifications,
     }
 
     return render(
@@ -266,57 +291,70 @@ def _dashboard_placeholder(request, section_name):
 
 @user_passes_test(is_staff)
 def logements(request):
-    return _dashboard_placeholder(request, "logements")
+    items = Logement.objects.select_related('proprietaire', 'proprietaire__profile').order_by('-created_at')[:12]
+    stats = {
+        'total_logements': Logement.objects.count(),
+        'logements_disponibles': Logement.objects.filter(available_units_for_date=None).count() if False else Logement.objects.count(),
+        'logements_en_attente': 0,
+    }
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'logements', 'Logements', items, stats))
 
 
 @user_passes_test(is_staff)
 def colocations(request):
-    return _dashboard_placeholder(request, "colocations")
+    items = ColocationAnnonce.objects.select_related('proprietaire').order_by('-created_at')[:12]
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'colocations', 'Colocations', items, {'total_colocations': ColocationAnnonce.objects.count()}))
 
 
 @user_passes_test(is_staff)
 def hotels_residences(request):
-    return _dashboard_placeholder(request, "hotels_residences")
+    items = Etablissement.objects.order_by('-created_at')[:12]
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'hotels_residences', 'Hôtels & Résidences', items, {'total_etablissements': Etablissement.objects.count()}))
 
 
 @user_passes_test(is_staff)
 def reservations(request):
-    return _dashboard_placeholder(request, "reservations")
+    items = Reservation.objects.select_related('logement', 'client_user').order_by('-created_at')[:12]
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'reservations', 'Réservations', items, {'total_reservations': Reservation.objects.count(), 'reservations_en_attente': Reservation.objects.filter(statut='pending').count()}))
 
 
 @user_passes_test(is_staff)
 def finance(request):
-    return _dashboard_placeholder(request, "finance")
+    items = Paiement.objects.select_related('reservation', 'reservation__logement').order_by('-created_at')[:12]
+    revenus = (Paiement.objects.filter(statut='completed').aggregate(total=Sum('montant')).get('total') or Decimal('0'))
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'finance', 'Finance', items, {'revenus_total': revenus, 'paiements_total': Paiement.objects.count(), 'paiements_en_attente': Paiement.objects.filter(statut='pending').count()}))
 
 
 @user_passes_test(is_staff)
 def verifications(request):
-    return _dashboard_placeholder(request, "verifications")
+    items = DocumentVerification.objects.select_related('profile', 'profile__user').order_by('-uploaded_at')[:12]
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'verifications', 'Vérifications', items, {'documents_en_attente': DocumentVerification.objects.filter(status='pending').count(), 'profils_en_attente': Profile.objects.filter(verification_status='pending').count()}))
 
 
 @user_passes_test(is_staff)
 def avis(request):
-    return _dashboard_placeholder(request, "avis")
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'avis', 'Avis', [], {'avis_total': 0}))
 
 
 @user_passes_test(is_staff)
 def signalements(request):
-    return _dashboard_placeholder(request, "signalements")
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'signalements', 'Signalements', [], {'signalements_total': 0}))
 
 
 @user_passes_test(is_staff)
 def notifications(request):
-    return _dashboard_placeholder(request, "notifications")
+    items = _get_recent_notifications(request.user)
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'notifications', 'Notifications', items, {'notifications_total': items.count()}))
 
 
 @user_passes_test(is_staff)
 def statistiques(request):
-    return _dashboard_placeholder(request, "statistiques")
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'statistiques', 'Statistiques', [], {'total_users': User.objects.count(), 'total_logements': Logement.objects.count(), 'total_reservations': Reservation.objects.count()}))
 
 
 @user_passes_test(is_staff)
 def parametres(request):
-    return _dashboard_placeholder(request, "parametres")
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'parametres', 'Paramètres', [], {'system_status': 'Opérationnel'}))
 
 
 @user_passes_test(is_staff)

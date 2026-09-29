@@ -45,20 +45,103 @@
 
         <div class="admin-content">
             <div class="section-card">
-                <h2>{{ section_title }}</h2>
-                <p>Cette section est activée et fonctionne correctement.</p>
-                <div class="action-row">
-                    <button type="button" class="primary-btn" data-action="add">Ajouter</button>
-                    <button type="button" class="secondary-btn" data-action="export">Exporter</button>
+                <div class="section-header-row">
+                    <div>
+                        <h2>{{ section_title }}</h2>
+                        <p>Vue d’exploitation en temps réel de la plateforme.</p>
+                    </div>
+                    <div class="action-row">
+                        <button type="button" class="primary-btn" data-action="add">Ajouter</button>
+                        <button type="button" class="secondary-btn" data-action="export">Exporter</button>
+                    </div>
                 </div>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-box"><span>Éléments</span><strong>0</strong></div>
-                <div class="stat-box"><span>À traiter</span><strong>0</strong></div>
-                <div class="stat-box"><span>Validés</span><strong>0</strong></div>
-                <div class="stat-box"><span>En attente</span><strong>0</strong></div>
+                {% if total_users %}<div class="stat-box"><span>Utilisateurs</span><strong>{{ total_users }}</strong></div>{% endif %}
+                {% if total_logements %}<div class="stat-box"><span>Logements</span><strong>{{ total_logements }}</strong></div>{% endif %}
+                {% if total_reservations %}<div class="stat-box"><span>Réservations</span><strong>{{ total_reservations }}</strong></div>{% endif %}
+                {% if documents_en_attente %}<div class="stat-box"><span>Vérifications</span><strong>{{ documents_en_attente }}</strong></div>{% endif %}
+                {% if paiements_total %}<div class="stat-box"><span>Paiements</span><strong>{{ paiements_total }}</strong></div>{% endif %}
+                {% if revenus_total %}<div class="stat-box"><span>Revenus</span><strong>{{ revenus_total|floatformat:0 }} FCFA</strong></div>{% endif %}
+                {% if notifications_total %}<div class="stat-box"><span>Notifications</span><strong>{{ notifications_total }}</strong></div>{% endif %}
+                {% if system_status %}<div class="stat-box"><span>Système</span><strong>{{ system_status }}</strong></div>{% endif %}
             </div>
+
+            {% if items %}
+                <div class="table-panel">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Élément</th>
+                                <th>Détails</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                                <tr>
+                                    {% if active_section == 'logements' %}
+                                        <td>{{ item.titre }}</td>
+                                        <td>{{ item.ville }} • {{ item.proprietaire.get_full_name|default:item.proprietaire.username }}</td>
+                                        <td><span class="badge {% if item.disponible %}ok{% else %}warning{% endif %}">{% if item.disponible %}Disponible{% else %}Indisponible{% endif %}</span></td>
+                                    {% elif active_section == 'colocations' %}
+                                        <td>{{ item.titre }}</td>
+                                        <td>{{ item.ville }} • {{ item.proprietaire.get_full_name|default:item.proprietaire.username }}</td>
+                                        <td><span class="badge ok">Actif</span></td>
+                                    {% elif active_section == 'hotels_residences' %}
+                                        <td>{{ item.nom }}</td>
+                                        <td>{{ item.type_etablissement|title }} • {{ item.ville }}</td>
+                                        <td><span class="badge ok">Ouvert</span></td>
+                                    {% elif active_section == 'reservations' %}
+                                        <td>{{ item.logement.titre }}</td>
+                                        <td>{{ item.client_nom }} • {{ item.montant_final|floatformat:0 }} FCFA</td>
+                                        <td><span class="badge {% if item.statut == 'confirmed' or item.statut == 'completed' %}ok{% elif item.statut == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_statut_display }}</span></td>
+                                    {% elif active_section == 'finance' %}
+                                        <td>{{ item.reservation.logement.titre }}</td>
+                                        <td>{{ item.montant|floatformat:0 }} FCFA • {{ item.get_methode_display }}</td>
+                                        <td><span class="badge {% if item.statut == 'completed' %}ok{% elif item.statut == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_statut_display }}</span></td>
+                                    {% elif active_section == 'verifications' %}
+                                        <td>{{ item.profile.user.get_full_name|default:item.profile.user.username }}</td>
+                                        <td>{{ item.get_document_type_display }} • {{ item.status }}</td>
+                                        <td><span class="badge {% if item.status == 'verified' %}ok{% elif item.status == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_status_display }}</span></td>
+                                    {% elif active_section == 'notifications' %}
+                                        <td>{{ item.title }}</td>
+                                        <td>{{ item.message }}</td>
+                                        <td><span class="badge {% if item.is_read %}ok{% else %}warning{% endif %}">{% if item.is_read %}Lue{% else %}Nouvelle{% endif %}</span></td>
+                                    {% else %}
+                                        <td>{{ item }}</td>
+                                        <td>À traiter</td>
+                                        <td><span class="badge warning">À vérifier</span></td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-panel">
+                    <h3>Aucune donnée disponible pour cette vue.</h3>
+                    <p>Les éléments arriveront dès qu’il y aura une activité sur la plateforme.</p>
+                </div>
+            {% endif %}
+
+            {% if recent_notifications %}
+                <div class="panel" style="margin-top: 22px;">
+                    <div class="panel-header">
+                        <h2>🔔 Notifications récentes</h2>
+                    </div>
+                    {% for notification in recent_notifications %}
+                        <div class="notification-row">
+                            <div>
+                                <strong>{{ notification.title }}</strong>
+                                <p>{{ notification.message }}</p>
+                            </div>
+                            <span class="badge {% if notification.is_read %}ok{% else %}warning{% endif %}">{{ notification.is_read|yesno:"Lue,Nouvelle" }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </main>
 </div>
@@ -218,19 +301,26 @@
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     }
 
-    .section-card h2 {
-        margin-bottom: 8px;
-        font-size: 28px;
+    .section-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
     }
 
-    .section-card p {
+    .section-header-row h2 {
+        margin-bottom: 6px;
+    }
+
+    .section-header-row p {
         color: #667085;
-        margin-bottom: 18px;
+        font-size: 14px;
     }
 
     .action-row {
         display: flex;
-        gap: 12px;
+        gap: 10px;
+        flex-wrap: wrap;
     }
 
     .primary-btn,
@@ -238,8 +328,8 @@
         border: none;
         border-radius: 8px;
         padding: 10px 16px;
-        cursor: pointer;
         font-weight: 600;
+        cursor: pointer;
     }
 
     .primary-btn {
@@ -248,47 +338,123 @@
     }
 
     .secondary-btn {
-        background: #eef2ff;
-        color: #1f2937;
+        background: #eef2f7;
+        color: #172033;
     }
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 16px;
+        margin-bottom: 22px;
     }
 
     .stat-box {
         background: white;
         border: 1px solid #eaecf0;
         border-radius: 12px;
-        padding: 18px;
-        min-height: 110px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        padding: 16px 18px;
     }
 
     .stat-box span {
+        display: block;
+        font-size: 12px;
         color: #667085;
-        font-size: 13px;
+        margin-bottom: 6px;
     }
 
     .stat-box strong {
-        font-size: 32px;
+        font-size: 22px;
+    }
+
+    .table-panel,
+    .panel,
+    .empty-panel {
+        background: white;
+        border: 1px solid #eaecf0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 14px 16px;
+        text-align: left;
+        border-bottom: 1px solid #f2f4f7;
+    }
+
+    th {
+        background: #f9fafb;
+        color: #344054;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge.ok {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .badge.warning {
+        background: #fff7d6;
+        color: #92400e;
+    }
+
+    .badge.danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .notification-row {
+        padding: 16px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f2f4f7;
+        gap: 12px;
+    }
+
+    .notification-row:last-child {
+        border-bottom: none;
+    }
+
+    .notification-row p {
+        color: #667085;
+        margin-top: 4px;
+        font-size: 13px;
+    }
+
+    .empty-panel {
+        padding: 24px;
+        text-align: center;
+        color: #667085;
     }
 
     @media (max-width: 900px) {
         .admin-shell {
-            flex-direction: column;
+            display: block;
         }
 
         .admin-sidebar {
             width: 100%;
         }
 
-        .stats-grid {
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
+        .section-header-row {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
 </style>

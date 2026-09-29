@@ -76,18 +76,67 @@
 </div>
 
 <div class="container">
-    <div class="content-section">
-        <div class="coming-soon">👥</div>
-        <h2 class="section-title">Gestion des Contacts</h2>
-        <p class="section-desc">
-            Cette page permettra de:<br>
-            • Voir la liste de tous vos clients/locataires<br>
-            • Consulter leurs profils<br>
-            • Voir l'historique de leurs réservations<br>
-            • Gérer les communications<br>
-            • Exporter les contacts
-        </p>
+    <div class="summary-grid">
+        <div class="stat-box green">
+            <div class="stat-kpi">{{ nb_clients|default:0 }}</div>
+            <div class="stat-label">Clients</div>
+        </div>
+        <div class="stat-box orange">
+            <div class="stat-kpi">{{ clients|length|default:0 }}</div>
+            <div class="stat-label">Contacts actifs</div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="clients-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Réservations</th>
+                    <th>Montant total</th>
+                    <th>Dernière visite</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr>
+                    <td>{{ client.client_name }}</td>
+                    <td>{{ client.email }}</td>
+                    <td>{{ client.telephone }}</td>
+                    <td>{{ client.nb_reservations }}</td>
+                    <td>{{ client.total_depense }} FCFA</td>
+                    <td>{{ client.derniere_reservation|date:'d/m/Y' }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-row">Aucun client pour le moment.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions-row">
         <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
     </div>
 </div>
+
+<style>
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 24px; }
+    .stat-box { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
+    .stat-box.green { border-top: 4px solid #10b981; }
+    .stat-box.orange { border-top: 4px solid #f59e0b; }
+    .stat-kpi { font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 8px; }
+    .stat-label { color: #6b7280; font-weight: 600; }
+    .table-wrapper { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+    .clients-table { width: 100%; border-collapse: collapse; }
+    .clients-table th, .clients-table td { padding: 14px 16px; border-bottom: 1px solid #eef2f7; text-align: left; }
+    .clients-table th { background: #f8fafc; color: #374151; font-size: .8rem; text-transform: uppercase; }
+    .empty-row { text-align: center; color: #6b7280; padding: 28px; }
+    .actions-row { margin-top: 22px; }
+    .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
+    .back-link:hover { background: #d97706; }
+</style>
 {% endblock %}
