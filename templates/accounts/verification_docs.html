@@ -10,7 +10,7 @@
         <header class="vf-header">
             <span class="vf-header__flag">🇨🇮</span>
             <h1 class="vf-header__title">Finaliser votre inscription</h1>
-            <p class="vf-header__sub">Vérifiez votre identité pour activer votre compte sur Ivoire Connect</p>
+            <p class="vf-header__sub">Envoyez vos documents. Notre équipe vérifiera votre identité avant d’activer le badge de confiance.</p>
         </header>
 
         <!-- ── CONTENU ── -->
@@ -20,8 +20,8 @@
             <!-- ── SUCCÈS ── -->
             <div class="vf-state vf-state--success">
                 <div class="vf-state__icon vf-state__icon--ok">✓</div>
-                <h2>Compte vérifié</h2>
-                <p>Votre compte est maintenant activé. Vous pouvez publier des annonces sur la plateforme.</p>
+                <h2>Identité vérifiée</h2>
+                <p>Vos documents ont été contrôlés par notre équipe. Votre badge de vérification est actif.</p>
                 <a href="{% url 'home' %}" class="vf-btn vf-btn--primary">Commencer à explorer</a>
             </div>
 
@@ -588,7 +588,7 @@ function updateProgress() {
         const p = document.getElementById(`placeholder-${d}`);
         if (step && p && p.style.display === 'none') {
             step.classList.add('completed');
-            document.getElementById(`stepstatus-${d}`).textContent = 'Complété';
+            document.getElementById(`stepstatus-${d}`).textContent = 'Envoyé';
         }
     });
 }

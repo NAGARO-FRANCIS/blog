@@ -1,15 +1,19 @@
+import io
 import importlib
 import os
+import tempfile
 from unittest import mock
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
-from .models import Notification, ProfileVerification, Subscription
+from .models import DocumentVerification, Notification, ProfileVerification, Subscription
 
 
 class AccountActivationTests(TestCase):
@@ -171,3 +175,59 @@ class AccountActivationTests(TestCase):
         self.assertTrue(authenticated_user.is_active)
         authenticated_user.refresh_from_db()
         self.assertTrue(authenticated_user.is_active)
+
+
+class DocumentUploadSecurityTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='document_upload_test',
+            password='StrongPassword123!',
+        )
+        self.client.force_login(self.user)
+
+    def make_image_upload(self, name='identity.jpg', color=(20, 80, 140)):
+        image_bytes = io.BytesIO()
+        Image.new('RGB', (10, 10), color=color).save(image_bytes, format='JPEG')
+        return SimpleUploadedFile(name, image_bytes.getvalue(), content_type='image/jpeg')
+
+    def test_forged_image_content_type_is_rejected(self):
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            response = self.client.post(
+                reverse('accounts:upload_document'),
+                {
+                    'document_type': 'id_front',
+                    'document_file': SimpleUploadedFile(
+                        'fake.jpg',
+                        b'not an image',
+                        content_type='image/jpeg',
+                    ),
+                },
+            )
+
+        self.assertRedirects(response, reverse('accounts:verification_docs'))
+        self.assertFalse(DocumentVerification.objects.filter(profile=self.user.profile).exists())
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.verified)
+
+    def test_uploaded_documents_remain_pending_until_reviewed(self):
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            for index, document_type in enumerate(('id_front', 'id_back', 'selfie')):
+                response = self.client.post(
+                    reverse('accounts:upload_document'),
+                    {
+                        'document_type': document_type,
+                        'document_file': self.make_image_upload(
+                            f'{document_type}.jpg',
+                            color=(20 + index, 80, 140),
+                        ),
+                    },
+                )
+                self.assertRedirects(response, reverse('accounts:verification_docs'))
+
+        self.assertEqual(
+            DocumentVerification.objects.filter(profile=self.user.profile, status='pending').count(),
+            3,
+        )
+        self.user.profile.refresh_from_db()
+        self.assertEqual(self.user.profile.verification_status, 'pending')
+        self.assertFalse(self.user.profile.verified)

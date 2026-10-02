@@ -304,6 +304,13 @@ def mes_favoris(request):
     return render(request, 'logement/mes_favoris.html', context)
 
 
+def _can_access_reservation(request, reservation):
+    if reservation.client_user_id is not None:
+        return request.user.is_authenticated and reservation.client_user_id == request.user.id
+    guest_reservation_ids = request.session.get('guest_reservation_ids', [])
+    return str(reservation.pk) in {str(reservation_id) for reservation_id in guest_reservation_ids}
+
+
 @require_http_methods(["GET", "POST"])
 def reserver_logement(request, id):
     """Créer une réservation (pour hôtels et résidences)"""
@@ -344,6 +351,10 @@ def reserver_logement(request, id):
                 reservation.client_nom   = request.user.get_full_name() or request.user.username
                 reservation.client_email = request.user.email
             reservation.save()
+            if not request.user.is_authenticated:
+                guest_reservation_ids = request.session.get('guest_reservation_ids', [])
+                guest_reservation_ids.append(reservation.pk)
+                request.session['guest_reservation_ids'] = guest_reservation_ids[-20:]
             from accounts.notification_service import reservation_created
             reservation_created(reservation)
             return redirect('logement:paiement', reservation_id=reservation.id)
@@ -374,17 +385,16 @@ def paiement_reservation(request, reservation_id):
             stripe = importlib.import_module('stripe')
     except Exception:
         stripe = None
-
+    reservation = get_object_or_404(Reservation, id=reservation_id)
     reservation = get_object_or_404(Reservation, id=reservation_id)
 
-    if request.user.is_authenticated and reservation.client_user != request.user:
-        if request.user != reservation.logement.proprietaire:
-            if request.method == 'POST':
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Vous n\'êtes pas autorisé à payer cette réservation.'
-                }, status=403)
-            return redirect('logement:home')
+    if not _can_access_reservation(request, reservation):
+        if request.method == 'POST':
+            return JsonResponse({
+                'success': False,
+                'message': 'Vous n\'êtes pas autorisé à payer cette réservation.'
+            }, status=403)
+        return redirect('accounts:login' if not request.user.is_authenticated else 'logement:home')
 
     if stripe is not None:
         stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')
@@ -549,10 +559,8 @@ def confirmation_reservation(request, reservation_id):
     
     reservation = get_object_or_404(Reservation, id=reservation_id)
     
-    # Vérifier les permissions
-    if request.user.is_authenticated and reservation.client_user != request.user:
-        if request.user != reservation.logement.proprietaire:
-            return redirect('logement:home')
+    if not _can_access_reservation(request, reservation):
+        return redirect('accounts:login' if not request.user.is_authenticated else 'logement:home')
     
     context = {
         'reservation': reservation,

@@ -13,21 +13,21 @@
             <div class="menu-title">Principal</div>
             <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
             <a href="{% url 'adminpanel:users' %}">👥 Utilisateurs</a>
-            <a href="{% url 'adminpanel:logements' %}">🏠 Logements</a>
-            <a href="{% url 'adminpanel:colocations' %}">🤝 Colocations</a>
+            <a href="{% url 'adminpanel:logements' %}"{% if active_section == 'logements' %} class="active" aria-current="page"{% endif %}>🏠 Logements</a>
+            <a href="{% url 'adminpanel:colocations' %}"{% if active_section == 'colocations' %} class="active" aria-current="page"{% endif %}>🤝 Colocations</a>
 
             <div class="menu-title">Gestion</div>
-            <a href="{% url 'adminpanel:hotels_residences' %}">🏨 Hôtels & Résidences</a>
-            <a href="{% url 'adminpanel:reservations' %}">📅 Réservations</a>
-            <a href="{% url 'adminpanel:finance' %}">💰 Finance</a>
-            <a href="{% url 'adminpanel:verifications' %}">🪪 Vérifications</a>
-            <a href="{% url 'adminpanel:avis' %}">⭐ Avis</a>
-            <a href="{% url 'adminpanel:signalements' %}">🚨 Signalements</a>
+            <a href="{% url 'adminpanel:hotels_residences' %}"{% if active_section == 'hotels_residences' %} class="active" aria-current="page"{% endif %}>🏨 Hôtels & Résidences</a>
+            <a href="{% url 'adminpanel:reservations' %}"{% if active_section == 'reservations' %} class="active" aria-current="page"{% endif %}>📅 Réservations</a>
+            <a href="{% url 'adminpanel:finance' %}"{% if active_section == 'finance' %} class="active" aria-current="page"{% endif %}>💰 Finance</a>
+            <a href="{% url 'adminpanel:verifications' %}"{% if active_section == 'verifications' %} class="active" aria-current="page"{% endif %}>🪪 Vérifications</a>
+            <a href="{% url 'adminpanel:avis' %}"{% if active_section == 'avis' %} class="active" aria-current="page"{% endif %}>⭐ Avis</a>
+            <a href="{% url 'adminpanel:signalements' %}"{% if active_section == 'signalements' %} class="active" aria-current="page"{% endif %}>🚨 Signalements</a>
 
             <div class="menu-title">Système</div>
-            <a href="{% url 'adminpanel:notifications' %}">🔔 Notifications</a>
-            <a href="{% url 'adminpanel:statistiques' %}">📈 Statistiques</a>
-            <a href="{% url 'adminpanel:parametres' %}">⚙️ Paramètres</a>
+            <a href="{% url 'adminpanel:notifications' %}"{% if active_section == 'notifications' %} class="active" aria-current="page"{% endif %}>🔔 Notifications</a>
+            <a href="{% url 'adminpanel:statistiques' %}"{% if active_section == 'statistiques' %} class="active" aria-current="page"{% endif %}>📈 Statistiques</a>
+            <a href="{% url 'adminpanel:parametres' %}"{% if active_section == 'parametres' %} class="active" aria-current="page"{% endif %}>⚙️ Paramètres</a>
         </nav>
     </aside>
 
@@ -51,20 +51,30 @@
                         <p>Vue d’exploitation en temps réel de la plateforme.</p>
                     </div>
                     <div class="action-row">
-                        <button type="button" class="primary-btn" data-action="add">Ajouter</button>
-                        <button type="button" class="secondary-btn" data-action="export">Exporter</button>
+                        {% if items %}
+                            <button type="button" class="secondary-btn" data-action="export" data-export-name="{{ active_section }}">Exporter les éléments affichés</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="stats-grid">
-                {% if total_users %}<div class="stat-box"><span>Utilisateurs</span><strong>{{ total_users }}</strong></div>{% endif %}
-                {% if total_logements %}<div class="stat-box"><span>Logements</span><strong>{{ total_logements }}</strong></div>{% endif %}
-                {% if total_reservations %}<div class="stat-box"><span>Réservations</span><strong>{{ total_reservations }}</strong></div>{% endif %}
-                {% if documents_en_attente %}<div class="stat-box"><span>Vérifications</span><strong>{{ documents_en_attente }}</strong></div>{% endif %}
-                {% if paiements_total %}<div class="stat-box"><span>Paiements</span><strong>{{ paiements_total }}</strong></div>{% endif %}
-                {% if revenus_total %}<div class="stat-box"><span>Revenus</span><strong>{{ revenus_total|floatformat:0 }} FCFA</strong></div>{% endif %}
-                {% if notifications_total %}<div class="stat-box"><span>Notifications</span><strong>{{ notifications_total }}</strong></div>{% endif %}
+                {% if total_users != None %}<div class="stat-box"><span>Utilisateurs</span><strong>{{ total_users }}</strong></div>{% endif %}
+                {% if total_logements != None %}<div class="stat-box"><span>Logements</span><strong>{{ total_logements }}</strong></div>{% endif %}
+                {% if total_colocations != None %}<div class="stat-box"><span>Colocations</span><strong>{{ total_colocations }}</strong></div>{% endif %}
+                {% if total_etablissements != None %}<div class="stat-box"><span>Hôtels & résidences</span><strong>{{ total_etablissements }}</strong></div>{% endif %}
+                {% if total_reservations != None %}<div class="stat-box"><span>Réservations</span><strong>{{ total_reservations }}</strong></div>{% endif %}
+                {% if reservations_en_attente != None %}<div class="stat-box"><span>Réservations en attente</span><strong>{{ reservations_en_attente }}</strong></div>{% endif %}
+                {% if documents_en_attente != None %}<div class="stat-box"><span>Vérifications</span><strong>{{ documents_en_attente }}</strong></div>{% endif %}
+                {% if profils_en_attente != None %}<div class="stat-box"><span>Profils en attente</span><strong>{{ profils_en_attente }}</strong></div>{% endif %}
+                {% if paiements_total != None %}<div class="stat-box"><span>Paiements</span><strong>{{ paiements_total }}</strong></div>{% endif %}
+                {% if paiements_en_attente != None %}<div class="stat-box"><span>Paiements en attente</span><strong>{{ paiements_en_attente }}</strong></div>{% endif %}
+                {% if revenus_total != None %}<div class="stat-box"><span>Revenus</span><strong>{{ revenus_total|floatformat:0 }} FCFA</strong></div>{% endif %}
+                {% if notifications_total != None %}<div class="stat-box"><span>Notifications</span><strong>{{ notifications_total }}</strong></div>{% endif %}
+                {% if avis_total != None %}<div class="stat-box"><span>Avis</span><strong>{{ avis_total }}</strong></div>{% endif %}
+                {% if avis_masques != None %}<div class="stat-box"><span>Avis masqués</span><strong>{{ avis_masques }}</strong></div>{% endif %}
+                {% if signalements_total != None %}<div class="stat-box"><span>Signalements</span><strong>{{ signalements_total }}</strong></div>{% endif %}
+                {% if signalements_a_traiter != None %}<div class="stat-box"><span>À traiter</span><strong>{{ signalements_a_traiter }}</strong></div>{% endif %}
                 {% if system_status %}<div class="stat-box"><span>Système</span><strong>{{ system_status }}</strong></div>{% endif %}
             </div>
 
@@ -76,6 +86,7 @@
                                 <th>Élément</th>
                                 <th>Détails</th>
                                 <th>Statut</th>
+                                {% if active_section == 'verifications' or active_section == 'avis' or active_section == 'signalements' %}<th data-no-export>Action</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -103,16 +114,54 @@
                                         <td><span class="badge {% if item.statut == 'completed' %}ok{% elif item.statut == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_statut_display }}</span></td>
                                     {% elif active_section == 'verifications' %}
                                         <td>{{ item.profile.user.get_full_name|default:item.profile.user.username }}</td>
-                                        <td>{{ item.get_document_type_display }} • {{ item.status }}</td>
+                                        <td>{{ item.get_document_type_display }} • <a href="{% url 'admin:accounts_documentverification_change' item.id %}">Consulter le document</a></td>
                                         <td><span class="badge {% if item.status == 'verified' %}ok{% elif item.status == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_status_display }}</span></td>
                                     {% elif active_section == 'notifications' %}
                                         <td>{{ item.title }}</td>
                                         <td>{{ item.message }}</td>
                                         <td><span class="badge {% if item.is_read %}ok{% else %}warning{% endif %}">{% if item.is_read %}Lue{% else %}Nouvelle{% endif %}</span></td>
+                                    {% elif active_section == 'avis' %}
+                                        <td>{{ item.logement.titre }}</td>
+                                        <td>{{ item.auteur.get_full_name|default:item.auteur.username }} · {{ item.note_logement|default:"—" }}/5 · {{ item.commentaire|truncatechars:120 }}</td>
+                                        <td><span class="badge {% if item.est_visible %}ok{% else %}warning{% endif %}">{% if item.est_visible %}Visible{% else %}Masqué{% endif %}</span></td>
+                                    {% elif active_section == 'signalements' %}
+                                        <td>{{ item.avis.logement.titre }}</td>
+                                        <td>{{ item.auteur.get_full_name|default:item.auteur.username }} · {{ item.motif|truncatechars:120 }}</td>
+                                        <td><span class="badge {% if item.traite %}ok{% else %}warning{% endif %}">{% if item.traite %}Traité{% else %}À traiter{% endif %}</span></td>
                                     {% else %}
                                         <td>{{ item }}</td>
                                         <td>À traiter</td>
                                         <td><span class="badge warning">À vérifier</span></td>
+                                    {% endif %}
+                                    {% if active_section == 'verifications' or active_section == 'avis' or active_section == 'signalements' %}
+                                        <td data-no-export>
+                                            {% if active_section == 'verifications' %}
+                                                {% if item.status == 'pending' or item.status == 'flagged' %}
+                                                    <div class="row-action-group">
+                                                        <form method="post" action="{% url 'adminpanel:approve_document' item.id %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="row-action-btn">Approuver</button>
+                                                        </form>
+                                                        <form method="post" action="{% url 'adminpanel:reject_document' item.id %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="row-action-btn row-action-btn--danger">Rejeter</button>
+                                                        </form>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="row-action-done">Traité</span>
+                                                {% endif %}
+                                            {% elif active_section == 'avis' %}
+                                                <form method="post" action="{% url 'adminpanel:toggle_avis_visibility' item.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="row-action-btn">{% if item.est_visible %}Masquer{% else %}Rendre visible{% endif %}</button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" action="{% url 'adminpanel:traiter_signalement' item.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="row-action-btn"{% if item.traite %} disabled{% endif %}>{% if item.traite %}Déjà traité{% else %}Marquer traité{% endif %}</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
                                     {% endif %}
                                 </tr>
                             {% endfor %}
@@ -148,44 +197,35 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const addBtn = document.querySelector('[data-action="add"]');
         const exportBtn = document.querySelector('[data-action="export"]');
-
-        if (addBtn) {
-            addBtn.addEventListener('click', function () {
-                const path = window.location.pathname;
-                if (path.includes('utilisateurs')) {
-                    window.location.href = '{% url "adminpanel:users" %}';
-                } else if (path.includes('logements')) {
-                    window.location.href = '{% url "logement:ajouter_logement" %}';
-                } else if (path.includes('colocations')) {
-                    window.location.href = '{% url "logement:ajouter_logement" %}';
-                } else {
-                    window.location.href = '{% url "logement:ajouter_logement" %}';
-                }
-            });
-        }
 
         if (exportBtn) {
             exportBtn.addEventListener('click', function () {
-                const rows = Array.from(document.querySelectorAll('table tbody tr'));
-                let csv = 'Section;Valeur\n';
-                rows.forEach((row) => {
-                    const cols = Array.from(row.querySelectorAll('td')).map((cell) => cell.innerText.trim().replace(/\s+/g, ' '));
-                    if (cols.length) {
-                        csv += `"${cols.join('";"')}"\n`;
-                    }
-                });
+                const table = document.querySelector('.table-panel table');
+                if (!table) {
+                    return;
+                }
 
+                const rows = Array.from(table.querySelectorAll('tr'));
+                const csvRows = rows.map(row => Array.from(row.children)
+                    .filter(cell => !cell.hasAttribute('data-no-export'))
+                    .map(cell => {
+                        let value = cell.innerText.trim().replace(/\s+/g, ' ');
+                        if (/^[=+\-@]/.test(value)) {
+                            value = "'" + value;
+                        }
+                        return '"' + value.replace(/"/g, '""') + '"';
+                    }).join(';'));
+                const csv = '\uFEFF' + csvRows.join('\r\n');
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'export-admin.csv';
+                link.download = (exportBtn.dataset.exportName || 'export-admin') + '.csv';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                window.setTimeout(() => URL.revokeObjectURL(url), 1000);
             });
         }
     });
@@ -324,7 +364,8 @@
     }
 
     .primary-btn,
-    .secondary-btn {
+    .secondary-btn,
+    .row-action-btn {
         border: none;
         border-radius: 8px;
         padding: 10px 16px;
@@ -340,6 +381,34 @@
     .secondary-btn {
         background: #eef2f7;
         color: #172033;
+    }
+
+    .row-action-btn {
+        border: 1px solid #d0d5dd;
+        background: white;
+        color: #172033;
+        padding: 7px 10px;
+        white-space: nowrap;
+    }
+
+    .row-action-btn:disabled {
+        cursor: not-allowed;
+        opacity: .6;
+    }
+
+    .row-action-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .row-action-btn--danger {
+        color: #b42318;
+    }
+
+    .row-action-done {
+        color: #667085;
+        font-size: 13px;
     }
 
     .stats-grid {
@@ -374,6 +443,10 @@
         border: 1px solid #eaecf0;
         border-radius: 12px;
         overflow: hidden;
+    }
+
+    .table-panel {
+        overflow-x: auto;
     }
 
     table {

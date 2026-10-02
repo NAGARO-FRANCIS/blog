@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .forms import RechercheLogementForm
-from .models import AvisLogement, Reservation, Logement
+from .models import AvisLogement, Paiement, Reservation, Logement
 from .views import _apply_logement_filters
 
 
@@ -36,11 +36,79 @@ class PaymentViewTests(TestCase):
             frais_nettoyage_reservation=500,
             montant_final=21500,
         )
+        session = self.client.session
+        session['guest_reservation_ids'] = [reservation.id]
+        session.save()
 
         response = self.client.get(reverse('logement:paiement', args=[reservation.id]))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Paiement de votre réservation')
+
+    def test_anonymous_user_cannot_pay_another_reservations_by_id(self):
+        owner = User.objects.create_user(username='owner_payment_test', password='StrongPassword123!')
+        logement = Logement.objects.create(
+            titre='Villa protégée',
+            description='Description test',
+            ville='Abidjan',
+            account_type='hotel',
+            prix_par_nuit=10000,
+            proprietaire=owner,
+        )
+        reservation = Reservation.objects.create(
+            logement=logement,
+            client_nom='Client Test',
+            client_email='client@example.com',
+            client_telephone='+2250700000000',
+            date_arrivee='2026-07-18',
+            date_depart='2026-07-20',
+            nombre_personnes=1,
+            nombre_chambres=1,
+            prix_par_nuit=10000,
+            nombre_nuits=2,
+            prix_total=20000,
+            montant_final=20000,
+        )
+
+        response = self.client.post(
+            reverse('logement:paiement', args=[reservation.id]),
+            {'payment_method': 'cash'},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(reservation.__class__.objects.get(pk=reservation.pk).statut, 'pending')
+        self.assertFalse(Paiement.objects.filter(reservation=reservation).exists())
+
+    def test_anonymous_user_cannot_open_another_reservations_confirmation(self):
+        owner = User.objects.create_user(username='owner_confirmation_test', password='StrongPassword123!')
+        logement = Logement.objects.create(
+            titre='Villa privée',
+            description='Description test',
+            ville='Abidjan',
+            account_type='hotel',
+            prix_par_nuit=10000,
+            proprietaire=owner,
+        )
+        reservation = Reservation.objects.create(
+            logement=logement,
+            client_nom='Client Test',
+            client_email='client@example.com',
+            client_telephone='+2250700000000',
+            date_arrivee='2026-07-18',
+            date_depart='2026-07-20',
+            nombre_personnes=1,
+            nombre_chambres=1,
+            prix_par_nuit=10000,
+            nombre_nuits=2,
+            prix_total=20000,
+            montant_final=20000,
+        )
+
+        response = self.client.get(
+            reverse('logement:confirmation_reservation', args=[reservation.id])
+        )
+
+        self.assertRedirects(response, reverse('accounts:login'))
 
 
 class ReservationSecurityTests(TestCase):
@@ -76,6 +144,7 @@ class ReservationSecurityTests(TestCase):
         reservation = Reservation.objects.get(logement=logement)
         self.assertEqual(reservation.prix_par_nuit, 10000)
         self.assertEqual(reservation.montant_final, 20000)
+        self.assertIn(reservation.id, self.client.session['guest_reservation_ids'])
 
     def test_un_proprietaire_ne_peut_pas_reserver_son_propre_logement(self):
         owner = User.objects.create_user(username='owner_resa', password='StrongPassword123!')

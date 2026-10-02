@@ -1,17 +1,22 @@
 from decimal import Decimal
 
+from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.db.models import Sum
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 from accounts.models import Profile, DocumentVerification, Notification
 from logement.models import (
+    AvisLogement,
     Logement,
     Etablissement,
     Reservation,
     Paiement,
+    SignalementAvis,
 )
 from colocation.models import ColocationAnnonce
 
@@ -327,18 +332,129 @@ def finance(request):
 
 @user_passes_test(is_staff)
 def verifications(request):
-    items = DocumentVerification.objects.select_related('profile', 'profile__user').order_by('-uploaded_at')[:12]
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'verifications', 'Vérifications', items, {'documents_en_attente': DocumentVerification.objects.filter(status='pending').count(), 'profils_en_attente': Profile.objects.filter(verification_status='pending').count()}))
+    items = DocumentVerification.objects.select_related('profile', 'profile__user').order_by('-uploaded_at')[:50]
+    documents_en_attente = DocumentVerification.objects.filter(
+        status__in=['pending', 'flagged']
+    ).count()
+    stats = {
+        'documents_en_attente': documents_en_attente,
+        'profils_en_attente': Profile.objects.filter(verification_status='pending').count(),
+    }
+    return render(
+        request,
+        'adminpanel/section.html',
+        _build_section_context(request, 'verifications', 'Vérifications', items, stats),
+    )
+
+
+@user_passes_test(is_staff)
+@require_POST
+def approve_document(request, document_id):
+    document = get_object_or_404(DocumentVerification, pk=document_id)
+    if document.status not in {'pending', 'flagged'}:
+        messages.info(request, 'Ce document a déjà été traité.')
+        return redirect('adminpanel:verifications')
+
+    now = timezone.now()
+    document.status = 'verified'
+    document.verified_by = request.user
+    document.verified_at = now
+    document.save(update_fields=['status', 'verified_by', 'verified_at'])
+
+    if document.is_complete_verification():
+        profile = document.profile
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.verification_date = now
+        profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+
+    messages.success(request, 'Document approuvé.')
+    return redirect('adminpanel:verifications')
+
+
+@user_passes_test(is_staff)
+@require_POST
+def reject_document(request, document_id):
+    document = get_object_or_404(DocumentVerification, pk=document_id)
+    if document.status not in {'pending', 'flagged'}:
+        messages.info(request, 'Ce document a déjà été traité.')
+        return redirect('adminpanel:verifications')
+
+    document.status = 'rejected'
+    document.verified_by = request.user
+    document.verified_at = timezone.now()
+    if not document.rejection_reason:
+        document.rejection_reason = 'Document non conforme'
+    document.save(update_fields=['status', 'verified_by', 'verified_at', 'rejection_reason'])
+    profile = document.profile
+    profile.verification_status = 'pending'
+    profile.verified = False
+    profile.verification_date = None
+    profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+    messages.success(request, 'Document rejeté.')
+    return redirect('adminpanel:verifications')
 
 
 @user_passes_test(is_staff)
 def avis(request):
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'avis', 'Avis', [], {'avis_total': 0}))
+    items = (
+        AvisLogement.objects
+        .select_related('logement', 'auteur')
+        .order_by('-created_at')[:50]
+    )
+    stats = {
+        'avis_total': AvisLogement.objects.count(),
+        'avis_masques': AvisLogement.objects.filter(est_visible=False).count(),
+    }
+    return render(
+        request,
+        'adminpanel/section.html',
+        _build_section_context(request, 'avis', 'Avis', items, stats),
+    )
 
 
 @user_passes_test(is_staff)
 def signalements(request):
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'signalements', 'Signalements', [], {'signalements_total': 0}))
+    items = (
+        SignalementAvis.objects
+        .select_related('avis', 'avis__logement', 'auteur')
+        .order_by('-created_at')[:50]
+    )
+    stats = {
+        'signalements_total': SignalementAvis.objects.count(),
+        'signalements_a_traiter': SignalementAvis.objects.filter(traite=False).count(),
+    }
+    return render(
+        request,
+        'adminpanel/section.html',
+        _build_section_context(request, 'signalements', 'Signalements', items, stats),
+    )
+
+
+@user_passes_test(is_staff)
+@require_POST
+def toggle_avis_visibility(request, avis_id):
+    avis_item = get_object_or_404(AvisLogement, pk=avis_id)
+    avis_item.est_visible = not avis_item.est_visible
+    avis_item.save(update_fields=['est_visible', 'updated_at'])
+    messages.success(
+        request,
+        'Avis masqué.' if not avis_item.est_visible else 'Avis rendu visible.',
+    )
+    return redirect('adminpanel:avis')
+
+
+@user_passes_test(is_staff)
+@require_POST
+def traiter_signalement(request, signalement_id):
+    signalement = get_object_or_404(SignalementAvis, pk=signalement_id)
+    if not signalement.traite:
+        signalement.traite = True
+        signalement.save(update_fields=['traite'])
+        messages.success(request, 'Signalement marqué comme traité.')
+    else:
+        messages.info(request, 'Ce signalement est déjà traité.')
+    return redirect('adminpanel:signalements')
 
 
 @user_passes_test(is_staff)

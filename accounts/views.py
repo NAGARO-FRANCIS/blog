@@ -1,6 +1,8 @@
 # accounts/views.py
 import hashlib
 import secrets
+import warnings
+from PIL import Image, UnidentifiedImageError
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -457,7 +459,7 @@ def verify_profile(request, user_id):
 
 @login_required
 def upload_document(request):
-    """Upload un document de vérification avec auto-approbation si complet"""
+    """Upload un document pour vérification manuelle par un administrateur."""
     if request.method != 'POST':
         return redirect('accounts:verification_docs')
     
@@ -466,17 +468,41 @@ def upload_document(request):
     document_file = request.FILES.get('document_file')
     
     if not document_type or not document_file:
+        messages.error(request, 'Choisissez un type de document et un fichier.')
+        return redirect('accounts:verification_docs')
+
+    allowed_document_types = {choice[0] for choice in DocumentVerification.DOCUMENT_TYPE_CHOICES}
+    if document_type not in allowed_document_types:
+        messages.error(request, 'Type de document non valide.')
         return redirect('accounts:verification_docs')
     
-    # Vérifications de sécurité
-    if document_file.size > 5 * 1024 * 1024:  # 5MB max
+    if document_file.size > 5 * 1024 * 1024:
+        messages.error(request, 'Le fichier dépasse la taille maximale de 5 Mo.')
         return redirect('accounts:verification_docs')
-    
-    # Accepter seulement les images
-    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
-    if document_file.content_type not in allowed_types:
+
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', Image.DecompressionBombWarning)
+            with Image.open(document_file) as uploaded_image:
+                if uploaded_image.format not in {'JPEG', 'PNG', 'GIF'}:
+                    messages.error(request, 'Format de fichier invalide. Utilisez une image JPG, PNG ou GIF.')
+                    return redirect('accounts:verification_docs')
+                if uploaded_image.width * uploaded_image.height > 25_000_000:
+                    messages.error(request, 'Les dimensions de l’image dépassent la limite autorisée.')
+                    return redirect('accounts:verification_docs')
+                uploaded_image.verify()
+    except (
+        UnidentifiedImageError,
+        OSError,
+        SyntaxError,
+        ValueError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ):
+        messages.error(request, 'Le fichier envoyé n’est pas une image valide.')
         return redirect('accounts:verification_docs')
-    
+
+    document_file.seek(0)
     # Calculer le hash du fichier
     file_hash = get_file_hash(document_file)
     
@@ -489,7 +515,10 @@ def upload_document(request):
             ip_address=get_client_ip(request)
         )
         profile.verification_status = 'flagged'
-        profile.save()
+        profile.verified = False
+        profile.verification_date = None
+        profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+        messages.error(request, 'Ce fichier a déjà été soumis et doit être vérifié par notre équipe.')
         return redirect('accounts:verification_docs')
     
     # Créer ou mettre à jour le document
@@ -499,40 +528,30 @@ def upload_document(request):
     )
     doc.document_file = document_file
     doc.file_hash = file_hash
-    doc.status = 'verified'  # Auto-approbation immediat pour documents valides
+    doc.status = 'pending'
     doc.ip_address = get_client_ip(request)
     doc.user_agent = request.META.get('HTTP_USER_AGENT', '')
-    doc.verified_by = None  # Admin peut vérifier manuellement plus tard
-    doc.verified_at = timezone.now()
-    doc.save()
+    doc.verified_by = None
+    doc.verified_at = None
+    doc.rejection_reason = ''
+    doc.save(update_fields=[
+        'document_file', 'file_hash', 'status', 'ip_address', 'user_agent',
+        'verified_by', 'verified_at', 'rejection_reason',
+    ])
+
+    profile.verification_status = 'pending'
+    profile.verified = False
+    profile.verification_date = None
+    profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
     
     # Créer un log
     VerificationLog.objects.create(
         profile=profile,
         action='document_uploaded',
-        details=f"Document téléchargé et approuvé automatiquement - Type: {document_type}",
+        details=f"Document téléchargé, en attente de vérification manuelle - Type: {document_type}",
         ip_address=get_client_ip(request)
     )
-    
-    # Vérifier si tous les documents requis sont uploadés et approuvés
-    required_docs = ['id_front', 'id_back', 'selfie']
-    uploaded_docs = profile.documents.filter(status='verified', document_type__in=required_docs).values_list('document_type', flat=True)
-    uploaded_docs = list(uploaded_docs)
-    
-    # Si tous les documents sont présents, auto-approuver le profil
-    if len(uploaded_docs) == 3 and all(doc_type in uploaded_docs for doc_type in required_docs):
-        profile.verification_status = 'verified'
-        profile.verified = True
-        profile.verification_date = timezone.now()
-        profile.save()
-        
-        VerificationLog.objects.create(
-            profile=profile,
-            action='profile_verified',
-            details=f"Profil automatiquement approuvé - Tous les documents sont complets",
-            ip_address=get_client_ip(request)
-        )
-    
+    messages.success(request, 'Document reçu. Il sera vérifié par notre équipe avant validation de votre profil.')
     return redirect('accounts:verification_docs')
 
 

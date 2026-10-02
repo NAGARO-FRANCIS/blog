@@ -3,55 +3,51 @@
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}Ivoire Connect{% endblock %}</title>
-    
+
     <!-- CSS System - Ordered Structure -->
-    <!-- 1. Global Variables -->
     <link rel="stylesheet" href="{% static 'variables.css' %}">
-    <!-- 2. Browser Reset -->
     <link rel="stylesheet" href="{% static 'reset.css' %}">
-    <!-- 2.5. Premium Effects & Textures -->
     <link rel="stylesheet" href="{% static 'premium.css' %}">
-    <!-- 3. Typography -->
     <link rel="stylesheet" href="{% static 'typography.css' %}">
-    <!-- 4. Layout & Grid -->
     <link rel="stylesheet" href="{% static 'layout.css' %}">
-    <!-- 5. Reusable Components -->
     <link rel="stylesheet" href="{% static 'components.css' %}">
-    <!-- 6. Forms -->
     <link rel="stylesheet" href="{% static 'forms.css' %}">
-    <!-- 7. Navigation & Header/Footer -->
     <link rel="stylesheet" href="{% static 'navigation.css' %}">
-    <!-- 8. Dashboard Specific -->
     <link rel="stylesheet" href="{% static 'dashboards.css' %}">
-    <!-- 9. Utilities & Helpers -->
     <link rel="stylesheet" href="{% static 'utilities.css' %}">
-    <!-- 9.5. Property Types Distinction -->
     <link rel="stylesheet" href="{% static 'property-types.css' %}">
-    <!-- 10. Responsive Design -->
     <link rel="stylesheet" href="{% static 'responsive.css' %}">
-    
+
     {% block extra_css %}{% endblock %}
-    
+
     <style>
+        /* Évite le décalage horizontal sur mobile */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { max-width: 100%; overflow-x: hidden; }
+        img, svg, video { max-width: 100%; height: auto; }
+
+        /* Badge de notification (masqué par défaut, affiché avec .show) */
         .notification-badge {
             position: absolute;
             top: -8px;
             right: -8px;
             background: #FF6B6B;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
+            color: #fff;
+            min-width: 20px;
             height: 20px;
-            display: flex !important;
+            padding: 0 4px;
+            border-radius: 10px;
+            display: none;
             align-items: center;
             justify-content: center;
             font-size: 0.7rem;
             font-weight: 700;
             border: 2px solid #fff;
         }
+        .notification-badge.show { display: flex; }
 
         .language-form select,
         .ic-language-form select {
@@ -63,12 +59,76 @@
             font: inherit;
             cursor: pointer;
         }
-
         .language-form option,
         .ic-language-form option { color: #111827; }
-
         .ic-language-form { margin-left: auto; }
         .ic-language-form select { color: #111827; border-color: #d1d5db; background: #fff; }
+
+        /* ===== Barre d'onglets mobile (style Facebook) ===== */
+        .tabbar, .top-actions { display: none; }
+
+        @media (max-width: 768px) {
+            /* On supprime l'ancien menu hamburger */
+            .menu-toggle, .nav-links { display: none !important; }
+
+            .top-actions {
+                display: flex;
+                align-items: center;
+                gap: .5rem;
+                margin-left: auto;
+            }
+            .top-actions select {
+                padding: .3rem .4rem;
+                font-size: .85rem;
+                color: #fff;
+                border: 1px solid rgba(255, 255, 255, .35);
+                border-radius: 6px;
+                background: rgba(255, 255, 255, .12);
+            }
+            .top-actions select option { color: #111827; }
+            .top-actions .logout-link { font-size: 1.3rem; text-decoration: none; }
+
+            .tabbar {
+                display: flex;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1000;
+                background: #fff;
+                border-top: 1px solid #e5e7eb;
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            .tab {
+                flex: 1;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                padding: 8px 0;
+                color: #6b7280;
+                text-decoration: none;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            .tab svg {
+                width: 24px;
+                height: 24px;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+            .tab.active { color: #F77F00; }
+            .tab .notification-badge {
+                top: 2px;
+                right: auto;
+                left: calc(50% + 4px);
+            }
+            body { padding-bottom: 72px; }
+        }
     </style>
 </head>
 <body>
@@ -93,7 +153,7 @@
                     {% endif %}
                     <li><a href="{% url 'accounts:dashboard' %}">📊 {% translate "Dashboard" %}</a></li>
                     <li style="position: relative;">
-                        <a href="{% url 'accounts:notifications' %}">🔔 {% translate "Notifications" %}<span id="notificationBadge" class="notification-badge" style="display: none;">0</span></a>
+                        <a href="{% url 'accounts:notifications' %}">🔔 {% translate "Notifications" %}<span class="notification-badge js-notif-badge">0</span></a>
                     </li>
                     <li><a href="{% url 'accounts:profil' %}">👤 {% translate "Profil" %}</a></li>
                     <li>
@@ -116,6 +176,24 @@
                     <li><a href="{% url 'accounts:inscription' %}" class="btn btn-primary btn-sm">📝 {% translate "S'inscrire" %}</a></li>
                 {% endif %}
             </ul>
+
+            {% if request.user.is_authenticated %}
+            <!-- Langue + déconnexion (mobile uniquement) -->
+            <div class="top-actions">
+                <form method="post" action="{% url 'set_language' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <select name="language" aria-label="{% translate 'Langue' %}" onchange="this.form.submit()">
+                        {% get_current_language as CURRENT_LANGUAGE %}
+                        {% get_available_languages as AVAILABLE_LANGUAGES %}
+                        {% for code, name in AVAILABLE_LANGUAGES %}
+                            <option value="{{ code }}"{% if code == CURRENT_LANGUAGE %} selected{% endif %}>{{ code|upper }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <a href="{% url 'accounts:logout' %}" class="logout-link" aria-label="{% translate 'Déconnexion' %}">🚪</a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </header>
@@ -138,9 +216,46 @@
     {% block content %}{% endblock %}
 </main>
 
+<!-- Barre d'onglets mobile (style Facebook) -->
+<nav class="tabbar" aria-label="{% translate 'Navigation principale' %}">
+  {% with rm=request.resolver_match %}
+  <a href="{% url 'home' %}" class="tab {% if rm.url_name == 'home' and not rm.namespace %}active{% endif %}">
+    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+    <span>{% translate "Accueil" %}</span>
+  </a>
+  <a href="{% url 'logement:home' %}" class="tab {% if rm.namespace == 'logement' %}active{% endif %}">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>
+    <span>{% translate "Annonces" %}</span>
+  </a>
+  {% if request.user.is_authenticated %}
+    <a href="{% url 'accounts:dashboard' %}" class="tab {% if rm.url_name == 'dashboard' %}active{% endif %}">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      <span>{% translate "Dashboard" %}</span>
+    </a>
+    <a href="{% url 'accounts:notifications' %}" class="tab {% if rm.url_name == 'notifications' %}active{% endif %}">
+      <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+      <span>{% translate "Notifications" %}</span>
+      <b class="notification-badge js-notif-badge">0</b>
+    </a>
+    <a href="{% url 'accounts:profil' %}" class="tab {% if rm.url_name == 'profil' %}active{% endif %}">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      <span>{% translate "Profil" %}</span>
+    </a>
+  {% else %}
+    <a href="{% url 'accounts:login' %}" class="tab">
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+      <span>{% translate "Connexion" %}</span>
+    </a>
+    <a href="{% url 'accounts:inscription' %}" class="tab">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M19 8v6M16 11h6"/></svg>
+      <span>{% translate "S'inscrire" %}</span>
+    </a>
+  {% endif %}
+  {% endwith %}
+</nav>
 
 <script>
-    // Menu toggle for mobile
+    // Menu toggle (ancien menu, caché sur mobile)
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
 
@@ -150,7 +265,6 @@
             this.classList.toggle('active');
         });
 
-        // Close menu when clicking on a link
         const links = navLinks.querySelectorAll('a');
         links.forEach(link => {
             link.addEventListener('click', function() {
@@ -159,9 +273,8 @@
             });
         });
 
-        // Close menu when clicking outside
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('nav')) {
+            if (!navLinks.contains(event.target) && !menuToggle.contains(event.target)) {
                 navLinks.classList.remove('active');
                 menuToggle.classList.remove('active');
             }
@@ -184,26 +297,20 @@
         return cookieValue;
     }
 
-    // Update notification badge
+    // Met à jour tous les badges de notification (bureau + barre du bas)
     function updateNotificationBadge() {
         fetch('/accounts/notifications/unread-count/')
             .then(response => response.json())
             .then(data => {
-                const badge = document.getElementById('notificationBadge');
-                if (badge) {
-                    const unreadCount = data.unread_count || 0;
-                    if (unreadCount > 0) {
-                        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
+                const unreadCount = data.unread_count || 0;
+                document.querySelectorAll('.js-notif-badge').forEach(badge => {
+                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                    badge.classList.toggle('show', unreadCount > 0);
+                });
             })
             .catch(error => console.log('Notification fetch error:', error));
     }
 
-    // Update badge on page load and every 30 seconds
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', updateNotificationBadge);
     } else {

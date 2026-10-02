@@ -102,7 +102,8 @@
                             <th>Email</th>
                             <th>Rôle</th>
                             <th>Type</th>
-                            <th>Statut</th>
+                            <th>Compte</th>
+                            <th>Vérification</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -129,12 +130,23 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <button class="action-btn" type="button" onclick="window.location.href='{{ request.path }}?q={{ user.username }}'">Voir</button>
+                                    {% if user.profile %}
+                                        {{ user.profile.get_verification_status_display }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.id == request.user.id %}
+                                        <a class="action-btn" href="{% url 'accounts:profil' %}">Voir le profil</a>
+                                    {% else %}
+                                        <a class="action-btn" href="{% url 'accounts:profil_user' user_id=user.id %}">Voir le profil</a>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="6" class="empty-state">Aucun utilisateur trouvé.</td>
+                                <td colspan="7" class="empty-state">Aucun utilisateur trouvé.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -144,11 +156,11 @@
             {% if page_obj.paginator.num_pages > 1 %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search }}{% endif %}{% if account_type %}&account_type={{ account_type }}{% endif %}{% if role %}&role={{ role }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Précédent</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">Précédent</a>
                 {% endif %}
                 <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search }}{% endif %}{% if account_type %}&account_type={{ account_type }}{% endif %}{% if role %}&role={{ role }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Suivant</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">Suivant</a>
                 {% endif %}
             </div>
             {% endif %}
@@ -306,6 +318,7 @@
         border: 1px solid #eaecf0;
         border-radius: 12px;
         margin-bottom: 20px;
+        overflow-x: auto;
     }
 
     .filters-form {
@@ -340,6 +353,7 @@
 
     table {
         width: 100%;
+        min-width: 780px;
         border-collapse: collapse;
     }
 
@@ -383,11 +397,22 @@
     }
 
     .action-btn {
+        display: inline-flex;
+        align-items: center;
         border: 1px solid #d0d5dd;
         background: white;
         border-radius: 8px;
         padding: 7px 12px;
         cursor: pointer;
+        color: inherit;
+        font: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .action-btn:hover {
+        border-color: #f77f00;
+        color: #b54708;
     }
 
     .empty-state {
@@ -418,6 +443,22 @@
 
         .admin-sidebar {
             width: 100%;
+            padding: 16px;
+        }
+
+        .admin-menu {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .menu-title {
+            flex-basis: 100%;
+            padding: 10px 10px 4px;
+        }
+
+        .admin-menu a {
+            padding: 9px 10px;
         }
 
         .stats-bar {

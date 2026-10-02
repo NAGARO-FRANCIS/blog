@@ -42,9 +42,11 @@ SECRET_KEY = os.getenv(
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 # Charger depuis variable d'environnement ALLOWED_HOSTS_STR="localhost,127.0.0.1,example.com"
-ALLOWED_HOSTS_STR = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS_STR = os.getenv(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1,192.168.1.56'
+)
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
-
 # Authentication settings
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:profil'
@@ -198,7 +200,7 @@ X_FRAME_OPTIONS = 'DENY'
 # Protection CSRF stricte
 CSRF_TRUSTED_ORIGINS = os.getenv(
     'CSRF_TRUSTED_ORIGINS',
-    'http://localhost:8000,http://127.0.0.1:8000'
+    'http://localhost:8000,http://127.0.0.1:8000,http://192.168.1.22:8000'
 ).split(',')
 
 # Entête de sécurité Content Security Policy

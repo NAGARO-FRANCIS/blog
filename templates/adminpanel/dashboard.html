@@ -191,6 +191,17 @@
             align-items: center;
         }
 
+        .action-card-link {
+            color: inherit;
+            text-decoration: none;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .action-card-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 24, 40, .1);
+        }
+
         .action-card h3 {
             font-size: 15px;
             margin-bottom: 5px;
@@ -585,7 +596,7 @@
 
         <div class="actions-grid">
 
-            <div class="action-card">
+            <a class="action-card action-card-link" href="{% url 'adminpanel:users' %}?status=pending">
 
                 <div>
                     <h3>Vérifications</h3>
@@ -596,10 +607,9 @@
                     {{ verifications_en_attente }}
                 </div>
 
-            </div>
+            </a>
 
-
-            <div class="action-card">
+            <a class="action-card action-card-link" href="{% url 'adminpanel:verifications' %}">
 
                 <div>
                     <h3>Documents</h3>
@@ -610,15 +620,14 @@
                     {{ documents_en_attente }}
                 </div>
 
-            </div>
+            </a>
 
-
-            <div class="action-card">
+            <a class="action-card action-card-link" href="{% url 'adminpanel:finance' %}">
 
                 <div>
                     <h3>Paiements</h3>
                     <p>Paiements en attente</p>
-                </div>
+                </a>
 
                 <div class="badge">
                     {{ paiements_pending }}
