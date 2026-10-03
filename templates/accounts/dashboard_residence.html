@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Dashboard — {{ prof_profile.establishment_name|default:"Ma Résidence" }}{% endblock %}
+{% translate "Ma Résidence" as default_establishment_name %}
+{% block title %}Dashboard — {{ prof_profile.establishment_name|default:default_establishment_name }}{% endblock %}
 
 {% block content %}
 <div class="dr-wrapper">
@@ -13,7 +15,7 @@
                 <span class="dr-header__flag">🇨🇮</span>
                 <div>
                     <h1 class="dr-header__title">
-                        {% if prof_profile %}{{ prof_profile.establishment_name }}{% else %}Ma Résidence{% endif %}
+                        {% if prof_profile %}{{ prof_profile.establishment_name }}{% else %}{{ default_establishment_name }}{% endif %}
                     </h1>
                     <p class="dr-header__sub">
                         {% if prof_profile.establishment_city %}{{ prof_profile.establishment_city }} &mdash; {% endif %}
@@ -22,7 +24,7 @@
                 </div>
             </div>
             <span class="dr-header__badge {% if prof_profile.is_verified %}dr-header__badge--verified{% endif %}">
-                {% if prof_profile.is_verified %}Compte vérifié{% else %}Non vérifié{% endif %}
+                {% if prof_profile.is_verified %}{% translate "Compte vérifié" %}{% else %}{% translate "Non vérifié" %}{% endif %}
             </span>
         </header>
 
@@ -30,19 +32,19 @@
         <div class="dr-stats">
             <div class="dr-stat">
                 <span class="dr-stat__value">{{ nb_logements|default:"0" }}</span>
-                <span class="dr-stat__label">Logements</span>
+                <span class="dr-stat__label">{% translate "Logements" %}</span>
             </div>
             <div class="dr-stat">
                 <span class="dr-stat__value">{{ nb_reservations|default:"0" }}</span>
-                <span class="dr-stat__label">Réservations</span>
+                <span class="dr-stat__label">{% translate "Réservations" %}</span>
             </div>
             <div class="dr-stat">
                 <span class="dr-stat__value">{{ nb_clients_actifs|default:"0" }}</span>
-                <span class="dr-stat__label">Clients actifs</span>
+                <span class="dr-stat__label">{% translate "Clients actifs" %}</span>
             </div>
             <div class="dr-stat">
                 <span class="dr-stat__value">{{ logements_disponibles|default:"0" }}</span>
-                <span class="dr-stat__label">Disponibles</span>
+                <span class="dr-stat__label">{% translate "Disponibles" %}</span>
             </div>
         </div>
 
@@ -50,7 +52,7 @@
         <div class="dr-metrics">
 
             <div class="dr-metric">
-                <span class="dr-metric__label">Taux d'occupation</span>
+                <span class="dr-metric__label">{% translate "Taux d'occupation" %}</span>
                 <span class="dr-metric__value">{{ taux_occupation|default:"0" }}<small>%</small></span>
                 <div class="dr-metric__bar">
                     <div class="dr-metric__fill" style="width: {{ taux_occupation|default:'0' }}%"></div>
@@ -58,12 +60,12 @@
             </div>
 
             <div class="dr-metric">
-                <span class="dr-metric__label">Revenu du mois</span>
+                <span class="dr-metric__label">{% translate "Revenu du mois" %}</span>
                 <span class="dr-metric__value dr-metric__value--green">{{ revenu_mois|default:"0" }}<small> FCFA</small></span>
             </div>
 
             <div class="dr-metric">
-                <span class="dr-metric__label">Note moyenne</span>
+                <span class="dr-metric__label">{% translate "Note moyenne" %}</span>
                 <span class="dr-metric__value">{{ note_moyenne|default:"—" }}<small>/5</small></span>
                 <div class="dr-metric__stars">
                     {% for i in "12345" %}
@@ -76,23 +78,23 @@
 
         <!-- ── ACTIONS RAPIDES ── -->
         <section class="dr-section">
-            <h2 class="dr-section__title">Actions rapides</h2>
+            <h2 class="dr-section__title">{% translate "Actions rapides" %}</h2>
             <div class="dr-actions">
                 <a href="{% url 'logement:ajouter_logement' %}" class="dr-action">
                     <span class="dr-action__icon">＋</span>
-                    <span>Ajouter un logement</span>
+                    <span>{% translate "Ajouter un logement" %}</span>
                 </a>
                 <a href="{% url 'logement:mes_reservations' %}" class="dr-action">
                     <span class="dr-action__icon">≡</span>
-                    <span>Voir les réservations</span>
+                    <span>{% translate "Voir les réservations" %}</span>
                 </a>
                 <a href="{% url 'messagerie:mes_conversations' %}" class="dr-action">
                     <span class="dr-action__icon">✉</span>
-                    <span>Messages</span>
+                    <span>{% translate "Messages" %}</span>
                 </a>
                 <a href="{% url 'accounts:profil' %}" class="dr-action">
                     <span class="dr-action__icon">⚙</span>
-                    <span>Paramètres</span>
+                    <span>{% translate "Paramètres" %}</span>
                 </a>
             </div>
         </section>

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Modifier mon profil — Ivoire Connect{% endblock %}
+{% block title %}{% translate "Modifier mon profil" %} — Ivoire Connect{% endblock %}
 
 {% block content %}
 <div class="ep-wrapper">
@@ -9,8 +10,8 @@
         <!-- ── HEADER ── -->
         <header class="ep-header">
             <span class="ep-header__flag">🇨🇮</span>
-            <h1 class="ep-header__title">Modifier mon profil</h1>
-            <p class="ep-header__sub">Mettez à jour vos informations personnelles</p>
+            <h1 class="ep-header__title">{% translate "Modifier mon profil" %}</h1>
+            <p class="ep-header__sub">{% translate "Mettez à jour vos informations personnelles" %}</p>
         </header>
 
         <div class="ep-body">
@@ -29,7 +30,7 @@
                 <div class="ep-avatar-card">
                     <div class="ep-avatar" id="avatar-preview">
                         {% if profile.photo_profil %}
-                            <img src="{{ profile.photo_profil.url }}" alt="Photo de profil">
+                            <img src="{{ profile.photo_profil.url }}" alt="{% translate 'Photo de profil' %}">
                         {% else %}
                             <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
                         {% endif %}
@@ -37,7 +38,7 @@
                     <div class="ep-avatar-card__info">
                         <p class="ep-avatar-card__name">{{ request.user.first_name }} {{ request.user.last_name }}</p>
                         <p class="ep-avatar-card__username">@{{ request.user.username }}</p>
-                        <label class="ep-upload-btn" for="photo-input">Changer la photo</label>
+                        <label class="ep-upload-btn" for="photo-input">{% translate "Changer la photo" %}</label>
                         <input type="file" id="photo-input" name="{{ form.photo_profil.html_name }}"
                                accept="image/*" class="ep-upload-input" onchange="previewAvatar(this)">
                     </div>
@@ -45,28 +46,28 @@
 
                 <!-- ── INFOS PERSONNELLES ── -->
                 <div class="ep-card">
-                    <h2 class="ep-card__title">Informations personnelles</h2>
+                    <h2 class="ep-card__title">{% translate "Informations personnelles" %}</h2>
                     <div class="ep-grid">
                         <div class="ep-field">
-                            <label class="ep-label" for="id_first_name">Nom</label>
+                            <label class="ep-label" for="id_first_name">{% translate "Nom" %}</label>
                             <input type="text" name="first_name" id="id_first_name"
                                    value="{{ form.first_name.value|default:'' }}" required>
                             {% if form.first_name.errors %}<span class="ep-error">{{ form.first_name.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="ep-field">
-                            <label class="ep-label" for="id_last_name">Prénoms</label>
+                            <label class="ep-label" for="id_last_name">{% translate "Prénoms" %}</label>
                             <input type="text" name="last_name" id="id_last_name"
                                    value="{{ form.last_name.value|default:'' }}" required>
                             {% if form.last_name.errors %}<span class="ep-error">{{ form.last_name.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="ep-field ep-field--full">
-                            <label class="ep-label" for="id_email">Email</label>
+                            <label class="ep-label" for="id_email">{% translate "Email" %}</label>
                             <input type="email" name="email" id="id_email"
                                    value="{{ form.email.value|default:'' }}" required>
                             {% if form.email.errors %}<span class="ep-error">{{ form.email.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="ep-field ep-field--full">
-                            <label class="ep-label">Téléphone</label>
+                            <label class="ep-label">{% translate "Téléphone" %}</label>
                             {{ form.telephone }}
                             {% if form.telephone.errors %}<span class="ep-error">{{ form.telephone.errors.0 }}</span>{% endif %}
                         </div>
@@ -75,20 +76,20 @@
 
                 <!-- ── INFOS PROFIL ── -->
                 <div class="ep-card">
-                    <h2 class="ep-card__title">Informations du profil</h2>
+                    <h2 class="ep-card__title">{% translate "Informations du profil" %}</h2>
                     <div class="ep-grid">
                         <div class="ep-field">
-                            <label class="ep-label">Ville</label>
+                            <label class="ep-label">{% translate "Ville" %}</label>
                             {{ form.ville }}
                             {% if form.ville.errors %}<span class="ep-error">{{ form.ville.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="ep-field">
-                            <label class="ep-label">Quartier</label>
+                            <label class="ep-label">{% translate "Quartier" %}</label>
                             {{ form.quartier }}
                             {% if form.quartier.errors %}<span class="ep-error">{{ form.quartier.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="ep-field ep-field--full">
-                            <label class="ep-label">Profession</label>
+                            <label class="ep-label">{% translate "Profession" %}</label>
                             {{ form.profession }}
                             {% if form.profession.errors %}<span class="ep-error">{{ form.profession.errors.0 }}</span>{% endif %}
                         </div>
@@ -97,8 +98,8 @@
 
                 <!-- ── ACTIONS ── -->
                 <div class="ep-actions">
-                    <a href="{% url 'accounts:profil' %}" class="ep-btn ep-btn--ghost">Annuler</a>
-                    <button type="submit" class="ep-btn ep-btn--primary">Enregistrer les modifications</button>
+                    <a href="{% url 'accounts:profil' %}" class="ep-btn ep-btn--ghost">{% translate "Annuler" %}</a>
+                    <button type="submit" class="ep-btn ep-btn--primary">{% translate "Enregistrer les modifications" %}</button>
                 </div>
 
             </form>
@@ -363,7 +364,7 @@ function previewAvatar(input) {
     const reader = new FileReader();
     reader.onload = e => {
         document.getElementById('avatar-preview').innerHTML =
-            `<img src="${e.target.result}" alt="Aperçu" style="width:100%;height:100%;object-fit:cover;">`;
+            `<img src="${e.target.result}" alt="{% translate 'Aperçu' %}" style="width:100%;height:100%;object-fit:cover;">`;
     };
     reader.readAsDataURL(input.files[0]);
 }

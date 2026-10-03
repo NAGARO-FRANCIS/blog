@@ -1,16 +1,17 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Notifications - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Notifications" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
 <div class="notifications-wrapper">
     <div class="notifications-container">
         <div class="notifications-header">
-            <h1 class="notifications-title">🔔 Notifications</h1>
+            <h1 class="notifications-title">🔔 {% translate "Notifications" %}</h1>
             {% if unread_count > 0 %}
                 <button class="notifications-btn" onclick="markAllAsRead()">
-                    Marquer tout comme lu
+                    {% translate "Marquer tout comme lu" %}
                 </button>
             {% endif %}
         </div>
@@ -30,19 +31,19 @@
                             </div>
                             <p class="notification-message">{{ notification.message }}</p>
                             {% if notification.actor %}
-                                <p class="notification-actor">Par <strong>{{ notification.actor_name }}</strong></p>
+                                <p class="notification-actor">{% translate "Par" %} <strong>{{ notification.actor_name }}</strong></p>
                             {% endif %}
                         </div>
 
                         <div class="notification-actions">
                             {% if not notification.is_read %}
-                                <button class="notification-action-btn" onclick="markAsRead({{ notification.id }})">
-                                    Marquer comme lu
+                                <button class="notification-action-btn" data-mark-read onclick="markAsRead({{ notification.id }})">
+                                    {% translate "Marquer comme lu" %}
                                 </button>
                             {% endif %}
                             {% if notification.related_listing_id %}
                                 <a href="{% url 'logement:detail_logement' notification.related_listing_id %}" class="notification-action-btn notification-action-btn--link">
-                                    Voir l'annonce
+                                    {% translate "Voir l'annonce" %}
                                 </a>
                             {% endif %}
                         </div>
@@ -52,8 +53,8 @@
         {% else %}
             <div class="notifications-empty">
                 <div class="notifications-empty-icon">🔔</div>
-                <h3>Aucune notification</h3>
-                <p>Vous n'avez pas encore de notifications. Abonnez-vous à des utilisateurs pour être notifié de leurs nouvelles annonces!</p>
+                <h3>{% translate "Aucune notification" %}</h3>
+                <p>{% translate "Vous n'avez pas encore de notifications. Abonnez-vous à des utilisateurs pour être notifié de leurs nouvelles annonces!" %}</p>
             </div>
         {% endif %}
     </div>
@@ -299,8 +300,8 @@ function markAsRead(notificationId) {
                 if (item) {
                     item.classList.remove('notification-item--unread');
                     item.classList.add('notification-item--read');
-                    const btn = item.querySelector('.notification-action-btn');
-                    if (btn && btn.textContent.includes('Marquer')) {
+                    const btn = item.querySelector('[data-mark-read]');
+                    if (btn) {
                         btn.remove();
                     }
                 }
@@ -321,8 +322,8 @@ function markAllAsRead() {
                 document.querySelectorAll('.notification-item--unread').forEach(item => {
                     item.classList.remove('notification-item--unread');
                     item.classList.add('notification-item--read');
-                    const btn = item.querySelector('.notification-action-btn');
-                    if (btn && btn.textContent.includes('Marquer')) {
+                    const btn = item.querySelector('[data-mark-read]');
+                    if (btn) {
                         btn.remove();
                     }
                 });

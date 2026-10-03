@@ -1,39 +1,39 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load i18n static %}
 
-{% block title %}Annonces - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Annonces" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
 <main class="animate-slide-up">
     <div class="container py-5">
         <!-- Header Section -->
         <div class="text-center mb-5">
-            <h1 class="text-primary">🌍 Toutes les Annonces</h1>
-            <p class="text-muted" style="font-size: 1.1rem;">Hôtels, Résidences et Locations Individuelles</p>
+            <h1 class="text-primary">🌍 {% translate "Toutes les annonces" %}</h1>
+            <p class="text-muted" style="font-size: 1.1rem;">{% translate "Hôtels, résidences et locations individuelles" %}</p>
         </div>
 
         <!-- Filter Tabs -->
         <div class="property-filter-tabs">
             <button class="property-filter-tab all active" onclick="filterByType('all')">
-                ✨ Toutes les annonces
+                ✨ {% translate "Toutes les annonces" %}
                 <span style="background: #e5e7eb; color: #666; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
                     {{ total_count }}
                 </span>
             </button>
             <button class="property-filter-tab hotel" onclick="filterByType('hotel')">
-                🏨 Hôtels
+                🏨 {% translate "Hôtels" %}
                 <span style="background: rgba(255, 107, 53, 0.2); color: #ff6b35; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
                     {{ hotel_count }}
                 </span>
             </button>
             <button class="property-filter-tab residence" onclick="filterByType('residence')">
-                🏢 Résidences
+                🏢 {% translate "Résidences" %}
                 <span style="background: rgba(79, 70, 229, 0.2); color: #4f46e5; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
                     {{ residence_count }}
                 </span>
             </button>
             <button class="property-filter-tab individu" onclick="filterByType('individu')">
-                🏠 Locations Individuelles
+                🏠 {% translate "Locations individuelles" %}
                 <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
                     {{ individu_count }}
                 </span>
@@ -43,9 +43,9 @@
         <!-- Hotels Section -->
         <div id="section-hotel" class="properties-section">
             <div class="properties-section-header" style="--type-color: #ff6b35;" data-icon="🏨">
-                <h2 class="properties-section-title">Hôtels Partenaires</h2>
+                <h2 class="properties-section-title">{% translate "Hôtels partenaires" %}</h2>
             </div>
-            <p style="color: #999; margin-bottom: 20px;">Séjours confortables avec services hôteliers 5 étoiles - Gérés par <strong>Firmine</strong></p>
+            <p style="color: #999; margin-bottom: 20px;">{% translate "Séjours confortables avec services hôteliers 5 étoiles — Gérés par" %} <strong>Firmine</strong></p>
             
             {% if hotels %}
                 <div class="properties-grid">
@@ -56,8 +56,8 @@
             {% else %}
                 <div class="properties-empty">
                     <div class="properties-empty-icon">🏨</div>
-                    <h3 class="properties-empty-title">Aucun hôtel disponible</h3>
-                    <p class="properties-empty-text">Revenez bientôt pour découvrir nos hôtels partenaires</p>
+                    <h3 class="properties-empty-title">{% translate "Aucun hôtel disponible" %}</h3>
+                    <p class="properties-empty-text">{% translate "Revenez bientôt pour découvrir nos hôtels partenaires" %}</p>
                 </div>
             {% endif %}
         </div>
@@ -65,9 +65,9 @@
         <!-- Residences Section -->
         <div id="section-residence" class="properties-section">
             <div class="properties-section-header" style="--type-color: #4f46e5;" data-icon="🏢">
-                <h2 class="properties-section-title">Résidences Luxueuses</h2>
+                <h2 class="properties-section-title">{% translate "Résidences de standing" %}</h2>
             </div>
-            <p style="color: #999; margin-bottom: 20px;">Appartements et studios modernes avec services - Gérés par <strong>Louise</strong></p>
+            <p style="color: #999; margin-bottom: 20px;">{% translate "Appartements et studios modernes avec services — Gérés par" %} <strong>Louise</strong></p>
             
             {% if residences %}
                 <div class="properties-grid">
@@ -78,8 +78,8 @@
             {% else %}
                 <div class="properties-empty">
                     <div class="properties-empty-icon">🏢</div>
-                    <h3 class="properties-empty-title">Aucune résidence disponible</h3>
-                    <p class="properties-empty-text">Revenez bientôt pour découvrir nos résidences premium</p>
+                    <h3 class="properties-empty-title">{% translate "Aucune résidence disponible" %}</h3>
+                    <p class="properties-empty-text">{% translate "Revenez bientôt pour découvrir nos résidences premium" %}</p>
                 </div>
             {% endif %}
         </div>
@@ -87,9 +87,9 @@
         <!-- Individual Rentals Section -->
         <div id="section-individu" class="properties-section">
             <div class="properties-section-header" style="--type-color: #10b981;" data-icon="🏠">
-                <h2 class="properties-section-title">Locations Individuelles</h2>
+                <h2 class="properties-section-title">{% translate "Locations individuelles" %}</h2>
             </div>
-            <p style="color: #999; margin-bottom: 20px;">Chambres et colocations directes entre particuliers - Gérés par <strong>Nagaro</strong></p>
+            <p style="color: #999; margin-bottom: 20px;">{% translate "Chambres et colocations directement entre particuliers — Gérés par" %} <strong>Nagaro</strong></p>
             
             {% if individuals %}
                 <div class="properties-grid">
@@ -100,8 +100,8 @@
             {% else %}
                 <div class="properties-empty">
                     <div class="properties-empty-icon">🏠</div>
-                    <h3 class="properties-empty-title">Aucune location individuelle disponible</h3>
-                    <p class="properties-empty-text">Revenez bientôt pour découvrir nos annonces de particuliers</p>
+                    <h3 class="properties-empty-title">{% translate "Aucune location individuelle disponible" %}</h3>
+                    <p class="properties-empty-text">{% translate "Revenez bientôt pour découvrir nos annonces de particuliers" %}</p>
                 </div>
             {% endif %}
         </div>
@@ -109,10 +109,10 @@
         <!-- CTA Section -->
         {% if not user.is_authenticated %}
         <div style="text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #f0f2ff 0%, #ecfdf5 100%); border-radius: 12px; margin-top: 60px;">
-            <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 12px;">Prêt à trouver votre logement idéal?</h2>
-            <p style="color: #666; margin-bottom: 24px; font-size: 1.1rem;">Connectez-vous pour accéder à plus de fonctionnalités</p>
+            <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 12px;">{% translate "Prêt à trouver votre logement idéal ?" %}</h2>
+            <p style="color: #666; margin-bottom: 24px; font-size: 1.1rem;">{% translate "Connectez-vous pour accéder à plus de fonctionnalités" %}</p>
             <a href="{% url 'accounts:login' %}" class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 12px 32px; font-size: 1.05rem;">
-                Se Connecter Maintenant →
+                {% translate "Se connecter maintenant" %} →
             </a>
         </div>
         {% endif %}

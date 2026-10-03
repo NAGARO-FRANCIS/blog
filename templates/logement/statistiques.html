@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Statistiques Professionnelles{% endblock %}
+{% block title %}{% translate "Statistiques Professionnelles" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -71,30 +71,30 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>📊 Statistiques Professionnelles</h1>
-    <p>Analysez les performances de votre établissement</p>
+    <h1>📊 {% translate "Statistiques Professionnelles" %}</h1>
+    <p>{% translate "Analysez les performances de votre établissement" %}</p>
 </div>
 
 <div class="container">
     <div class="stats-grid">
         <div class="stat-card green">
-            <span class="label">Logements</span>
+            <span class="label">{% translate "Logements" %}</span>
             <strong>{{ total_logements|default:0 }}</strong>
         </div>
         <div class="stat-card orange">
-            <span class="label">Réservations</span>
+            <span class="label">{% translate "Réservations" %}</span>
             <strong>{{ total_reservations|default:0 }}</strong>
         </div>
         <div class="stat-card blue">
-            <span class="label">Taux d'occupation</span>
+            <span class="label">{% translate "Taux d'occupation" %}</span>
             <strong>{{ taux_occupation|default:0 }}%</strong>
         </div>
         <div class="stat-card purple">
-            <span class="label">Revenu total</span>
+            <span class="label">{% translate "Revenu total" %}</span>
             <strong>{{ revenu_total|default:0 }} FCFA</strong>
         </div>
         <div class="stat-card yellow">
-            <span class="label">Note moyenne</span>
+            <span class="label">{% translate "Note moyenne" %}</span>
             <strong>{{ note_moyenne|default:0 }}/5</strong>
         </div>
     </div>
@@ -103,78 +103,78 @@
     <section class="analytics-section" aria-labelledby="analytics-title">
         <div class="analytics-heading">
             <div>
-                <span class="eyebrow">Performance sur 12 mois</span>
-                <h2 id="analytics-title">Vue analytique de votre activité</h2>
+                <span class="eyebrow">{% translate "Performance sur 12 mois" %}</span>
+                <h2 id="analytics-title">{% translate "Vue analytique de votre activité" %}</h2>
             </div>
-            <span class="analytics-period">Données mises à jour à l'ouverture</span>
+            <span class="analytics-period">{% translate "Données mises à jour à l'ouverture" %}</span>
         </div>
 
         <div class="chart-grid">
             <article class="chart-panel chart-panel-wide">
                 <div class="chart-title-row">
                     <div>
-                        <h3>Revenus et réservations</h3>
-                        <p>Évolution mensuelle de votre activité commerciale</p>
+                        <h3>{% translate "Revenus et réservations" %}</h3>
+                        <p>{% translate "Évolution mensuelle de votre activité commerciale" %}</p>
                     </div>
-                    <span class="chart-key chart-key-green">Revenus</span>
-                    <span class="chart-key chart-key-orange">Réservations</span>
+                    <span class="chart-key chart-key-green">{% translate "Revenus" %}</span>
+                    <span class="chart-key chart-key-orange">{% translate "Réservations" %}</span>
                 </div>
-                <div class="chart-container"><canvas id="revenueBookingsChart" aria-label="Graphique des revenus et réservations"></canvas></div>
+                <div class="chart-container"><canvas id="revenueBookingsChart" aria-label="{% translate 'Graphique des revenus et réservations' %}"></canvas></div>
             </article>
 
             <article class="chart-panel">
                 <div class="chart-title-row">
                     <div>
-                        <h3>Taux d'occupation</h3>
-                        <p>Capacité utilisée par mois</p>
+                        <h3>{% translate "Taux d'occupation" %}</h3>
+                        <p>{% translate "Capacité utilisée par mois" %}</p>
                     </div>
                 </div>
-                <div class="chart-container"><canvas id="occupancyChart" aria-label="Courbe du taux d'occupation"></canvas></div>
+                <div class="chart-container"><canvas id="occupancyChart" aria-label="{% translate "Courbe du taux d'occupation" %}"></canvas></div>
             </article>
 
             <article class="chart-panel">
                 <div class="chart-title-row">
                     <div>
-                        <h3>Satisfaction client</h3>
-                        <p>Note moyenne des avis reçus</p>
+                        <h3>{% translate "Satisfaction client" %}</h3>
+                        <p>{% translate "Note moyenne des avis reçus" %}</p>
                     </div>
                 </div>
-                <div class="chart-container"><canvas id="reviewsChart" aria-label="Courbe de la note moyenne des avis"></canvas></div>
+                <div class="chart-container"><canvas id="reviewsChart" aria-label="{% translate 'Courbe de la note moyenne des avis' %}"></canvas></div>
             </article>
 
             <article class="chart-panel">
                 <div class="chart-title-row">
                     <div>
-                        <h3>État des réservations</h3>
-                        <p>Répartition de toutes vos demandes</p>
+                        <h3>{% translate "État des réservations" %}</h3>
+                        <p>{% translate "Répartition de toutes vos demandes" %}</p>
                     </div>
                 </div>
-                <div class="chart-container chart-container-doughnut"><canvas id="statusChart" aria-label="Répartition des statuts de réservation"></canvas></div>
+                <div class="chart-container chart-container-doughnut"><canvas id="statusChart" aria-label="{% translate 'Répartition des statuts de réservation' %}"></canvas></div>
             </article>
 
             <article class="chart-panel chart-panel-wide">
                 <div class="chart-title-row">
                     <div>
-                        <h3>Revenus par logement</h3>
-                        <p>Comparaison des revenus cumulés par annonce</p>
+                        <h3>{% translate "Revenus par logement" %}</h3>
+                        <p>{% translate "Comparaison des revenus cumulés par annonce" %}</p>
                     </div>
                 </div>
-                <div class="chart-container chart-container-property"><canvas id="propertyRevenueChart" aria-label="Revenus par logement"></canvas></div>
+                <div class="chart-container chart-container-property"><canvas id="propertyRevenueChart" aria-label="{% translate 'Revenus par logement' %}"></canvas></div>
             </article>
         </div>
     </section>
 
     <div class="panel">
-        <h2>Réservations récentes</h2>
+        <h2>{% translate "Réservations récentes" %}</h2>
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Client</th>
-                    <th>Logement</th>
-                    <th>Arrivée</th>
-                    <th>Départ</th>
-                    <th>Montant</th>
-                    <th>Statut</th>
+                    <th>{% translate "Client" %}</th>
+                    <th>{% translate "Logement" %}</th>
+                    <th>{% translate "Arrivée" %}</th>
+                    <th>{% translate "Départ" %}</th>
+                    <th>{% translate "Montant" %}</th>
+                    <th>{% translate "Statut" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -189,7 +189,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="empty-row">Aucune réservation enregistrée.</td>
+                    <td colspan="6" class="empty-row">{% translate "Aucune réservation enregistrée." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -197,7 +197,7 @@
     </div>
 
     <div class="actions-row">
-        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
+        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← {% translate "Retour à la Gestion" %}</a>
     </div>
 </div>
 
@@ -249,6 +249,10 @@
 {% endblock %}
 
 {% block extra_js %}
+{% translate "Revenus (FCFA)" as revenues_label %}
+{% translate "Réservations" as bookings_label %}
+{% translate "Occupation (%)" as occupancy_label %}
+{% translate "Note moyenne" as average_rating_label %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
     (() => {
@@ -286,8 +290,8 @@
         new Chart(document.getElementById('revenueBookingsChart'), {
             type: 'line',
             data: { labels: data.labels, datasets: [
-                lineDataset('Revenus (FCFA)', data.revenus, colors.green, colors.greenFill),
-                { ...lineDataset('Réservations', data.reservations, colors.orange, 'rgba(245, 158, 11, .08)', 'y1'), fill: false }
+                lineDataset('{{ revenues_label|escapejs }}', data.revenus, colors.green, colors.greenFill),
+                { ...lineDataset('{{ bookings_label|escapejs }}', data.reservations, colors.orange, 'rgba(245, 158, 11, .08)', 'y1'), fill: false }
             ] },
             options: { ...commonOptions, scales: {
                 ...commonOptions.scales,
@@ -297,12 +301,12 @@
         });
 
         new Chart(document.getElementById('occupancyChart'), {
-            type: 'line', data: { labels: data.labels, datasets: [lineDataset('Occupation (%)', data.occupation, colors.blue, 'rgba(37, 99, 235, .12)')] },
+            type: 'line', data: { labels: data.labels, datasets: [lineDataset('{{ occupancy_label|escapejs }}', data.occupation, colors.blue, 'rgba(37, 99, 235, .12)')] },
             options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, max: 100, ticks: { ...commonOptions.scales.y.ticks, callback: value => `${value}%` } } } }
         });
 
         new Chart(document.getElementById('reviewsChart'), {
-            type: 'line', data: { labels: data.labels, datasets: [lineDataset('Note moyenne', data.avis, colors.purple, 'rgba(124, 58, 237, .12)')] },
+            type: 'line', data: { labels: data.labels, datasets: [lineDataset('{{ average_rating_label|escapejs }}', data.avis, colors.purple, 'rgba(124, 58, 237, .12)')] },
             options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, min: 0, max: 5, ticks: { ...commonOptions.scales.y.ticks, stepSize: 1 } } } }
         });
 
@@ -316,7 +320,7 @@
         const propertyLabels = data.logements.map(item => item.label);
         const propertyValues = data.logements.map(item => item.value);
         new Chart(document.getElementById('propertyRevenueChart'), {
-            type: 'bar', data: { labels: propertyLabels, datasets: [{ label: 'Revenus (FCFA)', data: propertyValues, backgroundColor: colors.green, borderRadius: 5, maxBarThickness: 48 }] },
+            type: 'bar', data: { labels: propertyLabels, datasets: [{ label: '{{ revenues_label|escapejs }}', data: propertyValues, backgroundColor: colors.green, borderRadius: 5, maxBarThickness: 48 }] },
             options: { ...commonOptions, indexAxis: propertyLabels.length > 5 ? 'y' : 'x', plugins: { ...commonOptions.plugins, legend: { display: false } }, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, ticks: { ...commonOptions.scales.y.ticks, callback: value => `${Number(value).toLocaleString('fr-FR')} F` } } } }
         });
     })();

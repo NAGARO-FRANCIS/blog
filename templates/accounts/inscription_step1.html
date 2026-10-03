@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}S'inscrire - Coloc.ai{% endblock %}
+{% block title %}{% translate "S'inscrire" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="signup-wrapper">
     <div class="signup-container" style="max-width: 600px;">
         <!-- Branding Section -->
         <div class="signup-header">
-            <h1>Bienvenue sur Coloc.ai 🏠</h1>
-            <p>Choisissez votre type de compte pour continuer</p>
+            <h1>{% translate "Bienvenue sur Coloc.ai" %} 🏠</h1>
+            <p>{% translate "Choisissez votre type de compte pour continuer" %}</p>
         </div>
 
         <!-- Error Messages -->
@@ -34,16 +35,16 @@
                                 <div class="option-card">
                                     {% if value == 'individu' %}
                                         <div class="option-icon">👤</div>
-                                        <div class="option-title">Individu</div>
-                                        <div class="option-description">Vous cherchez une colocation ou un logement</div>
+                                        <div class="option-title">{% translate "Individu" %}</div>
+                                        <div class="option-description">{% translate "Vous cherchez une colocation ou un logement" %}</div>
                                     {% elif value == 'residence' %}
                                         <div class="option-icon">🏢</div>
-                                        <div class="option-title">Résidence</div>
-                                        <div class="option-description">Vous gérez une résidence</div>
+                                        <div class="option-title">{% translate "Résidence" %}</div>
+                                        <div class="option-description">{% translate "Vous gérez une résidence" %}</div>
                                     {% elif value == 'hotel' %}
                                         <div class="option-icon">🏨</div>
-                                        <div class="option-title">Hôtel</div>
-                                        <div class="option-description">Vous gérez un hôtel</div>
+                                        <div class="option-title">{% translate "Hôtel" %}</div>
+                                        <div class="option-description">{% translate "Vous gérez un hôtel" %}</div>
                                     {% endif %}
                                 </div>
                             </label>
@@ -57,11 +58,11 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 30px;">
-                <button type="submit" class="btn btn-primary" style="flex: 1;">Continuer →</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">{% translate "Continuer" %} →</button>
             </div>
 
             <p style="text-align: center; margin-top: 20px; color: #666;">
-                Déjà inscrit ? <a href="{% url 'accounts:login' %}">Connectez-vous</a>
+                {% translate "Déjà inscrit ?" %} <a href="{% url 'accounts:login' %}">{% translate "Connectez-vous" %}</a>
             </p>
         </form>
     </div>

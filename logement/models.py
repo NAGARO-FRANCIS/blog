@@ -1,14 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils.translation import gettext_lazy as _
 
 
 class Etablissement(models.Model):
     """Etablissement professionnel regroupant ses categories de logements."""
 
     TYPE_CHOICES = [
-        ('hotel', 'Hotel'),
-        ('residence', 'Residence'),
+        ('hotel', _('Hotel')),
+        ('residence', _('Residence')),
     ]
 
     proprietaire = models.OneToOneField(
@@ -38,27 +39,27 @@ class Etablissement(models.Model):
 
 class Logement(models.Model):
     TYPE_LOGEMENT = [
-        ('appartement', 'Appartement'),
-        ('maison', 'Maison'),
-        ('studio', 'Studio'),
-        ('villa', 'Villa'),
-        ('chambre', 'Chambre'),
-        ('simple', 'Chambre simple'),
-        ('double', 'Chambre double'),
-        ('duplex', 'Duplex'),
-        ('suite', 'Suite'),
-        ('familiale', 'Chambre familiale'),
+        ('appartement', _('Appartement')),
+        ('maison', _('Maison')),
+        ('studio', _('Studio')),
+        ('villa', _('Villa')),
+        ('chambre', _('Chambre')),
+        ('simple', _('Chambre simple')),
+        ('double', _('Chambre double')),
+        ('duplex', _('Duplex')),
+        ('suite', _('Suite')),
+        ('familiale', _('Chambre familiale')),
     ]
     
     ACCOUNT_TYPE = [
-        ('hotel', 'Hôtel'),
-        ('residence', 'Résidence'),
-        ('individu', 'Individu'),
+        ('hotel', _('Hôtel')),
+        ('residence', _('Résidence')),
+        ('individu', _('Individu')),
     ]
     
     TYPE_CHARGE = [
-        ('charges_comprises', 'Charges comprises'),
-        ('charges_non_comprises', 'Charges non comprises'),
+        ('charges_comprises', _('Charges comprises')),
+        ('charges_non_comprises', _('Charges non comprises')),
     ]
 
     titre = models.CharField(max_length=200)
@@ -208,11 +209,15 @@ class Logement(models.Model):
         return self.videos.count()
 
     def reserved_units_for_date(self, day):
-        return self.reservations.filter(
+        reservations = self.reservations.filter(
             date_arrivee__lte=day,
             date_depart__gt=day,
             statut__in=['pending', 'confirmed'],
-        ).aggregate(total=models.Sum('nombre_chambres'))['total'] or 0
+        ).prefetch_related('unites')
+        return sum(
+            len(reservation.unites.all()) or reservation.nombre_chambres or 1
+            for reservation in reservations
+        )
 
     def available_units_for_date(self, day):
         if self.disponibilites.filter(date=day, statut='bloquer').exists():
@@ -221,6 +226,46 @@ class Logement(models.Model):
             return 0
         return max(self.unites_totales - self.reserved_units_for_date(day), 0)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.account_type in ['hotel', 'residence']:
+            existing_numbers = set(self.unites.values_list('numero', flat=True))
+            missing_units = [
+                UniteLogement(logement=self, numero=str(number))
+                for number in range(1, self.unites_totales + 1)
+                if str(number) not in existing_numbers
+            ]
+            UniteLogement.objects.bulk_create(missing_units, ignore_conflicts=True)
+
+    def available_units_for_period(self, start_date, end_date):
+        if self.blocages.filter(
+            date_debut__lt=end_date,
+            date_fin__gt=start_date,
+        ).exists() or self.disponibilites.filter(
+            date__gte=start_date,
+            date__lt=end_date,
+            statut__in=['bloquer', 'occupe'],
+        ).exists():
+            return UniteLogement.objects.none()
+
+        overlapping_reservations = Reservation.objects.filter(
+            logement=self,
+            statut__in=['pending', 'confirmed'],
+            date_arrivee__lt=end_date,
+            date_depart__gt=start_date,
+        ).prefetch_related('unites')
+        reserved_unit_ids = set()
+        unassigned_units = 0
+        for reservation in overlapping_reservations:
+            assigned_units = list(reservation.unites.all())
+            reserved_unit_ids.update(unit.pk for unit in assigned_units)
+            unassigned_units += max(
+                (reservation.nombre_chambres or 1) - len(assigned_units),
+                0,
+            )
+
+        available_units = self.unites.exclude(id__in=reserved_unit_ids).order_by('id')
+        return available_units[unassigned_units:]
 
 class PhotoLogement(models.Model):
     logement = models.ForeignKey(
@@ -273,9 +318,9 @@ class VideoLogement(models.Model):
 class DisponibiliteCalendrier(models.Model):
     """Gère les disponibilités et prix dynamiques par date"""
     STATUT_CHOICES = [
-        ('disponible', '✅ Disponible'),
-        ('occupe', '❌ Occupé'),
-        ('bloquer', '🚫 Bloqué'),
+        ('disponible', _('✅ Disponible')),
+        ('occupe', _('❌ Occupé')),
+        ('bloquer', _('🚫 Bloqué')),
     ]
     
     logement = models.ForeignKey(
@@ -321,13 +366,35 @@ class BlocageCalendrier(models.Model):
         return f'{self.logement} - {self.date_debut} au {self.date_fin}'
 
 
+class UniteLogement(models.Model):
+    """Unité numérotée pouvant être attribuée à une réservation."""
+    logement = models.ForeignKey(
+        Logement,
+        on_delete=models.CASCADE,
+        related_name='unites',
+    )
+    numero = models.CharField(max_length=30)
+
+    class Meta:
+        ordering = ['numero']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['logement', 'numero'],
+                name='unique_numero_unite_par_logement',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.logement.titre} — chambre {self.numero}'
+
+
 class Reservation(models.Model):
     """Modèle pour les réservations (hôtels, résidences, touristes)"""
     STATUT_CHOICES = [
-        ('pending', '⏳ En attente de paiement'),
-        ('confirmed', '✅ Confirmée'),
-        ('cancelled', '❌ Annulée'),
-        ('completed', '✓ Complétée'),
+        ('pending', _('⏳ En attente de paiement')),
+        ('confirmed', _('✅ Confirmée')),
+        ('cancelled', _('❌ Annulée')),
+        ('completed', _('✓ Complétée')),
     ]
     
     # Logement réservé
@@ -344,6 +411,11 @@ class Reservation(models.Model):
         null=True,
         blank=True,
         related_name='reservations'
+    )
+    unites = models.ManyToManyField(
+        UniteLogement,
+        blank=True,
+        related_name='reservations',
     )
     
     # Informations touriste anonyme (si pas connecté)
@@ -523,20 +595,20 @@ class SignalementAvis(models.Model):
 class Paiement(models.Model):
     """Modèle pour tracer les paiements (Stripe, Mobile Money, Virement, Cash)"""
     METHODE_CHOICES = [
-        ('mobile_money', '📱 Mobile Money (Orange, MOUV, Moov, Wave)'),
-        ('mouv', '🟠 MOUV (ancien)'),
-        ('orange', '🟠 Orange Money (ancien)'),
-        ('wave', '🔵 Wave (ancien)'),
-        ('stripe', '💳 Carte bancaire (Stripe)'),
-        ('virement', '🏦 Virement bancaire'),
-        ('cash', '💵 Paiement sur place'),
+        ('mobile_money', _('📱 Mobile Money (Orange, MOUV, Moov, Wave)')),
+        ('mouv', _('🟠 MOUV (ancien)')),
+        ('orange', _('🟠 Orange Money (ancien)')),
+        ('wave', _('🔵 Wave (ancien)')),
+        ('stripe', _('💳 Carte bancaire (Stripe)')),
+        ('virement', _('🏦 Virement bancaire')),
+        ('cash', _('💵 Paiement sur place')),
     ]
     
     STATUT_CHOICES = [
-        ('pending', '⏳ En attente'),
-        ('completed', '✅ Complété'),
-        ('failed', '❌ Échoué'),
-        ('refunded', '↩️ Remboursé'),
+        ('pending', _('⏳ En attente')),
+        ('completed', _('✅ Complété')),
+        ('failed', _('❌ Échoué')),
+        ('refunded', _('↩️ Remboursé')),
     ]
     
     reservation = models.OneToOneField(

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Modifier Propriété Résidence - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Modifier Propriété Résidence - Ivoire Connect" %}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'form_fields.css' %}">
@@ -218,17 +218,17 @@
 <div class="residence-modify-container">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <a href="{% url 'logement:home' %}">🏠 Accueil</a>
+        <a href="{% url 'logement:home' %}">🏠 {% translate "Accueil" %}</a>
         <span>/</span>
-        <a href="{% url 'logement:mes_logements' %}">Mes propriétés</a>
+        <a href="{% url 'logement:mes_logements' %}">{% translate "Mes propriétés" %}</a>
         <span>/</span>
-        <span>✏️ Modifier</span>
+        <span>✏️ {% translate "Modifier" %}</span>
     </div>
 
     <!-- Header -->
     <div class="modify-header">
-        <h1>🏢 Modifier votre propriété</h1>
-        <p>Mettez à jour les informations de votre propriété en résidence</p>
+        <h1>🏢 {% translate "Modifier votre propriété" %}</h1>
+        <p>{% translate "Mettez à jour les informations de votre propriété en résidence" %}</p>
     </div>
 
     <!-- Formulaire -->
@@ -244,7 +244,7 @@
 
         <!-- Section: Informations de Base -->
         <fieldset class="form-section">
-            <legend>📍 Informations de Base</legend>
+            <legend>📍 {% translate "Informations de Base" %}</legend>
             
             <div class="form-group">
                 <label for="{{ form.titre.id_for_label }}">{{ form.titre.label }}</label>
@@ -275,19 +275,19 @@
                         {{ form.quartier }}
                     </div>
                 </div>
-                <div class="col-md-6"><div class="form-group"><label>Commune</label>{{ form.commune }}</div></div>
-                <div class="col-md-6"><div class="form-group"><label>Latitude</label>{{ form.latitude }}</div></div>
-                <div class="col-md-6"><div class="form-group"><label>Longitude</label>{{ form.longitude }}</div></div>
-                <div class="col-md-6"><div class="form-group"><label>Distance université (km)</label>{{ form.distance_universite }}</div></div>
-                <div class="col-md-6"><div class="form-group"><label>Distance hôpital (km)</label>{{ form.distance_hopital }}</div></div>
-                <div class="col-md-6"><div class="form-group"><label>{{ form.eau }} Eau disponible</label></div></div>
-                <div class="col-md-6"><div class="form-group"><label>{{ form.electricite }} Électricité disponible</label></div></div>
+                <div class="col-md-6"><div class="form-group"><label>{% translate "Commune" %}</label>{{ form.commune }}</div></div>
+                <div class="col-md-6"><div class="form-group"><label>{% translate "Latitude" %}</label>{{ form.latitude }}</div></div>
+                <div class="col-md-6"><div class="form-group"><label>{% translate "Longitude" %}</label>{{ form.longitude }}</div></div>
+                <div class="col-md-6"><div class="form-group"><label>{% translate "Distance université (km)" %}</label>{{ form.distance_universite }}</div></div>
+                <div class="col-md-6"><div class="form-group"><label>{% translate "Distance hôpital (km)" %}</label>{{ form.distance_hopital }}</div></div>
+                <div class="col-md-6"><div class="form-group"><label>{{ form.eau }} {% translate "Eau disponible" %}</label></div></div>
+                <div class="col-md-6"><div class="form-group"><label>{{ form.electricite }} {% translate "Électricité disponible" %}</label></div></div>
             </div>
         </fieldset>
 
         <!-- Section: Caractéristiques -->
         <fieldset class="form-section">
-            <legend>🏠 Caractéristiques de la Propriété</legend>
+            <legend>🏠 {% translate "Caractéristiques de la Propriété" %}</legend>
             
             <div class="row">
                 <div class="col-md-3">
@@ -348,21 +348,21 @@
 
         <!-- Section: Tarification Résidence -->
         <fieldset class="form-section">
-            <legend>💰 Tarification et Conditions</legend>
+            <legend>💰 {% translate "Tarification et Conditions" %}</legend>
             
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="{{ form.prix_par_mois.id_for_label }}">{{ form.prix_par_mois.label }}</label>
                         {{ form.prix_par_mois }}
-                        <small style="color: #6b7280;">Loyer mensuel en FCFA</small>
+                        <small style="color: #6b7280;">{% translate "Loyer mensuel en FCFA" %}</small>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="{{ form.frais_agence.id_for_label }}">{{ form.frais_agence.label }}</label>
                         {{ form.frais_agence }}
-                        <small style="color: #6b7280;">Frais d'agence uniques</small>
+                        <small style="color: #6b7280;">{% translate "Frais d'agence uniques" %}</small>
                     </div>
                 </div>
             </div>
@@ -372,7 +372,7 @@
                     <div class="form-group">
                         <label for="{{ form.caution_mois.id_for_label }}">{{ form.caution_mois.label }}</label>
                         {{ form.caution_mois }}
-                        <small style="color: #6b7280;">Mois de caution</small>
+                        <small style="color: #6b7280;">{% translate "Mois de caution" %}</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -392,67 +392,67 @@
 
         <!-- Section: Équipements -->
         <fieldset class="form-section">
-            <legend>✨ Équipements &amp; Services</legend>
+            <legend>✨ {% translate "Équipements & Services" %}</legend>
             
             <div class="checkbox-group">
                 {% if form.wifi %}
                     <div class="checkbox-item">
                         {{ form.wifi }}
-                        <label for="{{ form.wifi.id_for_label }}">WiFi</label>
+                        <label for="{{ form.wifi.id_for_label }}">{% translate "WiFi" %}</label>
                     </div>
                 {% endif %}
                 {% if form.climatisation %}
                     <div class="checkbox-item">
                         {{ form.climatisation }}
-                        <label for="{{ form.climatisation.id_for_label }}">Climatisation</label>
+                        <label for="{{ form.climatisation.id_for_label }}">{% translate "Climatisation" %}</label>
                     </div>
                 {% endif %}
                 {% if form.garage %}
                     <div class="checkbox-item">
                         {{ form.garage }}
-                        <label for="{{ form.garage.id_for_label }}">Garage</label>
+                        <label for="{{ form.garage.id_for_label }}">{% translate "Garage" %}</label>
                     </div>
                 {% endif %}
                 {% if form.jardin %}
                     <div class="checkbox-item">
                         {{ form.jardin }}
-                        <label for="{{ form.jardin.id_for_label }}">Jardin</label>
+                        <label for="{{ form.jardin.id_for_label }}">{% translate "Jardin" %}</label>
                     </div>
                 {% endif %}
                 {% if form.piscine %}
                     <div class="checkbox-item">
                         {{ form.piscine }}
-                        <label for="{{ form.piscine.id_for_label }}">Piscine</label>
+                        <label for="{{ form.piscine.id_for_label }}">{% translate "Piscine" %}</label>
                     </div>
                 {% endif %}
                 {% if form.cuisine_equipee %}
                     <div class="checkbox-item">
                         {{ form.cuisine_equipee }}
-                        <label for="{{ form.cuisine_equipee.id_for_label }}">Cuisine équipée</label>
+                        <label for="{{ form.cuisine_equipee.id_for_label }}">{% translate "Cuisine équipée" %}</label>
                     </div>
                 {% endif %}
                 {% if form.ascenseur %}
                     <div class="checkbox-item">
                         {{ form.ascenseur }}
-                        <label for="{{ form.ascenseur.id_for_label }}">Ascenseur</label>
+                        <label for="{{ form.ascenseur.id_for_label }}">{% translate "Ascenseur" %}</label>
                     </div>
                 {% endif %}
                 {% if form.gardien %}
                     <div class="checkbox-item">
                         {{ form.gardien }}
-                        <label for="{{ form.gardien.id_for_label }}">Gardien</label>
+                        <label for="{{ form.gardien.id_for_label }}">{% translate "Gardien" %}</label>
                     </div>
                 {% endif %}
                 {% if form.securite %}
                     <div class="checkbox-item">
                         {{ form.securite }}
-                        <label for="{{ form.securite.id_for_label }}">Sécurité</label>
+                        <label for="{{ form.securite.id_for_label }}">{% translate "Sécurité" %}</label>
                     </div>
                 {% endif %}
                 {% if form.buanderie %}
                     <div class="checkbox-item">
                         {{ form.buanderie }}
-                        <label for="{{ form.buanderie.id_for_label }}">Buanderie</label>
+                        <label for="{{ form.buanderie.id_for_label }}">{% translate "Buanderie" %}</label>
                     </div>
                 {% endif %}
             </div>
@@ -460,22 +460,22 @@
 
         <!-- Section: Photos -->
         <div class="photo-section">
-            <h2>📸 Photos</h2>
-            <p style="color: #6b7280; margin-bottom: 20px;">Ajoutez ou modifiez les photos de votre propriété</p>
+            <h2>📸 {% translate "Photos" %}</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">{% translate "Ajoutez ou modifiez les photos de votre propriété" %}</p>
             {{ formset.management_form }}
             <div style="margin-top: 20px;">
                 {% for photo_form in formset %}
                     {% if photo_form.instance.pk or forloop.last %}
                     <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
                         {% if photo_form.instance.image %}
-                            <img src="{{ photo_form.instance.image.url }}" alt="Photo" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;">
-                            <small style="color: #6b7280; display: block; margin-bottom: 8px;">Photo actuelle</small>
+                            <img src="{{ photo_form.instance.image.url }}" alt="{% translate 'Photo' %}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;">
+                            <small style="color: #6b7280; display: block; margin-bottom: 8px;">{% translate "Photo actuelle" %}</small>
                         {% endif %}
                         {{ photo_form.image }}
                         {% if photo_form.DELETE %}
                             <label style="margin-top: 8px; display: flex; gap: 8px; align-items: center; font-weight: normal;">
                                 {{ photo_form.DELETE }}
-                                <span style="color: #ef4444;">Supprimer</span>
+                                <span style="color: #ef4444;">{% translate "Supprimer" %}</span>
                             </label>
                         {% endif %}
                     </div>
@@ -486,8 +486,8 @@
 
         <!-- Section: Vidéos -->
         <div class="photo-section">
-            <h2>🎬 Vidéos</h2>
-            <p style="color: #6b7280; margin-bottom: 20px;">Ajoutez des vidéos de présentation (optionnel)</p>
+            <h2>🎬 {% translate "Vidéos" %}</h2>
+            <p style="color: #6b7280; margin-bottom: 20px;">{% translate "Ajoutez des vidéos de présentation (optionnel)" %}</p>
             {{ video_formset.management_form }}
             <div style="margin-top: 20px;">
                 {% for video_form in video_formset %}
@@ -500,7 +500,7 @@
                         {% if video_form.DELETE %}
                             <label style="margin-top: 8px; display: flex; gap: 8px; align-items: center; font-weight: normal;">
                                 {{ video_form.DELETE }}
-                                <span style="color: #ef4444;">Supprimer</span>
+                                <span style="color: #ef4444;">{% translate "Supprimer" %}</span>
                             </label>
                         {% endif %}
                     </div>
@@ -512,10 +512,10 @@
         <!-- Actions -->
         <div class="form-actions">
             <a href="{% url 'logement:detail_logement' logement.id %}" class="btn btn-secondary">
-                ← Annuler
+                ← {% translate "Annuler" %}
             </a>
             <button type="submit" class="btn btn-primary">
-                ✅ Enregistrer les modifications
+                ✅ {% translate "Enregistrer les modifications" %}
             </button>
         </div>
     </form>

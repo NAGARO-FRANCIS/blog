@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Publier un logement - Propriétaire - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Publier un logement - Propriétaire - Ivoire Connect" %}{% endblock %}
 
 {% block content %}
 <style>
@@ -45,18 +46,18 @@
 
 <div class="fp-wrap">
   <div class="fp-hero">
-    <h1>🏠 Publier mon logement</h1>
-    <p>Louez votre maison complète à des locataires</p>
-    <div class="fp-badge-role">👤 Propriétaire</div>
+    <h1>🏠 {% translate "Publier mon logement" %}</h1>
+    <p>{% translate "Louez votre maison complète à des locataires" %}</p>
+    <div class="fp-badge-role">👤 {% translate "Propriétaire" %}</div>
   </div>
 
   <div class="fp-progress"><div class="fp-progress-bar" id="progress" style="width: 25%"></div></div>
 
   <div class="fp-steps">
-    <div class="fp-step active" onclick="goTo(0)"><span>📍</span>Infos</div>
-    <div class="fp-step" onclick="goTo(1)"><span>🏠</span>Caract.</div>
-    <div class="fp-step" onclick="goTo(2)"><span>⚙️</span>Équip.</div>
-    <div class="fp-step" onclick="goTo(3)"><span>📸</span>Photos</div>
+    <div class="fp-step active" onclick="goTo(0)"><span>📍</span>{% translate "Infos" %}</div>
+    <div class="fp-step" onclick="goTo(1)"><span>🏠</span>{% translate "Caract." %}</div>
+    <div class="fp-step" onclick="goTo(2)"><span>⚙️</span>{% translate "Équip." %}</div>
+    <div class="fp-step" onclick="goTo(3)"><span>📸</span>{% translate "Photos" %}</div>
   </div>
 
   <form method="post" enctype="multipart/form-data">
@@ -80,7 +81,7 @@
 
     {% if formset.non_form_errors %}
       <div class="error-message">
-        <strong>Erreur dans les photos:</strong>
+        <strong>{% translate "Erreur dans les photos:" %}</strong>
         {% for error in formset.non_form_errors %}
           <br>{{ error }}
         {% endfor %}
@@ -90,40 +91,40 @@
     <!-- Étape 1 : Informations -->
     <div class="fp-section visible" id="s0">
       <div class="fp-card">
-        <h2>Informations principales</h2>
+        <h2>{% translate "Informations principales" %}</h2>
         <div class="fp-grid">
           <div class="fp-field fp-full">
-            <label>Titre de l'annonce</label>
+            <label>{% translate "Titre de l'annonce" %}</label>
             {{ form.titre }}
             {% if form.titre.errors %}<span class="error-message">{{ form.titre.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Type de logement</label>
+            <label>{% translate "Type de logement" %}</label>
             {{ form.type_logement }}
             {% if form.type_logement.errors %}<span class="error-message">{{ form.type_logement.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Ville</label>
+            <label>{% translate "Ville" %}</label>
             {{ form.ville }}
             {% if form.ville.errors %}<span class="error-message">{{ form.ville.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Quartier</label>
+            <label>{% translate "Quartier" %}</label>
             {{ form.quartier }}
             {% if form.quartier.errors %}<span class="error-message">{{ form.quartier.errors }}</span>{% endif %}
           </div>
-          <div class="fp-field"><label>Commune</label>{{ form.commune }}</div>
-          <div class="fp-field"><label>Latitude</label>{{ form.latitude }}</div>
-          <div class="fp-field"><label>Longitude</label>{{ form.longitude }}</div>
-          <div class="fp-field"><label>Distance université (km)</label>{{ form.distance_universite }}</div>
-          <div class="fp-field"><label>Distance hôpital (km)</label>{{ form.distance_hopital }}</div>
+          <div class="fp-field"><label>{% translate "Commune" %}</label>{{ form.commune }}</div>
+          <div class="fp-field"><label>{% translate "Latitude" %}</label>{{ form.latitude }}</div>
+          <div class="fp-field"><label>{% translate "Longitude" %}</label>{{ form.longitude }}</div>
+          <div class="fp-field"><label>{% translate "Distance université (km)" %}</label>{{ form.distance_universite }}</div>
+          <div class="fp-field"><label>{% translate "Distance hôpital (km)" %}</label>{{ form.distance_hopital }}</div>
           <div class="fp-check"><label>{{ form.eau }} Eau disponible</label></div>
           <div class="fp-check"><label>{{ form.electricite }} Électricité disponible</label></div>
           <div class="fp-field fp-full">
-            <label>Description détaillée</label>
+            <label>{% translate "Description détaillée" %}</label>
             {{ form.description }}
             {% if form.description.errors %}<span class="error-message">{{ form.description.errors }}</span>{% endif %}
-            <div class="fp-hint">Décrivez votre logement, l'ambiance, les points forts...</div>
+            <div class="fp-hint">{% translate "Décrivez votre logement, l'ambiance, les points forts..." %}</div>
           </div>
         </div>
       </div>
@@ -132,51 +133,51 @@
     <!-- Étape 2 : Caractéristiques -->
     <div class="fp-section" id="s1">
       <div class="fp-card">
-        <h2>Caractéristiques du logement</h2>
+        <h2>{% translate "Caractéristiques du logement" %}</h2>
         <div class="fp-grid">
           <div class="fp-field">
-            <label>Surface (m²)</label>
+            <label>{% translate "Surface (m²)" %}</label>
             {{ form.surface }}
             {% if form.surface.errors %}<span class="error-message">{{ form.surface.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Nombre de pièces</label>
+            <label>{% translate "Nombre de pièces" %}</label>
             {{ form.nombre_pieces }}
             {% if form.nombre_pieces.errors %}<span class="error-message">{{ form.nombre_pieces.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Chambres</label>
+            <label>{% translate "Chambres" %}</label>
             {{ form.nombre_chambres }}
             {% if form.nombre_chambres.errors %}<span class="error-message">{{ form.nombre_chambres.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Lits</label>
+            <label>{% translate "Lits" %}</label>
             {{ form.nombre_lits }}
             {% if form.nombre_lits.errors %}<span class="error-message">{{ form.nombre_lits.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Salles de bain</label>
+            <label>{% translate "Salles de bain" %}</label>
             {{ form.nombre_salles_bain }}
             {% if form.nombre_salles_bain.errors %}<span class="error-message">{{ form.nombre_salles_bain.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Étage</label>
+            <label>{% translate "Étage" %}</label>
             {{ form.etage }}
             {% if form.etage.errors %}<span class="error-message">{{ form.etage.errors }}</span>{% endif %}
-            <div class="fp-hint">Optionnel</div>
+            <div class="fp-hint">{% translate "Optionnel" %}</div>
           </div>
           <div class="fp-field">
-            <label>Meublé</label>
+            <label>{% translate "Meublé" %}</label>
             {{ form.meuble }}
             {% if form.meuble.errors %}<span class="error-message">{{ form.meuble.errors }}</span>{% endif %}
           </div>
           <div class="fp-field">
-            <label>Prix mensuel (FCFA)</label>
+            <label>{% translate "Prix mensuel (FCFA)" %}</label>
             {{ form.prix }}
             {% if form.prix.errors %}<span class="error-message">{{ form.prix.errors }}</span>{% endif %}
           </div>
           <div class="fp-field fp-full">
-            <label>Disponible depuis</label>
+            <label>{% translate "Disponible depuis" %}</label>
             {{ form.disponible_depuis }}
             {% if form.disponible_depuis.errors %}<span class="error-message">{{ form.disponible_depuis.errors }}</span>{% endif %}
           </div>
@@ -187,31 +188,31 @@
     <!-- Étape 3 : Équipements -->
     <div class="fp-section" id="s2">
       <div class="fp-card">
-        <h2>Équipements et services</h2>
+        <h2>{% translate "Équipements et services" %}</h2>
         <div class="fp-checks">
           <label class="fp-check">
             {{ form.climatisation }}
-            <span>Climatisation</span>
+            <span>{% translate "Climatisation" %}</span>
           </label>
           <label class="fp-check">
             {{ form.wifi }}
-            <span>Wi-Fi</span>
+            <span>{% translate "Wi-Fi" %}</span>
           </label>
           <label class="fp-check">
             {{ form.garage }}
-            <span>Garage</span>
+            <span>{% translate "Garage" %}</span>
           </label>
           <label class="fp-check">
             {{ form.jardin }}
-            <span>Jardin</span>
+            <span>{% translate "Jardin" %}</span>
           </label>
           <label class="fp-check">
             {{ form.piscine }}
-            <span>Piscine</span>
+            <span>{% translate "Piscine" %}</span>
           </label>
           <label class="fp-check">
             {{ form.cuisine_equipee }}
-            <span>Cuisine équipée</span>
+            <span>{% translate "Cuisine équipée" %}</span>
           </label>
         </div>
       </div>
@@ -220,10 +221,10 @@
     <!-- Étape 4 : Photos -->
     <div class="fp-section" id="s3">
       <div class="fp-card">
-        <h2>📸 Ajouter des photos</h2>
+        <h2>📸 {% translate "Ajouter des photos" %}</h2>
         <div class="fp-photo-zone">
           <span>📸</span>
-          <p>Cliquez ou déposez des photos ici</p>
+          <p>{% translate "Cliquez ou déposez des photos ici" %}</p>
         </div>
         <div id="formset-container">
           {{ formset.management_form }}
@@ -245,7 +246,7 @@
       </div>
 
       <div class="fp-card" style="margin-top: 1.5rem;">
-        <h2>🎬 Ajouter des vidéos (Optionnel)</h2>
+        <h2>🎬 {% translate "Ajouter des vidéos (Optionnel)" %}</h2>
         <p style="font-size: 12px; color: #666; margin-bottom: 1rem;">
           Ajoutez des vidéos de visite pour attirer plus de locataires. Max 5 vidéos, 500 MB par vidéo.
         </p>
@@ -261,19 +262,19 @@
                 </div>
               {% endif %}
               <div class="fp-field fp-full">
-                <label>Fichier vidéo</label>
+                <label>{% translate "Fichier vidéo" %}</label>
                 {{ form_video.video }}
               </div>
               <div class="fp-field">
-                <label>Titre de la vidéo</label>
+                <label>{% translate "Titre de la vidéo" %}</label>
                 {{ form_video.titre }}
               </div>
               <div class="fp-field fp-full">
-                <label>Description</label>
+                <label>{% translate "Description" %}</label>
                 {{ form_video.description }}
               </div>
               <div class="fp-field">
-                <label>Ordre</label>
+                <label>{% translate "Ordre" %}</label>
                 {{ form_video.order }}
               </div>
             </div>
@@ -284,9 +285,9 @@
 
     <!-- Navigation -->
     <div class="fp-nav">
-      <button type="button" class="fp-btn-prev" id="btnPrev" onclick="prev()" style="display:none;">← Précédent</button>
-      <button type="button" class="fp-btn-next" id="btnNext" onclick="next()">Suivant →</button>
-      <button type="submit" class="fp-btn-submit" id="btnSubmit" style="display:none;">✓ Publier</button>
+      <button type="button" class="fp-btn-prev" id="btnPrev" onclick="prev()" style="display:none;">← {% translate "Précédent" %}</button>
+      <button type="button" class="fp-btn-next" id="btnNext" onclick="next()">{% translate "Suivant" %} →</button>
+      <button type="submit" class="fp-btn-submit" id="btnSubmit" style="display:none;">✓ {% translate "Publier" %}</button>
     </div>
   </form>
 </div>

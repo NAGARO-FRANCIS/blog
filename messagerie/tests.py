@@ -99,6 +99,33 @@ class MessagerieTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Salut !')
 
+    def test_conversation_list_uses_compact_openable_rows(self):
+        self.client.login(username='alice', password='pass1234')
+        conversation = Conversation.objects.create()
+        conversation.participants.add(self.user1, self.user2)
+        Message.objects.create(conversation=conversation, expediteur=self.user2, contenu='Bonjour Alice')
+
+        response = self.client.get(reverse('messagerie:mes_conversations'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="conversation-item')
+        self.assertContains(
+            response,
+            f'href="{reverse("messagerie:conversation_detail", args=[conversation.id])}"',
+        )
+        self.assertContains(response, 'Bonjour Alice')
+
+    def test_conversation_list_handles_missing_other_participant(self):
+        self.client.login(username='alice', password='pass1234')
+        conversation = Conversation.objects.create()
+        conversation.participants.add(self.user1)
+
+        response = self.client.get(reverse('messagerie:mes_conversations'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Contact indisponible')
+        self.assertContains(response, 'avatar-placeholder">?</div>')
+
     def test_conversation_detail_displays_alternating_messages(self):
         self.client.login(username='alice', password='pass1234')
         conversation = Conversation.objects.create()

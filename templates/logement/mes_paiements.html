@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Paiements & Facturation{% endblock %}
+{% block title %}{% translate "Paiements & Facturation" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -71,23 +71,23 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>💳 Paiements & Facturation</h1>
-    <p>{{ nb_paiements|default:0 }} transaction(s) • Revenu total reçu: {{ total_recu|default:0 }} FCFA</p>
+    <h1>💳 {% translate "Paiements & Facturation" %}</h1>
+    <p>{% blocktranslate with nb_transactions=nb_paiements|default:0 revenue=total_recu|default:0 %}{{ nb_transactions }} transaction(s) • Revenu total reçu: {{ revenue }} FCFA{% endblocktranslate %}</p>
 </div>
 
 <div class="container">
     <div class="summary-grid">
         <div class="stat-box green">
             <div class="stat-kpi">{{ total_recu|default:0 }} FCFA</div>
-            <div class="stat-label">Revenus reçus</div>
+            <div class="stat-label">{% translate "Revenus reçus" %}</div>
         </div>
         <div class="stat-box orange">
             <div class="stat-kpi">{{ total_en_attente|default:0 }} FCFA</div>
-            <div class="stat-label">En attente</div>
+            <div class="stat-label">{% translate "En attente" %}</div>
         </div>
         <div class="stat-box blue">
             <div class="stat-kpi">{{ nb_paiements|default:0 }}</div>
-            <div class="stat-label">Paiements</div>
+            <div class="stat-label">{% translate "Paiements" %}</div>
         </div>
     </div>
 
@@ -95,12 +95,12 @@
         <table class="payments-table">
             <thead>
                 <tr>
-                    <th>Client</th>
-                    <th>Logement</th>
-                    <th>Montant</th>
-                    <th>Méthode</th>
-                    <th>Statut</th>
-                    <th>Date</th>
+                    <th>{% translate "Client" %}</th>
+                    <th>{% translate "Logement" %}</th>
+                    <th>{% translate "Montant" %}</th>
+                    <th>{% translate "Méthode" %}</th>
+                    <th>{% translate "Statut" %}</th>
+                    <th>{% translate "Date" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -119,7 +119,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="empty-row">Aucun paiement enregistré pour le moment.</td>
+                    <td colspan="6" class="empty-row">{% translate "Aucun paiement enregistré pour le moment." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -127,7 +127,7 @@
     </div>
 
     <div class="actions-row">
-        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
+        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← {% translate "Retour à la Gestion" %}</a>
     </div>
 </div>
 

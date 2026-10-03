@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% translate "Fichier trop volumineux (max 5 Mo)" as error_file_too_large %}
+{% translate "Format non supporté (JPG ou PNG uniquement)" as error_file_type %}
+{% translate "Téléchargement en cours…" as upload_in_progress %}
+{% translate "Envoyé" as document_sent %}
 
-{% block title %}Finaliser votre inscription — Ivoire Connect{% endblock %}
+{% block title %}{% translate "Finaliser votre inscription" %} — Ivoire Connect{% endblock %}
 
 {% block content %}
 <div class="vf-wrapper">
@@ -9,8 +14,8 @@
         <!-- ── HEADER ── -->
         <header class="vf-header">
             <span class="vf-header__flag">🇨🇮</span>
-            <h1 class="vf-header__title">Finaliser votre inscription</h1>
-            <p class="vf-header__sub">Envoyez vos documents. Notre équipe vérifiera votre identité avant d’activer le badge de confiance.</p>
+            <h1 class="vf-header__title">{% translate "Finaliser votre inscription" %}</h1>
+            <p class="vf-header__sub">{% translate "Envoyez vos documents. Notre équipe vérifiera votre identité avant d’activer le badge de confiance." %}</p>
         </header>
 
         <!-- ── CONTENU ── -->
@@ -20,25 +25,25 @@
             <!-- ── SUCCÈS ── -->
             <div class="vf-state vf-state--success">
                 <div class="vf-state__icon vf-state__icon--ok">✓</div>
-                <h2>Identité vérifiée</h2>
-                <p>Vos documents ont été contrôlés par notre équipe. Votre badge de vérification est actif.</p>
-                <a href="{% url 'home' %}" class="vf-btn vf-btn--primary">Commencer à explorer</a>
+                <h2>{% translate "Identité vérifiée" %}</h2>
+                <p>{% translate "Vos documents ont été contrôlés par notre équipe. Votre badge de vérification est actif." %}</p>
+                <a href="{% url 'home' %}" class="vf-btn vf-btn--primary">{% translate "Commencer à explorer" %}</a>
             </div>
 
             {% elif verification_status == 'flagged' %}
             <!-- ── EXAMEN ── -->
             <div class="vf-state vf-state--warning">
                 <div class="vf-state__icon vf-state__icon--warn">⏳</div>
-                <h2>Compte en examen</h2>
-                <p>Notre équipe examine votre compte. Vous serez contacté par email sous peu.</p>
-                <a href="{% url 'home' %}" class="vf-btn vf-btn--ghost">Retour à l'accueil</a>
+                <h2>{% translate "Compte en examen" %}</h2>
+                <p>{% translate "Notre équipe examine votre compte. Vous serez contacté par email sous peu." %}</p>
+                <a href="{% url 'home' %}" class="vf-btn vf-btn--ghost">{% translate "Retour à l'accueil" %}</a>
             </div>
 
             {% else %}
             <!-- ── PROGRESSION ── -->
             <div class="vf-progress-card">
                 <div class="vf-progress-card__header">
-                    <h3>Progression</h3>
+                    <h3>{% translate "Progression" %}</h3>
                     <span class="vf-progress-pct" id="progressPercent">0%</span>
                 </div>
 
@@ -57,22 +62,22 @@
                     <div class="vf-step" id="step-id_front">
                         <div class="vf-step__num">1</div>
                         <div class="vf-step__body">
-                            <p class="vf-step__title">Recto de la pièce d'identité</p>
-                            <p class="vf-step__status" id="stepstatus-id_front">À télécharger</p>
+                            <p class="vf-step__title">{% translate "Recto de la pièce d'identité" %}</p>
+                            <p class="vf-step__status" id="stepstatus-id_front">{% translate "À télécharger" %}</p>
                         </div>
                     </div>
                     <div class="vf-step" id="step-id_back">
                         <div class="vf-step__num">2</div>
                         <div class="vf-step__body">
-                            <p class="vf-step__title">Verso de la pièce d'identité</p>
-                            <p class="vf-step__status" id="stepstatus-id_back">À télécharger</p>
+                            <p class="vf-step__title">{% translate "Verso de la pièce d'identité" %}</p>
+                            <p class="vf-step__status" id="stepstatus-id_back">{% translate "À télécharger" %}</p>
                         </div>
                     </div>
                     <div class="vf-step" id="step-selfie">
                         <div class="vf-step__num">3</div>
                         <div class="vf-step__body">
-                            <p class="vf-step__title">Selfie avec pièce d'identité</p>
-                            <p class="vf-step__status" id="stepstatus-selfie">À télécharger</p>
+                            <p class="vf-step__title">{% translate "Selfie avec pièce d'identité" %}</p>
+                            <p class="vf-step__status" id="stepstatus-selfie">{% translate "À télécharger" %}</p>
                         </div>
                     </div>
                 </div>
@@ -80,20 +85,20 @@
 
             <!-- ── DOCUMENTS ── -->
             <section class="vf-section">
-                <h2 class="vf-section__title">Vos documents</h2>
+                <h2 class="vf-section__title">{% translate "Vos documents" %}</h2>
                 <div class="vf-docs-grid">
 
                     <!-- Recto -->
                     <div class="vf-doc" id="card-id_front">
-                        <p class="vf-doc__name">Recto — pièce d'identité</p>
-                        <p class="vf-doc__hint">Photo claire du recto (CNI, passeport, permis)</p>
+                        <p class="vf-doc__name">{% translate "Recto — pièce d'identité" %}</p>
+                        <p class="vf-doc__hint">{% translate "Photo claire du recto (CNI, passeport, permis)" %}</p>
                         <div class="vf-dropzone" onclick="document.getElementById('file-id_front').click()">
                             <div class="vf-dropzone__placeholder" id="placeholder-id_front">
                                 <span class="vf-dropzone__ico">↑</span>
-                                <span>Cliquez ou glissez un fichier</span>
-                                <span class="vf-dropzone__fmt">JPG, PNG · Max 5 Mo</span>
+                                <span>{% translate "Cliquez ou glissez un fichier" %}</span>
+                                <span class="vf-dropzone__fmt">{% translate "JPG, PNG · Max 5 Mo" %}</span>
                             </div>
-                            <img class="vf-dropzone__preview" id="preview-id_front" alt="Aperçu recto">
+                            <img class="vf-dropzone__preview" id="preview-id_front" alt="{% translate 'Aperçu recto' %}">
                         </div>
                         <form method="post" action="{% url 'accounts:upload_document' %}" enctype="multipart/form-data" id="form-id_front" style="display:none">
                             {% csrf_token %}
@@ -105,15 +110,15 @@
 
                     <!-- Verso -->
                     <div class="vf-doc" id="card-id_back">
-                        <p class="vf-doc__name">Verso — pièce d'identité</p>
-                        <p class="vf-doc__hint">Photo claire du verso de votre document</p>
+                        <p class="vf-doc__name">{% translate "Verso — pièce d'identité" %}</p>
+                        <p class="vf-doc__hint">{% translate "Photo claire du verso de votre document" %}</p>
                         <div class="vf-dropzone" onclick="document.getElementById('file-id_back').click()">
                             <div class="vf-dropzone__placeholder" id="placeholder-id_back">
                                 <span class="vf-dropzone__ico">↑</span>
-                                <span>Cliquez ou glissez un fichier</span>
-                                <span class="vf-dropzone__fmt">JPG, PNG · Max 5 Mo</span>
+                                <span>{% translate "Cliquez ou glissez un fichier" %}</span>
+                                <span class="vf-dropzone__fmt">{% translate "JPG, PNG · Max 5 Mo" %}</span>
                             </div>
-                            <img class="vf-dropzone__preview" id="preview-id_back" alt="Aperçu verso">
+                            <img class="vf-dropzone__preview" id="preview-id_back" alt="{% translate 'Aperçu verso' %}">
                         </div>
                         <form method="post" action="{% url 'accounts:upload_document' %}" enctype="multipart/form-data" id="form-id_back" style="display:none">
                             {% csrf_token %}
@@ -125,15 +130,15 @@
 
                     <!-- Selfie -->
                     <div class="vf-doc" id="card-selfie">
-                        <p class="vf-doc__name">Selfie avec pièce d'identité</p>
-                        <p class="vf-doc__hint">Tenez votre pièce à côté de votre visage</p>
+                        <p class="vf-doc__name">{% translate "Selfie avec pièce d'identité" %}</p>
+                        <p class="vf-doc__hint">{% translate "Tenez votre pièce à côté de votre visage" %}</p>
                         <div class="vf-dropzone" onclick="document.getElementById('file-selfie').click()">
                             <div class="vf-dropzone__placeholder" id="placeholder-selfie">
                                 <span class="vf-dropzone__ico">↑</span>
-                                <span>Cliquez ou glissez un fichier</span>
-                                <span class="vf-dropzone__fmt">JPG, PNG · Max 5 Mo</span>
+                                <span>{% translate "Cliquez ou glissez un fichier" %}</span>
+                                <span class="vf-dropzone__fmt">{% translate "JPG, PNG · Max 5 Mo" %}</span>
                             </div>
-                            <img class="vf-dropzone__preview" id="preview-selfie" alt="Aperçu selfie">
+                            <img class="vf-dropzone__preview" id="preview-selfie" alt="{% translate 'Aperçu selfie' %}">
                         </div>
                         <form method="post" action="{% url 'accounts:upload_document' %}" enctype="multipart/form-data" id="form-selfie" style="display:none">
                             {% csrf_token %}
@@ -149,26 +154,26 @@
             <!-- ── CONSEILS ── -->
             <div class="vf-tips">
                 <div class="vf-tip vf-tip--ok">
-                    <h4>À faire</h4>
+                    <h4>{% translate "À faire" %}</h4>
                     <ul>
-                        <li>Photos claires et en couleur</li>
-                        <li>Toutes les informations lisibles</li>
-                        <li>Pas de reflets ni d'ombres</li>
+                        <li>{% translate "Photos claires et en couleur" %}</li>
+                        <li>{% translate "Toutes les informations lisibles" %}</li>
+                        <li>{% translate "Pas de reflets ni d'ombres" %}</li>
                     </ul>
                 </div>
                 <div class="vf-tip vf-tip--nok">
-                    <h4>À éviter</h4>
+                    <h4>{% translate "À éviter" %}</h4>
                     <ul>
-                        <li>Photocopies ou images floues</li>
-                        <li>Documents modifiés ou falsifiés</li>
-                        <li>Documents expirés ou invalides</li>
+                        <li>{% translate "Photocopies ou images floues" %}</li>
+                        <li>{% translate "Documents modifiés ou falsifiés" %}</li>
+                        <li>{% translate "Documents expirés ou invalides" %}</li>
                     </ul>
                 </div>
             </div>
 
             <!-- ── NOTE SÉCURITÉ ── -->
             <p class="vf-security">
-                🔒 Vos documents sont chiffrés et traités de manière sécurisée. Nous respectons votre confidentialité.
+                🔒 {% translate "Vos documents sont chiffrés et traités de manière sécurisée. Nous respectons votre confidentialité." %}
             </p>
 
             {% endif %}
@@ -540,12 +545,12 @@ function handleFileSelect(e) {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-        showStatus(docType, 'error', 'Fichier trop volumineux (max 5 Mo)');
+        showStatus(docType, 'error', '{{ error_file_too_large|escapejs }}');
         e.target.value = '';
         return;
     }
     if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-        showStatus(docType, 'error', 'Format non supporté (JPG ou PNG uniquement)');
+        showStatus(docType, 'error', '{{ error_file_type|escapejs }}');
         e.target.value = '';
         return;
     }
@@ -561,7 +566,7 @@ function handleFileSelect(e) {
     };
     reader.readAsDataURL(file);
 
-    showStatus(docType, 'uploading', 'Téléchargement en cours…');
+    showStatus(docType, 'uploading', '{{ upload_in_progress|escapejs }}');
     setTimeout(() => document.getElementById(`form-${docType}`).submit(), 800);
 }
 
@@ -588,7 +593,7 @@ function updateProgress() {
         const p = document.getElementById(`placeholder-${d}`);
         if (step && p && p.style.display === 'none') {
             step.classList.add('completed');
-            document.getElementById(`stepstatus-${d}`).textContent = 'Envoyé';
+            document.getElementById(`stepstatus-${d}`).textContent = '{{ document_sent|escapejs }}';
         }
     });
 }

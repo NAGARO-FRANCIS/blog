@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Publier une Chambre - Hôtel Professional{% endblock %}
+{% block title %}{% translate "Publier une Chambre - Hôtel Professional" %}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'form_fields.css' %}">
@@ -597,9 +597,9 @@
 <div class="hotel-publish-container">
     <!-- Header -->
     <div class="publish-header">
-        <h1>🏨 Publier une Chambre d'Hôtel</h1>
-        <p>Ajoutez une catégorie de chambre à votre établissement</p>
-        <div class="badge">Pour les hôtels et établissements officiels</div>
+        <h1>🏨 {% translate "Publier une Chambre d'Hôtel" %}</h1>
+        <p>{% translate "Ajoutez une catégorie de chambre à votre établissement" %}</p>
+        <div class="badge">{% translate "Pour les hôtels et établissements officiels" %}</div>
     </div>
 
    
@@ -614,27 +614,27 @@
         <div class="steps-container">
             <div class="step active" onclick="goToStep(0)">
                 <div class="step-icon">📍</div>
-                <div class="step-label">Localisation</div>
+                <div class="step-label">{% translate "Localisation" %}</div>
             </div>
             <div class="step" onclick="goToStep(1)">
                 <div class="step-icon">🛏️</div>
-                <div class="step-label">Caractéristiques</div>
+                <div class="step-label">{% translate "Caractéristiques" %}</div>
             </div>
             <div class="step" onclick="goToStep(2)">
                 <div class="step-icon">💰</div>
-                <div class="step-label">Tarification</div>
+                <div class="step-label">{% translate "Tarification" %}</div>
             </div>
             <div class="step" onclick="goToStep(3)">
                 <div class="step-icon">⚙️</div>
-                <div class="step-label">Équipements</div>
+                <div class="step-label">{% translate "Équipements" %}</div>
             </div>
             <div class="step" onclick="goToStep(4)">
                 <div class="step-icon">📸</div>
-                <div class="step-label">Photos</div>
+                <div class="step-label">{% translate "Photos" %}</div>
             </div>
             <div class="step" onclick="goToStep(5)">
                 <div class="step-icon">🎬</div>
-                <div class="step-label">Vidéos</div>
+                <div class="step-label">{% translate "Vidéos" %}</div>
             </div>
         </div>
     </div>
@@ -645,14 +645,14 @@
 
         {% if form.errors or formset.non_form_errors or video_formset.non_form_errors %}
             <div class="form-errors" role="alert">
-                <strong>Votre annonce n'a pas encore été publiée.</strong>
+                <strong>{% translate "Votre annonce n'a pas encore été publiée." %}</strong>
                 <ul>
                     {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
                     {% for field in form %}
                         {% for error in field.errors %}<li>{{ field.label }} : {{ error }}</li>{% endfor %}
                     {% endfor %}
-                    {% for error in formset.non_form_errors %}<li>Photos : {{ error }}</li>{% endfor %}
-                    {% for error in video_formset.non_form_errors %}<li>Vidéos : {{ error }}</li>{% endfor %}
+                    {% for error in formset.non_form_errors %}<li>{% translate "Photos" %} : {{ error }}</li>{% endfor %}
+                    {% for error in video_formset.non_form_errors %}<li>{% translate "Vidéos" %} : {{ error }}</li>{% endfor %}
                 </ul>
             </div>
         {% endif %}
@@ -662,56 +662,57 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">📍</span>
-                    Informations de Localisation
+                    {% translate "Informations de Localisation" %}
                 </div>
                 <div class="card-description">
-                    Indiquez où se trouve votre chambre ou votre établissement
+                    {% translate "Indiquez où se trouve votre chambre ou votre établissement" %}
                 </div>
 
                 <div class="fields-grid full">
                     <div class="field-group required">
-                        <label>Nom de la chambre ou de la suite</label>
+                        <label>{% translate "Nom de la chambre ou de la suite" %}</label>
                         {{ form.titre }}
-                        <div class="field-hint">Cette publication concerne une chambre précise, pas tout l'hôtel. Exemple : « Chambre 204 » ou « Suite Présidentielle ».</div>
+                        <div class="field-hint">{% translate "Cette publication concerne une chambre précise, pas tout l'hôtel. Exemple : « Chambre 204 » ou « Suite Présidentielle »." %}</div>
                     </div>
                 </div>
 
                 <div class="location-details">
                     <div class="location-group">
-                        <h3 class="location-group-title">Adresse précise</h3>
+                        <h3 class="location-group-title">{% translate "Adresse précise" %}</h3>
                         <div class="fields-grid">
                             <div class="field-group required">
-                                <label for="{{ form.ville.id_for_label }}">Ville</label>
+                                <label for="{{ form.ville.id_for_label }}">{% translate "Ville" %}</label>
                                 {{ form.ville }}
                             </div>
                             <div class="field-group required">
-                                <label for="{{ form.quartier.id_for_label }}">Quartier / District</label>
+                                <label for="{{ form.quartier.id_for_label }}">{% translate "Quartier / District" %}</label>
                                 {{ form.quartier }}
                             </div>
                             <div class="field-group">
-                                <label>Commune</label>
-                                <div class="inherited-value">{{ etablissement.commune|default:"À préciser dans l'établissement" }}</div>
+                                <label>{% translate "Commune" %}</label>
+                                {% translate "À préciser dans l'établissement" as unspecified_commune %}
+                                <div class="inherited-value">{{ etablissement.commune|default:unspecified_commune }}</div>
                             </div>
                             <div class="field-group">
-                                <label for="{{ form.latitude.id_for_label }}">Latitude</label>
+                                <label for="{{ form.latitude.id_for_label }}">{% translate "Latitude" %}</label>
                                 {{ form.latitude }}
                             </div>
                             <div class="field-group">
-                                <label for="{{ form.longitude.id_for_label }}">Longitude</label>
+                                <label for="{{ form.longitude.id_for_label }}">{% translate "Longitude" %}</label>
                                 {{ form.longitude }}
                             </div>
                         </div>
                     </div>
 
                     <div class="location-group">
-                        <h3 class="location-group-title">Distances utiles</h3>
+                        <h3 class="location-group-title">{% translate "Distances utiles" %}</h3>
                         <div class="fields-grid">
                             <div class="field-group">
-                                <label for="{{ form.distance_universite.id_for_label }}">Distance université (km)</label>
+                                <label for="{{ form.distance_universite.id_for_label }}">{% translate "Distance université (km)" %}</label>
                                 {{ form.distance_universite }}
                             </div>
                             <div class="field-group">
-                                <label for="{{ form.distance_hopital.id_for_label }}">Distance hôpital (km)</label>
+                                <label for="{{ form.distance_hopital.id_for_label }}">{% translate "Distance hôpital (km)" %}</label>
                                 {{ form.distance_hopital }}
                             </div>
                         </div>
@@ -722,14 +723,14 @@
 
                 <div class="fields-grid location-description">
                     <div class="field-group required">
-                        <label>Description Complète</label>
+                        <label>{% translate "Description Complète" %}</label>
                         {{ form.description }}
-                        <div class="field-hint">Décrivez la chambre, l'établissement, la situation, les transports, les points d'intérêt à proximité...</div>
+                        <div class="field-hint">{% translate "Décrivez la chambre, l'établissement, la situation, les transports, les points d'intérêt à proximité..." %}</div>
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-next" onclick="goToStep(1)">Suivant →</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(1)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -739,53 +740,53 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">🛏️</span>
-                    Caractéristiques de la Chambre
+                    {% translate "Caractéristiques de la Chambre" %}
                 </div>
                 <div class="card-description">
-                    Ces informations décrivent uniquement la chambre ou la suite publiée.
+                    {% translate "Ces informations décrivent uniquement la chambre ou la suite publiée." %}
                 </div>
 
                 <div class="fields-grid">
                     <div class="field-group required">
-                        <label>Type de Chambre</label>
+                        <label>{% translate "Type de Chambre" %}</label>
                         {{ form.type_logement }}
-                        <div class="field-hint" id="room-type-hint">Choisissez le type qui déterminera les indications affichées ci-dessous.</div>
+                        <div class="field-hint" id="room-type-hint">{% translate "Choisissez le type qui déterminera les indications affichées ci-dessous." %}</div>
                     </div>
                     <div class="field-group required">
-                        <label>Surface (m²)</label>
+                        <label>{% translate "Surface (m²)" %}</label>
                         {{ form.surface }}
                     </div>
                     <div class="field-group" id="room-spaces-field">
-                        <label>Nombre d'espaces / pièces</label>
+                        <label>{% translate "Nombre d'espaces / pièces" %}</label>
                         {{ form.nombre_pieces }}
-                        <div class="field-hint">Pour une suite ou un duplex : comptez les espaces distincts de la chambre.</div>
+                        <div class="field-hint">{% translate "Pour une suite ou un duplex : comptez les espaces distincts de la chambre." %}</div>
                     </div>
                     <div class="field-group required">
-                        <label>Nombre de Lits</label>
+                        <label>{% translate "Nombre de Lits" %}</label>
                         {{ form.nombre_lits }}
                     </div>
                     <div class="field-group required">
-                        <label>Capacité (personnes)</label>
+                        <label>{% translate "Capacité (personnes)" %}</label>
                         {{ form.capacite }}
                     </div>
                     <div class="field-group required">
-                        <label>Nombre de Salles de Bain</label>
+                        <label>{% translate "Nombre de Salles de Bain" %}</label>
                         {{ form.nombre_salles_bain }}
                     </div>
                     <div class="field-group required">
-                        <label>Étage de l'hôtel</label>
+                        <label>{% translate "Étage de l'hôtel" %}</label>
                         {{ form.etage }}
-                        <div class="field-hint">Étage du bâtiment où se trouve la chambre, pas un étage intérieur à la chambre. Optionnel.</div>
+                        <div class="field-hint">{% translate "Étage du bâtiment où se trouve la chambre, pas un étage intérieur à la chambre. Optionnel." %}</div>
                     </div>
                 </div>
 
                 <div class="room-type-guidance" id="room-type-guidance" aria-live="polite">
-                    Sélectionnez un type de chambre pour afficher les indications adaptées.
+                    {% translate "Sélectionnez un type de chambre pour afficher les indications adaptées." %}
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(0)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(2)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(0)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(2)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -795,41 +796,41 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">💰</span>
-                    Tarification
+                    {% translate "Tarification" %}
                 </div>
                 <div class="card-description">
-                    Définissez vos prix et conditions
+                    {% translate "Définissez vos prix et conditions" %}
                 </div>
 
                 <div class="pricing-section">
                     <div class="fields-grid">
                         <div class="field-group required">
-                            <label>Prix par Nuit (FCFA)</label>
+                            <label>{% translate "Prix par Nuit (FCFA)" %}</label>
                             {{ form.prix_par_nuit }}
-                            <div class="field-hint">Prix en Franc CFA Ouest-Africain</div>
+                            <div class="field-hint">{% translate "Prix en Franc CFA Ouest-Africain" %}</div>
                         </div>
                         <div class="field-group">
-                            <label>Frais de Nettoyage (optionnel)</label>
+                            <label>{% translate "Frais de Nettoyage (optionnel)" %}</label>
                             {{ form.frais_nettoyage }}
                         </div>
                         <div class="field-group">
-                            <label>Séjour Minimum (nuits)</label>
+                            <label>{% translate "Séjour Minimum (nuits)" %}</label>
                             {{ form.min_sejour }}
                         </div>
                         <div class="field-group">
-                            <label>Nombre total de chambres</label>
+                            <label>{% translate "Nombre total de chambres" %}</label>
                             {{ form.unites_totales }}
                         </div>
                         <div class="field-group">
-                            <label>Disponible à partir du</label>
+                            <label>{% translate "Disponible à partir du" %}</label>
                             {{ form.disponible_depuis }}
                         </div>
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(1)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(3)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(1)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(3)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -839,54 +840,54 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">⚙️</span>
-                    Équipements & Services
+                    {% translate "Équipements & Services" %}
                 </div>
                 <div class="card-description">
-                    Sélectionnez tous les équipements disponibles
+                    {% translate "Sélectionnez tous les équipements disponibles" %}
                 </div>
 
                 <div class="amenities-grid">
                     <div class="amenity-card">
                         {{ form.wifi }}
-                        <label for="{{ form.wifi.id_for_label }}">📶 WiFi Gratuit</label>
+                        <label for="{{ form.wifi.id_for_label }}">📶 {% translate "WiFi Gratuit" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.climatisation }}
-                        <label for="{{ form.climatisation.id_for_label }}">❄️ Climatisation</label>
+                        <label for="{{ form.climatisation.id_for_label }}">❄️ {% translate "Climatisation" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.television }}
-                        <label for="{{ form.television.id_for_label }}">📺 Télévision</label>
+                        <label for="{{ form.television.id_for_label }}">📺 {% translate "Télévision" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.minibar }}
-                        <label for="{{ form.minibar.id_for_label }}">🍾 Minibar</label>
+                        <label for="{{ form.minibar.id_for_label }}">🍾 {% translate "Minibar" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.coffre_fort }}
-                        <label for="{{ form.coffre_fort.id_for_label }}">🔒 Coffre-Fort</label>
+                        <label for="{{ form.coffre_fort.id_for_label }}">🔒 {% translate "Coffre-Fort" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.garage }}
-                        <label for="{{ form.garage.id_for_label }}">🅿️ Parking</label>
+                        <label for="{{ form.garage.id_for_label }}">🅿️ {% translate "Parking" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.reception_24h }}
-                        <label for="{{ form.reception_24h.id_for_label }}">🛎️ Réception 24h</label>
+                        <label for="{{ form.reception_24h.id_for_label }}">🛎️ {% translate "Réception 24h" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.piscine }}
-                        <label for="{{ form.piscine.id_for_label }}">🏊 Accès Piscine</label>
+                        <label for="{{ form.piscine.id_for_label }}">🏊 {% translate "Accès Piscine" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.restaurant }}
-                        <label for="{{ form.restaurant.id_for_label }}">🍽️ Restaurant</label>
+                        <label for="{{ form.restaurant.id_for_label }}">🍽️ {% translate "Restaurant" %}</label>
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(2)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(4)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(2)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(4)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -896,10 +897,10 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">📸</span>
-                    Télécharger les Photos
+                    {% translate "Télécharger les Photos" %}
                 </div>
                 <div class="card-description">
-                    Ajoutez des photos de haute qualité de votre chambre/suite
+                    {% translate "Ajoutez des photos de haute qualité de votre chambre/suite" %}
                 </div>
 
                 <div class="photo-upload-section">
@@ -912,14 +913,14 @@
                         <div class="photo-form-item" style="margin-bottom: 20px;">
                             <div style="border: 2px dashed #e5e7eb; border-radius: 8px; padding: 15px; background: #f9fafb;">
                                 <div class="field-group">
-                                    <label>Photo {{ forloop.counter }}</label>
+                                    <label>{% blocktranslate with counter=forloop.counter %}Photo {{ counter }}{% endblocktranslate %}</label>
                                     {{ photo_form.image }}
                                     {% if photo_form.image.errors %}
                                         <div class="field-error">{{ photo_form.image.errors }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="field-group">
-                                    <label>Description (optionnel)</label>
+                                    <label>{% translate "Description (optionnel)" %}</label>
                                     {{ photo_form.alt_text }}
                                 </div>
                                 <div class="field-group">
@@ -928,7 +929,7 @@
                                 {% if not forloop.first %}
                                     <div style="margin-top: 10px;">
                                         {{ photo_form.DELETE }}
-                                        <label for="{{ photo_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">Supprimer cette photo</label>
+                                        <label for="{{ photo_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">{% translate "Supprimer cette photo" %}</label>
                                     </div>
                                 {% endif %}
                             </div>
@@ -938,17 +939,17 @@
 
                     <!-- Add More Photos Button -->
                     <button type="button" id="add-photo-form" class="btn btn-secondary" style="margin-top: 20px;">
-                        + Ajouter une autre photo
+                        + {% translate "Ajouter une autre photo" %}
                     </button>
 
                     <div class="field-hint" style="margin-top: 20px;">
-                        💡 Conseil: Ajoutez autant de photos que nécessaire pour présenter votre chambre. Vous pouvez ajouter jusqu'à 20 photos.
+                        💡 {% translate "Conseil: Ajoutez autant de photos que nécessaire pour présenter votre chambre. Vous pouvez ajouter jusqu'à 20 photos." %}
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(3)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(5)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(3)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(5)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -958,10 +959,10 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">🎬</span>
-                    Ajouter des Vidéos (Optionnel)
+                    {% translate "Ajouter des Vidéos (Optionnel)" %}
                 </div>
                 <div class="card-description">
-                    Ajoutez des vidéos de visite pour attirer plus de clients
+                    {% translate "Ajoutez des vidéos de visite pour attirer plus de clients" %}
                 </div>
 
                 <div class="video-upload-section">
@@ -974,31 +975,31 @@
                         <div class="video-form-item" style="margin-bottom: 20px;">
                             <div style="border: 2px dashed #d97706; border-radius: 8px; padding: 15px; background: #fffbeb;">
                                 <div class="field-group">
-                                    <label>Fichier vidéo {{ forloop.counter }}</label>
+                                    <label>{% blocktranslate with counter=forloop.counter %}Fichier vidéo {{ counter }}{% endblocktranslate %}</label>
                                     {{ video_form.video }}
                                     {% if video_form.video.errors %}
                                         <div class="field-error">{{ video_form.video.errors }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="field-group">
-                                    <label>Titre de la vidéo (ex: Visite complète)</label>
+                                    <label>{% translate "Titre de la vidéo (ex: Visite complète)" %}</label>
                                     {{ video_form.titre }}
                                     {% if video_form.titre.errors %}
                                         <div class="field-error">{{ video_form.titre.errors }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="field-group">
-                                    <label>Description</label>
+                                    <label>{% translate "Description" %}</label>
                                     {{ video_form.description }}
                                 </div>
                                 <div class="field-group">
-                                    <label>Ordre</label>
+                                    <label>{% translate "Ordre" %}</label>
                                     {{ video_form.order }}
                                 </div>
                                 {% if not forloop.first %}
                                     <div style="margin-top: 10px;">
                                         {{ video_form.DELETE }}
-                                        <label for="{{ video_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">Supprimer cette vidéo</label>
+                                        <label for="{{ video_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">{% translate "Supprimer cette vidéo" %}</label>
                                     </div>
                                 {% endif %}
                             </div>
@@ -1008,23 +1009,35 @@
 
                     <!-- Add More Videos Button -->
                     <button type="button" id="add-video-form" class="btn btn-secondary" style="margin-top: 20px;">
-                        + Ajouter une autre vidéo
+                        + {% translate "Ajouter une autre vidéo" %}
                     </button>
 
                     <div class="field-hint" style="margin-top: 20px;">
-                        💡 Conseil: Les vidéos augmentent les réservations de 70%. Vous pouvez ajouter jusqu'à 10 vidéos.
+                        💡 {% translate "Conseil: Les vidéos augmentent les réservations de 70%. Vous pouvez ajouter jusqu'à 10 vidéos." %}
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(4)">← Précédent</button>
-                    <button type="submit" class="btn btn-submit">✓ Publier la Chambre</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(4)">← {% translate "Précédent" %}</button>
+                    <button type="submit" class="btn btn-submit">✓ {% translate "Publier la Chambre" %}</button>
                 </div>
             </div>
         </div>
     </form>
 </div>
 
+{% translate "Pour une personne ou un court séjour, indiquez le lit et la capacité réels." as simple_room_hint %}
+{% translate "Chambre simple : vérifiez surtout le nombre de lits, la capacité et la salle de bain privative." as simple_room_guidance %}
+{% translate "Pour deux personnes, précisez si la chambre comporte un grand lit ou deux lits séparés." as double_room_hint %}
+{% translate "Chambre double : indiquez la configuration des lits dans la description et la capacité maximale réelle." as double_room_guidance %}
+{% translate "Pour une chambre sur deux niveaux, précisez les espaces et l’accès entre les niveaux dans la description." as duplex_room_hint %}
+{% translate "Duplex : l’étage ci-dessus concerne le bâtiment; décrivez les niveaux intérieurs de la chambre dans la description." as duplex_room_guidance %}
+{% translate "Pour une suite, décrivez les espaces distincts et les équipements compris." as suite_room_hint %}
+{% translate "Suite : indiquez la surface totale, la capacité, le nombre de salles de bain et les espaces séparés dans la description." as suite_room_guidance %}
+{% translate "Pour une chambre familiale, indiquez les lits et la capacité totale pour les adultes et les enfants." as family_room_hint %}
+{% translate "Chambre familiale : vérifiez que la capacité correspond bien au nombre et au type de lits proposés." as family_room_guidance %}
+{% translate "Choisissez le type qui déterminera les indications affichées ci-dessous." as room_type_hint %}
+{% translate "Sélectionnez un type de chambre pour afficher les indications adaptées." as room_type_guidance %}
 <script>
     let currentStep = 0;
     const totalSteps = 6;
@@ -1056,31 +1069,31 @@
         const roomSpacesField = document.getElementById('room-spaces-field');
         const roomGuidance = {
             simple: {
-                hint: 'Pour une personne ou un court séjour, indiquez le lit et la capacité réels.',
-                guidance: 'Chambre simple : vérifiez surtout le nombre de lits, la capacité et la salle de bain privative.'
+                hint: '{{ simple_room_hint|escapejs }}',
+                guidance: '{{ simple_room_guidance|escapejs }}'
             },
             double: {
-                hint: 'Pour deux personnes, précisez si la chambre comporte un grand lit ou deux lits séparés.',
-                guidance: 'Chambre double : indiquez la configuration des lits dans la description et la capacité maximale réelle.'
+                hint: '{{ double_room_hint|escapejs }}',
+                guidance: '{{ double_room_guidance|escapejs }}'
             },
             duplex: {
-                hint: 'Pour une chambre sur deux niveaux, précisez les espaces et l’accès entre les niveaux dans la description.',
-                guidance: 'Duplex : l’étage ci-dessus concerne le bâtiment; décrivez les niveaux intérieurs de la chambre dans la description.'
+                hint: '{{ duplex_room_hint|escapejs }}',
+                guidance: '{{ duplex_room_guidance|escapejs }}'
             },
             suite: {
-                hint: 'Pour une suite, décrivez les espaces distincts et les équipements compris.',
-                guidance: 'Suite : indiquez la surface totale, la capacité, le nombre de salles de bain et les espaces séparés dans la description.'
+                hint: '{{ suite_room_hint|escapejs }}',
+                guidance: '{{ suite_room_guidance|escapejs }}'
             },
             familiale: {
-                hint: 'Pour une chambre familiale, indiquez les lits et la capacité totale pour les adultes et les enfants.',
-                guidance: 'Chambre familiale : vérifiez que la capacité correspond bien au nombre et au type de lits proposés.'
+                hint: '{{ family_room_hint|escapejs }}',
+                guidance: '{{ family_room_guidance|escapejs }}'
             }
         };
 
         function updateRoomGuidance() {
             const selected = roomGuidance[roomType.value];
-            roomTypeHint.textContent = selected ? selected.hint : 'Choisissez le type qui déterminera les indications affichées ci-dessous.';
-            roomTypeGuidance.textContent = selected ? selected.guidance : 'Sélectionnez un type de chambre pour afficher les indications adaptées.';
+            roomTypeHint.textContent = selected ? selected.hint : '{{ room_type_hint|escapejs }}';
+            roomTypeGuidance.textContent = selected ? selected.guidance : '{{ room_type_guidance|escapejs }}';
             if (roomSpacesField) {
                 roomSpacesField.style.display = ['duplex', 'suite', 'familiale'].includes(roomType.value) ? '' : 'none';
             }

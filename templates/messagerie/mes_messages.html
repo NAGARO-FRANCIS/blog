@@ -1,30 +1,33 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Mes Conversations - Coloc.ai{% endblock %}
+{% block title %}{% translate "Mes Conversations - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="hero hero-compact">
-        <h1>💬 Mes Conversations</h1>
-        <p>Gérez vos échanges avec les autres utilisateurs</p>
+        <h1>💬 {% translate "Mes Conversations" %}</h1>
+        <p>{% translate "Gérez vos échanges avec les autres utilisateurs" %}</p>
     </div>
 
     {% if conversations %}
         <div class="conversations-list">
             {% for conv_info in conversations %}
-                <div class="conversation-item {% if conv_info.unread_count > 0 %}unread{% endif %}">
+                <a href="{% url 'messagerie:conversation_detail' conv_info.conversation.id %}" class="conversation-item {% if conv_info.unread_count > 0 %}unread{% endif %}">
                     <div class="conversation-avatar">
-                        {% if conv_info.other_participant.profile and conv_info.other_participant.profile.photo_profil %}
-                            <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="Photo de {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}">
-                        {% else %}
+                        {% if conv_info.other_participant and conv_info.other_participant.profile and conv_info.other_participant.profile.photo_profil %}
+                            <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}">
+                        {% elif conv_info.other_participant %}
                             <div class="avatar-placeholder">{{ conv_info.other_participant.first_name|default:conv_info.other_participant.username|first|upper }}</div>
+                        {% else %}
+                            <div class="avatar-placeholder">?</div>
                         {% endif %}
                     </div>
 
                     <div class="conversation-content">
                         <div class="conversation-header">
                             <h3 class="conversation-partner">
-                                {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}
+                                <span class="conversation-name">{% if conv_info.other_participant %}{{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}{% else %}{% translate "Contact indisponible" %}{% endif %}</span>
                                 {% if conv_info.unread_count > 0 %}
                                     <span class="unread-badge">{{ conv_info.unread_count }}</span>
                                 {% endif %}
@@ -47,35 +50,25 @@
                         {% if conv_info.last_message %}
                             <div class="conversation-preview">
                                 {% if conv_info.last_message.expediteur == request.user %}
-                                    <strong>Vous:</strong>
+                                    <strong>{% translate "Vous:" %}</strong>
                                 {% endif %}
                                 {{ conv_info.last_message.contenu|truncatechars:100 }}
                             </div>
                         {% else %}
                             <div class="conversation-preview text-muted">
-                                Nouvelle conversation
+                                {% translate "Nouvelle conversation" %}
                             </div>
                         {% endif %}
                     </div>
-
-                    <div class="conversation-actions">
-                        <a href="{% url 'messagerie:conversation_detail' conv_info.conversation.id %}" class="btn">
-                            {% if conv_info.unread_count > 0 %}
-                                Voir ({{ conv_info.unread_count }} nouveau{% if conv_info.unread_count > 1 %}x{% endif %})
-                            {% else %}
-                                Voir
-                            {% endif %}
-                        </a>
-                    </div>
-                </div>
+                </a>
             {% endfor %}
         </div>
     {% else %}
         <div class="text-center section-empty">
             <div class="empty-icon">💬</div>
-            <h2>Aucune conversation pour le moment</h2>
-            <p class="text-muted">Commencez une conversation en répondant à une annonce qui vous intéresse</p>
-            <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">Voir les annonces</a>
+            <h2>{% translate "Aucune conversation pour le moment" %}</h2>
+            <p class="text-muted">{% translate "Commencez une conversation en répondant à une annonce qui vous intéresse" %}</p>
+            <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">{% translate "Voir les annonces" %}</a>
         </div>
     {% endif %}
 </div>
@@ -89,19 +82,27 @@
     .conversation-item {
         display: flex;
         align-items: center;
-        padding: 16px 20px;
-        margin-bottom: 8px;
+        gap: 12px;
+        min-height: 76px;
+        padding: 10px 14px;
+        margin-bottom: 6px;
         background: white;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        transition: all 0.2s ease;
         border: 1px solid transparent;
-        cursor: pointer;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        color: inherit;
+        text-decoration: none;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .conversation-item:hover {
         background: #f5f5f5;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .conversation-item:focus-visible {
+        outline: 3px solid var(--primary);
+        outline-offset: 2px;
     }
 
     .conversation-item.unread {
@@ -121,12 +122,13 @@
     }
 
     .conversation-avatar {
-        margin-right: 15px;
+        flex: 0 0 auto;
     }
 
     .conversation-avatar img {
-        width: 56px;
-        height: 56px;
+        display: block;
+        width: 46px;
+        height: 46px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid #e0e0e0;
@@ -137,8 +139,8 @@
     }
 
     .avatar-placeholder {
-        width: 56px;
-        height: 56px;
+        width: 46px;
+        height: 46px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
         color: white;
@@ -146,7 +148,7 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 1.3rem;
+        font-size: 1.1rem;
         border: 2px solid #e0e0e0;
     }
 
@@ -163,46 +165,61 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 5px;
+        gap: 8px;
+        margin-bottom: 2px;
     }
 
     .conversation-partner {
-        font-size: 1.1rem;
+        min-width: 0;
+        font-size: 0.98rem;
         font-weight: 600;
         color: var(--text);
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
+    }
+
+    .conversation-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .unread-badge {
+        flex: 0 0 auto;
         background: var(--primary);
         color: white;
-        padding: 4px 10px;
+        padding: 2px 7px;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        margin-left: 8px;
-        min-width: 24px;
+        margin-left: 0;
+        min-width: 20px;
         text-align: center;
     }
 
     .conversation-date {
         color: var(--text-muted);
-        font-size: 0.9rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        flex: 0 0 auto;
     }
 
     .conversation-subject {
         color: var(--primary);
-        font-size: 0.9rem;
-        margin-bottom: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.78rem;
+        margin-bottom: 2px;
         font-weight: 500;
     }
 
     .conversation-preview {
         color: #666;
-        font-size: 0.95rem;
+        font-size: 0.84rem;
         line-height: 1.4;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -211,28 +228,6 @@
 
     .text-muted {
         color: #999 !important;
-    }
-
-    .conversation-actions {
-        margin-left: 15px;
-        flex-shrink: 0;
-    }
-
-    .conversation-actions .btn {
-        white-space: nowrap;
-        padding: 8px 16px;
-        font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-        .conversation-item {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .conversation-actions {
-            margin-left: 66px;
-            margin-top: 10px;
-        }
     }
 
     .section-empty {
@@ -256,32 +251,33 @@
         margin-bottom: 30px;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 480px) {
         .conversation-item {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 15px;
+            gap: 10px;
+            min-height: 68px;
+            padding: 9px 10px;
         }
 
-        .conversation-avatar {
-            margin-right: 0;
-            margin-bottom: 10px;
+        .conversation-avatar img,
+        .avatar-placeholder {
+            width: 42px;
+            height: 42px;
         }
 
-        .conversation-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
+        .conversation-partner {
+            font-size: 0.9rem;
         }
 
-        .conversation-actions {
-            margin-left: 0;
-            margin-top: 15px;
-            width: 100%;
+        .conversation-date {
+            font-size: 0.68rem;
         }
 
-        .conversation-actions .btn {
-            width: 100%;
+        .conversation-subject {
+            font-size: 0.72rem;
+        }
+
+        .conversation-preview {
+            font-size: 0.78rem;
         }
     }
 </style>

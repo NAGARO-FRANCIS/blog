@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}{{ section_title }} - Administration{% endblock %}
+{% block title %}{% blocktranslate with title=section_title %}{{ title }} - Administration{% endblocktranslate %}{% endblock %}
 
 {% block content %}
 <div class="admin-shell">
@@ -10,24 +11,24 @@
         </div>
 
         <nav class="admin-menu">
-            <div class="menu-title">Principal</div>
+            <div class="menu-title">{% translate "Principal" %}</div>
             <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
-            <a href="{% url 'adminpanel:users' %}">👥 Utilisateurs</a>
-            <a href="{% url 'adminpanel:logements' %}"{% if active_section == 'logements' %} class="active" aria-current="page"{% endif %}>🏠 Logements</a>
-            <a href="{% url 'adminpanel:colocations' %}"{% if active_section == 'colocations' %} class="active" aria-current="page"{% endif %}>🤝 Colocations</a>
+            <a href="{% url 'adminpanel:users' %}">👥 {% translate "Utilisateurs" %}</a>
+            <a href="{% url 'adminpanel:logements' %}"{% if active_section == 'logements' %} class="active" aria-current="page"{% endif %}>🏠 {% translate "Logements" %}</a>
+            <a href="{% url 'adminpanel:colocations' %}"{% if active_section == 'colocations' %} class="active" aria-current="page"{% endif %}>🤝 {% translate "Colocations" %}</a>
 
-            <div class="menu-title">Gestion</div>
-            <a href="{% url 'adminpanel:hotels_residences' %}"{% if active_section == 'hotels_residences' %} class="active" aria-current="page"{% endif %}>🏨 Hôtels & Résidences</a>
-            <a href="{% url 'adminpanel:reservations' %}"{% if active_section == 'reservations' %} class="active" aria-current="page"{% endif %}>📅 Réservations</a>
+            <div class="menu-title">{% translate "Gestion" %}</div>
+            <a href="{% url 'adminpanel:hotels_residences' %}"{% if active_section == 'hotels_residences' %} class="active" aria-current="page"{% endif %}>🏨 {% translate "Hôtels & Résidences" %}</a>
+            <a href="{% url 'adminpanel:reservations' %}"{% if active_section == 'reservations' %} class="active" aria-current="page"{% endif %}>📅 {% translate "Réservations" %}</a>
             <a href="{% url 'adminpanel:finance' %}"{% if active_section == 'finance' %} class="active" aria-current="page"{% endif %}>💰 Finance</a>
-            <a href="{% url 'adminpanel:verifications' %}"{% if active_section == 'verifications' %} class="active" aria-current="page"{% endif %}>🪪 Vérifications</a>
-            <a href="{% url 'adminpanel:avis' %}"{% if active_section == 'avis' %} class="active" aria-current="page"{% endif %}>⭐ Avis</a>
-            <a href="{% url 'adminpanel:signalements' %}"{% if active_section == 'signalements' %} class="active" aria-current="page"{% endif %}>🚨 Signalements</a>
+            <a href="{% url 'adminpanel:verifications' %}"{% if active_section == 'verifications' %} class="active" aria-current="page"{% endif %}>🪪 {% translate "Vérifications" %}</a>
+            <a href="{% url 'adminpanel:avis' %}"{% if active_section == 'avis' %} class="active" aria-current="page"{% endif %}>⭐ {% translate "Avis" %}</a>
+            <a href="{% url 'adminpanel:signalements' %}"{% if active_section == 'signalements' %} class="active" aria-current="page"{% endif %}>🚨 {% translate "Signalements" %}</a>
 
-            <div class="menu-title">Système</div>
-            <a href="{% url 'adminpanel:notifications' %}"{% if active_section == 'notifications' %} class="active" aria-current="page"{% endif %}>🔔 Notifications</a>
-            <a href="{% url 'adminpanel:statistiques' %}"{% if active_section == 'statistiques' %} class="active" aria-current="page"{% endif %}>📈 Statistiques</a>
-            <a href="{% url 'adminpanel:parametres' %}"{% if active_section == 'parametres' %} class="active" aria-current="page"{% endif %}>⚙️ Paramètres</a>
+            <div class="menu-title">{% translate "Système" %}</div>
+            <a href="{% url 'adminpanel:notifications' %}"{% if active_section == 'notifications' %} class="active" aria-current="page"{% endif %}>🔔 {% translate "Notifications" %}</a>
+            <a href="{% url 'adminpanel:statistiques' %}"{% if active_section == 'statistiques' %} class="active" aria-current="page"{% endif %}>📈 {% translate "Statistiques" %}</a>
+            <a href="{% url 'adminpanel:parametres' %}"{% if active_section == 'parametres' %} class="active" aria-current="page"{% endif %}>⚙️ {% translate "Paramètres" %}</a>
         </nav>
     </aside>
 
@@ -37,7 +38,7 @@
             <div class="topbar-user">
                 <div>
                     <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-                    <small>Administrateur</small>
+                    <small>{% translate "Administrateur" %}</small>
                 </div>
                 <div class="avatar">{{ request.user.username|slice:':1'|upper }}</div>
             </div>
@@ -48,34 +49,34 @@
                 <div class="section-header-row">
                     <div>
                         <h2>{{ section_title }}</h2>
-                        <p>Vue d’exploitation en temps réel de la plateforme.</p>
+                        <p>{% translate "Vue d’exploitation en temps réel de la plateforme." %}</p>
                     </div>
                     <div class="action-row">
                         {% if items %}
-                            <button type="button" class="secondary-btn" data-action="export" data-export-name="{{ active_section }}">Exporter les éléments affichés</button>
+                            <button type="button" class="secondary-btn" data-action="export" data-export-name="{{ active_section }}">{% translate "Exporter les éléments affichés" %}</button>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="stats-grid">
-                {% if total_users != None %}<div class="stat-box"><span>Utilisateurs</span><strong>{{ total_users }}</strong></div>{% endif %}
-                {% if total_logements != None %}<div class="stat-box"><span>Logements</span><strong>{{ total_logements }}</strong></div>{% endif %}
-                {% if total_colocations != None %}<div class="stat-box"><span>Colocations</span><strong>{{ total_colocations }}</strong></div>{% endif %}
-                {% if total_etablissements != None %}<div class="stat-box"><span>Hôtels & résidences</span><strong>{{ total_etablissements }}</strong></div>{% endif %}
-                {% if total_reservations != None %}<div class="stat-box"><span>Réservations</span><strong>{{ total_reservations }}</strong></div>{% endif %}
-                {% if reservations_en_attente != None %}<div class="stat-box"><span>Réservations en attente</span><strong>{{ reservations_en_attente }}</strong></div>{% endif %}
-                {% if documents_en_attente != None %}<div class="stat-box"><span>Vérifications</span><strong>{{ documents_en_attente }}</strong></div>{% endif %}
-                {% if profils_en_attente != None %}<div class="stat-box"><span>Profils en attente</span><strong>{{ profils_en_attente }}</strong></div>{% endif %}
-                {% if paiements_total != None %}<div class="stat-box"><span>Paiements</span><strong>{{ paiements_total }}</strong></div>{% endif %}
-                {% if paiements_en_attente != None %}<div class="stat-box"><span>Paiements en attente</span><strong>{{ paiements_en_attente }}</strong></div>{% endif %}
-                {% if revenus_total != None %}<div class="stat-box"><span>Revenus</span><strong>{{ revenus_total|floatformat:0 }} FCFA</strong></div>{% endif %}
-                {% if notifications_total != None %}<div class="stat-box"><span>Notifications</span><strong>{{ notifications_total }}</strong></div>{% endif %}
-                {% if avis_total != None %}<div class="stat-box"><span>Avis</span><strong>{{ avis_total }}</strong></div>{% endif %}
-                {% if avis_masques != None %}<div class="stat-box"><span>Avis masqués</span><strong>{{ avis_masques }}</strong></div>{% endif %}
-                {% if signalements_total != None %}<div class="stat-box"><span>Signalements</span><strong>{{ signalements_total }}</strong></div>{% endif %}
-                {% if signalements_a_traiter != None %}<div class="stat-box"><span>À traiter</span><strong>{{ signalements_a_traiter }}</strong></div>{% endif %}
-                {% if system_status %}<div class="stat-box"><span>Système</span><strong>{{ system_status }}</strong></div>{% endif %}
+                {% if total_users != None %}<div class="stat-box"><span>{% translate "Utilisateurs" %}</span><strong>{{ total_users }}</strong></div>{% endif %}
+                {% if total_logements != None %}<div class="stat-box"><span>{% translate "Logements" %}</span><strong>{{ total_logements }}</strong></div>{% endif %}
+                {% if total_colocations != None %}<div class="stat-box"><span>{% translate "Colocations" %}</span><strong>{{ total_colocations }}</strong></div>{% endif %}
+                {% if total_etablissements != None %}<div class="stat-box"><span>{% translate "Hôtels & résidences" %}</span><strong>{{ total_etablissements }}</strong></div>{% endif %}
+                {% if total_reservations != None %}<div class="stat-box"><span>{% translate "Réservations" %}</span><strong>{{ total_reservations }}</strong></div>{% endif %}
+                {% if reservations_en_attente != None %}<div class="stat-box"><span>{% translate "Réservations en attente" %}</span><strong>{{ reservations_en_attente }}</strong></div>{% endif %}
+                {% if documents_en_attente != None %}<div class="stat-box"><span>{% translate "Vérifications" %}</span><strong>{{ documents_en_attente }}</strong></div>{% endif %}
+                {% if profils_en_attente != None %}<div class="stat-box"><span>{% translate "Profils en attente" %}</span><strong>{{ profils_en_attente }}</strong></div>{% endif %}
+                {% if paiements_total != None %}<div class="stat-box"><span>{% translate "Paiements" %}</span><strong>{{ paiements_total }}</strong></div>{% endif %}
+                {% if paiements_en_attente != None %}<div class="stat-box"><span>{% translate "Paiements en attente" %}</span><strong>{{ paiements_en_attente }}</strong></div>{% endif %}
+                {% if revenus_total != None %}<div class="stat-box"><span>{% translate "Revenus" %}</span><strong>{{ revenus_total|floatformat:0 }} FCFA</strong></div>{% endif %}
+                {% if notifications_total != None %}<div class="stat-box"><span>{% translate "Notifications" %}</span><strong>{{ notifications_total }}</strong></div>{% endif %}
+                {% if avis_total != None %}<div class="stat-box"><span>{% translate "Avis" %}</span><strong>{{ avis_total }}</strong></div>{% endif %}
+                {% if avis_masques != None %}<div class="stat-box"><span>{% translate "Avis masqués" %}</span><strong>{{ avis_masques }}</strong></div>{% endif %}
+                {% if signalements_total != None %}<div class="stat-box"><span>{% translate "Signalements" %}</span><strong>{{ signalements_total }}</strong></div>{% endif %}
+                {% if signalements_a_traiter != None %}<div class="stat-box"><span>{% translate "À traiter" %}</span><strong>{{ signalements_a_traiter }}</strong></div>{% endif %}
+                {% if system_status %}<div class="stat-box"><span>{% translate "Système" %}</span><strong>{{ system_status }}</strong></div>{% endif %}
             </div>
 
             {% if items %}
@@ -83,10 +84,10 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Élément</th>
-                                <th>Détails</th>
-                                <th>Statut</th>
-                                {% if active_section == 'verifications' or active_section == 'avis' or active_section == 'signalements' %}<th data-no-export>Action</th>{% endif %}
+                                <th>{% translate "Élément" %}</th>
+                                <th>{% translate "Détails" %}</th>
+                                <th>{% translate "Statut" %}</th>
+                                {% if active_section == 'verifications' or active_section == 'avis' or active_section == 'signalements' %}<th data-no-export>{% translate "Action" %}</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -99,11 +100,11 @@
                                     {% elif active_section == 'colocations' %}
                                         <td>{{ item.titre }}</td>
                                         <td>{{ item.ville }} • {{ item.proprietaire.get_full_name|default:item.proprietaire.username }}</td>
-                                        <td><span class="badge ok">Actif</span></td>
+                                        <td><span class="badge ok">{% translate "Actif" %}</span></td>
                                     {% elif active_section == 'hotels_residences' %}
                                         <td>{{ item.nom }}</td>
                                         <td>{{ item.type_etablissement|title }} • {{ item.ville }}</td>
-                                        <td><span class="badge ok">Ouvert</span></td>
+                                        <td><span class="badge ok">{% translate "Ouvert" %}</span></td>
                                     {% elif active_section == 'reservations' %}
                                         <td>{{ item.logement.titre }}</td>
                                         <td>{{ item.client_nom }} • {{ item.montant_final|floatformat:0 }} FCFA</td>
@@ -114,7 +115,7 @@
                                         <td><span class="badge {% if item.statut == 'completed' %}ok{% elif item.statut == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_statut_display }}</span></td>
                                     {% elif active_section == 'verifications' %}
                                         <td>{{ item.profile.user.get_full_name|default:item.profile.user.username }}</td>
-                                        <td>{{ item.get_document_type_display }} • <a href="{% url 'admin:accounts_documentverification_change' item.id %}">Consulter le document</a></td>
+                                        <td>{{ item.get_document_type_display }} • <a href="{% url 'admin:accounts_documentverification_change' item.id %}">{% translate "Consulter le document" %}</a></td>
                                         <td><span class="badge {% if item.status == 'verified' %}ok{% elif item.status == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_status_display }}</span></td>
                                     {% elif active_section == 'notifications' %}
                                         <td>{{ item.title }}</td>
@@ -130,8 +131,8 @@
                                         <td><span class="badge {% if item.traite %}ok{% else %}warning{% endif %}">{% if item.traite %}Traité{% else %}À traiter{% endif %}</span></td>
                                     {% else %}
                                         <td>{{ item }}</td>
-                                        <td>À traiter</td>
-                                        <td><span class="badge warning">À vérifier</span></td>
+                                        <td>{% translate "À traiter" %}</td>
+                                        <td><span class="badge warning">{% translate "À vérifier" %}</span></td>
                                     {% endif %}
                                     {% if active_section == 'verifications' or active_section == 'avis' or active_section == 'signalements' %}
                                         <td data-no-export>
@@ -140,15 +141,15 @@
                                                     <div class="row-action-group">
                                                         <form method="post" action="{% url 'adminpanel:approve_document' item.id %}">
                                                             {% csrf_token %}
-                                                            <button type="submit" class="row-action-btn">Approuver</button>
+                                                            <button type="submit" class="row-action-btn">{% translate "Approuver" %}</button>
                                                         </form>
                                                         <form method="post" action="{% url 'adminpanel:reject_document' item.id %}">
                                                             {% csrf_token %}
-                                                            <button type="submit" class="row-action-btn row-action-btn--danger">Rejeter</button>
+                                                            <button type="submit" class="row-action-btn row-action-btn--danger">{% translate "Rejeter" %}</button>
                                                         </form>
                                                     </div>
                                                 {% else %}
-                                                    <span class="row-action-done">Traité</span>
+                                                    <span class="row-action-done">{% translate "Traité" %}</span>
                                                 {% endif %}
                                             {% elif active_section == 'avis' %}
                                                 <form method="post" action="{% url 'adminpanel:toggle_avis_visibility' item.id %}">
@@ -170,15 +171,15 @@
                 </div>
             {% else %}
                 <div class="empty-panel">
-                    <h3>Aucune donnée disponible pour cette vue.</h3>
-                    <p>Les éléments arriveront dès qu’il y aura une activité sur la plateforme.</p>
+                    <h3>{% translate "Aucune donnée disponible pour cette vue." %}</h3>
+                    <p>{% translate "Les éléments arriveront dès qu’il y aura une activité sur la plateforme." %}</p>
                 </div>
             {% endif %}
 
             {% if recent_notifications %}
                 <div class="panel" style="margin-top: 22px;">
                     <div class="panel-header">
-                        <h2>🔔 Notifications récentes</h2>
+                        <h2>🔔 {% translate "Notifications récentes" %}</h2>
                     </div>
                     {% for notification in recent_notifications %}
                         <div class="notification-row">

@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from .models import Profile, ProfessionalProfile
 from io import BytesIO
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -25,67 +27,73 @@ def process_image(uploaded, size=(512, 512)):
 class AccountTypeForm(forms.Form):
     """Formulaire de choix du type de compte lors de l'inscription"""
     ACCOUNT_TYPE_CHOICES = [
-        ('individu', 'Je suis un individu (cherche colocation/logement)'),
-        ('residence', 'Je gère une résidence'),
-        ('hotel', 'Je gère un hôtel'),
+        ('individu', _('Je suis un individu (cherche colocation/logement)')),
+        ('residence', _('Je gère une résidence')),
+        ('hotel', _('Je gère un hôtel')),
     ]
     
     account_type = forms.ChoiceField(
         choices=ACCOUNT_TYPE_CHOICES,
         widget=forms.RadioSelect,
-        label='Quel est votre type de compte ?',
-        help_text='Sélectionnez l\'option qui correspond à votre profil'
+        label=_('Quel est votre type de compte ?'),
+        help_text=_('Sélectionnez l\'option qui correspond à votre profil')
     )
 
 
 class IndividuRoleForm(forms.Form):
     """Formulaire de choix du rôle pour les individus"""
     ROLE_CHOICES = [
-        ('proprietaire', '🏠 Propriétaire - Je possède une maison et veux louer les chambres'),
-        ('locataire', '🔑 Locataire - J\'ai une maison et cherche un touriste'),
-        ('touriste', '👥 Touriste - Je cherche une chambre/maison à louer'),
+        ('proprietaire', _('🏠 Propriétaire - Je possède une maison et veux louer les chambres')),
+        ('locataire', _('🔑 Locataire - J\'ai une maison et cherche un touriste')),
+        ('touriste', _('👥 Touriste - Je cherche une chambre/maison à louer')),
     ]
     
     role = forms.ChoiceField(
         choices=ROLE_CHOICES,
         widget=forms.RadioSelect,
-        label='Quel est votre rôle ?',
-        help_text='Sélectionnez le rôle qui correspond à votre situation'
+        label=_('Quel est votre rôle ?'),
+        help_text=_('Sélectionnez le rôle qui correspond à votre situation')
     )
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Ajouter des descriptions pour chaque rôle
-        self.fields['role'].help_text = """
+        self.fields['role'].help_text = format_html("""
         <div style="margin-top: 1rem;">
-            <p><strong>📝 Propriétaire :</strong> Vous possédez une maison et souhaitez louer les chambres à des locataires</p>
-            <p><strong>📝 Locataire :</strong> Vous avez déjà une maison et cherchez quelqu'un pour partager les frais</p>
-            <p><strong>📝 Touriste :</strong> Vous cherchez une chambre ou maison à louer (vous ne pouvez pas publier d'annonces)</p>
+            <p><strong>📝 {} :</strong> {}</p>
+            <p><strong>📝 {} :</strong> {}</p>
+            <p><strong>📝 {} :</strong> {}</p>
         </div>
-        """
+        """,
+        _('Propriétaire'),
+        _('Vous possédez une maison et souhaitez louer les chambres à des locataires'),
+        _('Locataire'),
+        _('Vous avez déjà une maison et cherchez quelqu\'un pour partager les frais'),
+        _('Touriste'),
+        _('Vous cherchez une chambre ou maison à louer (vous ne pouvez pas publier d\'annonces)'))
 
 
 class SignUpForm(UserCreationForm):
     # Informations personnelles
     first_name = forms.CharField(
-        label='Nom',
+        label=_('Nom'),
         required=True,
         max_length=30,
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Dupont'})
+        widget=forms.TextInput(attrs={'placeholder': _('Ex: Dupont')})
     )
     last_name = forms.CharField(
-        label='Prénoms',
+        label=_('Prénoms'),
         required=True,
         max_length=150,
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Jean Paul'})
+        widget=forms.TextInput(attrs={'placeholder': _('Ex: Jean Paul')})
     )
     email = forms.EmailField(
-        label='Email',
+        label=_('Email'),
         required=True,
         widget=forms.EmailInput(attrs={'placeholder': 'exemple@email.com'})
     )
     telephone = forms.CharField(
-        label='Numéro de téléphone',
+        label=_('Numéro de téléphone'),
         required=True,
         max_length=20,
         widget=forms.TextInput(attrs={'placeholder': '+225 01 02 03 04 05'})
@@ -93,35 +101,35 @@ class SignUpForm(UserCreationForm):
 
     # Informations du profil
     ville = forms.CharField(
-        label='Ville',
+        label=_('Ville'),
         required=True,
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Abidjan'})
+        widget=forms.TextInput(attrs={'placeholder': _('Ex: Abidjan')})
     )
     quartier = forms.CharField(
-        label='Quartier',
+        label=_('Quartier'),
         required=False,
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Plateaux'})
+        widget=forms.TextInput(attrs={'placeholder': _('Ex: Plateaux')})
     )
     date_naissance = forms.DateField(
-        label='Date de naissance',
+        label=_('Date de naissance'),
         required=True,
         widget=forms.DateInput(attrs={'type': 'date'})
     )
     sexe = forms.ChoiceField(
-        label='Sexe',
+        label=_('Sexe'),
         choices=Profile.SEXE_CHOICES,
         widget=forms.RadioSelect,
         required=True
     )
     profession = forms.CharField(
-        label='Profession',
+        label=_('Profession'),
         required=True,
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Développeur'})
+        widget=forms.TextInput(attrs={'placeholder': _('Ex: Développeur')})
     )
     photo_profil = forms.ImageField(
-        label='Photo de profil',
+        label=_('Photo de profil'),
         required=False,
-        help_text='Téléchargez une photo professionnelle (optionnel)',
+        help_text=_('Téléchargez une photo professionnelle (optionnel)'),
         widget=forms.FileInput(attrs={
             'accept': 'image/jpeg,image/png,image/gif',
             'class': 'file-input',
@@ -131,18 +139,18 @@ class SignUpForm(UserCreationForm):
 
     # Pièce d'identité
     type_piece_identite = forms.ChoiceField(
-        label='Type de pièce d\'identité',
+        label=_('Type de pièce d\'identité'),
         choices=Profile.PIECE_IDENTITE_CHOICES,
         widget=forms.Select,
         required=True,
-        help_text='Sélectionnez votre type de pièce d\'identité'
+        help_text=_('Sélectionnez votre type de pièce d\'identité')
     )
     numero_piece_identite = forms.CharField(
-        label='Numéro de pièce d\'identité',
+        label=_('Numéro de pièce d\'identité'),
         required=True,
         max_length=50,
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: CI123456789'}),
-        help_text='Entrez le numéro exact de votre pièce d\'identité'
+        widget=forms.TextInput(attrs={'placeholder': _('Ex: CI123456789')}),
+        help_text=_('Entrez le numéro exact de votre pièce d\'identité')
     )
 
     class Meta:
@@ -170,13 +178,13 @@ class SignUpForm(UserCreationForm):
         if numero:
             # Vérifier que le numéro n'est pas déjà utilisé
             if Profile.objects.filter(numero_piece_identite=numero).exists():
-                raise forms.ValidationError("Ce numéro de pièce d'identité est déjà enregistré.")
+                raise forms.ValidationError(_("Ce numéro de pièce d'identité est déjà enregistré."))
         return numero
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if email and User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('Cet email est déjà utilisé.')
+            raise forms.ValidationError(_('Cet email est déjà utilisé.'))
         return email
 
     def _process_image(self, uploaded, size=(512, 512)):
@@ -495,4 +503,3 @@ class ProfileEditForm(forms.ModelForm):
         if commit:
             profile.save()
         return profile
-

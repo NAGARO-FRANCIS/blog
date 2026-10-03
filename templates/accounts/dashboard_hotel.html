@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Dashboard — {{ prof_profile.establishment_name|default:"Mon Hôtel" }}{% endblock %}
+{% translate "Mon Hôtel" as default_establishment_name %}
+{% translate "Client" as default_guest_name %}
+{% block title %}Dashboard — {{ prof_profile.establishment_name|default:default_establishment_name }}{% endblock %}
 
 {% block content %}
 <div class="dh-wrapper">
@@ -13,7 +16,7 @@
                 <span class="dh-header__flag">🇨🇮</span>
                 <div>
                     <h1 class="dh-header__title">
-                        {% if prof_profile %}{{ prof_profile.establishment_name }}{% else %}Mon Hôtel{% endif %}
+                        {% if prof_profile %}{{ prof_profile.establishment_name }}{% else %}{{ default_establishment_name }}{% endif %}
                     </h1>
                     <p class="dh-header__sub">
                         {% if prof_profile.establishment_city %}{{ prof_profile.establishment_city }} &mdash; {% endif %}Tableau de bord
@@ -21,7 +24,7 @@
                 </div>
             </div>
             <span class="dh-badge {% if prof_profile.is_verified %}dh-badge--verified{% endif %}">
-                {% if prof_profile.is_verified %}Compte vérifié{% else %}Non vérifié{% endif %}
+                {% if prof_profile.is_verified %}{% translate "Compte vérifié" %}{% else %}{% translate "Non vérifié" %}{% endif %}
             </span>
         </header>
 
@@ -29,77 +32,77 @@
         <div class="dh-stats">
             <div class="dh-stat">
                 <span class="dh-stat__value">{{ nb_chambres|default:"0" }}</span>
-                <span class="dh-stat__label">Chambres</span>
+                <span class="dh-stat__label">{% translate "Chambres" %}</span>
             </div>
             <div class="dh-stat">
                 <span class="dh-stat__value">{{ nb_reservations|default:"0" }}</span>
-                <span class="dh-stat__label">Réservations</span>
+                <span class="dh-stat__label">{% translate "Réservations" %}</span>
             </div>
             <div class="dh-stat">
                 <span class="dh-stat__value">{{ nb_clients_actifs|default:"0" }}</span>
-                <span class="dh-stat__label">Clients actifs</span>
+                <span class="dh-stat__label">{% translate "Clients actifs" %}</span>
             </div>
             <div class="dh-stat">
                 <span class="dh-stat__value">{{ chambres_disponibles|default:"0" }}</span>
-                <span class="dh-stat__label">Disponibles</span>
+                <span class="dh-stat__label">{% translate "Disponibles" %}</span>
             </div>
         </div>
 
         <!-- ── MÉTRIQUES ── -->
         <div class="dh-metrics">
             <div class="dh-metric">
-                <span class="dh-metric__label">Taux d'occupation</span>
+                <span class="dh-metric__label">{% translate "Taux d'occupation" %}</span>
                 <span class="dh-metric__value">{{ taux_occupation|default:"0" }}<small>%</small></span>
                 <div class="dh-metric__bar">
                     <div class="dh-metric__fill" style="width: {{ taux_occupation|default:'0' }}%"></div>
                 </div>
             </div>
             <div class="dh-metric">
-                <span class="dh-metric__label">Revenu du mois</span>
+                <span class="dh-metric__label">{% translate "Revenu du mois" %}</span>
                 <span class="dh-metric__value dh-metric__value--green">{{ revenu_mois|default:"0" }}<small> FCFA</small></span>
             </div>
             <div class="dh-metric">
-                <span class="dh-metric__label">Note moyenne</span>
+                <span class="dh-metric__label">{% translate "Note moyenne" %}</span>
                 <span class="dh-metric__value">{{ note_moyenne|default:"—" }}<small>/5</small></span>
                 <div class="dh-metric__stars">
                     {% for i in "12345" %}
                         <span class="dh-metric__star {% if forloop.counter <= note_moyenne %}dh-metric__star--on{% endif %}">★</span>
                     {% endfor %}
                 </div>
-                <span class="dh-metric__sub">{{ nb_avis|default:"0" }} avis</span>
+                <span class="dh-metric__sub">{{ nb_avis|default:"0" }} {% translate "avis" %}</span>
             </div>
         </div>
 
         <!-- ── ACTIONS RAPIDES ── -->
         <section class="dh-section">
-            <h2 class="dh-section__title">Actions rapides</h2>
+            <h2 class="dh-section__title">{% translate "Actions rapides" %}</h2>
             <div class="dh-actions">
                 <a href="{% url 'logement:ajouter_logement' %}" class="dh-action">
                     <span class="dh-action__icon">＋</span>
                     <div>
-                        <p class="dh-action__name">Ajouter une chambre</p>
-                        <p class="dh-action__desc">Publiez une nouvelle chambre</p>
+                        <p class="dh-action__name">{% translate "Ajouter une chambre" %}</p>
+                        <p class="dh-action__desc">{% translate "Publiez une nouvelle chambre" %}</p>
                     </div>
                 </a>
                 <a href="{% url 'logement:mes_reservations' %}" class="dh-action">
                     <span class="dh-action__icon">≡</span>
                     <div>
-                        <p class="dh-action__name">Réservations</p>
-                        <p class="dh-action__desc">Gérez les réservations</p>
+                        <p class="dh-action__name">{% translate "Réservations" %}</p>
+                        <p class="dh-action__desc">{% translate "Gérez les réservations" %}</p>
                     </div>
                 </a>
                 <a href="{% url 'logement:mes_clients' %}" class="dh-action">
                     <span class="dh-action__icon">◎</span>
                     <div>
-                        <p class="dh-action__name">Clients</p>
-                        <p class="dh-action__desc">Liste des clients</p>
+                        <p class="dh-action__name">{% translate "Clients" %}</p>
+                        <p class="dh-action__desc">{% translate "Liste des clients" %}</p>
                     </div>
                 </a>
                 <a href="{% url 'messagerie:mes_conversations' %}" class="dh-action">
                     <span class="dh-action__icon">✉</span>
                     <div>
-                        <p class="dh-action__name">Messages</p>
-                        <p class="dh-action__desc">Échanges avec les clients</p>
+                        <p class="dh-action__name">{% translate "Messages" %}</p>
+                        <p class="dh-action__desc">{% translate "Échanges avec les clients" %}</p>
                     </div>
                 </a>
             </div>
@@ -108,29 +111,29 @@
         <!-- ── RÉSERVATIONS RÉCENTES ── -->
         <section class="dh-section">
             <div class="dh-section__row">
-                <h2 class="dh-section__title">Réservations récentes</h2>
-                <a href="{% url 'logement:mes_reservations' %}" class="dh-link">Voir toutes →</a>
+                <h2 class="dh-section__title">{% translate "Réservations récentes" %}</h2>
+                <a href="{% url 'logement:mes_reservations' %}" class="dh-link">{% translate "Voir toutes" %} →</a>
             </div>
             <div class="dh-card">
                 {% if recent_reservations %}
                     {% for reservation in recent_reservations %}
                     <div class="dh-reservation {% if not forloop.last %}dh-reservation--border{% endif %}">
                         <div>
-                            <p class="dh-reservation__guest">{{ reservation.guest_name|default:"Client" }}</p>
+                            <p class="dh-reservation__guest">{{ reservation.guest_name|default:default_guest_name }}</p>
                             <p class="dh-reservation__dates">
                                 {{ reservation.check_in|date:"d/m/y"|default:"—" }} → {{ reservation.check_out|date:"d/m/y"|default:"—" }}
                             </p>
                         </div>
                         <span class="dh-status dh-status--{{ reservation.status|default:'pending' }}">
-                            {% if reservation.status == "confirmed" %}Confirmée
-                            {% elif reservation.status == "cancelled" %}Annulée
+                            {% if reservation.status == "confirmed" %}{% translate "Confirmée" %}
+                            {% elif reservation.status == "cancelled" %}{% translate "Annulée" %}
                             {% else %}En attente{% endif %}
                         </span>
                         <span class="dh-reservation__amount">{{ reservation.amount|default:"—" }} FCFA</span>
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="dh-empty">Aucune réservation récente</div>
+                    <div class="dh-empty">{% translate "Aucune réservation récente" %}</div>
                 {% endif %}
             </div>
         </section>
@@ -138,45 +141,45 @@
         <!-- ── ÉQUIPEMENTS ── -->
         {% if prof_profile %}
         <section class="dh-section">
-            <h2 class="dh-section__title">Équipements &amp; services</h2>
+            <h2 class="dh-section__title">{% translate "Équipements & services" %}</h2>
             <div class="dh-amenities">
                 {% if prof_profile.wifi %}<span class="dh-amenity">WiFi</span>{% endif %}
                 {% if prof_profile.parking %}<span class="dh-amenity">Parking</span>{% endif %}
                 {% if prof_profile.restaurant %}<span class="dh-amenity">Restaurant</span>{% endif %}
-                {% if prof_profile.reception_24h %}<span class="dh-amenity">Réception 24h</span>{% endif %}
-                {% if prof_profile.air_conditioning %}<span class="dh-amenity">Climatisation</span>{% endif %}
-                {% if prof_profile.gym %}<span class="dh-amenity">Salle de sport</span>{% endif %}
+                {% if prof_profile.reception_24h %}<span class="dh-amenity">{% translate "Réception 24h" %}</span>{% endif %}
+                {% if prof_profile.air_conditioning %}<span class="dh-amenity">{% translate "Climatisation" %}</span>{% endif %}
+                {% if prof_profile.gym %}<span class="dh-amenity">{% translate "Salle de sport" %}</span>{% endif %}
             </div>
         </section>
         {% endif %}
 
         <!-- ── FONCTIONNALITÉS ── -->
         <section class="dh-section">
-            <h2 class="dh-section__title">Fonctionnalités</h2>
+            <h2 class="dh-section__title">{% translate "Fonctionnalités" %}</h2>
             <div class="dh-features">
                 <a href="{% url 'logement:mes_logements' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">Gestion des chambres</p>
+                    <p class="dh-feature__name">{% translate "Gestion des chambres" %}</p>
                 </a>
                 <a href="{% url 'logement:calendrier_reservations' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">Calendrier</p>
+                    <p class="dh-feature__name">{% translate "Calendrier" %}</p>
                 </a>
                 <a href="{% url 'logement:mes_paiements' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">Paiements</p>
+                    <p class="dh-feature__name">{% translate "Paiements" %}</p>
                 </a>
                 <a href="{% url 'logement:statistiques' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">Statistiques</p>
+                    <p class="dh-feature__name">{% translate "Statistiques" %}</p>
                 </a>
                 <a href="{% url 'logement:avis_clients' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">Avis clients</p>
+                    <p class="dh-feature__name">{% translate "Avis clients" %}</p>
                 </a>
                 <a href="{% url 'accounts:profil' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">Paramètres</p>
+                    <p class="dh-feature__name">{% translate "Paramètres" %}</p>
                 </a>
             </div>
         </section>

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
 {% block title %}Confirmation - Ivoire Connect{% endblock %}
@@ -398,14 +399,14 @@
     <div class="rc-check">
       <span class="rc-check-icon">✅</span>
     </div>
-    <h1 class="rc-title">Réservation confirmée</h1>
-    <p class="rc-subtitle">Votre réservation a bien été enregistrée</p>
+    <h1 class="rc-title">{% translate "Réservation confirmée" %}</h1>
+    <p class="rc-subtitle">{% translate "Votre réservation a bien été enregistrée" %}</p>
     <div class="rc-badge-row">
-      <span class="rc-badge green">🔒 Sécurisé</span>
+      <span class="rc-badge green">🔒 {% translate "Sécurisé" %}</span>
       {% if reservation.paiement.statut == 'pending' %}
-        <span class="rc-badge orange">⏳ En attente de paiement</span>
+        <span class="rc-badge orange">⏳ {% translate "En attente de paiement" %}</span>
       {% elif reservation.paiement.statut == 'completed' %}
-        <span class="rc-badge green">✓ Paiement reçu</span>
+        <span class="rc-badge green">✓ {% translate "Paiement reçu" %}</span>
       {% endif %}
     </div>
   </div>
@@ -414,36 +415,36 @@
   <div class="rc-card">
     <div class="rc-card-header">
       <span class="rc-card-header-icon">🏠</span>
-      <span>Propriété</span>
+      <span>{% translate "Propriété" %}</span>
     </div>
     <div class="rc-card-body">
       <div class="rc-property-row">
         <div class="rc-property-thumb">🏡</div>
         <div>
           <p class="rc-property-name">{{ reservation.logement.titre }}</p>
-          <p class="rc-property-loc">📍 Côte d'Ivoire</p>
+          <p class="rc-property-loc">📍 {% translate "Côte d'Ivoire" %}</p>
         </div>
       </div>
 
       <div class="rc-date-grid">
         <div class="rc-date-col">
-          <p class="rc-date-label">Arrivée</p>
+          <p class="rc-date-label">{% translate "Arrivée" %}</p>
           <p class="rc-date-value">{{ reservation.date_arrivee|date:'d/m' }}</p>
           <p class="rc-date-sub">{{ reservation.date_arrivee|date:'Y' }}</p>
         </div>
         <div class="rc-date-sep">
           <span style="font-size:1.2rem;">→</span>
-          <span class="rc-date-nights">{{ reservation.nombre_nuits }} nuits</span>
+          <span class="rc-date-nights">{% blocktranslate count counter=reservation.nombre_nuits %}{{ counter }} nuit{% plural %}{{ counter }} nuits{% endblocktranslate %}</span>
         </div>
         <div class="rc-date-col">
-          <p class="rc-date-label">Départ</p>
+          <p class="rc-date-label">{% translate "Départ" %}</p>
           <p class="rc-date-value">{{ reservation.date_depart|date:'d/m' }}</p>
           <p class="rc-date-sub">{{ reservation.date_depart|date:'Y' }}</p>
         </div>
       </div>
 
       <div class="rc-amount-row">
-        <p class="rc-amount-label">💰 Montant total</p>
+        <p class="rc-amount-label">💰 {% translate "Montant total" %}</p>
         <p class="rc-amount-value">
           {{ reservation.montant_final|floatformat:0 }}
           <span class="rc-amount-currency">FCFA</span>
@@ -456,7 +457,7 @@
   <div class="rc-card">
     <div class="rc-card-header">
       <span class="rc-card-header-icon">💳</span>
-      <span>Paiement</span>
+      <span>{% translate "Paiement" %}</span>
     </div>
     <div class="rc-card-body">
       {% if reservation.paiement %}
@@ -474,18 +475,18 @@
               {% if reservation.paiement.methode == 'mouv' %}MOUV
               {% elif reservation.paiement.methode == 'orange' %}Orange Money
               {% elif reservation.paiement.methode == 'wave' %}Wave
-              {% elif reservation.paiement.methode == 'stripe' %}Carte bancaire
-              {% elif reservation.paiement.methode == 'virement' %}Virement bancaire
-              {% elif reservation.paiement.methode == 'cash' %}Paiement sur place
+              {% elif reservation.paiement.methode == 'stripe' %}{% translate "Carte bancaire" %}
+              {% elif reservation.paiement.methode == 'virement' %}{% translate "Virement bancaire" %}
+              {% elif reservation.paiement.methode == 'cash' %}{% translate "Paiement sur place" %}
               {% endif %}
             </p>
-            <p class="rc-method-type">Méthode de paiement</p>
+            <p class="rc-method-type">{% translate "Méthode de paiement" %}</p>
           </div>
         </div>
         <span class="rc-status-pill {% if reservation.paiement.statut == 'completed' %}success{% elif reservation.paiement.statut == 'failed' %}danger{% else %}pending{% endif %}">
-          {% if reservation.paiement.statut == 'pending' %}⏳ En attente
-          {% elif reservation.paiement.statut == 'completed' %}✓ Complété
-          {% elif reservation.paiement.statut == 'failed' %}✗ Échoué
+          {% if reservation.paiement.statut == 'pending' %}⏳ {% translate "En attente" %}
+          {% elif reservation.paiement.statut == 'completed' %}✓ {% translate "Complété" %}
+          {% elif reservation.paiement.statut == 'failed' %}✗ {% translate "Échoué" %}
           {% endif %}
         </span>
       </div>
@@ -494,27 +495,27 @@
         {% if reservation.paiement.methode == 'mouv' %}
         <div class="rc-alert">
           <span class="rc-alert-icon">⚠️</span>
-          <div class="rc-alert-text">Composez <strong>*111#</strong> sur votre téléphone MOUV et entrez <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> pour finaliser le paiement.</div>
+          <div class="rc-alert-text">{% translate "Composez" %} <strong>*111#</strong> {% translate "sur votre téléphone MOUV et entrez" %} <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> {% translate "pour finaliser le paiement." %}</div>
         </div>
         {% elif reservation.paiement.methode == 'orange' %}
         <div class="rc-alert">
           <span class="rc-alert-icon">⚠️</span>
-          <div class="rc-alert-text">Composez <strong>#144#</strong> sur votre téléphone Orange et entrez <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>.</div>
+          <div class="rc-alert-text">{% translate "Composez" %} <strong>#144#</strong> {% translate "sur votre téléphone Orange et entrez" %} <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>.</div>
         </div>
         {% elif reservation.paiement.methode == 'wave' %}
         <div class="rc-alert">
           <span class="rc-alert-icon">⚠️</span>
-          <div class="rc-alert-text">Ouvrez l'application <strong>Wave</strong> et envoyez <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> pour finaliser.</div>
+          <div class="rc-alert-text">{% translate "Ouvrez l'application" %} <strong>Wave</strong> {% translate "et envoyez" %} <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> {% translate "pour finaliser." %}</div>
         </div>
         {% elif reservation.paiement.methode == 'virement' %}
         <div class="rc-alert blue">
           <span class="rc-alert-icon">📧</span>
-          <div class="rc-alert-text">Les coordonnées bancaires ont été envoyées à <strong>{{ reservation.client_email }}</strong>.</div>
+          <div class="rc-alert-text">{% translate "Les coordonnées bancaires ont été envoyées à" %} <strong>{{ reservation.client_email }}</strong>.</div>
         </div>
         {% elif reservation.paiement.methode == 'cash' %}
         <div class="rc-alert green">
           <span class="rc-alert-icon">🏠</span>
-          <div class="rc-alert-text">Vous paierez le propriétaire directement <strong>à votre arrivée</strong>.</div>
+          <div class="rc-alert-text">{% translate "Vous paierez le propriétaire directement" %} <strong>{% translate "à votre arrivée" %}</strong>.</div>
         </div>
         {% endif %}
       {% endif %}
@@ -526,16 +527,16 @@
   <div class="rc-card">
     <div class="rc-card-header">
       <span class="rc-card-header-icon">#</span>
-      <span>Référence</span>
+      <span>{% translate "Référence" %}</span>
     </div>
     <div class="rc-card-body">
       <div class="rc-ref-block">
         <div>
-          <p class="rc-ref-label">Numéro de réservation</p>
+          <p class="rc-ref-label">{% translate "Numéro de réservation" %}</p>
           <p class="rc-ref-value" id="res-ref">RES-{{ reservation.id }}</p>
         </div>
-        <button class="rc-copy-btn" onclick="copyRef(this)" aria-label="Copier le numéro de réservation">
-          📋 Copier
+        <button class="rc-copy-btn" onclick="copyRef(this)" aria-label="{% translate 'Copier le numéro de réservation' %}">
+          📋 {% translate "Copier" %}
         </button>
       </div>
     </div>
@@ -545,36 +546,36 @@
   <div class="rc-card">
     <div class="rc-card-header">
       <span class="rc-card-header-icon">✓</span>
-      <span>Prochaines étapes</span>
+      <span>{% translate "Prochaines étapes" %}</span>
     </div>
     <div class="rc-card-body" style="padding-top: 0.25rem; padding-bottom: 0.25rem;">
       <div class="rc-steps">
         <div class="rc-step">
           <div class="rc-step-dot done">✓</div>
           <div>
-            <p class="rc-step-title">Réservation enregistrée</p>
-            <p class="rc-step-desc">Votre demande a été reçue avec succès</p>
+            <p class="rc-step-title">{% translate "Réservation enregistrée" %}</p>
+            <p class="rc-step-desc">{% translate "Votre demande a été reçue avec succès" %}</p>
           </div>
         </div>
         <div class="rc-step">
           <div class="rc-step-dot wait">⏳</div>
           <div>
-            <p class="rc-step-title">Paiement en cours</p>
-            <p class="rc-step-desc">En attente de confirmation de votre paiement</p>
+            <p class="rc-step-title">{% translate "Paiement en cours" %}</p>
+            <p class="rc-step-desc">{% translate "En attente de confirmation de votre paiement" %}</p>
           </div>
         </div>
         <div class="rc-step">
           <div class="rc-step-dot upcoming">📧</div>
           <div>
-            <p class="rc-step-title">Email de confirmation</p>
-            <p class="rc-step-desc">Envoyé à {{ reservation.client_email }}</p>
+            <p class="rc-step-title">{% translate "Email de confirmation" %}</p>
+            <p class="rc-step-desc">{% translate "Envoyé à" %} {{ reservation.client_email }}</p>
           </div>
         </div>
         <div class="rc-step">
           <div class="rc-step-dot upcoming">📱</div>
           <div>
-            <p class="rc-step-title">Contact du propriétaire</p>
-            <p class="rc-step-desc">Il vous contactera prochainement</p>
+            <p class="rc-step-title">{% translate "Contact du propriétaire" %}</p>
+            <p class="rc-step-desc">{% translate "Il vous contactera prochainement" %}</p>
           </div>
         </div>
       </div>
@@ -584,10 +585,10 @@
   <!-- Boutons d'action -->
   <div class="rc-actions">
     <a href="{% url 'logement:detail_logement' reservation.logement.id %}" class="rc-btn primary">
-      👁️ Voir la propriété
+      👁️ {% translate "Voir la propriété" %}
     </a>
     <a href="{% url 'logement:home' %}" class="rc-btn secondary">
-      🏠 Accueil
+      🏠 {% translate "Accueil" %}
     </a>
     <a href="#" class="rc-btn secondary" onclick="window.print(); return false;">
       🖨️ Imprimer / Télécharger

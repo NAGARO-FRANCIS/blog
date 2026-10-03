@@ -3,6 +3,7 @@ from django.db.models import Q, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
+from django.utils.translation import gettext as _
 from .forms import ColocationAnnonceForm, RechercheAnnonceForm, PhotoColocationFormSet
 from .models import ColocationAnnonce, Favori
 from logement.models import Logement, FavoriLogement
@@ -132,7 +133,10 @@ def publier_annonce(request):
     # Rediriger les résidences et hôtels vers leur formulaire spécifique
     if account_type in ['residence', 'hotel']:
         from django.contrib import messages
-        messages.info(request, 'Vous avez accès au formulaire de publication pour votre type d\'établissement.')
+        messages.info(
+            request,
+            _('Vous avez accès au formulaire de publication pour votre type d\'établissement.'),
+        )
         return redirect('logement:ajouter_logement')
     
     # Les touristes seuls peuvent publier des annonces de colocation

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Mon profil — {{ request.user.first_name|default:request.user.username }}{% endblock %}
+{% block title %}{% translate "Mon profil" %} — {{ request.user.first_name|default:request.user.username }}{% endblock %}
 
 {% block content %}
 <div class="ic-wrap">
@@ -69,7 +69,7 @@
 
         <button type="button" class="ic-hero__editbtn" onclick="document.getElementById('icCoverInput').click()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>
-            Changer la couverture
+            {% translate "Changer la couverture" %}
         </button>
         <form method="post" enctype="multipart/form-data" action="{% url 'accounts:edit_profil' %}" style="display:none;">
             {% csrf_token %}
@@ -102,8 +102,8 @@
             <p class="ic-username">@{{ request.user.username }}</p>
             <span class="ic-role-badge">
                 {% if profile.account_type == 'individu' %}{{ profile.get_role_display }}
-                {% elif profile.account_type == 'hotel' %}Gestionnaire d'Hôtel
-                {% else %}Gestionnaire de Résidence{% endif %}
+                {% elif profile.account_type == 'hotel' %}{% translate "Gestionnaire d'Hôtel" %}
+                {% else %}{% translate "Gestionnaire de Résidence" %}{% endif %}
             </span>
 
             <div class="ic-meta-row">
@@ -113,20 +113,20 @@
                 </span>
                 <span class="ic-meta">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Membre depuis {{ date_inscription|date:"F Y" }}
+                    {% blocktranslate with date=date_inscription|date:"F Y" %}Membre depuis {{ date }}{% endblocktranslate %}
                 </span>
             </div>
 
             <div class="ic-trust-row">
                 <span class="ic-trust-badge">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/><path d="m9 12 2 2 4-4"/></svg>
-                    {{ profile.verified_by_count }} vérification{{ profile.verified_by_count|pluralize }}
+                    {% blocktranslate count count=profile.verified_by_count %}{{ count }} vérification{% plural %}{{ count }} vérifications{% endblocktranslate %}
                 </span>
                 {% if request.user.is_authenticated and request.user != viewed_user %}
                     {% if current_user_has_verified_profile %}
-                        <span class="ic-trust-status">✓ Vérifié par vous</span>
+                        <span class="ic-trust-status">✓ {% translate "Vérifié par vous" %}</span>
                     {% else %}
-                        <a href="{% url 'accounts:verify_profile' user_id=viewed_user.id %}" class="ic-trust-btn">Vérifier ce profil</a>
+                        <a href="{% url 'accounts:verify_profile' user_id=viewed_user.id %}" class="ic-trust-btn">{% translate "Vérifier ce profil" %}</a>
                     {% endif %}
                 {% endif %}
             </div>
@@ -134,7 +134,7 @@
 
         <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-            Modifier le profil
+            {% translate "Modifier le profil" %}
         </a>
     </div>
 
@@ -146,8 +146,8 @@
             </div>
             <div>
                 <div class="ic-stat-value">{{ vues_profil|default:"0" }}</div>
-                <div class="ic-stat-label">Vues du profil</div>
-                {% if vues_profil_delta %}<div class="ic-stat-delta">+{{ vues_profil_delta }}% ce mois</div>{% endif %}
+                <div class="ic-stat-label">{% translate "Vues du profil" %}</div>
+                {% if vues_profil_delta %}<div class="ic-stat-delta">+{{ vues_profil_delta }}% {% translate "ce mois" %}</div>{% endif %}
             </div>
         </div>
 
@@ -157,8 +157,8 @@
             </div>
             <div>
                 <div class="ic-stat-value">{{ nb_annonces|default:"0" }}</div>
-                <div class="ic-stat-label">Publications</div>
-                {% if nb_annonces_delta %}<div class="ic-stat-delta">+{{ nb_annonces_delta }} ce mois</div>{% endif %}
+                <div class="ic-stat-label">{% translate "Publications" %}</div>
+                {% if nb_annonces_delta %}<div class="ic-stat-delta">+{{ nb_annonces_delta }} {% translate "ce mois" %}</div>{% endif %}
             </div>
         </div>
 
@@ -168,8 +168,8 @@
             </div>
             <div>
                 <div class="ic-stat-value">{{ nb_favoris|default:"0" }}</div>
-                <div class="ic-stat-label">Favoris</div>
-                {% if nb_favoris_delta %}<div class="ic-stat-delta">+{{ nb_favoris_delta }} ce mois</div>{% endif %}
+                <div class="ic-stat-label">{% translate "Favoris" %}</div>
+                {% if nb_favoris_delta %}<div class="ic-stat-delta">+{{ nb_favoris_delta }} {% translate "ce mois" %}</div>{% endif %}
             </div>
         </div>
 
@@ -179,7 +179,7 @@
             </div>
             <div>
                 <div class="ic-stat-value">{{ note_moyenne|floatformat:1|default:"—" }}</div>
-                <div class="ic-stat-label">Note moyenne</div>
+                <div class="ic-stat-label">{% translate "Note moyenne" %}</div>
                 {% if note_moyenne %}
                     <div class="ic-stat-stars">
                         {% for i in "12345" %}<span class="{% if forloop.counter <= note_moyenne %}filled{% endif %}">★</span>{% endfor %}
@@ -193,11 +193,11 @@
     <div class="ic-tabs">
         <button class="ic-tab active" data-tab="apercu" onclick="icSwitchTab('apercu')">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-            Aperçu
+            {% translate "Aperçu" %}
         </button>
         <button class="ic-tab" data-tab="verification" onclick="icSwitchTab('verification')">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/></svg>
-            Vérification
+            {% translate "Vérification" %}
         </button>
     </div>
 
@@ -210,32 +210,32 @@
                 <div class="ic-card">
                     <h3 class="ic-card__title ic-card__title--orange">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-                        Informations personnelles
+                        {% translate "                        {% translate "Informations personnelles" %}" %}
                     </h3>
                     <div class="ic-info-row">
                         <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></span>
-                        <span class="ic-info-label">Email</span>
+                        <span class="ic-info-label">{% translate "Email" %}</span>
                         <span class="ic-info-value">{{ request.user.email|default:"—" }}</span>
                         {% if request.user.email %}<span class="ic-info-check">✓</span>{% endif %}
                     </div>
                     <div class="ic-info-row">
                         <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .3 2 .5 3 .7a2 2 0 0 1 1.7 2Z"/></svg></span>
-                        <span class="ic-info-label">Téléphone</span>
-                        <span class="ic-info-value {% if not profile.telephone %}ic-empty{% endif %}">{{ profile.telephone|default:"Non renseigné" }}</span>
+                        <span class="ic-info-label">{% translate "Téléphone" %}</span>
+                        <span class="ic-info-value {% if not profile.telephone %}ic-empty{% endif %}">{% if profile.telephone %}{{ profile.telephone }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
                         {% if profile.telephone %}<span class="ic-info-check">✓</span>{% endif %}
                     </div>
                     {% if profile.account_type == 'individu' %}
                     <div class="ic-info-row">
                         <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-                        <span class="ic-info-label">Date de naissance</span>
+                        <span class="ic-info-label">{% translate "Date de naissance" %}</span>
                         <span class="ic-info-value {% if not profile.date_naissance %}ic-empty{% endif %}">
-                            {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}Non renseignée{% endif %}
+                            {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}{% translate "Non renseignée" %}{% endif %}
                         </span>
                     </div>
                     <div class="ic-info-row">
                         <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
-                        <span class="ic-info-label">Sexe</span>
-                        <span class="ic-info-value {% if not profile.sexe %}ic-empty{% endif %}">{{ profile.get_sexe_display|default:"Non renseigné" }}</span>
+                        <span class="ic-info-label">{% translate "Sexe" %}</span>
+                        <span class="ic-info-value {% if profile.sexe %}{{ profile.get_sexe_display }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
                     </div>
                     {% endif %}
                 </div>
@@ -243,53 +243,53 @@
                 <div class="ic-card">
                     <h3 class="ic-card__title ic-card__title--green">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-                        Informations du profil
+                        {% translate "                        {% translate "Informations du profil" %}" %}
                     </h3>
                     {% if profile.account_type == 'individu' %}
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></span>
-                            <span class="ic-info-label">Type de compte</span>
+                            <span class="ic-info-label">{% translate "Type de compte" %}</span>
                             <span class="ic-info-value">{{ profile.get_role_display }}</span>
                         </div>
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
-                            <span class="ic-info-label">Profession</span>
-                            <span class="ic-info-value {% if not profile.profession %}ic-empty{% endif %}">{{ profile.profession|default:"Non renseignée" }}</span>
+                            <span class="ic-info-label">{% translate "Profession" %}</span>
+                            <span class="ic-info-value {% if not profile.profession %}ic-empty{% endif %}">{% if profile.profession %}{{ profile.profession }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-                            <span class="ic-info-label">Ville</span>
-                            <span class="ic-info-value {% if not profile.ville %}ic-empty{% endif %}">{{ profile.ville|default:"Non renseignée" }}</span>
+                            <span class="ic-info-label">{% translate "Ville" %}</span>
+                            <span class="ic-info-value {% if not profile.ville %}ic-empty{% endif %}">{% if profile.ville %}{{ profile.ville }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
-                            <span class="ic-info-label">Quartier</span>
-                            <span class="ic-info-value {% if not profile.quartier %}ic-empty{% endif %}">{{ profile.quartier|default:"Non renseigné" }}</span>
+                            <span class="ic-info-label">{% translate "Quartier" %}</span>
+                            <span class="ic-info-value {% if not profile.quartier %}ic-empty{% endif %}">{% if profile.quartier %}{{ profile.quartier }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
                         </div>
                     {% else %}
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
-                            <span class="ic-info-label">Établissement</span>
+                            <span class="ic-info-label">{% translate "Établissement" %}</span>
                             <span class="ic-info-value">{{ profile.establishment_name|default:"—" }}</span>
                         </div>
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-                            <span class="ic-info-label">Ville</span>
-                            <span class="ic-info-value">{{ profile.establishment_city|default:"Non renseignée" }}</span>
+                            <span class="ic-info-label">{% translate "Ville" %}</span>
+                            <span class="ic-info-value">{% if profile.establishment_city %}{{ profile.establishment_city }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg></span>
-                            <span class="ic-info-label">RCCM / SIRET</span>
+                            <span class="ic-info-label">{% translate "RCCM / SIRET" %}</span>
                             <span class="ic-info-value">{{ profile.siret_or_rccm|default:"—" }}</span>
                         </div>
                     {% endif %}
                     <div class="ic-info-row">
                         <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg></span>
-                        <span class="ic-info-label">Langue</span>
+                        <span class="ic-info-label">{% translate "Langue" %}</span>
                         <form method="post" action="{% url 'set_language' %}" class="ic-language-form">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                            <label for="profile-language-select" class="sr-only">Langue</label>
+                            <label for="profile-language-select" class="sr-only">{% translate "Langue" %}</label>
                             <select id="profile-language-select" name="language" onchange="this.form.submit()">
                                 {% get_current_language as CURRENT_LANGUAGE %}
                                 {% get_available_languages as AVAILABLE_LANGUAGES %}
@@ -305,7 +305,7 @@
                 <div class="ic-card">
                     <h3 class="ic-card__title ic-card__title--orange">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        Activité récente
+                        {% translate "Activité récente" %}
                     </h3>
                     {% for activite in activites %}
                         <div class="ic-activity-row">
@@ -325,7 +325,7 @@
                             <div class="ic-activity-time">{{ activite.date|timesince }}</div>
                         </div>
                     {% endfor %}
-                    <a href="#" class="ic-btn-outline ic-btn-block">Voir toute l'activité</a>
+                    <a href="#" class="ic-btn-outline ic-btn-block">{% translate "Voir toute l'activité" %}</a>
                 </div>
                 {% endif %}
             </div>
@@ -341,23 +341,23 @@
                         {% endif %}
                     </div>
                     {% if profile.verified %}
-                        <h3>Profil vérifié</h3>
-                        <p>Félicitations ! Votre profil a été vérifié avec succès. Vous pouvez publier des annonces sans restriction et accéder à toutes les fonctionnalités.</p>
+                        <h3>{% translate "Profil vérifié" %}</h3>
+                        <p>{% translate "Félicitations ! Votre profil a été vérifié avec succès. Vous pouvez publier des annonces sans restriction et accéder à toutes les fonctionnalités." %}</p>
                         <div class="ic-verif-details">
                             <div class="ic-verif-detail">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                <div><span class="ic-verif-detail__label">Vérifié le</span><br>{{ profile.date_verification|date:"d F Y"|default:"—" }}</div>
+                                <div><span class="ic-verif-detail__label">{% translate "Vérifié le" %}</span><br>{{ profile.date_verification|date:"d F Y"|default:"—" }}</div>
                             </div>
                             <div class="ic-verif-detail">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-                                <div><span class="ic-verif-detail__label">Vérifié par</span><br>Admin Ivoire Connect</div>
+                                <div><span class="ic-verif-detail__label">{% translate "Vérifié par" %}</span><br>{% translate "Admin Ivoire Connect" %}</div>
                             </div>
                         </div>
                     {% else %}
-                        <h3>Vérification en attente</h3>
-                        <p>Votre profil est en cours de vérification par notre équipe. Vous serez notifié dès que ce sera fait.</p>
+                        <h3>{% translate "Vérification en attente" %}</h3>
+                        <p>{% translate "Votre profil est en cours de vérification par notre équipe. Vous serez notifié dès que ce sera fait." %}</p>
                     {% endif %}
-                    <a href="#" class="ic-btn-verif">En savoir plus sur la vérification
+                    <a href="#" class="ic-btn-verif">{% translate "En savoir plus sur la vérification" %}
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     </a>
                 </div>
@@ -366,14 +366,14 @@
                 <div class="ic-follow-card">
                     <h3 class="ic-card__title ic-card__title--orange">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
-                        Suivre ce profil
+                        {% translate "Suivre ce profil" %}
                     </h3>
-                    <p class="ic-follow-copy">Recevez ses nouvelles annonces et restez informé de ses publications.</p>
+                    <p class="ic-follow-copy">{% translate "Recevez ses nouvelles annonces et restez informé de ses publications." %}</p>
                     <button type="button" id="profileFollowBtn" class="ic-follow-btn{% if is_following %} ic-follow-btn--active{% endif %}" onclick="toggleProfileFollow({{ viewed_user.id }})">
-                        <span id="profileFollowBtnText">{% if is_following %}✅ Abonné{% else %}🔔 Suivre ce profil{% endif %}</span>
+                        <span id="profileFollowBtnText">{% if is_following %}✅ {% translate "Abonné" %}{% else %}🔔 {% translate "Suivre ce profil" %}{% endif %}</span>
                     </button>
                     <div class="ic-follow-meta">
-                        <span id="profileFollowCount">{{ subscriber_count|default:0 }}</span> abonné{% if subscriber_count != 1 %}s{% endif %}
+                        <span id="profileFollowCount">{{ subscriber_count|default:0 }}</span> {% blocktranslate count subscriber_count=subscriber_count|default:0 %}abonné{% plural %}abonnés{% endblocktranslate %}
                     </div>
                 </div>
                 {% endif %}
@@ -382,7 +382,7 @@
                 <div class="ic-card">
                     <h3 class="ic-card__title ic-card__title--orange">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 4h3v2a3 3 0 0 1-3 3M7 4H4v2a3 3 0 0 0 3 3"/></svg>
-                        Vos badges
+                        {% translate "Vos badges" %}
                     </h3>
                     <div class="ic-badges-grid">
                         {% for badge in badges %}
@@ -393,7 +393,7 @@
                             </div>
                         {% endfor %}
                     </div>
-                    <a href="#" class="ic-btn-outline ic-btn-block">Voir tous les badges</a>
+                    <a href="#" class="ic-btn-outline ic-btn-block">{% translate "Voir tous les badges" %}</a>
                 </div>
                 {% endif %}
             </div>
@@ -403,12 +403,12 @@
     <!-- ══════════ ONGLET VÉRIFICATION ══════════ -->
     <div class="ic-tabpanel" id="ic-panel-verification">
         <div class="ic-card">
-            <h3 class="ic-card__title ic-card__title--green">Détails de la vérification</h3>
+            <h3 class="ic-card__title ic-card__title--green">{% translate "Détails de la vérification" %}</h3>
             <p style="color:#6B7280; font-size:0.9rem;">
                 {% if profile.verified %}
-                    Ton profil a été vérifié le {{ profile.date_verification|date:"d/m/Y"|default:"—" }}. Tu as un accès complet à la plateforme.
+                    {% translate "Ton profil a été vérifié le" %} {{ profile.date_verification|date:"d/m/Y"|default:"—" }}. {% translate "Tu as un accès complet à la plateforme." %}
                 {% else %}
-                    Ta pièce d'identité est en cours d'examen par notre équipe. Ce processus prend généralement 24 à 48h.
+                    {% translate "Ta pièce d'identité est en cours d'examen par notre équipe. Ce processus prend généralement 24 à 48h." %}
                 {% endif %}
             </p>
         </div>
@@ -421,7 +421,7 @@
             <path d="M0,55 C350,20 850,90 1200,35 L1200,90 L0,90 Z" fill="#FFFFFF" opacity="0.85"/>
             <path d="M0,65 C400,30 800,80 1200,45 L1200,90 L0,90 Z" fill="#009A44"/>
         </svg>
-        <p>Fait avec <span class="ic-heart">❤️</span> en Côte d'Ivoire</p>
+        <p>{% translate "Fait avec" %} <span class="ic-heart">❤️</span> {% translate "en Côte d'Ivoire" %}</p>
     </div>
 </div>
 
@@ -640,6 +640,10 @@
 </style>
 
 <script>
+{% translate "Abonné" as subscribed_label %}
+{% translate "Suivre ce profil" as follow_profile_label %}
+{% translate "Impossible de modifier l’abonnement" as subscription_error %}
+{% translate "Impossible de modifier l’abonnement." as subscription_error_alert %}
 function toggleProfileFollow(creatorId) {
     const btn = document.getElementById('profileFollowBtn');
     const txtSpan = document.getElementById('profileFollowBtnText');
@@ -664,22 +668,22 @@ function toggleProfileFollow(creatorId) {
                     if (result.success) {
                         if (result.is_subscribed) {
                             btn.classList.add('ic-follow-btn--active');
-                            txtSpan.textContent = '✅ Abonné';
+                            txtSpan.textContent = '✅ {{ subscribed_label|escapejs }}';
                         } else {
                             btn.classList.remove('ic-follow-btn--active');
-                            txtSpan.textContent = '🔔 Suivre ce profil';
+                            txtSpan.textContent = '🔔 {{ follow_profile_label|escapejs }}';
                         }
                         if (countSpan && typeof result.subscriber_count !== 'undefined') {
                             countSpan.textContent = result.subscriber_count;
                         }
                     } else {
-                        throw new Error(result.message || 'Impossible de modifier l’abonnement');
+                        throw new Error(result.message || '{{ subscription_error|escapejs }}');
                     }
                 });
         })
         .catch(error => {
             console.error('Erreur abonnement:', error);
-            alert(error.message || 'Impossible de modifier l’abonnement.');
+            alert(error.message || '{{ subscription_error_alert|escapejs }}');
         });
 }
 

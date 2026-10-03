@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Utilisateurs - Administration{% endblock %}
+{% block title %}{% translate "Utilisateurs - Administration" %}{% endblock %}
 
 {% block content %}
 <div class="admin-shell">
@@ -10,34 +11,34 @@
         </div>
 
         <nav class="admin-menu">
-            <div class="menu-title">Principal</div>
+            <div class="menu-title">{% translate "Principal" %}</div>
             <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
-            <a href="{% url 'adminpanel:users' %}" class="active">👥 Utilisateurs</a>
-            <a href="{% url 'adminpanel:logements' %}">🏠 Logements</a>
-            <a href="{% url 'adminpanel:colocations' %}">🤝 Colocations</a>
+            <a href="{% url 'adminpanel:users' %}" class="active">👥 {% translate "Utilisateurs" %}</a>
+            <a href="{% url 'adminpanel:logements' %}">🏠 {% translate "Logements" %}</a>
+            <a href="{% url 'adminpanel:colocations' %}">🤝 {% translate "Colocations" %}</a>
 
-            <div class="menu-title">Gestion</div>
-            <a href="{% url 'adminpanel:hotels_residences' %}">🏨 Hôtels & Résidences</a>
-            <a href="{% url 'adminpanel:reservations' %}">📅 Réservations</a>
+            <div class="menu-title">{% translate "Gestion" %}</div>
+            <a href="{% url 'adminpanel:hotels_residences' %}">🏨 {% translate "Hôtels & Résidences" %}</a>
+            <a href="{% url 'adminpanel:reservations' %}">📅 {% translate "Réservations" %}</a>
             <a href="{% url 'adminpanel:finance' %}">💰 Finance</a>
-            <a href="{% url 'adminpanel:verifications' %}">🪪 Vérifications</a>
-            <a href="{% url 'adminpanel:avis' %}">⭐ Avis</a>
-            <a href="{% url 'adminpanel:signalements' %}">🚨 Signalements</a>
+            <a href="{% url 'adminpanel:verifications' %}">🪪 {% translate "Vérifications" %}</a>
+            <a href="{% url 'adminpanel:avis' %}">⭐ {% translate "Avis" %}</a>
+            <a href="{% url 'adminpanel:signalements' %}">🚨 {% translate "Signalements" %}</a>
 
-            <div class="menu-title">Système</div>
+            <div class="menu-title">{% translate "Système" %}</div>
             <a href="{% url 'adminpanel:notifications' %}">🔔 Notifications</a>
-            <a href="{% url 'adminpanel:statistiques' %}">📈 Statistiques</a>
-            <a href="{% url 'adminpanel:parametres' %}">⚙️ Paramètres</a>
+            <a href="{% url 'adminpanel:statistiques' %}">📈 {% translate "Statistiques" %}</a>
+            <a href="{% url 'adminpanel:parametres' %}">⚙️ {% translate "Paramètres" %}</a>
         </nav>
     </aside>
 
     <main class="admin-main">
         <header class="admin-topbar">
-            <h1>Utilisateurs</h1>
+            <h1>{% translate "Utilisateurs" %}</h1>
             <div class="topbar-user">
                 <div>
                     <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-                    <small>Administrateur</small>
+                    <small>{% translate "Administrateur" %}</small>
                 </div>
                 <div class="avatar">{{ request.user.username|slice:':1'|upper }}</div>
             </div>
@@ -46,51 +47,51 @@
         <div class="admin-content">
             <div class="stats-bar">
                 <div class="mini-card">
-                    <span>Total</span>
+                    <span>{% translate "Total" %}</span>
                     <strong>{{ total_users }}</strong>
                 </div>
                 <div class="mini-card success">
-                    <span>Actifs</span>
+                    <span>{% translate "Actifs" %}</span>
                     <strong>{{ active_users }}</strong>
                 </div>
                 <div class="mini-card warning">
-                    <span>En attente</span>
+                    <span>{% translate "En attente" %}</span>
                     <strong>{{ pending_users }}</strong>
                 </div>
                 <div class="mini-card danger">
-                    <span>Inactifs</span>
+                    <span>{% translate "Inactifs" %}</span>
                     <strong>{{ inactive_users }}</strong>
                 </div>
             </div>
 
             <div class="filters-panel">
                 <form method="get" action="{{ request.path }}" class="filters-form">
-                    <input type="text" name="q" value="{{ search }}" placeholder="Rechercher un utilisateur...">
+                    <input type="text" name="q" value="{{ search }}" placeholder="{% translate 'Rechercher un utilisateur...' %}">
 
                     <select name="account_type">
-                        <option value="">Type de compte</option>
-                        <option value="individu" {% if account_type == 'individu' %}selected{% endif %}>Individu</option>
-                        <option value="hotel" {% if account_type == 'hotel' %}selected{% endif %}>Hôtel</option>
-                        <option value="residence" {% if account_type == 'residence' %}selected{% endif %}>Résidence</option>
+                        <option value="">{% translate "Type de compte" %}</option>
+                        <option value="individu" {% if account_type == 'individu' %}selected{% endif %}>{% translate "Individu" %}</option>
+                        <option value="hotel" {% if account_type == 'hotel' %}selected{% endif %}>{% translate "Hôtel" %}</option>
+                        <option value="residence" {% if account_type == 'residence' %}selected{% endif %}>{% translate "Résidence" %}</option>
                     </select>
 
                     <select name="role">
-                        <option value="">Rôle</option>
-                        <option value="proprietaire" {% if role == 'proprietaire' %}selected{% endif %}>Propriétaire</option>
-                        <option value="locataire" {% if role == 'locataire' %}selected{% endif %}>Locataire</option>
-                        <option value="touriste" {% if role == 'touriste' %}selected{% endif %}>Touriste</option>
+                        <option value="">{% translate "Rôle" %}</option>
+                        <option value="proprietaire" {% if role == 'proprietaire' %}selected{% endif %}>{% translate "Propriétaire" %}</option>
+                        <option value="locataire" {% if role == 'locataire' %}selected{% endif %}>{% translate "Locataire" %}</option>
+                        <option value="touriste" {% if role == 'touriste' %}selected{% endif %}>{% translate "Touriste" %}</option>
                     </select>
 
                     <select name="status">
-                        <option value="">Statut</option>
-                        <option value="active" {% if status == 'active' %}selected{% endif %}>Actif</option>
-                        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactif</option>
-                        <option value="verified" {% if status == 'verified' %}selected{% endif %}>Vérifié</option>
-                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>En attente</option>
-                        <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejeté</option>
+                        <option value="">{% translate "Statut" %}</option>
+                        <option value="active" {% if status == 'active' %}selected{% endif %}>{% translate "Actif" %}</option>
+                        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>{% translate "Inactif" %}</option>
+                        <option value="verified" {% if status == 'verified' %}selected{% endif %}>{% translate "Vérifié" %}</option>
+                        <option value="pending" {% if status == 'pending' %}selected{% endif %}>{% translate "En attente" %}</option>
+                        <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>{% translate "Rejeté" %}</option>
                     </select>
 
-                    <button type="submit">Filtrer</button>
+                    <button type="submit">{% translate "Filtrer" %}</button>
                 </form>
             </div>
 
@@ -98,13 +99,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Utilisateur</th>
-                            <th>Email</th>
-                            <th>Rôle</th>
-                            <th>Type</th>
-                            <th>Compte</th>
-                            <th>Vérification</th>
-                            <th>Actions</th>
+                            <th>{% translate "Utilisateur" %}</th>
+                            <th>{% translate "Email" %}</th>
+                            <th>{% translate "Rôle" %}</th>
+                            <th>{% translate "Type" %}</th>
+                            <th>{% translate "Compte" %}</th>
+                            <th>{% translate "Vérification" %}</th>
+                            <th>{% translate "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -124,9 +125,9 @@
                                 <td>{{ user.profile.account_type|default:'—' }}</td>
                                 <td>
                                     {% if user.is_active %}
-                                        <span class="badge ok">Actif</span>
+                                        <span class="badge ok">{% translate "Actif" %}</span>
                                     {% else %}
-                                        <span class="badge off">Inactif</span>
+                                        <span class="badge off">{% translate "Inactif" %}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -138,15 +139,15 @@
                                 </td>
                                 <td>
                                     {% if user.id == request.user.id %}
-                                        <a class="action-btn" href="{% url 'accounts:profil' %}">Voir le profil</a>
+                                        <a class="action-btn" href="{% url 'accounts:profil' %}">{% translate "Voir le profil" %}</a>
                                     {% else %}
-                                        <a class="action-btn" href="{% url 'accounts:profil_user' user_id=user.id %}">Voir le profil</a>
+                                        <a class="action-btn" href="{% url 'accounts:profil_user' user_id=user.id %}">{% translate "Voir le profil" %}</a>
                                     {% endif %}
                                 </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="7" class="empty-state">Aucun utilisateur trouvé.</td>
+                                <td colspan="7" class="empty-state">{% translate "Aucun utilisateur trouvé." %}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -156,11 +157,11 @@
             {% if page_obj.paginator.num_pages > 1 %}
             <div class="pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">Précédent</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">{% translate "Précédent" %}</a>
                 {% endif %}
                 <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">Suivant</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">{% translate "Suivant" %}</a>
                 {% endif %}
             </div>
             {% endif %}

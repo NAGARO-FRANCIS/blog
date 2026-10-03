@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Vérifiez votre téléphone - Coloc.ai{% endblock %}
+{% block title %}{% translate "Vérifiez votre téléphone" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 700px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-    <h1>📱 Vérifiez votre téléphone</h1>
-    <p>Votre compte a bien été créé, mais il doit encore être activé par SMS avant de pouvoir se connecter.</p>
-    <p>Un code de vérification a été envoyé au numéro de téléphone que vous avez fourni.</p>
-    <p>Si vous ne recevez pas le SMS, vérifiez votre réseau ou demandez un nouveau code ci-dessous.</p>
+    <h1>📱 {% translate "Vérifiez votre téléphone" %}</h1>
+    <p>{% translate "Votre compte a bien été créé, mais il doit encore être activé par SMS avant de pouvoir se connecter." %}</p>
+    <p>{% translate "Un code de vérification a été envoyé au numéro de téléphone que vous avez fourni." %}</p>
+    <p>{% translate "Si vous ne recevez pas le SMS, vérifiez votre réseau ou demandez un nouveau code ci-dessous." %}</p>
     {% if messages %}
         <div class="messages">
             {% for message in messages %}
@@ -19,19 +20,19 @@
     <div style="margin-top: 1rem;">
         <form method="post" action="{% url 'accounts:resend_phone_code' %}">
             {% csrf_token %}
-            <label for="resend_phone">Numéro de téléphone pour renvoi</label>
+            <label for="resend_phone">{% translate "Numéro de téléphone pour renvoi" %}</label>
             <input id="resend_phone" type="text" name="phone" placeholder="+225XXXXXXXX" required style="width:100%; padding:8px; margin:8px 0;" />
-            <button type="submit" class="btn">Renvoyer le code SMS</button>
+            <button type="submit" class="btn">{% translate "Renvoyer le code SMS" %}</button>
         </form>
     </div>
     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
         <form method="post" action="{% url 'accounts:resend_activation' %}">
             {% csrf_token %}
-            <label for="resend_activation_email">Adresse email pour renvoyer le lien d'activation</label>
+            <label for="resend_activation_email">{% translate "Adresse email pour renvoyer le lien d'activation" %}</label>
             <input id="resend_activation_email" type="email" name="email" placeholder="vous@example.com" required style="width:100%; padding:8px; margin:8px 0;" />
-            <button type="submit" class="btn">Renvoyer l'email d'activation</button>
+            <button type="submit" class="btn">{% translate "Renvoyer l'email d'activation" %}</button>
         </form>
     </div>
-    <a href="{% url 'accounts:login' %}" class="btn">Retour à la connexion</a>
+    <a href="{% url 'accounts:login' %}" class="btn">{% translate "Retour à la connexion" %}</a>
 </div>
 {% endblock %}

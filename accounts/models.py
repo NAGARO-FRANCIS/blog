@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class ProfileVerification(models.Model):
@@ -21,36 +22,36 @@ class ProfileVerification(models.Model):
 
 class Profile(models.Model):
     ACCOUNT_TYPE_CHOICES = [
-        ('individu', 'Individu'),
-        ('residence', 'Gestionnaire de Résidence'),
-        ('hotel', 'Gestionnaire d\'Hôtel'),
+        ('individu', _('Individu')),
+        ('residence', _('Gestionnaire de Résidence')),
+        ('hotel', _('Gestionnaire d\'Hôtel')),
     ]
 
     ROLE_CHOICES = [
-        ('locataire', 'Locataire'),
-        ('touriste', 'Touriste'),
-        ('proprietaire', 'Propriétaire'),
+        ('locataire', _('Locataire')),
+        ('touriste', _('Touriste')),
+        ('proprietaire', _('Propriétaire')),
     ]
 
     SEXE_CHOICES = [
-        ('M', 'Masculin'),
-        ('F', 'Féminin'),
-        ('O', 'Autre'),
+        ('M', _('Masculin')),
+        ('F', _('Féminin')),
+        ('O', _('Autre')),
     ]
 
     PIECE_IDENTITE_CHOICES = [
-        ('cni', 'Carte Nationale d\'Identité'),
-        ('passport', 'Passeport'),
-        ('permis', 'Permis de conduire'),
-        ('carte_sejour', 'Carte de séjour'),
-        ('carte_etudiant', 'Carte d\'étudiant'),
+        ('cni', _('Carte Nationale d\'Identité')),
+        ('passport', _('Passeport')),
+        ('permis', _('Permis de conduire')),
+        ('carte_sejour', _('Carte de séjour')),
+        ('carte_etudiant', _('Carte d\'étudiant')),
     ]
 
     VERIFICATION_STATUS_CHOICES = [
-        ('pending', '⏳ En attente de vérification'),
-        ('verified', '✅ Vérifié'),
-        ('rejected', '❌ Rejeté'),
-        ('flagged', '⚠️ Signalé'),
+        ('pending', _('⏳ En attente de vérification')),
+        ('verified', _('✅ Vérifié')),
+        ('rejected', _('❌ Rejeté')),
+        ('flagged', _('⚠️ Signalé')),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -209,8 +210,8 @@ class Profile(models.Model):
 class ProfessionalProfile(models.Model):
     """Profil étendu pour les gestionnaires de résidence et d'hôtel"""
     ESTABLISHMENT_TYPE_CHOICES = [
-        ('residence', 'Résidence'),
-        ('hotel', 'Hôtel'),
+        ('residence', _('Résidence')),
+        ('hotel', _('Hôtel')),
     ]
 
     profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='professional_profile')
@@ -219,26 +220,26 @@ class ProfessionalProfile(models.Model):
     establishment_type = models.CharField(
         max_length=20,
         choices=ESTABLISHMENT_TYPE_CHOICES,
-        help_text="Type d'établissement"
+        help_text=_("Type d'établissement")
     )
     establishment_name = models.CharField(
         max_length=200,
-        help_text="Nom officiel de l'établissement"
+        help_text=_("Nom officiel de l'établissement")
     )
     
     # Détails légaux
     siret_or_rccm = models.CharField(
         max_length=50,
         unique=True,
-        help_text="SIRET (France) ou RCCM (Côte d'Ivoire)"
+        help_text=_("SIRET (France) ou RCCM (Côte d'Ivoire)")
     )
     legal_representative = models.CharField(
         max_length=150,
-        help_text="Représentant légal de l'établissement"
+        help_text=_("Représentant légal de l'établissement")
     )
     legal_phone = models.CharField(
         max_length=20,
-        help_text="Téléphone de contact légal"
+        help_text=_("Téléphone de contact légal")
     )
     
     # Adresse de l'établissement
@@ -249,20 +250,20 @@ class ProfessionalProfile(models.Model):
     
     # Détails de l'établissement
     number_of_rooms = models.PositiveIntegerField(
-        help_text="Nombre de chambres/unités"
+        help_text=_("Nombre de chambres/unités")
     )
     number_of_floors = models.PositiveIntegerField(
         null=True,
         blank=True,
-        help_text="Nombre d'étages"
+        help_text=_("Nombre d'étages")
     )
-    website = models.URLField(blank=True, help_text="Site web de l'établissement")
+    website = models.URLField(blank=True, help_text=_("Site web de l'établissement"))
     
     # Équipements
     wifi = models.BooleanField(default=False)
     parking = models.BooleanField(default=False)
     restaurant = models.BooleanField(default=False)
-    reception_24h = models.BooleanField(default=False, help_text="Réception 24h/24")
+    reception_24h = models.BooleanField(default=False, help_text=_("Réception 24h/24"))
     air_conditioning = models.BooleanField(default=False)
     laundry_service = models.BooleanField(default=False)
     gym = models.BooleanField(default=False)
@@ -271,11 +272,11 @@ class ProfessionalProfile(models.Model):
     # Documents requis
     legal_document = models.FileField(
         upload_to='professional_docs/%Y/%m/',
-        help_text="Document légal de constitution"
+        help_text=_("Document légal de constitution")
     )
     establishment_photo = models.ImageField(
         upload_to='professional_photos/%Y/%m/',
-        help_text="Photo de façade de l'établissement"
+        help_text=_("Photo de façade de l'établissement")
     )
     
     # Statuts
@@ -294,17 +295,17 @@ class ProfessionalProfile(models.Model):
 
 class DocumentVerification(models.Model):
     DOCUMENT_TYPE_CHOICES = [
-        ('id_front', 'Pièce d\'identité - Avant'),
-        ('id_back', 'Pièce d\'identité - Arrière'),
-        ('selfie', 'Selfie avec pièce d\'identité'),
-        ('proof_address', 'Preuve de résidence'),
+        ('id_front', _('Pièce d\'identité - Avant')),
+        ('id_back', _('Pièce d\'identité - Arrière')),
+        ('selfie', _('Selfie avec pièce d\'identité')),
+        ('proof_address', _('Preuve de résidence')),
     ]
 
     STATUS_CHOICES = [
-        ('pending', '⏳ En attente'),
-        ('verified', '✅ Approuvé'),
-        ('rejected', '❌ Rejeté'),
-        ('flagged', '⚠️ À revoir'),
+        ('pending', _('⏳ En attente')),
+        ('verified', _('✅ Approuvé')),
+        ('rejected', _('❌ Rejeté')),
+        ('flagged', _('⚠️ À revoir')),
     ]
 
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='documents')
@@ -319,11 +320,11 @@ class DocumentVerification(models.Model):
     verified_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='verified_documents')
     
     # Notes d'admin
-    admin_notes = models.TextField(blank=True, help_text="Notes pour l'admin sur la vérification")
-    rejection_reason = models.CharField(max_length=255, blank=True, help_text="Raison du rejet")
+    admin_notes = models.TextField(blank=True, help_text=_("Notes pour l'admin sur la vérification"))
+    rejection_reason = models.CharField(max_length=255, blank=True, help_text=_("Raison du rejet"))
     
     # Sécurité
-    file_hash = models.CharField(max_length=64, blank=True, help_text="SHA256 du fichier pour anti-fraude")
+    file_hash = models.CharField(max_length=64, blank=True, help_text=_("SHA256 du fichier pour anti-fraude"))
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(blank=True)
     

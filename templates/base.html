@@ -1,4 +1,5 @@
 ﻿{% load i18n static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -22,7 +23,12 @@
     <link rel="stylesheet" href="{% static 'responsive.css' %}">
 
     {% block extra_css %}{% endblock %}
-
+<form action="{% url 'set_language' %}" method="post" style="display:inline">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  <button type="submit" name="language" value="fr">FR</button>
+  <button type="submit" name="language" value="en">EN</button>
+</form>
     <style>
         /* Évite le décalage horizontal sur mobile */
         *, *::before, *::after { box-sizing: border-box; }
@@ -156,29 +162,28 @@
                         <a href="{% url 'accounts:notifications' %}">🔔 {% translate "Notifications" %}<span class="notification-badge js-notif-badge">0</span></a>
                     </li>
                     <li><a href="{% url 'accounts:profil' %}">👤 {% translate "Profil" %}</a></li>
-                    <li>
-                        <form method="post" action="{% url 'set_language' %}" class="language-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                            <label for="language-select" class="sr-only">{% translate "Langue" %}</label>
-                            <select id="language-select" name="language" onchange="this.form.submit()">
-                                {% get_current_language as CURRENT_LANGUAGE %}
-                                {% get_available_languages as AVAILABLE_LANGUAGES %}
-                                {% for language_code, language_name in AVAILABLE_LANGUAGES %}
-                                    <option value="{{ language_code }}"{% if language_code == CURRENT_LANGUAGE %} selected{% endif %}>{{ language_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </form>
-                    </li>
                     <li><a href="{% url 'accounts:logout' %}">🚪 {% translate "Déconnexion" %}</a></li>
                 {% else %}
                     <li><a href="{% url 'accounts:login' %}">🔐 {% translate "Connexion" %}</a></li>
                     <li><a href="{% url 'accounts:inscription' %}" class="btn btn-primary btn-sm">📝 {% translate "S'inscrire" %}</a></li>
                 {% endif %}
+                <li>
+                    <form method="post" action="{% url 'set_language' %}" class="language-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <label for="language-select" class="sr-only">{% translate "Langue" %}</label>
+                        <select id="language-select" name="language" onchange="this.form.submit()">
+                            {% get_current_language as CURRENT_LANGUAGE %}
+                            {% get_available_languages as AVAILABLE_LANGUAGES %}
+                            {% for language_code, language_name in AVAILABLE_LANGUAGES %}
+                                <option value="{{ language_code }}"{% if language_code == CURRENT_LANGUAGE %} selected{% endif %}>{{ language_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </li>
             </ul>
 
-            {% if request.user.is_authenticated %}
-            <!-- Langue + déconnexion (mobile uniquement) -->
+            <!-- Sélecteur de langue toujours accessible sur mobile -->
             <div class="top-actions">
                 <form method="post" action="{% url 'set_language' %}">
                     {% csrf_token %}
@@ -191,9 +196,10 @@
                         {% endfor %}
                     </select>
                 </form>
+                {% if request.user.is_authenticated %}
                 <a href="{% url 'accounts:logout' %}" class="logout-link" aria-label="{% translate 'Déconnexion' %}">🚪</a>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
 </header>

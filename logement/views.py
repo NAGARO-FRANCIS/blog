@@ -3,8 +3,10 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q, Sum, Avg, Count
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from .forms import (
@@ -321,15 +323,15 @@ def reserver_logement(request, id):
     if request.user.is_authenticated and logement.proprietaire_id == request.user.id:
         messages.error(
             request,
-            '❌ Vous ne pouvez pas réserver votre propre annonce.'
+            _('❌ Vous ne pouvez pas réserver votre propre annonce.')
         )
         return redirect('logement:detail_logement', id=logement.id)
 
     if logement.account_type not in ['hotel', 'residence']:
         messages.error(
             request, 
-            '❌ Les annonces particulières ne sont pas réservables en ligne. '
-            'Veuillez contacter directement le propriétaire.'
+            _('❌ Les annonces particulières ne sont pas réservables en ligne. '
+              'Veuillez contacter directement le propriétaire.')
         )
         return redirect('logement:detail_logement', id=logement.id)
 
@@ -350,7 +352,31 @@ def reserver_logement(request, id):
                 reservation.client_user  = request.user
                 reservation.client_nom   = request.user.get_full_name() or request.user.username
                 reservation.client_email = request.user.email
-            reservation.save()
+
+            with transaction.atomic():
+                locked_logement = Logement.objects.select_for_update().get(pk=logement.pk)
+                requested_units = reservation.nombre_chambres or 1
+                available_units = list(
+                    locked_logement.available_units_for_period(
+                        reservation.date_arrivee,
+                        reservation.date_depart,
+                    )[:requested_units]
+                )
+                if len(available_units) < requested_units:
+                    form.add_error(
+                        None,
+                        'Les chambres demandées ne sont plus disponibles pour ces dates.',
+                    )
+                else:
+                    reservation.logement = locked_logement
+                    reservation.save()
+                    reservation.unites.set(available_units)
+
+            if reservation.pk is None:
+                return render(request, 'logement/reserver_logement.html', {
+                    'logement': logement,
+                    'form': form,
+                })
             if not request.user.is_authenticated:
                 guest_reservation_ids = request.session.get('guest_reservation_ids', [])
                 guest_reservation_ids.append(reservation.pk)
@@ -438,7 +464,7 @@ def paiement_reservation(request, reservation_id):
                 paiement.description = f"MOUV: {mouv_number}"
                 paiement.save()
                 
-                messages.success(request, f'✅ Paiement MOUV en cours de traitement. Veuillez confirmer sur votre téléphone.')
+                messages.success(request, _('✅ Paiement MOUV en cours de traitement. Veuillez confirmer sur votre téléphone.'))
                 return JsonResponse({
                     'success': True,
                     'message': 'Paiement MOUV en cours...',
@@ -458,7 +484,7 @@ def paiement_reservation(request, reservation_id):
                 paiement.description = f"Orange Money: {orange_number}"
                 paiement.save()
                 
-                messages.success(request, '✅ Paiement Orange Money en cours de traitement.')
+                messages.success(request, _('✅ Paiement Orange Money en cours de traitement.'))
                 return JsonResponse({
                     'success': True,
                     'message': 'Paiement Orange Money en cours...',
@@ -478,7 +504,7 @@ def paiement_reservation(request, reservation_id):
                 paiement.description = f"Wave: {wave_number}"
                 paiement.save()
                 
-                messages.success(request, '✅ Paiement Wave en cours de traitement.')
+                messages.success(request, _('✅ Paiement Wave en cours de traitement.'))
                 return JsonResponse({
                     'success': True,
                     'message': 'Paiement Wave en cours...',
@@ -491,7 +517,7 @@ def paiement_reservation(request, reservation_id):
                 paiement.save()
                 
                 # TODO: Implémenter la création du PaymentIntent Stripe
-                messages.info(request, '💳 Paiement par carte bancaire en cours...')
+                messages.info(request, _('💳 Paiement par carte bancaire en cours...'))
                 return JsonResponse({
                     'success': True,
                     'message': 'Paiement Stripe en cours...',
@@ -505,7 +531,7 @@ def paiement_reservation(request, reservation_id):
                 paiement.save()
                 
                 # Envoyer email avec coordonnées bancaires
-                messages.info(request, '🏦 Nos coordonnées bancaires ont été envoyées par email.')
+                messages.info(request, _('🏦 Nos coordonnées bancaires ont été envoyées par email.'))
                 return JsonResponse({
                     'success': True,
                     'message': 'Coordonnées bancaires envoyées par email',
@@ -524,7 +550,7 @@ def paiement_reservation(request, reservation_id):
                 from accounts.notification_service import reservation_confirmed
                 reservation_confirmed(reservation)
                 
-                messages.success(request, '✅ Réservation confirmée. Paiement à l\'arrivée.')
+                messages.success(request, _('✅ Réservation confirmée. Paiement à l\'arrivée.'))
                 return JsonResponse({
                     'success': True,
                     'message': 'Réservation confirmée',
@@ -594,7 +620,7 @@ def ajouter_logement(request):
     # Les colocataires ne peuvent pas publier
     if account_type == 'individu' and role == 'colocataire':
         from django.contrib import messages
-        messages.error(request, 'En tant que colocataire, vous ne pouvez pas publier d\'annonces.')
+        messages.error(request, _('En tant que colocataire, vous ne pouvez pas publier d\'annonces.'))
         return redirect('logement:home')
 
     # Sélectionner le bon formulaire et template
@@ -677,18 +703,24 @@ def ajouter_logement(request):
                 for form_photo in formset:
                     for field, errors in form_photo.errors.items():
                         for error in errors:
-                            messages.error(request, f"Photo - {field}: {error}")
+                            messages.error(request, _("Photo - %(field)s: %(error)s") % {
+                                'field': field,
+                                'error': error,
+                            })
                 if formset.non_form_errors():
                     for error in formset.non_form_errors():
-                        messages.error(request, f"Erreur photos: {error}")
+                        messages.error(request, _("Erreur photos: %(error)s") % {'error': error})
             if not video_formset.is_valid():
                 for form_video in video_formset:
                     for field, errors in form_video.errors.items():
                         for error in errors:
-                            messages.error(request, f"Vidéo - {field}: {error}")
+                            messages.error(request, _("Vidéo - %(field)s: %(error)s") % {
+                                'field': field,
+                                'error': error,
+                            })
                 if video_formset.non_form_errors():
                     for error in video_formset.non_form_errors():
-                        messages.error(request, f"Erreur vidéos: {error}")
+                        messages.error(request, _("Erreur vidéos: %(error)s") % {'error': error})
     else:
         form    = FormClass()
         formset = PhotoLogementFormSet(queryset=PhotoLogement.objects.none(), prefix='photos')
@@ -723,7 +755,7 @@ def modifier_logement(request, id):
     
     # Vérifier que l'utilisateur est le propriétaire
     if logement.proprietaire != request.user:
-        messages.error(request, '❌ Vous n\'avez pas la permission de modifier cette annonce.')
+        messages.error(request, _('❌ Vous n\'avez pas la permission de modifier cette annonce.'))
         return redirect('logement:detail_logement', id=logement.id)
     
     account_type = logement.account_type
@@ -770,7 +802,7 @@ def modifier_logement(request, id):
             video_formset.instance = logement
             video_formset.save()
             
-            messages.success(request, '✅ Annonce mise à jour avec succès!')
+            messages.success(request, _('✅ Annonce mise à jour avec succès!'))
             return redirect('logement:detail_logement', id=logement.id)
         else:
             # Afficher les erreurs du formulaire principal
@@ -783,25 +815,33 @@ def modifier_logement(request, id):
             if not formset_valid:
                 if formset.non_form_errors():
                     for error in formset.non_form_errors():
-                        messages.error(request, f"❌ Erreur photos: {error}")
+                        messages.error(request, _("❌ Erreur photos: %(error)s") % {'error': error})
                 for i, form_photo in enumerate(formset):
                     if form_photo.errors:
                         for field, errors in form_photo.errors.items():
                             if field != '__all__':
                                 for error in errors:
-                                    messages.error(request, f"❌ Photo {i+1} - {field}: {error}")
+                                    messages.error(request, _('❌ Photo %(number)s - %(field)s: %(error)s') % {
+                                        'number': i + 1,
+                                        'field': field,
+                                        'error': error,
+                                    })
             
             # Afficher les erreurs du formset vidéos
             if not video_formset_valid:
                 if video_formset.non_form_errors():
                     for error in video_formset.non_form_errors():
-                        messages.error(request, f"❌ Erreur vidéos: {error}")
+                        messages.error(request, _("❌ Erreur vidéos: %(error)s") % {'error': error})
                 for i, form_video in enumerate(video_formset):
                     if form_video.errors:
                         for field, errors in form_video.errors.items():
                             if field != '__all__':
                                 for error in errors:
-                                    messages.error(request, f"❌ Vidéo {i+1} - {field}: {error}")
+                                    messages.error(request, _('❌ Vidéo %(number)s - %(field)s: %(error)s') % {
+                                        'number': i + 1,
+                                        'field': field,
+                                        'error': error,
+                                    })
     else:
         form    = FormClass(instance=logement)
         formset = PhotoLogementFormSet(instance=logement, prefix='photos')
@@ -826,13 +866,13 @@ def supprimer_logement(request, id):
     
     # Vérifier que l'utilisateur est le propriétaire
     if logement.proprietaire != request.user:
-        messages.error(request, '❌ Vous n\'avez pas la permission de supprimer cette annonce.')
+        messages.error(request, _('❌ Vous n\'avez pas la permission de supprimer cette annonce.'))
         return redirect('logement:detail_logement', id=logement.id)
     
     titre = logement.titre
     logement.delete()
     
-    messages.success(request, f'✅ Annonce "{titre}" supprimée avec succès.')
+    messages.success(request, _('✅ Annonce "%(title)s" supprimée avec succès.') % {'title': titre})
     return redirect('logement:mes_logements')
 
 
@@ -865,12 +905,41 @@ def mes_reservations(request):
     reservations = Reservation.objects.filter(
         logement__proprietaire=request.user,
         logement__account_type__in=['hotel', 'residence'],
-    ).select_related('logement', 'client_user').order_by('-created_at')
+    ).select_related(
+        'logement', 'client_user', 'client_user__profile',
+    ).prefetch_related('unites').order_by('-created_at')
+
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        search_filter = (
+            Q(client_nom__icontains=search_query) |
+            Q(client_user__first_name__icontains=search_query) |
+            Q(client_user__last_name__icontains=search_query) |
+            Q(client_user__username__icontains=search_query) |
+            Q(client_email__icontains=search_query) |
+            Q(client_user__email__icontains=search_query) |
+            Q(client_telephone__icontains=search_query) |
+            Q(logement__titre__icontains=search_query) |
+            Q(unites__numero__icontains=search_query)
+        )
+        if search_query.isdigit():
+            search_filter |= Q(nombre_chambres=int(search_query))
+        reservations = reservations.filter(search_filter).distinct()
+
+    selected_status = request.GET.get('statut', '')
+    status_values = {value for value, _label in Reservation.STATUT_CHOICES}
+    if selected_status in status_values:
+        reservations = reservations.filter(statut=selected_status)
+    else:
+        selected_status = ''
 
     return render(request, template, {
         'titre':        titre,
         'reservations': reservations,
         'nb_reservations': reservations.count(),
+        'search_query': search_query,
+        'selected_status': selected_status,
+        'status_choices': Reservation.STATUT_CHOICES,
     })
 
 
@@ -912,7 +981,7 @@ def calendrier_reservations(request):
             date_arrivee__lt=date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1),
             date_depart__gt=date(year, month, 1),
             statut__in=['pending', 'confirmed'],
-        )
+        ).select_related('client_user').prefetch_related('unites').order_by('date_arrivee')
         blocks = logement.blocages.filter(
             date_debut__lt=date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1),
             date_fin__gt=date(year, month, 1),
@@ -925,20 +994,42 @@ def calendrier_reservations(request):
                     continue
                 current = date(year, month, day_number)
                 block = next((item for item in blocks if item.date_debut <= current < item.date_fin), None)
-                reservation = next((item for item in reservations if item.date_arrivee <= current < item.date_depart), None)
+                day_reservations = [
+                    item for item in reservations
+                    if item.date_arrivee <= current < item.date_depart
+                ]
+                reserved_units = sum(
+                    len(item.unites.all()) or item.nombre_chambres or 1
+                    for item in day_reservations
+                )
+                available_units = max(logement.unites_totales - reserved_units, 0)
                 override = overrides.get(current)
+                confirmed_reservations = [
+                    item for item in day_reservations if item.statut == 'confirmed'
+                ]
+                pending_reservations = [
+                    item for item in day_reservations if item.statut == 'pending'
+                ]
                 if block or (override and override.statut == 'bloquer'):
                     status = 'blocked'
                     label = block.motif if block else 'Indisponible'
-                elif reservation and reservation.statut == 'confirmed':
+                elif confirmed_reservations:
                     status, label = 'reserved', 'Réservé'
-                elif reservation and reservation.statut == 'pending':
+                elif pending_reservations:
                     status, label = 'pending', 'En attente'
                 elif override and override.statut == 'occupe':
                     status, label = 'reserved', 'Occupé'
                 else:
-                    status, label = 'available', f'{logement.available_units_for_date(current)} disponible(s)'
-                days.append({'number': day_number, 'status': status, 'label': label})
+                    status, label = 'available', 'Disponible'
+                days.append({
+                    'number': day_number,
+                    'status': status,
+                    'label': label,
+                    'reserved_units': reserved_units,
+                    'available_units': available_units,
+                    'reservations': day_reservations,
+                    'is_blocked': bool(block or (override and override.statut == 'bloquer')),
+                })
 
     previous = (date(year, month, 1) - timedelta(days=1)).replace(day=1)
     next_month = (date(year, month, 28) + timedelta(days=4)).replace(day=1)

@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Mon Espace — {{ user.first_name|default:user.username }}{% endblock %}
+{% block title %}{% translate "Mon Espace" %} — {{ user.first_name|default:user.username }}{% endblock %}
 
 {% block content %}
 <div class="di-wrapper">
@@ -12,12 +13,12 @@
             <div class="di-header__left">
                 <span class="di-header__flag">🇨🇮</span>
                 <div>
-                    <h1 class="di-header__title">Bonjour, {{ user.first_name|default:user.username }}</h1>
-                    <p class="di-header__sub">Trouvez un logement ou un touriste près de chez vous</p>
+                    <h1 class="di-header__title">{% translate "Bonjour," %} {{ user.first_name|default:user.username }}</h1>
+                    <p class="di-header__sub">{% translate "Trouvez un logement ou un touriste près de chez vous" %}</p>
                 </div>
             </div>
             <span class="di-badge {% if profile.verified %}di-badge--verified{% endif %}">
-                {% if profile.verified %}Compte vérifié{% else %}Non vérifié{% endif %}
+                {% if profile.verified %}{% translate "Compte vérifié" %}{% else %}{% translate "Non vérifié" %}{% endif %}
             </span>
         </header>
 
@@ -25,52 +26,52 @@
         <div class="di-stats">
             <div class="di-stat">
                 <span class="di-stat__value">{{ nb_logements_favoris|default:"0" }}</span>
-                <span class="di-stat__label">Favoris</span>
+                <span class="di-stat__label">{% translate "Favoris" %}</span>
             </div>
             <div class="di-stat">
                 <span class="di-stat__value">{{ nb_messages_non_lus|default:"0" }}</span>
-                <span class="di-stat__label">Messages non lus</span>
+                <span class="di-stat__label">{% translate "Messages non lus" %}</span>
             </div>
             <div class="di-stat">
                 <span class="di-stat__value">{{ nb_annonces_vues|default:"0" }}</span>
-                <span class="di-stat__label">Annonces consultées</span>
+                <span class="di-stat__label">{% translate "Annonces consultées" %}</span>
             </div>
         </div>
 
         <!-- ── ACTIONS RAPIDES ── -->
         <section class="di-section">
-            <h2 class="di-section__title">Actions rapides</h2>
+            <h2 class="di-section__title">{% translate "Actions rapides" %}</h2>
             <div class="di-actions">
 
                 <a href="{% url 'colocation:liste_annonces' %}" class="di-action">
                     <span class="di-action__icon">⌕</span>
                     <div>
-                        <p class="di-action__name">Chercher un logement</p>
-                        <p class="di-action__desc">Explorez les annonces disponibles</p>
+                        <p class="di-action__name">{% translate "Chercher un logement" %}</p>
+                        <p class="di-action__desc">{% translate "Explorez les annonces disponibles" %}</p>
                     </div>
                 </a>
 
                 <a href="{% url 'colocation:liste_annonces' %}" class="di-action">
                     <span class="di-action__icon">◎</span>
                     <div>
-                        <p class="di-action__name">Trouver un touriste</p>
-                        <p class="di-action__desc">Rencontrez des profils compatibles</p>
+                        <p class="di-action__name">{% translate "Trouver un touriste" %}</p>
+                        <p class="di-action__desc">{% translate "Rencontrez des profils compatibles" %}</p>
                     </div>
                 </a>
 
                 <a href="{% url 'messagerie:mes_conversations' %}" class="di-action">
                     <span class="di-action__icon">✉</span>
                     <div>
-                        <p class="di-action__name">Mes messages</p>
-                        <p class="di-action__desc">Consultez vos conversations</p>
+                        <p class="di-action__name">{% translate "Mes messages" %}</p>
+                        <p class="di-action__desc">{% translate "Consultez vos conversations" %}</p>
                     </div>
                 </a>
 
                 <a href="{% url 'logement:mes_favoris' %}" class="di-action">
                     <span class="di-action__icon">❤️</span>
                     <div>
-                        <p class="di-action__name">Mes favoris</p>
-                        <p class="di-action__desc">Vos annonces sauvegardées</p>
+                        <p class="di-action__name">{% translate "Mes favoris" %}</p>
+                        <p class="di-action__desc">{% translate "Vos annonces sauvegardées" %}</p>
                     </div>
                 </a>
 
@@ -80,7 +81,7 @@
         <!-- ── MES ANNONCES ── -->
         {% if profile.role != 'touriste' %}
         <section class="di-section">
-            <h2 class="di-section__title">Mes annonces</h2>
+            <h2 class="di-section__title">{% translate "Mes annonces" %}</h2>
             {% if mes_annonces %}
                 <div class="di-listings">
                     {% for logement in mes_annonces %}
@@ -104,7 +105,7 @@
                                             {{ logement.prix|floatformat:0 }} FCFA/mois
                                         {% endif %}
                                     </span>
-                                    <a href="{% url 'logement:detail_logement' logement.id %}" class="di-listing-card__link">Voir →</a>
+                                    <a href="{% url 'logement:detail_logement' logement.id %}" class="di-listing-card__link">{% translate "Voir" %} →</a>
                                 </div>
                             </div>
                         </div>
@@ -112,8 +113,8 @@
                 </div>
             {% else %}
                 <div style="padding: 2rem; text-align: center; background: #f5f5f5; border-radius: 12px; color: #666;">
-                    <p>Vous n'avez pas encore publié d'annonce</p>
-                    <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">➕ Créer une annonce</a>
+                    <p>{% translate "Vous n'avez pas encore publié d'annonce" %}</p>
+                    <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">➕ {% translate "Créer une annonce" %}</a>
                 </div>
             {% endif %}
         </section>
@@ -121,14 +122,14 @@
 
         <!-- ── GUIDE ── -->
         <section class="di-section">
-            <h2 class="di-section__title">Comment ça marche</h2>
+            <h2 class="di-section__title">{% translate "Comment ça marche" %}</h2>
             <div class="di-guide">
 
                 <div class="di-guide__step">
                     <span class="di-guide__num">1</span>
                     <div>
-                        <h3 class="di-guide__step-title">Publiez une annonce</h3>
-                        <p class="di-guide__step-desc">Cherchez un touriste ou proposez une chambre en quelques minutes.</p>
+                        <h3 class="di-guide__step-title">{% translate "Publiez une annonce" %}</h3>
+                        <p class="di-guide__step-desc">{% translate "Cherchez un touriste ou proposez une chambre en quelques minutes." %}</p>
                     </div>
                 </div>
 
@@ -137,8 +138,8 @@
                 <div class="di-guide__step">
                     <span class="di-guide__num">2</span>
                     <div>
-                        <h3 class="di-guide__step-title">Parcourez les offres</h3>
-                        <p class="di-guide__step-desc">Consultez les logements disponibles dans votre région.</p>
+                        <h3 class="di-guide__step-title">{% translate "Parcourez les offres" %}</h3>
+                        <p class="di-guide__step-desc">{% translate "Consultez les logements disponibles dans votre région." %}</p>
                     </div>
                 </div>
 
@@ -147,8 +148,8 @@
                 <div class="di-guide__step">
                     <span class="di-guide__num">3</span>
                     <div>
-                        <h3 class="di-guide__step-title">Prenez contact</h3>
-                        <p class="di-guide__step-desc">Envoyez un message directement aux propriétaires ou touristes.</p>
+                        <h3 class="di-guide__step-title">{% translate "Prenez contact" %}</h3>
+                        <p class="di-guide__step-desc">{% translate "Envoyez un message directement aux propriétaires ou touristes." %}</p>
                     </div>
                 </div>
 

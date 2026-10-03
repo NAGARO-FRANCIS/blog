@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Publier une annonce de colocation - Coloc.ai{% endblock %}
+{% block title %}{% translate "Publier une annonce de colocation - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="publish-wrapper">
@@ -9,9 +10,9 @@
         <!-- Header Section -->
         <div class="publish-header colocation-header">
             <div class="header-info">
-                <span class="badge-type">🏠 COLOCATION</span>
-                <h1>Publier votre annonce de colocation</h1>
-                <p>Trouvez vos touristes ou votre logement en colocation</p>
+                <span class="badge-type">🏠 {% translate "COLOCATION" %}</span>
+                <h1>{% translate "Publier votre annonce de colocation" %}</h1>
+                <p>{% translate "Trouvez vos touristes ou votre logement en colocation" %}</p>
             </div>
             <div class="header-progress">
                 <div class="progress-step active" id="step1-indicator">1</div>
@@ -22,8 +23,8 @@
                 <div class="progress-line"></div>
                 <div class="progress-step" id="step4-indicator">4</div>
             </div>
-            <h2 id="step-title">Créer votre annonce</h2>
-            <p id="step-subtitle">Localisation et détails</p>
+            <h2 id="step-title">{% translate "Créer votre annonce" %}</h2>
+            <p id="step-subtitle">{% translate "Localisation et détails" %}</p>
         </div>
 
         <!-- Progress Bar -->
@@ -52,36 +53,36 @@
             <!-- STEP 1: Location & Description -->
             <div class="publish-step visible" id="step1">
                 <div class="step-content">
-                    <h2 class="step-heading">📍 Localisation & Description</h2>
+                    <h2 class="step-heading">📍 {% translate "Localisation & Description" %}</h2>
 
                     <div class="form-group">
-                        <label for="{{ form.ville.id_for_label }}">📍 Ville *</label>
+                        <label for="{{ form.ville.id_for_label }}">📍 {% translate "Ville" %} *</label>
                         {{ form.ville }}
                         {% if form.ville.errors %}<span class="field-error">{{ form.ville.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.quartier.id_for_label }}">Quartier (optionnel)</label>
+                            <label for="{{ form.quartier.id_for_label }}">{% translate "Quartier (optionnel)" %}</label>
                             {{ form.quartier }}
                             {% if form.quartier.errors %}<span class="field-error">{{ form.quartier.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.disponible_depuis.id_for_label }}">📅 Disponible à partir du</label>
+                            <label for="{{ form.disponible_depuis.id_for_label }}">📅 {% translate "Disponible à partir du" %}</label>
                             {{ form.disponible_depuis }}
                             {% if form.disponible_depuis.errors %}<span class="field-error">{{ form.disponible_depuis.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.description.id_for_label }}">📝 Description du logement *</label>
+                        <label for="{{ form.description.id_for_label }}">📝 {% translate "Description du logement" %} *</label>
                         {{ form.description }}
                         {% if form.description.errors %}<span class="field-error">{{ form.description.errors.0 }}</span>{% endif %}
-                        <small class="form-hint">Soyez précis : état, luminosité, environnement, transports...</small>
+                        <small class="form-hint">{% translate "Soyez précis : état, luminosité, environnement, transports..." %}</small>
                     </div>
 
                     <div class="step-actions">
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -89,16 +90,16 @@
             <!-- STEP 2: Housing Characteristics -->
             <div class="publish-step" id="step2">
                 <div class="step-content">
-                    <h2 class="step-heading">🏠 Caractéristiques du logement</h2>
+                    <h2 class="step-heading">🏠 {% translate "Caractéristiques du logement" %}</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.budget_mensuel.id_for_label }}">💰 Budget mensuel (FCFA) *</label>
+                            <label for="{{ form.budget_mensuel.id_for_label }}">💰 {% translate "Budget mensuel (FCFA)" %} *</label>
                             {{ form.budget_mensuel }}
                             {% if form.budget_mensuel.errors %}<span class="field-error">{{ form.budget_mensuel.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.surface.id_for_label }}">📐 Surface (m²)</label>
+                            <label for="{{ form.surface.id_for_label }}">📐 {% translate "Surface (m²)" %}</label>
                             {{ form.surface }}
                             {% if form.surface.errors %}<span class="field-error">{{ form.surface.errors.0 }}</span>{% endif %}
                         </div>
@@ -106,17 +107,17 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.nombre_chambres.id_for_label }}">🛏️ Nombre de chambres *</label>
+                            <label for="{{ form.nombre_chambres.id_for_label }}">🛏️ {% translate "Nombre de chambres" %} *</label>
                             {{ form.nombre_chambres }}
                             {% if form.nombre_chambres.errors %}<span class="field-error">{{ form.nombre_chambres.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.nombre_salles_bain.id_for_label }}">🚿 Salles de bain *</label>
+                            <label for="{{ form.nombre_salles_bain.id_for_label }}">🚿 {% translate "Salles de bain" %} *</label>
                             {{ form.nombre_salles_bain }}
                             {% if form.nombre_salles_bain.errors %}<span class="field-error">{{ form.nombre_salles_bain.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.meuble.id_for_label }}">🪴 Meublé</label>
+                            <label for="{{ form.meuble.id_for_label }}">🪴 {% translate "Meublé" %}</label>
                             <div class="checkbox-wrapper">
                                 {{ form.meuble }}
                             </div>
@@ -125,15 +126,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.infos_logement.id_for_label }}">ℹ️ Informations supplémentaires</label>
+                        <label for="{{ form.infos_logement.id_for_label }}">ℹ️ {% translate "Informations supplémentaires" %}</label>
                         {{ form.infos_logement }}
                         {% if form.infos_logement.errors %}<span class="field-error">{{ form.infos_logement.errors.0 }}</span>{% endif %}
-                        <small class="form-hint">Détails additionnels sur l'état et les caractéristiques</small>
+                        <small class="form-hint">{% translate "Détails additionnels sur l'état et les caractéristiques" %}</small>
                     </div>
 
                     <div class="step-actions two-btn">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -141,63 +142,63 @@
             <!-- STEP 3: Roommates & Amenities -->
             <div class="publish-step" id="step3">
                 <div class="step-content">
-                    <h2 class="step-heading">👥 Touristes & Équipements</h2>
+                    <h2 class="step-heading">👥 {% translate "Touristes & Équipements" %}</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.nombre_touristes.id_for_label }}">👥 Nombre de touristes *</label>
+                            <label for="{{ form.nombre_touristes.id_for_label }}">👥 {% translate "Nombre de touristes" %} *</label>
                             {{ form.nombre_touristes }}
                             {% if form.nombre_touristes.errors %}<span class="field-error">{{ form.nombre_touristes.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.durée_minimum.id_for_label }}">📅 Durée minimum (mois) *</label>
+                            <label for="{{ form.durée_minimum.id_for_label }}">📅 {% translate "Durée minimum (mois)" %} *</label>
                             {{ form.durée_minimum }}
                             {% if form.durée_minimum.errors %}<span class="field-error">{{ form.durée_minimum.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.profil_recherche.id_for_label }}">🎯 Profil recherché</label>
+                        <label for="{{ form.profil_recherche.id_for_label }}">🎯 {% translate "Profil recherché" %}</label>
                         {{ form.profil_recherche }}
                         {% if form.profil_recherche.errors %}<span class="field-error">{{ form.profil_recherche.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.conditions_vie.id_for_label }}">📋 Conditions de vie / Règles</label>
+                        <label for="{{ form.conditions_vie.id_for_label }}">📋 {% translate "Conditions de vie / Règles" %}</label>
                         {{ form.conditions_vie }}
                         {% if form.conditions_vie.errors %}<span class="field-error">{{ form.conditions_vie.errors.0 }}</span>{% endif %}
-                        <small class="form-hint">Ex: Non-fumeur, pas d'animaux, horaires de silence...</small>
+                        <small class="form-hint">{% translate "Ex: Non-fumeur, pas d'animaux, horaires de silence..." %}</small>
                     </div>
 
                     <div class="form-group">
-                        <label>⚙️ Équipements disponibles</label>
+                        <label>⚙️ {% translate "Équipements disponibles" %}</label>
                         <div class="checkbox-grid">
                             <label class="checkbox-item">
                                 {{ form.climatisation }}
-                                <span class="checkbox-label">🌡️ Climatisation</span>
+                                <span class="checkbox-label">🌡️ {% translate "Climatisation" %}</span>
                             </label>
                             <label class="checkbox-item">
                                 {{ form.wifi }}
-                                <span class="checkbox-label">📶 WiFi</span>
+                                <span class="checkbox-label">📶 {% translate "WiFi" %}</span>
                             </label>
                             <label class="checkbox-item">
                                 {{ form.cuisine_equipee }}
-                                <span class="checkbox-label">🍳 Cuisine équipée</span>
+                                <span class="checkbox-label">🍳 {% translate "Cuisine équipée" %}</span>
                             </label>
                             <label class="checkbox-item">
                                 {{ form.garage }}
-                                <span class="checkbox-label">🚗 Garage</span>
+                                <span class="checkbox-label">🚗 {% translate "Garage" %}</span>
                             </label>
                             <label class="checkbox-item">
                                 {{ form.jardin }}
-                                <span class="checkbox-label">🌿 Jardin</span>
+                                <span class="checkbox-label">🌿 {% translate "Jardin" %}</span>
                             </label>
                         </div>
                     </div>
 
                     <div class="step-actions two-btn">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -205,15 +206,15 @@
             <!-- STEP 4: Photos -->
             <div class="publish-step" id="step4">
                 <div class="step-content">
-                    <h2 class="step-heading">📸 Ajouter des photos (max 5)</h2>
+                    <h2 class="step-heading">📸 {% translate "Ajouter des photos (max 5)" %}</h2>
 
                     {{ formset.management_form }}
 
                     <div class="photo-upload-zone" onclick="document.getElementById('photo-input').click()">
                         <div class="upload-icon">📷</div>
-                        <h3>Ajouter des photos</h3>
-                        <p>Cliquez pour sélectionner ou glissez-déposez</p>
-                        <small>JPG, PNG, GIF • Max 5 Mo par photo</small>
+                        <h3>{% translate "Ajouter des photos" %}</h3>
+                        <p>{% translate "Cliquez pour sélectionner ou glissez-déposez" %}</p>
+                        <small>{% translate "JPG, PNG, GIF • Max 5 Mo par photo" %}</small>
                         <input type="file" id="photo-input" multiple accept="image/*" style="display:none" onchange="handlePhotos(event)">
                     </div>
 
@@ -232,8 +233,8 @@
                     </div>
 
                     <div class="step-actions two-btn">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="submit" class="btn btn-success">✅ Publier l'annonce</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="submit" class="btn btn-success">✅ {% translate "Publier l'annonce" %}</button>
                     </div>
                 </div>
             </div>
@@ -782,17 +783,25 @@
             indicator.classList.toggle('active', i === currentStep);
         }
 
+        {% translate "Créer votre annonce" as title_create_listing %}
+        {% translate "Caractéristiques" as title_features %}
+        {% translate "Touristes & Équipements" as title_roommates_amenities %}
+        {% translate "Ajouter des photos" as title_add_photos %}
+        {% translate "Localisation et description" as subtitle_location_description %}
+        {% translate "Détails du logement" as subtitle_property_details %}
+        {% translate "Profil et équipements" as subtitle_profile_amenities %}
+        {% translate "Photos de votre annonce" as subtitle_listing_photos %}
         const titles = {
-            1: 'Créer votre annonce',
-            2: 'Caractéristiques',
-            3: 'Touristes & Équipements',
-            4: 'Ajouter des photos'
+            1: '{{ title_create_listing|escapejs }}',
+            2: '{{ title_features|escapejs }}',
+            3: '{{ title_roommates_amenities|escapejs }}',
+            4: '{{ title_add_photos|escapejs }}'
         };
         const subtitles = {
-            1: 'Localisation et description',
-            2: 'Détails du logement',
-            3: 'Profil et équipements',
-            4: 'Photos de votre annonce'
+            1: '{{ subtitle_location_description|escapejs }}',
+            2: '{{ subtitle_property_details|escapejs }}',
+            3: '{{ subtitle_profile_amenities|escapejs }}',
+            4: '{{ subtitle_listing_photos|escapejs }}'
         };
 
         document.getElementById('step-title').textContent = titles[currentStep];
@@ -815,6 +824,8 @@
     }
 
     function handlePhotos(event) {
+        {% translate "Photo" as photo_label %}
+        {% translate "Maximum 5 photos autorisées" as max_photos_message %}
         const files = Array.from(event.target.files).slice(0, 5);
         selectedFiles = files; // Sauvegarde les fichiers
 
@@ -826,19 +837,20 @@
             reader.onload = (e) => {
                 const preview = document.createElement('div');
                 preview.className = 'photo-preview';
-                preview.innerHTML = `<img src="${e.target.result}" alt="Photo ${i + 1}">`;
+                preview.innerHTML = `<img src="${e.target.result}" alt="{{ photo_label|escapejs }} ${i + 1}">`;
                 previewGrid.appendChild(preview);
             };
             reader.readAsDataURL(file);
         });
 
         if (event.target.files.length > 5) {
-            alert('Maximum 5 photos autorisées');
+            alert('{{ max_photos_message|escapejs }}');
         }
     }
 
     // Gestion de la soumission du formulaire
     document.getElementById('publishForm').addEventListener('submit', function(e) {
+        {% translate "Une erreur est survenue lors de la soumission. Veuillez réessayer." as submit_error_message %}
         e.preventDefault();
         
         const form = this;
@@ -916,7 +928,7 @@
         })
         .catch(err => {
             console.error('Erreur soumission:', err);
-            alert('Une erreur est survenue lors de la soumission. Veuillez réessayer.');
+            alert('{{ submit_error_message|escapejs }}');
         });
     });
 </script>

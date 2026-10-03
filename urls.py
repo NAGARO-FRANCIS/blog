@@ -28,6 +28,7 @@ urlpatterns = [
     path('colocation/', include('colocation.urls')),
     path('accounts/', include('accounts.urls')),
     path('messagerie/', include('messagerie.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
 ]
 
 if settings.DEBUG:

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}S'inscrire comme Gestionnaire d'Hôtel - Coloc.ai{% endblock %}
+{% block title %}{% translate "S'inscrire comme Gestionnaire d'Hôtel" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="signup-wrapper">
@@ -12,8 +13,8 @@
                 <div class="progress-line" data-line="1"></div>
                 <div class="progress-step" data-step="2">2</div>
             </div>
-            <h1>Inscription Hôtel</h1>
-            <p>🏨 Gestionnaire d'Hôtel</p>
+            <h1>{% translate "Inscription Hôtel" %}</h1>
+            <p>🏨 {% translate "Gestionnaire d'Hôtel" %}</p>
         </div>
 
         <!-- Error Messages -->
@@ -30,7 +31,7 @@
 
             <div class="signup-step visible" data-step="1">
                 <div class="step-content">
-                    <h2 class="step-heading">🏨 Informations de l'Hôtel</h2>
+                    <h2 class="step-heading">🏨 {% translate "Informations de l'Hôtel" %}</h2>
 
                     <div class="form-group">
                         <label for="{{ form.establishment_name.id_for_label }}">{{ form.establishment_name.label }}</label>
@@ -88,22 +89,22 @@
                         <label class="photo-upload" for="{{ form.establishment_photo.id_for_label }}">
                             <span class="photo-upload-icon">📷</span>
                             <div>
-                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez une photo</p>
-                                <span class="upload-hint" id="establishmentPhotoName">JPG, PNG ou GIF</span>
+                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">{% translate "Cliquez ou déposez une photo" %}</p>
+                                <span class="upload-hint" id="establishmentPhotoName">{% translate "JPG, PNG ou GIF" %}</span>
                             </div>
-                            <img id="establishmentPhotoPreview" class="photo-preview" alt="Aperçu">
+                            <img id="establishmentPhotoPreview" class="photo-preview" alt="{% translate 'Aperçu' %}">
                         </label>
                         <div class="hidden-file-input">{{ form.establishment_photo }}</div>
                         {% if form.establishment_photo.errors %}<span class="field-error">{{ form.establishment_photo.errors.0 }}</span>{% endif %}
                     </div>
 
-                    <button type="button" class="btn btn-next" onclick="nextStep()" style="width: 100%;">Continuer →</button>
+                    <button type="button" class="btn btn-next" onclick="nextStep()" style="width: 100%;">{% translate "Continuer" %} →</button>
                 </div>
             </div>
 
             <div class="signup-step" data-step="2">
                 <div class="step-content">
-                    <h2 class="step-heading">👤 Informations du Représentant</h2>
+                    <h2 class="step-heading">👤 {% translate "Informations du Représentant" %}</h2>
 
                     <div class="form-row">
                         <div class="form-group">
@@ -158,15 +159,15 @@
                     </div>
 
                     <div class="form-group">
-                        <label>🪪 Pièce d'identité</label>
+                        <label>🪪 {% translate "Pièce d'identité" %}</label>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="{{ form.type_piece_identite.id_for_label }}">Type</label>
+                                <label for="{{ form.type_piece_identite.id_for_label }}">{% translate "Type" %}</label>
                                 {{ form.type_piece_identite }}
                                 {% if form.type_piece_identite.errors %}<span class="field-error">{{ form.type_piece_identite.errors.0 }}</span>{% endif %}
                             </div>
                             <div class="form-group">
-                                <label for="{{ form.numero_piece_identite.id_for_label }}">Numéro</label>
+                                <label for="{{ form.numero_piece_identite.id_for_label }}">{% translate "Numéro" %}</label>
                                 {{ form.numero_piece_identite }}
                                 {% if form.numero_piece_identite.errors %}<span class="field-error">{{ form.numero_piece_identite.errors.0 }}</span>{% endif %}
                             </div>
@@ -178,8 +179,8 @@
                         <label class="file-upload" for="{{ form.legal_document.id_for_label }}">
                             <span class="file-upload-icon">📄</span>
                             <div>
-                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez le document</p>
-                                <span class="upload-hint" id="legalDocumentName">PDF ou image</span>
+                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">{% translate "Cliquez ou déposez le document" %}</p>
+                                <span class="upload-hint" id="legalDocumentName">{% translate "PDF ou image" %}</span>
                             </div>
                         </label>
                         <div class="hidden-file-input">{{ form.legal_document }}</div>
@@ -187,15 +188,15 @@
                     </div>
 
                     <div class="form-row">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()" style="width: 100%;">← Retour</button>
-                        <button type="submit" class="btn btn-success" style="width: 100%;">✅ Créer mon compte</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()" style="width: 100%;">← {% translate "Retour" %}</button>
+                        <button type="submit" class="btn btn-success" style="width: 100%;">✅ {% translate "Créer mon compte" %}</button>
                     </div>
                 </div>
             </div>
         </form>
 
         <div class="auth-footer">
-            <p>Vous avez déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></p>
+            <p>{% translate "Vous avez déjà un compte ?" %} <a href="{% url 'accounts:login' %}">{% translate "Se connecter" %}</a></p>
         </div>
     </div>
 

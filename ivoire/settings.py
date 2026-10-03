@@ -159,7 +159,7 @@ LOGOUT_REDIRECT_URL = 'home'
 
 EMAIL_BACKEND_ENV = os.getenv('EMAIL_BACKEND', '').strip()
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').replace(' ', '').strip()
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com').strip()
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')

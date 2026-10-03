@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Gestion des Logements{% endblock %}
+{% block title %}{% translate "Gestion des Logements" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -153,84 +153,84 @@ body {
 {% block content %}
 
 <div class="page-header">
-    <h1>🔧 Gestion Avancée des Logements 🇨🇮</h1>
-    <p>Total: {{ total }} logement(s) • Gestion professionnelle moderne</p>
+    <h1>🔧 {% translate "Gestion Avancée des Logements" %} 🇨🇮</h1>
+    <p>{% blocktranslate %}Total: {{ total }} logement(s) • Gestion professionnelle moderne{% endblocktranslate %}</p>
 </div>
 
 <div class="container">
 
     <!-- INVENTAIRE -->
     <div class="management-section">
-        <div class="section-title">📊 Inventaire</div>
+        <div class="section-title">📊 {% translate "Inventaire" %}</div>
 
         <div class="management-grid">
             <a href="{% url 'logement:mes_logements' %}" class="management-card">
                 <div class="management-icon">🏠</div>
-                <div class="management-title">Mes Logements</div>
-                <div class="management-desc">Gestion complète de vos propriétés</div>
+                <div class="management-title">{% translate "Mes Logements" %}</div>
+                <div class="management-desc">{% translate "Gestion complète de vos propriétés" %}</div>
             </a>
 
             <a href="{% url 'logement:ajouter_logement' %}" class="management-card">
                 <div class="management-icon">➕</div>
-                <div class="management-title">Ajouter</div>
-                <div class="management-desc">Créer un nouveau logement</div>
+                <div class="management-title">{% translate "Ajouter" %}</div>
+                <div class="management-desc">{% translate "Créer un nouveau logement" %}</div>
             </a>
         </div>
     </div>
 
     <!-- RESERVATIONS -->
     <div class="management-section">
-        <div class="section-title">📅 Réservations</div>
+        <div class="section-title">📅 {% translate "Réservations" %}</div>
 
         <div class="management-grid">
             <a href="{% url 'logement:calendrier_reservations' %}" class="management-card">
                 <div class="management-icon">📆</div>
-                <div class="management-title">Calendrier</div>
-                <div class="management-desc">Planning des réservations</div>
+                <div class="management-title">{% translate "Calendrier" %}</div>
+                <div class="management-desc">{% translate "Planning des réservations" %}</div>
             </a>
 
             <a href="{% url 'logement:mes_reservations' %}" class="management-card">
                 <div class="management-icon">📋</div>
-                <div class="management-title">Réservations</div>
-                <div class="management-desc">Toutes les réservations</div>
+                <div class="management-title">{% translate "Réservations" %}</div>
+                <div class="management-desc">{% translate "Toutes les réservations" %}</div>
             </a>
         </div>
     </div>
 
     <!-- FINANCES -->
     <div class="management-section">
-        <div class="section-title">💰 Finances</div>
+        <div class="section-title">💰 {% translate "Finances" %}</div>
 
         <div class="management-grid">
             <a href="{% url 'logement:mes_paiements' %}" class="management-card">
                 <div class="management-icon">💳</div>
-                <div class="management-title">Paiements</div>
-                <div class="management-desc">Suivi des revenus</div>
+                <div class="management-title">{% translate "Paiements" %}</div>
+                <div class="management-desc">{% translate "Suivi des revenus" %}</div>
             </a>
 
             <a href="{% url 'logement:statistiques' %}" class="management-card">
                 <div class="management-icon">📊</div>
-                <div class="management-title">Statistiques</div>
-                <div class="management-desc">Performance et analyses</div>
+                <div class="management-title">{% translate "Statistiques" %}</div>
+                <div class="management-desc">{% translate "Performance et analyses" %}</div>
             </a>
         </div>
     </div>
 
     <!-- CLIENTS -->
     <div class="management-section">
-        <div class="section-title">👥 Clients</div>
+        <div class="section-title">👥 {% translate "Clients" %}</div>
 
         <div class="management-grid">
             <a href="{% url 'logement:mes_clients' %}" class="management-card">
                 <div class="management-icon">👥</div>
-                <div class="management-title">Locataires</div>
-                <div class="management-desc">Gestion des clients</div>
+                <div class="management-title">{% translate "Locataires" %}</div>
+                <div class="management-desc">{% translate "Gestion des clients" %}</div>
             </a>
 
             <a href="{% url 'logement:avis_clients' %}" class="management-card">
                 <div class="management-icon">⭐</div>
-                <div class="management-title">Avis</div>
-                <div class="management-desc">Évaluations des clients</div>
+                <div class="management-title">{% translate "Avis" %}</div>
+                <div class="management-desc">{% translate "Évaluations des clients" %}</div>
             </a>
         </div>
     </div>

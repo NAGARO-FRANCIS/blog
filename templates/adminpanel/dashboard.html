@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+{% load i18n %}
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Ivoire Connect — Administration</title>
+    <title>{% translate "Ivoire Connect — Administration" %}</title>
 
     <style>
 
@@ -376,7 +377,7 @@
 
     <div class="menu">
 
-        <div class="menu-title">Principal</div>
+        <div class="menu-title">{% translate "Principal" %}</div>
 
         <a href="{% url 'adminpanel:dashboard' %}" class="active">
             📊 Dashboard
@@ -394,7 +395,7 @@
             🤝 Colocations
         </a>
 
-        <div class="menu-title">Gestion</div>
+        <div class="menu-title">{% translate "Gestion" %}</div>
 
         <a href="{% url 'adminpanel:hotels_residences' %}">
             🏨 Hôtels & Résidences
@@ -420,7 +421,7 @@
             🚨 Signalements
         </a>
 
-        <div class="menu-title">Système</div>
+        <div class="menu-title">{% translate "Système" %}</div>
 
         <a href="{% url 'adminpanel:notifications' %}">
             🔔 Notifications
@@ -447,7 +448,7 @@
 
     <header class="topbar">
 
-        <h1>Dashboard</h1>
+        <h1>{% translate "Dashboard" %}</h1>
 
         <div class="admin-user">
 
@@ -478,7 +479,7 @@
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-label">Utilisateurs</div>
+                        <div class="stat-label">{% translate "Utilisateurs" %}</div>
                         <div class="stat-value">{{ total_users }}</div>
                     </div>
 
@@ -490,7 +491,7 @@
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-label">Logements</div>
+                        <div class="stat-label">{% translate "Logements" %}</div>
                         <div class="stat-value">{{ total_logements }}</div>
                     </div>
 
@@ -502,7 +503,7 @@
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-label">Colocations</div>
+                        <div class="stat-label">{% translate "Colocations" %}</div>
                         <div class="stat-value">{{ total_colocations }}</div>
                     </div>
 
@@ -514,7 +515,7 @@
             <div class="stat-card">
                 <div class="stat-top">
                     <div>
-                        <div class="stat-label">Réservations</div>
+                        <div class="stat-label">{% translate "Réservations" %}</div>
                         <div class="stat-value">{{ total_reservations }}</div>
                     </div>
 
@@ -599,8 +600,8 @@
             <a class="action-card action-card-link" href="{% url 'adminpanel:users' %}?status=pending">
 
                 <div>
-                    <h3>Vérifications</h3>
-                    <p>Profils en attente</p>
+                    <h3>{% translate "Vérifications" %}</h3>
+                    <p>{% translate "Profils en attente" %}</p>
                 </div>
 
                 <div class="badge">
@@ -612,8 +613,8 @@
             <a class="action-card action-card-link" href="{% url 'adminpanel:verifications' %}">
 
                 <div>
-                    <h3>Documents</h3>
-                    <p>Documents à vérifier</p>
+                    <h3>{% translate "Documents" %}</h3>
+                    <p>{% translate "Documents à vérifier" %}</p>
                 </div>
 
                 <div class="badge">
@@ -625,8 +626,8 @@
             <a class="action-card action-card-link" href="{% url 'adminpanel:finance' %}">
 
                 <div>
-                    <h3>Paiements</h3>
-                    <p>Paiements en attente</p>
+                    <h3>{% translate "Paiements" %}</h3>
+                    <p>{% translate "Paiements en attente" %}</p>
                 </a>
 
                 <div class="badge">
@@ -650,7 +651,7 @@
 
                 <div class="panel-header">
 
-                    <h2>👥 Nouveaux utilisateurs</h2>
+                    <h2>👥 {% translate "Nouveaux utilisateurs" %}</h2>
 
                     <a href="{% url 'adminpanel:users' %}">
                         Voir tout
@@ -688,7 +689,7 @@
                 {% empty %}
 
                 <div class="list-item">
-                    <span>Aucun utilisateur récent.</span>
+                    <span>{% translate "Aucun utilisateur récent." %}</span>
                 </div>
 
                 {% endfor %}
@@ -702,7 +703,7 @@
 
                 <div class="panel-header">
 
-                    <h2>📅 Dernières réservations</h2>
+                    <h2>📅 {% translate "Dernières réservations" %}</h2>
 
                     <a href="{% url 'adminpanel:reservations' %}">
                         Voir tout
@@ -739,7 +740,7 @@
                 {% empty %}
 
                 <div class="list-item">
-                    <span>Aucune réservation récente.</span>
+                    <span>{% translate "Aucune réservation récente." %}</span>
                 </div>
 
                 {% endfor %}
@@ -757,7 +758,7 @@
 
             <div class="panel-header">
 
-                <h2>💰 Derniers paiements</h2>
+                <h2>💰 {% translate "Derniers paiements" %}</h2>
 
                 <a href="{% url 'adminpanel:finance' %}">
                     Voir tout
@@ -795,7 +796,7 @@
             {% empty %}
 
             <div class="list-item">
-                <span>Aucun paiement enregistré.</span>
+                <span>{% translate "Aucun paiement enregistré." %}</span>
             </div>
 
             {% endfor %}
@@ -810,53 +811,53 @@
         <div class="panel" style="margin-top:20px;">
 
             <div class="panel-header">
-                <h2>📊 Résumé de la plateforme</h2>
+                <h2>📊 {% translate "Résumé de la plateforme" %}</h2>
             </div>
 
             <div class="list-item">
                 <div class="item-main">
-                    <strong>Propriétaires</strong>
-                    <span>Comptes individuels propriétaires</span>
+                    <strong>{% translate "Propriétaires" %}</strong>
+                    <span>{% translate "Comptes individuels propriétaires" %}</span>
                 </div>
                 <strong>{{ proprietaires }}</strong>
             </div>
 
             <div class="list-item">
                 <div class="item-main">
-                    <strong>Locataires</strong>
-                    <span>Utilisateurs à la recherche d'un logement</span>
+                    <strong>{% translate "Locataires" %}</strong>
+                    <span>{% translate "Utilisateurs à la recherche d'un logement" %}</span>
                 </div>
                 <strong>{{ locataires }}</strong>
             </div>
 
             <div class="list-item">
                 <div class="item-main">
-                    <strong>Hôtels</strong>
-                    <span>Établissements hôteliers</span>
+                    <strong>{% translate "Hôtels" %}</strong>
+                    <span>{% translate "Établissements hôteliers" %}</span>
                 </div>
                 <strong>{{ hotels }}</strong>
             </div>
 
             <div class="list-item">
                 <div class="item-main">
-                    <strong>Résidences</strong>
-                    <span>Établissements résidentiels</span>
+                    <strong>{% translate "Résidences" %}</strong>
+                    <span>{% translate "Établissements résidentiels" %}</span>
                 </div>
                 <strong>{{ residences }}</strong>
             </div>
 
             <div class="list-item">
                 <div class="item-main">
-                    <strong>Réservations confirmées</strong>
-                    <span>Réservations actuellement confirmées</span>
+                    <strong>{% translate "Réservations confirmées" %}</strong>
+                    <span>{% translate "Réservations actuellement confirmées" %}</span>
                 </div>
                 <strong>{{ reservations_confirmed }}</strong>
             </div>
 
             <div class="list-item">
                 <div class="item-main">
-                    <strong>Documents à revoir</strong>
-                    <span>Documents signalés par le système</span>
+                    <strong>{% translate "Documents à revoir" %}</strong>
+                    <span>{% translate "Documents signalés par le système" %}</span>
                 </div>
                 <strong>{{ documents_a_revoir }}</strong>
             </div>

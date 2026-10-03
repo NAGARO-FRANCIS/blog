@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}{{ annonce.ville }} - Annonce de Colocation - Coloc.ai{% endblock %}
+{% block title %}{% blocktranslate with city=annonce.ville %}{{ city }} - Annonce de Colocation - Coloc.ai{% endblocktranslate %}{% endblock %}
 
 {% block content %}
 <div class="detail-wrapper">
     <div class="detail-container">
         <!-- Breadcrumb -->
         <div class="breadcrumb">
-            <a href="{% url 'colocation:colocation_home' %}">Accueil</a> >
-            <a href="{% url 'colocation:liste_annonces' %}">Annonces</a> >
+            <a href="{% url 'colocation:colocation_home' %}">{% translate "Accueil" %}</a> >
+            <a href="{% url 'colocation:liste_annonces' %}">{% translate "Annonces" %}</a> >
             <span>{{ annonce.ville }}</span>
         </div>
 
@@ -17,9 +18,9 @@
         <div class="detail-gallery-section">
             <div class="detail-gallery-main">
                 {% if annonce.photos.all %}
-                    <img id="main-image" src="{{ annonce.photos.first.image.url }}" alt="Photo principale">
+                    <img id="main-image" src="{{ annonce.photos.first.image.url }}" alt="{% translate 'Photo principale' %}">
                 {% else %}
-                    <div class="no-image-placeholder">📷 Pas de photo disponible</div>
+                    <div class="no-image-placeholder">📷 {% translate "Pas de photo disponible" %}</div>
                 {% endif %}
             </div>
 
@@ -28,7 +29,7 @@
                     {% for photo in annonce.photos.all %}
                         <img 
                             src="{{ photo.image.url }}" 
-                            alt="Photo {{ forloop.counter }}"
+                            alt="{% translate 'Photo' %} {{ forloop.counter }}"
                             class="thumbnail {% if forloop.first %}active{% endif %}"
                             onclick="changeMainImage(this)"
                         >
@@ -45,7 +46,8 @@
                         {% if is_favorite %}❤️ Ajouté aux favoris{% else %}🤍 Ajouter aux favoris{% endif %}
                     </button>
                 {% else %}
-                    <button class="favorite-btn-large" onclick="alert('Veuillez vous connecter')">
+                    {% translate "Veuillez vous connecter" as login_message %}
+                    <button class="favorite-btn-large" onclick="alert('{{ login_message|escapejs }}')">
                         🤍 Ajouter aux favoris
                     </button>
                 {% endif %}
@@ -69,20 +71,20 @@
             <!-- Quick Info -->
             <div class="detail-quick-info">
                 <div class="info-item">
-                    <span class="info-label">Chambres</span>
+                    <span class="info-label">{% translate "Chambres" %}</span>
                     <span class="info-value">{{ annonce.nombre_chambres }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Places</span>
+                    <span class="info-label">{% translate "Places" %}</span>
                     <span class="info-value">{{ annonce.nombre_touristes }}</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Salles de bain</span>
+                    <span class="info-label">{% translate "Salles de bain" %}</span>
                     <span class="info-value">{{ annonce.nombre_salles_bain }}</span>
                 </div>
                 {% if annonce.surface %}
                     <div class="info-item">
-                        <span class="info-label">Surface</span>
+                        <span class="info-label">{% translate "Surface" %}</span>
                         <span class="info-value">{{ annonce.surface }} m²</span>
                     </div>
                 {% endif %}
@@ -90,7 +92,7 @@
 
             <!-- Description Section -->
             <section class="detail-section">
-                <h2 class="section-title">📝 Description du logement</h2>
+                <h2 class="section-title">📝 {% translate "Description du logement" %}</h2>
                 <div class="section-content">
                     {{ annonce.description|linebreaks }}
                 </div>
@@ -98,26 +100,26 @@
 
             <!-- Housing Info Section -->
             <section class="detail-section">
-                <h2 class="section-title">🏠 Caractéristiques</h2>
+                <h2 class="section-title">🏠 {% translate "Caractéristiques" %}</h2>
                 <div class="section-content">
                     <div class="characteristics-grid">
                         <div class="char-item">
-                            <span class="char-label">Meublé</span>
+                            <span class="char-label">{% translate "Meublé" %}</span>
                             <span class="char-value">{% if annonce.meuble %}✅ Oui{% else %}❌ Non{% endif %}</span>
                         </div>
                         <div class="char-item">
-                            <span class="char-label">Disponible depuis</span>
+                            <span class="char-label">{% translate "Disponible depuis" %}</span>
                             <span class="char-value">{{ annonce.disponible_depuis|date:"d/m/Y" }}</span>
                         </div>
                         <div class="char-item">
-                            <span class="char-label">Durée minimum</span>
+                            <span class="char-label">{% translate "Durée minimum" %}</span>
                             <span class="char-value">{{ annonce.durée_minimum }} mois</span>
                         </div>
                     </div>
 
                     {% if annonce.infos_logement %}
                         <div class="info-block" style="margin-top: 20px;">
-                            <h3>Informations supplémentaires</h3>
+                            <h3>{% translate "Informations supplémentaires" %}</h3>
                             <p>{{ annonce.infos_logement|linebreaks }}</p>
                         </div>
                     {% endif %}
@@ -127,22 +129,22 @@
             <!-- Amenities Section -->
             {% if annonce.climatisation or annonce.wifi or annonce.cuisine_equipee or annonce.garage or annonce.jardin %}
                 <section class="detail-section">
-                    <h2 class="section-title">⚙️ Équipements</h2>
+                    <h2 class="section-title">⚙️ {% translate "Équipements" %}</h2>
                     <div class="amenities-grid">
                         {% if annonce.climatisation %}
-                            <div class="amenity-item">❄️ Climatisation</div>
+                            <div class="amenity-item">❄️ {% translate "Climatisation" %}</div>
                         {% endif %}
                         {% if annonce.wifi %}
-                            <div class="amenity-item">📶 WiFi</div>
+                            <div class="amenity-item">📶 {% translate "WiFi" %}</div>
                         {% endif %}
                         {% if annonce.cuisine_equipee %}
-                            <div class="amenity-item">🍳 Cuisine équipée</div>
+                            <div class="amenity-item">🍳 {% translate "Cuisine équipée" %}</div>
                         {% endif %}
                         {% if annonce.garage %}
-                            <div class="amenity-item">🚗 Garage</div>
+                            <div class="amenity-item">🚗 {% translate "Garage" %}</div>
                         {% endif %}
                         {% if annonce.jardin %}
-                            <div class="amenity-item">🌿 Jardin</div>
+                            <div class="amenity-item">🌿 {% translate "Jardin" %}</div>
                         {% endif %}
                     </div>
                 </section>
@@ -150,18 +152,18 @@
 
             <!-- Roommates & Conditions Section -->
             <section class="detail-section">
-                <h2 class="section-title">👥 Touristes & Conditions</h2>
+                <h2 class="section-title">👥 {% translate "Touristes & Conditions" %}</h2>
                 <div class="section-content">
                     {% if annonce.profil_recherche %}
                         <div class="info-block">
-                            <h3>Profil recherché</h3>
+                            <h3>{% translate "Profil recherché" %}</h3>
                             <p class="profile-badge">{{ annonce.get_profil_recherche_display }}</p>
                         </div>
                     {% endif %}
 
                     {% if annonce.conditions_vie %}
                         <div class="info-block">
-                            <h3>Conditions de vie & Règles</h3>
+                            <h3>{% translate "Conditions de vie & Règles" %}</h3>
                             <p>{{ annonce.conditions_vie|linebreaks }}</p>
                         </div>
                     {% endif %}
@@ -170,7 +172,7 @@
 
             <!-- Owner Section -->
             <section class="detail-section">
-                <h2 class="section-title">👤 Propriétaire</h2>
+                <h2 class="section-title">👤 {% translate "Propriétaire" %}</h2>
                 <div class="owner-card">
                     <div class="owner-info">
                         {% if annonce.proprietaire.profile.photo_profil %}
@@ -188,7 +190,7 @@
                                 <p class="owner-location">📍 {{ annonce.proprietaire.profile.ville }}</p>
                             {% endif %}
                             {% if annonce.proprietaire.profile.verified %}
-                                <p class="owner-verified">✅ Profil vérifié</p>
+                                <p class="owner-verified">✅ {% translate "Profil vérifié" %}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -197,7 +199,7 @@
                     <div class="owner-actions">
                         {% if request.user.is_authenticated %}
                             {% if annonce.proprietaire.id == request.user.id %}
-                                <div class="btn-badge-large">✅ C'est votre annonce</div>
+                                <div class="btn-badge-large">✅ {% translate "C'est votre annonce" %}</div>
                             {% else %}
                                 <a href="{% url 'messagerie:envoyer_message_annonce' 'colocation' annonce.id %}" class="btn btn-primary btn-large">
                                     💬 Envoyer un message
@@ -775,6 +777,8 @@
 </style>
 
 <script>
+    {% translate "Ajouté aux favoris" as favorite_added_label %}
+    {% translate "Ajouter aux favoris" as add_favorite_label %}
     function changeMainImage(element) {
         const mainImage = document.getElementById('main-image');
         const thumbnails = document.querySelectorAll('.thumbnail');
@@ -805,10 +809,10 @@
         .then(data => {
             if (data.is_favorite) {
                 button.classList.add('active');
-                button.textContent = '❤️ Ajouté aux favoris';
+                button.textContent = '❤️ {{ favorite_added_label|escapejs }}';
             } else {
                 button.classList.remove('active');
-                button.textContent = '🤍 Ajouter aux favoris';
+                button.textContent = '🤍 {{ add_favorite_label|escapejs }}';
             }
         })
         .catch(error => console.error('Erreur:', error));

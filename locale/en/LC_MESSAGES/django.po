@@ -3,6 +3,7 @@ msgstr ""
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Toggle menu"
 msgstr "Toggle menu"
@@ -105,3 +106,806 @@ msgstr "Back to the"
 
 msgid "page de connexion"
 msgstr "login page"
+
+msgid "Réserver"
+msgstr "Book"
+
+msgid "Formulaire de réservation"
+msgstr "Booking form"
+
+msgid "Remplissez les informations ci-dessous pour continuer"
+msgstr "Fill in the information below to continue"
+
+msgid "Dates de séjour"
+msgstr "Stay dates"
+
+msgid "Date d'arrivée"
+msgstr "Check-in date"
+
+msgid "Date de départ"
+msgstr "Check-out date"
+
+msgid "Occupation"
+msgstr "Guests and rooms"
+
+msgid "Nombre de personnes"
+msgstr "Number of guests"
+
+msgid "Nombre de chambres"
+msgstr "Number of rooms"
+
+msgid "Vos coordonnées"
+msgstr "Your contact details"
+
+msgid "Nom complet"
+msgstr "Full name"
+
+msgid "Adresse e-mail"
+msgstr "Email address"
+
+msgid "Téléphone"
+msgstr "Phone number"
+
+msgid "Remarques"
+msgstr "Notes"
+
+msgid "optionnel"
+msgstr "optional"
+
+msgid "Demandes particulières, informations utiles…"
+msgstr "Special requests or useful information…"
+
+msgid "Continuer vers le paiement"
+msgstr "Continue to payment"
+
+msgid "Retour au logement"
+msgstr "Back to property"
+
+msgid "Paiement sécurisé"
+msgstr "Secure payment"
+
+msgid "Annulation flexible"
+msgstr "Flexible cancellation"
+
+msgid "Confirmation immédiate"
+msgstr "Instant confirmation"
+
+msgid "Paiement"
+msgstr "Payment"
+
+msgid "Paiement de votre réservation"
+msgstr "Pay for your booking"
+
+msgid "Résumé de votre réservation"
+msgstr "Booking summary"
+
+msgid "Client"
+msgstr "Guest"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Arrivée"
+msgstr "Check-in"
+
+msgid "Départ"
+msgstr "Check-out"
+
+msgid "Nombre de nuits"
+msgstr "Number of nights"
+
+msgid "Prix par nuit"
+msgstr "Price per night"
+
+msgid "Sous-total"
+msgstr "Subtotal"
+
+msgid "Frais de service"
+msgstr "Service fee"
+
+msgid "Frais de nettoyage"
+msgstr "Cleaning fee"
+
+msgid "TOTAL"
+msgstr "TOTAL"
+
+msgid "Sélectionnez votre mode de paiement"
+msgstr "Select your payment method"
+
+msgid "Paiement via MOUV"
+msgstr "Pay with MOUV"
+
+msgid "Composez"
+msgstr "Dial"
+
+msgid "et entrez le montant de"
+msgstr "and enter the amount of"
+
+msgid "Numéro MOUV (confirmez)"
+msgstr "MOUV number (confirm)"
+
+msgid "Confirmer le paiement MOUV"
+msgstr "Confirm MOUV payment"
+
+msgid "Paiement via Orange Money"
+msgstr "Pay with Orange Money"
+
+msgid "Numéro Orange (confirmez)"
+msgstr "Orange number (confirm)"
+
+msgid "Confirmer le paiement Orange Money"
+msgstr "Confirm Orange Money payment"
+
+msgid "Paiement via Wave"
+msgstr "Pay with Wave"
+
+msgid "Ouvrez l'application Wave et envoyez"
+msgstr "Open the Wave app and send"
+
+msgid "au numéro fourni"
+msgstr "to the number provided"
+
+msgid "Numéro Wave (confirmez)"
+msgstr "Wave number (confirm)"
+
+msgid "Confirmer le paiement Wave"
+msgstr "Confirm Wave payment"
+
+msgid "Paiement par carte bancaire"
+msgstr "Pay by bank card"
+
+msgid "Entrez les détails de votre carte ci-dessous"
+msgstr "Enter your card details below"
+
+msgid "Paiement par virement bancaire"
+msgstr "Pay by bank transfer"
+
+msgid "Nos coordonnées bancaires vous seront envoyées par email"
+msgstr "Our bank details will be sent to you by email"
+
+msgid "Email pour recevoir les coordonnées"
+msgstr "Email address for receiving the bank details"
+
+msgid "Demander les coordonnées bancaires"
+msgstr "Request bank details"
+
+msgid "Paiement à l'arrivée"
+msgstr "Pay on arrival"
+
+msgid "Vous paierez"
+msgstr "You will pay"
+
+msgid "directement au propriétaire"
+msgstr "directly to the owner"
+
+msgid "Une caution de confirmation peut être demandée"
+msgstr "A confirmation deposit may be required"
+
+msgid "Réserver avec paiement sur place"
+msgstr "Book and pay on arrival"
+
+msgid "Réservation confirmée"
+msgstr "Booking confirmed"
+
+msgid "Votre réservation a bien été enregistrée"
+msgstr "Your booking has been successfully recorded"
+
+msgid "En attente de paiement"
+msgstr "Awaiting payment"
+
+msgid "Paiement reçu"
+msgstr "Payment received"
+
+msgid "Propriété"
+msgstr "Property"
+
+msgid "Montant total"
+msgstr "Total amount"
+
+msgid "Carte bancaire"
+msgstr "Bank card"
+
+msgid "Virement bancaire"
+msgstr "Bank transfer"
+
+msgid "Paiement sur place"
+msgstr "Pay on arrival"
+
+msgid "Méthode de paiement"
+msgstr "Payment method"
+
+msgid "En attente"
+msgstr "Pending"
+
+msgid "Complété"
+msgstr "Completed"
+
+msgid "Échoué"
+msgstr "Failed"
+
+msgid "Vous paierez le propriétaire directement"
+msgstr "You will pay the owner directly"
+
+msgid "à votre arrivée"
+msgstr "upon arrival"
+
+msgid "Référence"
+msgstr "Reference"
+
+msgid "Numéro de réservation"
+msgstr "Booking number"
+
+msgid "Copier le numéro de réservation"
+msgstr "Copy booking number"
+
+msgid "Copier"
+msgstr "Copy"
+
+msgid "Prochaines étapes"
+msgstr "Next steps"
+
+msgid "Réservation enregistrée"
+msgstr "Booking recorded"
+
+msgid "Votre demande a été reçue avec succès"
+msgstr "Your request has been received"
+
+msgid "Paiement en cours"
+msgstr "Payment in progress"
+
+msgid "En attente de confirmation de votre paiement"
+msgstr "Awaiting payment confirmation"
+
+msgid "Email de confirmation"
+msgstr "Confirmation email"
+
+msgid "Envoyé à"
+msgstr "Sent to"
+
+msgid "Contact du propriétaire"
+msgstr "Contact from the owner"
+
+msgid "Il vous contactera prochainement"
+msgstr "They will contact you soon"
+
+msgid "Voir la propriété"
+msgstr "View property"
+
+msgid "Toutes les annonces"
+msgstr "All listings"
+
+msgid "Hôtels, résidences et locations individuelles"
+msgstr "Hotels, residences and private rentals"
+
+msgid "Hôtels"
+msgstr "Hotels"
+
+msgid "Résidences"
+msgstr "Residences"
+
+msgid "Locations individuelles"
+msgstr "Private rentals"
+
+msgid "Hôtels partenaires"
+msgstr "Partner hotels"
+
+msgid "Séjours confortables avec services hôteliers 5 étoiles — Gérés par"
+msgstr "Comfortable stays with 5-star hotel services — Managed by"
+
+msgid "Aucun hôtel disponible"
+msgstr "No hotels available"
+
+msgid "Revenez bientôt pour découvrir nos hôtels partenaires"
+msgstr "Check back soon to discover our partner hotels"
+
+msgid "Résidences de standing"
+msgstr "Premium residences"
+
+msgid "Appartements et studios modernes avec services — Gérés par"
+msgstr "Modern serviced apartments and studios — Managed by"
+
+msgid "Aucune résidence disponible"
+msgstr "No residences available"
+
+msgid "Revenez bientôt pour découvrir nos résidences premium"
+msgstr "Check back soon to discover our premium residences"
+
+msgid "Chambres et colocations directement entre particuliers — Gérés par"
+msgstr "Rooms and shared homes directly from private owners — Managed by"
+
+msgid "Aucune location individuelle disponible"
+msgstr "No private rentals available"
+
+msgid "Revenez bientôt pour découvrir nos annonces de particuliers"
+msgstr "Check back soon to discover private listings"
+
+msgid "Prêt à trouver votre logement idéal ?"
+msgstr "Ready to find your ideal home?"
+
+msgid "Connectez-vous pour accéder à plus de fonctionnalités"
+msgstr "Sign in to access more features"
+
+msgid "Se connecter maintenant"
+msgstr "Sign in now"
+
+msgid "Hôtel"
+msgstr "Hotel"
+
+msgid "Résidence"
+msgstr "Residence"
+
+msgid "Particulier"
+msgstr "Private owner"
+
+msgid "Sur demande"
+msgstr "On request"
+
+msgid "Voir"
+msgstr "View"
+
+msgid "Aucune photo disponible"
+msgstr "No photos available"
+
+msgid "Vidéos"
+msgstr "Videos"
+
+msgid "Votre navigateur ne prend pas en charge les vidéos HTML5"
+msgstr "Your browser does not support HTML5 video"
+
+msgid "Cette fiche présente une catégorie de chambre de cet établissement."
+msgstr "This listing shows a room category at this property."
+
+msgid "Autres catégories disponibles"
+msgstr "Other available categories"
+
+msgid "Caractéristiques"
+msgstr "Features"
+
+msgid "%(counter)s chambre"
+msgid_plural "%(counter)s chambres"
+msgstr[0] "%(counter)s bedroom"
+msgstr[1] "%(counter)s bedrooms"
+
+msgid "%(counter)s lit"
+msgid_plural "%(counter)s lits"
+msgstr[0] "%(counter)s bed"
+msgstr[1] "%(counter)s beds"
+
+msgid "Salle de bain"
+msgstr "Bathroom"
+
+msgid "Capacité"
+msgstr "Capacity"
+
+msgid "Étage"
+msgstr "Floor"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Équipements & services"
+msgstr "Amenities & services"
+
+msgid "Climatisation"
+msgstr "Air conditioning"
+
+msgid "Garage"
+msgstr "Garage"
+
+msgid "Jardin"
+msgstr "Garden"
+
+msgid "Piscine"
+msgstr "Swimming pool"
+
+msgid "Cuisine équipée"
+msgstr "Equipped kitchen"
+
+msgid "Télévision"
+msgstr "TV"
+
+msgid "Coffre-fort"
+msgstr "Safe"
+
+msgid "Réception 24h"
+msgstr "24-hour reception"
+
+msgid "Restaurant"
+msgstr "Restaurant"
+
+msgid "Ascenseur"
+msgstr "Elevator"
+
+msgid "Gardien"
+msgstr "Caretaker"
+
+msgid "Sécurité"
+msgstr "Security"
+
+msgid "Buanderie"
+msgstr "Laundry room"
+
+msgid "Conditions"
+msgstr "Terms"
+
+msgid "Caution"
+msgstr "Deposit"
+
+msgid "mois de loyer"
+msgstr "months' rent"
+
+msgid "Frais d'agence"
+msgstr "Agency fee"
+
+msgid "Durée minimale"
+msgstr "Minimum duration"
+
+msgid "Type de charges"
+msgstr "Utilities"
+
+msgid "Tarification"
+msgstr "Pricing"
+
+msgid "Par nuit"
+msgstr "Per night"
+
+msgid "Par mois"
+msgstr "Per month"
+
+msgid "Nettoyage"
+msgstr "Cleaning"
+
+msgid "Agence"
+msgstr "Agency"
+
+msgid "Informations"
+msgstr "Information"
+
+msgid "Séjour minimum"
+msgstr "Minimum stay"
+
+msgid "Virement"
+msgstr "Bank transfer"
+
+msgid "Sur place"
+msgstr "On site"
+
+msgid "Erreur lors du paiement"
+msgstr "Payment error"
+
+msgid "Côte d'Ivoire"
+msgstr "Côte d'Ivoire"
+
+msgid "sur votre téléphone MOUV et entrez"
+msgstr "on your MOUV phone and enter"
+
+msgid "sur votre téléphone Orange et entrez"
+msgstr "on your Orange phone and enter"
+
+msgid "pour finaliser le paiement."
+msgstr "to complete the payment."
+
+msgid "Ouvrez l'application"
+msgstr "Open the app"
+
+msgid "et envoyez"
+msgstr "and send"
+
+msgid "pour finaliser."
+msgstr "to complete the payment."
+
+msgid "Les coordonnées bancaires ont été envoyées à"
+msgstr "The bank details have been sent to"
+
+msgid "mois"
+msgstr "months"
+
+msgid "Charges"
+msgstr "Utilities"
+
+msgid "Meublé"
+msgstr "Furnished"
+
+msgid "Non meublé"
+msgstr "Unfurnished"
+
+msgid "Disponible à partir du"
+msgstr "Available from"
+
+msgid "Réserver maintenant"
+msgstr "Book now"
+
+msgid "Les annonces de particuliers ne sont pas réservables en ligne."
+msgstr "Private listings cannot be booked online."
+
+msgid "Veuillez contacter directement le propriétaire pour plus d'informations."
+msgstr "Please contact the owner directly for more information."
+
+msgid "S'abonner"
+msgstr "Follow"
+
+msgid "Modifier"
+msgstr "Edit"
+
+msgid "Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible."
+msgstr "Are you sure you want to delete this listing? This action cannot be undone."
+
+msgid "Supprimer"
+msgstr "Delete"
+
+msgid "Appeler"
+msgstr "Call"
+
+msgid "Envoyer un message dans l’application"
+msgstr "Send a message in the app"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Se connecter pour envoyer un message"
+msgstr "Sign in to send a message"
+
+msgid "Propriétaire"
+msgstr "Owner"
+
+msgid "%(counter)s réservation confirmée"
+msgid_plural "%(counter)s réservations confirmées"
+msgstr[0] "%(counter)s confirmed booking"
+msgstr[1] "%(counter)s confirmed bookings"
+
+msgid "Rechercher un logement, une ville…"
+msgstr "Search for a property or city…"
+
+msgid "Disponible immédiatement"
+msgstr "Available now"
+
+msgid "Appliquer"
+msgstr "Apply"
+
+msgid "Filtres"
+msgstr "Filters"
+
+msgid "Tout"
+msgstr "All"
+
+msgid "Chambres"
+msgstr "Rooms"
+
+msgid "Studios"
+msgstr "Studios"
+
+msgid "Appartements"
+msgstr "Apartments"
+
+msgid "Hôtel / nuitée"
+msgstr "Hotel / nightly stay"
+
+msgid "Trouvez votre prochain logement"
+msgstr "Find your next place to stay"
+
+msgid "%(counter)s logement disponible maintenant"
+msgid_plural "%(counter)s logements disponibles maintenant"
+msgstr[0] "%(counter)s property available now"
+msgstr[1] "%(counter)s properties available now"
+
+msgid "Favori"
+msgstr "Favorite"
+
+msgid "Connectez-vous pour ajouter aux favoris"
+msgstr "Sign in to add this to your favorites"
+
+msgid "Prix sur demande"
+msgstr "Price on request"
+
+msgid "Voir l'annonce"
+msgstr "View listing"
+
+msgid "Aucune annonce ne correspond à votre recherche"
+msgstr "No listings match your search"
+
+msgid "Essayez d'élargir vos critères ou revenez à toutes les annonces"
+msgstr "Try broadening your search or return to all listings"
+
+msgid "Voir toutes les annonces"
+msgstr "View all listings"
+
+msgid "Mot clé"
+msgstr "Keyword"
+
+msgid "Chercher un logement..."
+msgstr "Search for a property..."
+
+msgid "Ville"
+msgstr "City"
+
+msgid "Commune"
+msgstr "District"
+
+msgid "Quartier"
+msgstr "Neighborhood"
+
+msgid "Prix minimum"
+msgstr "Minimum price"
+
+msgid "Prix min"
+msgstr "Min. price"
+
+msgid "Prix maximum"
+msgstr "Maximum price"
+
+msgid "Prix max"
+msgstr "Max. price"
+
+msgid "Chambres minimum"
+msgstr "Minimum rooms"
+
+msgid "Type de logement"
+msgstr "Property type"
+
+msgid "Tous les types"
+msgstr "All types"
+
+msgid "Tous les comptes"
+msgstr "All account types"
+
+msgid "Indifférent"
+msgstr "Any"
+
+msgid "Oui"
+msgstr "Yes"
+
+msgid "Non"
+msgstr "No"
+
+msgid "Eau"
+msgstr "Water"
+
+msgid "Électricité"
+msgstr "Electricity"
+
+msgid "Distance université maximale"
+msgstr "Maximum distance to a university"
+
+msgid "Distance hôpital maximale"
+msgstr "Maximum distance to a hospital"
+
+msgid "Date d’arrivée"
+msgstr "Check-in date"
+
+msgid "Date d'arrivée"
+msgstr "Check-in date"
+
+msgid "Votre nom complet"
+msgstr "Your full name"
+
+msgid "votre@email.com"
+msgstr "you@example.com"
+
+msgid "Remarques ou demandes spéciales (optionnel)"
+msgstr "Notes or special requests (optional)"
+
+msgid "Les réservations ne sont possibles que pour les hôtels et résidences."
+msgstr "Bookings are only available for hotels and residences."
+
+msgid "La date de départ doit être après la date d'arrivée"
+msgstr "The check-out date must be after the check-in date."
+
+msgid "Il ne reste pas assez de chambres disponibles pour toute la durée du séjour."
+msgstr "There are not enough rooms available for the entire stay."
+
+msgid "Hotel"
+msgstr "Hotel"
+
+msgid "Residence"
+msgstr "Residence"
+
+msgid "Appartement"
+msgstr "Apartment"
+
+msgid "Maison"
+msgstr "House"
+
+msgid "Studio"
+msgstr "Studio"
+
+msgid "Villa"
+msgstr "Villa"
+
+msgid "Chambre"
+msgstr "Room"
+
+msgid "Chambre simple"
+msgstr "Single room"
+
+msgid "Chambre double"
+msgstr "Double room"
+
+msgid "Duplex"
+msgstr "Duplex"
+
+msgid "Suite"
+msgstr "Suite"
+
+msgid "Chambre familiale"
+msgstr "Family room"
+
+msgid "Individu"
+msgstr "Individual"
+
+msgid "Charges comprises"
+msgstr "Utilities included"
+
+msgid "Charges non comprises"
+msgstr "Utilities not included"
+
+msgid "✅ Disponible"
+msgstr "✅ Available"
+
+msgid "❌ Occupé"
+msgstr "❌ Occupied"
+
+msgid "🚫 Bloqué"
+msgstr "🚫 Blocked"
+
+msgid "⏳ En attente de paiement"
+msgstr "⏳ Awaiting payment"
+
+msgid "✅ Confirmée"
+msgstr "✅ Confirmed"
+
+msgid "❌ Annulée"
+msgstr "❌ Cancelled"
+
+msgid "✓ Complétée"
+msgstr "✓ Completed"
+
+msgid "Gestionnaire de Résidence"
+msgstr "Residence manager"
+
+msgid "Gestionnaire d'Hôtel"
+msgstr "Hotel manager"
+
+msgid "Locataire"
+msgstr "Tenant"
+
+msgid "Touriste"
+msgstr "Tourist"
+
+msgid "Propriétaire"
+msgstr "Owner"
+
+msgid "Masculin"
+msgstr "Male"
+
+msgid "Féminin"
+msgstr "Female"
+
+msgid "Autre"
+msgstr "Other"
+
+msgid "Carte Nationale d'Identité"
+msgstr "National identity card"
+
+msgid "Passeport"
+msgstr "Passport"
+
+msgid "Permis de conduire"
+msgstr "Driver's license"
+
+msgid "Carte de séjour"
+msgstr "Residence permit"
+
+msgid "Carte d'étudiant"
+msgstr "Student ID"
+
+msgid "⏳ En attente de vérification"
+msgstr "⏳ Awaiting verification"
+
+msgid "✅ Vérifié"
+msgstr "✅ Verified"
+
+msgid "❌ Rejeté"
+msgstr "❌ Rejected"
+
+msgid "⚠️ Signalé"
+msgstr "⚠️ Flagged"

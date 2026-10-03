@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Choisir votre type d'annonce - Coloc.ai{% endblock %}
+{% block title %}{% translate "Choisir votre type d'annonce - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -11,8 +11,8 @@
             <span class="flag-white"></span>
             <span class="flag-green"></span>
         </div>
-        <h1>📢 Publier une annonce</h1>
-        <p>Choisissez le type d'annonce qui vous convient</p>
+        <h1>📢 {% translate "Publier une annonce" %}</h1>
+        <p>{% translate "Choisissez le type d'annonce qui vous convient" %}</p>
     </div>
 
     <div class="annonce-types-grid">
@@ -20,13 +20,13 @@
         {% if user.profile.account_type == 'residence' %}
         <div class="type-card residence-card">
             <div class="card-icon">🏢</div>
-            <h3>Publier pour Résidence</h3>
-            <p>Publiez vos logements en résidence pour les clients</p>
+            <h3>{% translate "Publier pour Résidence" %}</h3>
+            <p>{% translate "Publiez vos logements en résidence pour les clients" %}</p>
             <div class="features-list">
-                <div class="feature">✅ Tarifs mensuels</div>
-                <div class="feature">✅ Caution & frais</div>
-                <div class="feature">✅ Conditions spéciales</div>
-                <div class="feature">✅ Équipements professionnels</div>
+                <div class="feature">✅ {% translate "Tarifs mensuels" %}</div>
+                <div class="feature">✅ {% translate "Caution & frais" %}</div>
+                <div class="feature">✅ {% translate "Conditions spéciales" %}</div>
+                <div class="feature">✅ {% translate "Équipements professionnels" %}</div>
             </div>
             <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-type residence">
                 Ajouter un logement →
@@ -38,13 +38,13 @@
         {% if user.profile.account_type == 'hotel' %}
         <div class="type-card hotel-card">
             <div class="card-icon">🏨</div>
-            <h3>Publier pour Hôtel</h3>
-                <p>Créez votre établissement puis ajoutez chaque catégorie de chambre avec son prix et ses caractéristiques.</p>
+            <h3>{% translate "Publier pour Hôtel" %}</h3>
+                <p>{% translate "Créez votre établissement puis ajoutez chaque catégorie de chambre avec son prix et ses caractéristiques." %}</p>
             <div class="features-list">
-                <div class="feature">✅ Tarifs par nuit</div>
-                <div class="feature">✅ Services hôteliers</div>
-                <div class="feature">✅ Disponibilités</div>
-                <div class="feature">✅ Équipements spécialisés</div>
+                <div class="feature">✅ {% translate "Tarifs par nuit" %}</div>
+                <div class="feature">✅ {% translate "Services hôteliers" %}</div>
+                <div class="feature">✅ {% translate "Disponibilités" %}</div>
+                <div class="feature">✅ {% translate "Équipements spécialisés" %}</div>
             </div>
             <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-type hotel">
                 Ajouter une chambre →
@@ -56,13 +56,13 @@
         {% if user.profile.account_type == 'individu' and user.profile.role in 'touriste,proprietaire,locataire' %}
         <div class="type-card colocation-card">
             <div class="card-icon">🏠</div>
-            <h3>Publier en Colocation</h3>
-            <p>Trouvez des touristes ou un logement en colocation</p>
+            <h3>{% translate "Publier en Colocation" %}</h3>
+            <p>{% translate "Trouvez des touristes ou un logement en colocation" %}</p>
             <div class="features-list">
-                <div class="feature">✅ Profil recherché</div>
-                <div class="feature">✅ Conditions de vie</div>
-                <div class="feature">✅ Équipements partagés</div>
-                <div class="feature">✅ Durée minimum</div>
+                <div class="feature">✅ {% translate "Profil recherché" %}</div>
+                <div class="feature">✅ {% translate "Conditions de vie" %}</div>
+                <div class="feature">✅ {% translate "Équipements partagés" %}</div>
+                <div class="feature">✅ {% translate "Durée minimum" %}</div>
             </div>
             <a href="{% url 'colocation:publier_annonce' %}" class="btn btn-type colocation">
                 Créer une annonce →
@@ -74,13 +74,13 @@
         {% if user.profile.account_type == 'individu' and user.profile.role == 'proprietaire' %}
         <div class="type-card proprietaire-card">
             <div class="card-icon">🔑</div>
-            <h3>Publier comme Propriétaire</h3>
-            <p>Publiez vos propriétés en tant que propriétaire individuel</p>
+            <h3>{% translate "Publier comme Propriétaire" %}</h3>
+            <p>{% translate "Publiez vos propriétés en tant que propriétaire individuel" %}</p>
             <div class="features-list">
-                <div class="feature">✅ Tarifs flexibles</div>
-                <div class="feature">✅ Équipements variés</div>
-                <div class="feature">✅ Localisation précise</div>
-                <div class="feature">✅ Détails complets</div>
+                <div class="feature">✅ {% translate "Tarifs flexibles" %}</div>
+                <div class="feature">✅ {% translate "Équipements variés" %}</div>
+                <div class="feature">✅ {% translate "Localisation précise" %}</div>
+                <div class="feature">✅ {% translate "Détails complets" %}</div>
             </div>
             <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-type proprietaire">
                 Ajouter une propriété →
@@ -91,23 +91,23 @@
 
     <!-- Message d'aide -->
     <div class="help-section">
-        <h3>❓ Besoin d'aide pour choisir ?</h3>
+        <h3>❓ {% translate "Besoin d'aide pour choisir ?" %}</h3>
         <div class="help-grid">
             <div class="help-item">
-                <strong>Résidence</strong>
-                <p>Vous gérez un ensemble d'appartements ou studios pour des locataires professionnels</p>
+                <strong>{% translate "Résidence" %}</strong>
+                <p>{% translate "Vous gérez un ensemble d'appartements ou studios pour des locataires professionnels" %}</p>
             </div>
             <div class="help-item">
-                <strong>Hôtel</strong>
-                <p>Un établissement regroupe plusieurs catégories : chaque logement garde ses propres caractéristiques et disponibilités.</p>
+                <strong>{% translate "Hôtel" %}</strong>
+                <p>{% translate "Un établissement regroupe plusieurs catégories : chaque logement garde ses propres caractéristiques et disponibilités." %}</p>
             </div>
             <div class="help-item">
-                <strong>Colocation</strong>
-                <p>Vous cherchez des touristes ou un logement partagé</p>
+                <strong>{% translate "Colocation" %}</strong>
+                <p>{% translate "Vous cherchez des touristes ou un logement partagé" %}</p>
             </div>
             <div class="help-item">
-                <strong>Propriétaire</strong>
-                <p>Vous possédez un bien que vous souhaitez louer seul</p>
+                <strong>{% translate "Propriétaire" %}</strong>
+                <p>{% translate "Vous possédez un bien que vous souhaitez louer seul" %}</p>
             </div>
         </div>
     </div>

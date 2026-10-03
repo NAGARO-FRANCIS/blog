@@ -43,7 +43,7 @@ def notify_user(user, notification_type, title, message, actor=None,
         related_payment_id=payment_id,
     )
     if user.email and email_subject:
-        send_mail(email_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=True)
+        send_mail(email_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
     if sms_message:
         _send_sms(user, sms_message)
     return notification

@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Publier un logement - Coloc.ai{% endblock %}
+{% block title %}{% translate "Publier un logement - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <style>
@@ -47,17 +48,17 @@
 
 <div class="fp-wrap">
   <div class="fp-hero">
-    <h1>Publier votre logement</h1>
-    <p>Trouvez les meilleurs locataires pour votre propriété</p>
+    <h1>{% translate "Publier votre logement" %}</h1>
+    <p>{% translate "Trouvez les meilleurs locataires pour votre propriété" %}</p>
   </div>
 
   <div class="fp-progress"><div class="fp-progress-bar" id="progress" style="width: 25%"></div></div>
 
   <div class="fp-steps">
-    <div class="fp-step active" onclick="goTo(0)"><span>📍</span>Infos</div>
-    <div class="fp-step" onclick="goTo(1)"><span>🏠</span>Caract.</div>
-    <div class="fp-step" onclick="goTo(2)"><span>⚙️</span>Équip.</div>
-    <div class="fp-step" onclick="goTo(3)"><span>📸</span>Photos</div>
+    <div class="fp-step active" onclick="goTo(0)"><span>📍</span>{% translate "Infos" %}</div>
+    <div class="fp-step" onclick="goTo(1)"><span>🏠</span>{% translate "Caract." %}</div>
+    <div class="fp-step" onclick="goTo(2)"><span>⚙️</span>{% translate "Équip." %}</div>
+    <div class="fp-step" onclick="goTo(3)"><span>📸</span>{% translate "Photos" %}</div>
   </div>
 
   <form method="post" enctype="multipart/form-data">
@@ -81,7 +82,7 @@
 
     {% if formset.non_form_errors %}
       <div class="error-message" style="margin-bottom: 1rem;">
-        <strong>Erreur dans les photos:</strong>
+        <strong>{% translate "Erreur dans les photos:" %}</strong>
         {% for error in formset.non_form_errors %}
           <br>{{ error }}
         {% endfor %}
@@ -91,82 +92,82 @@
     <!-- Étape 1 : Informations -->
     <div class="fp-section visible" id="s0">
       <div class="fp-card">
-        <h2>Informations principales</h2>
+        <h2>{% translate "Informations principales" %}</h2>
         <div class="fp-grid">
           <div class="fp-field fp-full">
-            <label>Titre de l'annonce</label>
+            <label>{% translate "Titre de l'annonce" %}</label>
             {{ form.titre }}
           </div>
           <div class="fp-field">
-            <label>Type de logement</label>
+            <label>{% translate "Type de logement" %}</label>
             {{ form.type_logement }}
           </div>
           <div class="fp-field">
-            <label>Ville</label>
+            <label>{% translate "Ville" %}</label>
             {{ form.ville }}
           </div>
           <div class="fp-field">
-            <label>Quartier</label>
+            <label>{% translate "Quartier" %}</label>
             {{ form.quartier }}
           </div>
           <div class="fp-field fp-full">
-            <label>Description</label>
+            <label>{% translate "Description" %}</label>
             {{ form.description }}
-            <span class="fp-hint">Soyez précis : état, luminosité, environnement, transports...</span>
+            <span class="fp-hint">{% translate "Soyez précis : état, luminosité, environnement, transports..." %}</span>
           </div>
           <div class="fp-field">
-            <label>Disponible à partir du</label>
+            <label>{% translate "Disponible à partir du" %}</label>
             {{ form.disponible_depuis }}
           </div>
         </div>
       </div>
       <div class="fp-nav">
         <span></span>
-        <button type="button" class="fp-btn-next" onclick="goTo(1)">Suivant →</button>
+        <button type="button" class="fp-btn-next" onclick="goTo(1)">{% translate "Suivant" %} →</button>
       </div>
     </div>
 
     <!-- Étape 2 : Caractéristiques -->
     <div class="fp-section" id="s1">
       <div class="fp-card">
-        <h2>Caractéristiques</h2>
+        <h2>{% translate "Caractéristiques" %}</h2>
         <div class="fp-grid cols3">
           <div class="fp-field">
-            <label>Loyer mensuel (FCFA)</label>
+            <label>{% translate "Loyer mensuel (FCFA)" %}</label>
             {{ form.prix }}
           </div>
           <div class="fp-field">
-            <label>Surface (m²)</label>
+            <label>{% translate "Surface (m²)" %}</label>
             {{ form.surface }}
           </div>
           <div class="fp-field">
-            <label>Étage</label>
+            <label>{% translate "Étage" %}</label>
             {{ form.etage }}
           </div>
           <div class="fp-field">
-            <label>Nombre de pièces</label>
+            <label>{% translate "Nombre de pièces" %}</label>
             {{ form.nombre_pieces }}
           </div>
           <div class="fp-field">
-            <label>Chambres</label>
+            <label>{% translate "Chambres" %}</label>
             {{ form.nombre_chambres }}
           </div>
           <div class="fp-field">
-            <label>Salles de bain</label>
+            <label>{% translate "Salles de bain" %}</label>
             {{ form.nombre_salles_bain }}
           </div>
         </div>
       </div>
       <div class="fp-nav">
-        <button type="button" class="fp-btn-prev" onclick="goTo(0)">← Précédent</button>
-        <button type="button" class="fp-btn-next" onclick="goTo(2)">Suivant →</button>
+        <button type="button" class="fp-btn-prev" onclick="goTo(0)">← {% translate "Précédent" %}</button>
+        <button type="button" class="fp-btn-next" onclick="goTo(2)">{% translate "Suivant" %} →</button>
       </div>
     </div>
 
     <!-- Étape 3 : Équipements -->
     <div class="fp-section" id="s2">
       <div class="fp-card">
-        <h2>Équipements disponibles</h2>
+        <h2>{% translate "Équipements disponibles" %}</h2>
         <div class="fp-checks">
           <label class="fp-check">{{ form.climatisation }} Climatisation</label>
           <label class="fp-check">{{ form.wifi }} WiFi</label>
@@ -178,19 +179,19 @@
         </div>
       </div>
       <div class="fp-nav">
-        <button type="button" class="fp-btn-prev" onclick="goTo(1)">← Précédent</button>
-        <button type="button" class="fp-btn-next" onclick="goTo(3)">Suivant →</button>
+        <button type="button" class="fp-btn-prev" onclick="goTo(1)">← {% translate "Précédent" %}</button>
+        <button type="button" class="fp-btn-next" onclick="goTo(3)">{% translate "Suivant" %} →</button>
       </div>
     </div>
 
     <!-- Étape 4 : Photos -->
     <div class="fp-section" id="s3">
       <div class="fp-card">
-        <h2>Photos <span class="fp-badge">max 5</span></h2>
+        <h2>{% translate "Photos" %} <span class="fp-badge">{% translate "max 5" %}</span></h2>
         
         {% if formset.non_form_errors %}
           <div class="error-message" style="margin-bottom: 1rem;">
-            <strong>Erreur dans les photos:</strong>
+            <strong>{% translate "Erreur dans les photos:" %}</strong>
             {% for error in formset.non_form_errors %}
               <br>{{ error }}
             {% endfor %}
@@ -211,7 +212,7 @@
         <div class="fp-photo-zone" onclick="document.getElementById('photo-input').click()">
           <div style="font-size: 24px;">+</div>
           Cliquez pour ajouter des photos
-          <p>JPG, PNG — max 5 Mo par photo</p>
+          <p>{% translate "JPG, PNG — max 5 Mo par photo" %}</p>
           <input type="file" id="photo-input" name="photos" multiple accept="image/*" style="display:none" onchange="showPreviews(this)" />
         </div>
         <div class="fp-photo-grid" id="photo-grid">
@@ -227,14 +228,14 @@
 
         <hr style="margin: 2rem 0; border: none; border-top: 1px solid #ddd;">
 
-        <h2>🎬 Vidéos <span class="fp-badge">max 5</span></h2>
+        <h2>🎬 {% translate "Vidéos" %} <span class="fp-badge">{% translate "max 5" %}</span></h2>
         <p style="font-size: 12px; color: #999; margin-bottom: 1rem;">
           Optionnel — Ajoutez des vidéos de visite (MP4, WebM, Ogg — max 500 MB par vidéo)
         </p>
 
         {% if video_formset.non_form_errors %}
           <div class="error-message" style="margin-bottom: 1rem;">
-            <strong>Erreur dans les vidéos:</strong>
+            <strong>{% translate "Erreur dans les vidéos:" %}</strong>
             {% for error in video_formset.non_form_errors %}
               <br>{{ error }}
             {% endfor %}
@@ -256,19 +257,19 @@
           {% for form_video in video_formset %}
             <div style="margin-bottom: 1rem; padding: 1rem; border: 1px solid #ddd; border-radius: 6px; background: white;">
               <div style="margin-bottom: 0.5rem;">
-                <label style="font-size: 13px; font-weight: 500;">Vidéo</label>
+                <label style="font-size: 13px; font-weight: 500;">{% translate "Vidéo" %}</label>
                 {{ form_video.video }}
               </div>
               <div style="margin-bottom: 0.5rem;">
-                <label style="font-size: 13px; font-weight: 500;">Titre</label>
+                <label style="font-size: 13px; font-weight: 500;">{% translate "Titre" %}</label>
                 {{ form_video.titre }}
               </div>
               <div style="margin-bottom: 0.5rem;">
-                <label style="font-size: 13px; font-weight: 500;">Description</label>
+                <label style="font-size: 13px; font-weight: 500;">{% translate "Description" %}</label>
                 {{ form_video.description }}
               </div>
               <div>
-                <label style="font-size: 13px; font-weight: 500;">Ordre</label>
+                <label style="font-size: 13px; font-weight: 500;">{% translate "Ordre" %}</label>
                 {{ form_video.order }}
               </div>
             </div>
@@ -276,8 +277,8 @@
         </div>
       </div>
       <div class="fp-nav">
-        <button type="button" class="fp-btn-prev" onclick="goTo(2)">← Précédent</button>
-        <button type="submit" class="fp-btn-submit">Publier le logement</button>
+        <button type="button" class="fp-btn-prev" onclick="goTo(2)">← {% translate "Précédent" %}</button>
+        <button type="submit" class="fp-btn-submit">{% translate "Publier le logement" %}</button>
       </div>
     </div>
 

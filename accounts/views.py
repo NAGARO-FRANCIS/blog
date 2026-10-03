@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.utils.translation import gettext as _
 from .models import Profile, DocumentVerification, VerificationLog, ProfileVerification, Subscription
 from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileEditForm, IndividuRoleForm
 from django.contrib import messages
@@ -197,22 +198,22 @@ def resend_activation(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
         if not email:
-            messages.error(request, "Veuillez fournir une adresse email.")
+            messages.error(request, _("Veuillez fournir une adresse email."))
             return redirect('accounts:inscription_pending')
 
         try:
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
-            messages.error(request, "Aucun compte trouvé pour cette adresse email.")
+            messages.error(request, _("Aucun compte trouvé pour cette adresse email."))
             return redirect('accounts:inscription_pending')
 
         if user.is_active:
-            messages.info(request, "Ce compte est déjà activé. Vous pouvez vous connecter.")
+            messages.info(request, _("Ce compte est déjà activé. Vous pouvez vous connecter."))
             return redirect('accounts:login')
 
         send_activation_email(request, user, 'Activation de votre compte Coloc.ai - Renvoyé')
 
-        messages.success(request, "Un nouvel email d'activation a été envoyé.")
+        messages.success(request, _("Un nouvel email d'activation a été envoyé."))
         return redirect('accounts:inscription_pending')
 
     # GET -> afficher la page avec formulaire simple
@@ -250,7 +251,7 @@ def verify_phone(request):
     try:
         user = User.objects.get(pk=pending_id)
     except User.DoesNotExist:
-        messages.error(request, "Compte introuvable.")
+        messages.error(request, _("Compte introuvable."))
         return redirect('accounts:inscription')
 
     profile = user.profile
@@ -258,14 +259,14 @@ def verify_phone(request):
     if request.method == 'POST':
         code = ''.join(request.POST.get('code', '').split())
         if not code:
-            messages.error(request, "Veuillez saisir le code reçu par SMS.")
+            messages.error(request, _("Veuillez saisir le code reçu par SMS."))
             return render(request, 'accounts/verify_phone.html', {
                 'phone': profile.telephone,
                 'debug_code': profile.phone_verification_code if settings.DEBUG else '',
             })
 
         if not code.isdigit() or len(code) != 6:
-            messages.error(request, "Le code doit contenir exactement 6 chiffres.")
+            messages.error(request, _("Le code doit contenir exactement 6 chiffres."))
             return render(request, 'accounts/verify_phone.html', {
                 'phone': profile.telephone,
                 'debug_code': profile.phone_verification_code if settings.DEBUG else '',
@@ -273,7 +274,7 @@ def verify_phone(request):
 
         # Vérifier expiration (15 minutes)
         if profile.phone_verification_created_at and timezone.now() - profile.phone_verification_created_at > timezone.timedelta(minutes=15):
-            messages.error(request, "Le code a expiré. Demandez un nouveau code.")
+            messages.error(request, _("Le code a expiré. Demandez un nouveau code."))
             return redirect('accounts:inscription_pending')
 
         if code == profile.phone_verification_code:
@@ -290,11 +291,11 @@ def verify_phone(request):
                 del request.session['pending_user_id']
 
             login(request, user)
-            messages.success(request, "Votre numéro a été vérifié et votre compte activé.")
+            messages.success(request, _("Votre numéro a été vérifié et votre compte activé."))
             destination = request.session.pop('pending_post_verification_redirect', 'accounts:dashboard')
             return redirect(destination)
         else:
-            messages.error(request, "Code invalide. Vérifiez et réessayez.")
+            messages.error(request, _("Code invalide. Vérifiez et réessayez."))
 
     return render(request, 'accounts/verify_phone.html', {
         'phone': profile.telephone,
@@ -320,17 +321,17 @@ def resend_phone_code(request):
     if user is None:
         phone = request.POST.get('phone', '').strip()
         if not phone:
-            messages.error(request, "Veuillez fournir un numéro de téléphone.")
+            messages.error(request, _("Veuillez fournir un numéro de téléphone."))
             return redirect('accounts:inscription_pending')
         try:
             profile = Profile.objects.select_related('user').get(telephone=phone)
             user = profile.user
         except Profile.DoesNotExist:
-            messages.error(request, "Aucun compte trouvé pour ce numéro.")
+            messages.error(request, _("Aucun compte trouvé pour ce numéro."))
             return redirect('accounts:inscription_pending')
 
     if user.is_active:
-        messages.info(request, "Le compte lié à ce numéro est déjà activé.")
+        messages.info(request, _("Le compte lié à ce numéro est déjà activé."))
         return redirect('accounts:login')
 
     code = '{:06d}'.format(secrets.randbelow(1000000))
@@ -339,7 +340,7 @@ def resend_phone_code(request):
     profile.save(update_fields=['phone_verification_code', 'phone_verification_created_at'])
 
     send_sms(profile.telephone, f"Votre nouveau code Coloc.ai : {code}")
-    messages.success(request, "Un nouveau code a été envoyé par SMS.")
+    messages.success(request, _("Un nouveau code a été envoyé par SMS."))
     # Si le compte est celui en attente, mettre à jour la session
     request.session['pending_user_id'] = user.pk
     return redirect('accounts:verify_phone')
@@ -448,12 +449,17 @@ def verify_profile(request, user_id):
     """Permet à un utilisateur de vérifier un autre profil."""
     target_user = User.objects.filter(pk=user_id).first()
     if not target_user or target_user == request.user:
-        messages.error(request, 'Impossible de vérifier ce profil.')
+        messages.error(request, _('Impossible de vérifier ce profil.'))
         return redirect('accounts:profil')
 
     target_profile = target_user.profile
     ProfileVerification.objects.get_or_create(verifier=request.user, verified_profile=target_profile)
-    messages.success(request, f'Vous avez vérifié le profil de {target_user.get_full_name() or target_user.username}.')
+    messages.success(
+        request,
+        _('Vous avez vérifié le profil de %(name)s.') % {
+            'name': target_user.get_full_name() or target_user.username,
+        },
+    )
     return redirect('accounts:profil')
 
 
@@ -468,16 +474,16 @@ def upload_document(request):
     document_file = request.FILES.get('document_file')
     
     if not document_type or not document_file:
-        messages.error(request, 'Choisissez un type de document et un fichier.')
+        messages.error(request, _('Choisissez un type de document et un fichier.'))
         return redirect('accounts:verification_docs')
 
     allowed_document_types = {choice[0] for choice in DocumentVerification.DOCUMENT_TYPE_CHOICES}
     if document_type not in allowed_document_types:
-        messages.error(request, 'Type de document non valide.')
+        messages.error(request, _('Type de document non valide.'))
         return redirect('accounts:verification_docs')
     
     if document_file.size > 5 * 1024 * 1024:
-        messages.error(request, 'Le fichier dépasse la taille maximale de 5 Mo.')
+        messages.error(request, _('Le fichier dépasse la taille maximale de 5 Mo.'))
         return redirect('accounts:verification_docs')
 
     try:
@@ -485,10 +491,10 @@ def upload_document(request):
             warnings.simplefilter('error', Image.DecompressionBombWarning)
             with Image.open(document_file) as uploaded_image:
                 if uploaded_image.format not in {'JPEG', 'PNG', 'GIF'}:
-                    messages.error(request, 'Format de fichier invalide. Utilisez une image JPG, PNG ou GIF.')
+                    messages.error(request, _('Format de fichier invalide. Utilisez une image JPG, PNG ou GIF.'))
                     return redirect('accounts:verification_docs')
                 if uploaded_image.width * uploaded_image.height > 25_000_000:
-                    messages.error(request, 'Les dimensions de l’image dépassent la limite autorisée.')
+                    messages.error(request, _('Les dimensions de l’image dépassent la limite autorisée.'))
                     return redirect('accounts:verification_docs')
                 uploaded_image.verify()
     except (
@@ -499,7 +505,7 @@ def upload_document(request):
         Image.DecompressionBombError,
         Image.DecompressionBombWarning,
     ):
-        messages.error(request, 'Le fichier envoyé n’est pas une image valide.')
+        messages.error(request, _('Le fichier envoyé n’est pas une image valide.'))
         return redirect('accounts:verification_docs')
 
     document_file.seek(0)
@@ -518,7 +524,7 @@ def upload_document(request):
         profile.verified = False
         profile.verification_date = None
         profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
-        messages.error(request, 'Ce fichier a déjà été soumis et doit être vérifié par notre équipe.')
+        messages.error(request, _('Ce fichier a déjà été soumis et doit être vérifié par notre équipe.'))
         return redirect('accounts:verification_docs')
     
     # Créer ou mettre à jour le document
@@ -551,7 +557,10 @@ def upload_document(request):
         details=f"Document téléchargé, en attente de vérification manuelle - Type: {document_type}",
         ip_address=get_client_ip(request)
     )
-    messages.success(request, 'Document reçu. Il sera vérifié par notre équipe avant validation de votre profil.')
+    messages.success(
+        request,
+        _('Document reçu. Il sera vérifié par notre équipe avant validation de votre profil.'),
+    )
     return redirect('accounts:verification_docs')
 
 

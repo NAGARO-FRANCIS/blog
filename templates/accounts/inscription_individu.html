@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% translate "Veuillez remplir tous les champs requis" as required_fields_error %}
 
-{% block title %}S'inscrire comme Individu - Coloc.ai{% endblock %}
+{% block title %}{% translate "S'inscrire comme Individu" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="signup-wrapper">
@@ -14,8 +16,8 @@
                 <div class="progress-line"></div>
                 <div class="progress-step" id="step3-indicator">3</div>
             </div>
-            <h1 id="step-title">Créer votre compte</h1>
-            <p id="step-subtitle">👤 Inscription Individu</p>
+            <h1 id="step-title">{% translate "Créer votre compte" %}</h1>
+            <p id="step-subtitle">👤 {% translate "Inscription Individu" %}</p>
         </div>
 
         <!-- Error Messages -->
@@ -33,64 +35,64 @@
             <!-- STEP 1: Basic Info -->
             <div class="signup-step visible" id="step1">
                 <div class="step-content">
-                    <h2 class="step-heading">👤 Informations personnelles</h2>
+                    <h2 class="step-heading">👤 {% translate "Informations personnelles" %}</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.first_name.id_for_label }}">Prénom</label>
+                            <label for="{{ form.first_name.id_for_label }}">{% translate "Prénom" %}</label>
                             {{ form.first_name }}
                             {% if form.first_name.errors %}<span class="field-error">{{ form.first_name.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.last_name.id_for_label }}">Nom</label>
+                            <label for="{{ form.last_name.id_for_label }}">{% translate "Nom" %}</label>
                             {{ form.last_name }}
                             {% if form.last_name.errors %}<span class="field-error">{{ form.last_name.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.username.id_for_label }}">👤 Nom d'utilisateur</label>
+                        <label for="{{ form.username.id_for_label }}">👤 {% translate "Nom d'utilisateur" %}</label>
                         {{ form.username }}
                         {% if form.username.errors %}<span class="field-error">{{ form.username.errors.0 }}</span>{% endif %}
-                        <small class="form-hint">Caractères alphanumériques et _ seulement</small>
+                        <small class="form-hint">{% translate "Caractères alphanumériques et _ seulement" %}</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.email.id_for_label }}">📧 Email</label>
+                        <label for="{{ form.email.id_for_label }}">📧 {% translate "Email" %}</label>
                         {{ form.email }}
                         {% if form.email.errors %}<span class="field-error">{{ form.email.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.password1.id_for_label }}">🔑 Mot de passe</label>
+                            <label for="{{ form.password1.id_for_label }}">🔑 {% translate "Mot de passe" %}</label>
                             {{ form.password1 }}
                             {% if form.password1.errors %}<span class="field-error">{{ form.password1.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.password2.id_for_label }}">🔑 Confirmer</label>
+                            <label for="{{ form.password2.id_for_label }}">🔑 {% translate "Confirmer" %}</label>
                             {{ form.password2 }}
                             {% if form.password2.errors %}<span class="field-error">{{ form.password2.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
-                    <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                    <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                 </div>
             </div>
 
             <!-- STEP 2: Profile Details -->
             <div class="signup-step" id="step2">
                 <div class="step-content">
-                    <h2 class="step-heading">📍 Informations du profil</h2>
+                    <h2 class="step-heading">📍 {% translate "Informations du profil" %}</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.ville.id_for_label }}">📍 Ville</label>
+                            <label for="{{ form.ville.id_for_label }}">📍 {% translate "Ville" %}</label>
                             {{ form.ville }}
                             {% if form.ville.errors %}<span class="field-error">{{ form.ville.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.quartier.id_for_label }}">Quartier (optionnel)</label>
+                            <label for="{{ form.quartier.id_for_label }}">{% translate "Quartier (optionnel)" %}</label>
                             {{ form.quartier }}
                             {% if form.quartier.errors %}<span class="field-error">{{ form.quartier.errors.0 }}</span>{% endif %}
                         </div>
@@ -98,12 +100,12 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.date_naissance.id_for_label }}">🎂 Date de naissance</label>
+                            <label for="{{ form.date_naissance.id_for_label }}">🎂 {% translate "Date de naissance" %}</label>
                             {{ form.date_naissance }}
                             {% if form.date_naissance.errors %}<span class="field-error">{{ form.date_naissance.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.sexe.id_for_label }}">👥 Sexe</label>
+                            <label for="{{ form.sexe.id_for_label }}">👥 {% translate "Sexe" %}</label>
                             <div class="radio-group">
                                 {% for value, label in form.sexe.field.choices %}
                                     <label class="radio-label">
@@ -117,14 +119,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.telephone.id_for_label }}">📱 Téléphone</label>
+                        <label for="{{ form.telephone.id_for_label }}">📱 {% translate "Téléphone" %}</label>
                         {{ form.telephone }}
                         {% if form.telephone.errors %}<span class="field-error">{{ form.telephone.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-row">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -132,10 +134,10 @@
             <!-- STEP 3: Account Type & Documents -->
             <div class="signup-step" id="step3">
                 <div class="step-content">
-                    <h2 class="step-heading">🎯 Type de compte et documents</h2>
+                    <h2 class="step-heading">🎯 {% translate "Type de compte et documents" %}</h2>
 
                     <div class="form-group">
-                        <label>Qui êtes-vous ?</label>
+                        <label>{% translate "Qui êtes-vous ?" %}</label>
                         <div class="role-grid">
                             {% for value, label in form.role.field.choices %}
                                 <label class="role-card">
@@ -149,21 +151,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.profession.id_for_label }}">💼 Profession</label>
+                        <label for="{{ form.profession.id_for_label }}">💼 {% translate "Profession" %}</label>
                         {{ form.profession }}
                         {% if form.profession.errors %}<span class="field-error">{{ form.profession.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-group">
-                        <label>🪪 Pièce d'identité</label>
+                        <label>🪪 {% translate "Pièce d'identité" %}</label>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="{{ form.type_piece_identite.id_for_label }}">Type</label>
+                                <label for="{{ form.type_piece_identite.id_for_label }}">{% translate "Type" %}</label>
                                 {{ form.type_piece_identite }}
                                 {% if form.type_piece_identite.errors %}<span class="field-error">{{ form.type_piece_identite.errors.0 }}</span>{% endif %}
                             </div>
                             <div class="form-group">
-                                <label for="{{ form.numero_piece_identite.id_for_label }}">Numéro</label>
+                                <label for="{{ form.numero_piece_identite.id_for_label }}">{% translate "Numéro" %}</label>
                                 {{ form.numero_piece_identite }}
                                 {% if form.numero_piece_identite.errors %}<span class="field-error">{{ form.numero_piece_identite.errors.0 }}</span>{% endif %}
                             </div>
@@ -171,22 +173,22 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.photo_profil.id_for_label }}">📸 Photo de profil (optionnel)</label>
+                        <label for="{{ form.photo_profil.id_for_label }}">📸 {% translate "Photo de profil (optionnel)" %}</label>
                         <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
                             <span class="photo-upload-icon">📷</span>
                             <div>
-                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">Cliquez ou déposez une photo</p>
-                                <span class="upload-hint">JPG, PNG ou GIF. Max 5MB</span>
+                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">{% translate "Cliquez ou déposez une photo" %}</p>
+                                <span class="upload-hint">{% translate "JPG, PNG ou GIF. Max 5MB" %}</span>
                             </div>
-                            <img id="photoPreview" class="photo-preview" alt="Aperçu">
+                            <img id="photoPreview" class="photo-preview" alt="{% translate 'Aperçu' %}">
                         </div>
                         {{ form.photo_profil }}
                         {% if form.photo_profil.errors %}<span class="field-error">{{ form.photo_profil.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-row">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="submit" class="btn btn-success">✅ Créer mon compte</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="submit" class="btn btn-success">✅ {% translate "Créer mon compte" %}</button>
                     </div>
                 </div>
             </div>
@@ -194,7 +196,7 @@
 
         <!-- Footer -->
         <div class="auth-footer">
-            <p>Vous avez déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></p>
+            <p>{% translate "Vous avez déjà un compte ?" %} <a href="{% url 'accounts:login' %}">{% translate "Se connecter" %}</a></p>
         </div>
     </div>
 
@@ -641,7 +643,7 @@
         });
 
         if (!isValid) {
-            alert('Veuillez remplir tous les champs requis');
+            alert('{{ required_fields_error|escapejs }}');
             return;
         }
 

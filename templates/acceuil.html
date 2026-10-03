@@ -1,7 +1,7 @@
 ﻿{% extends 'base.html' %}
-{% load static %}
+{% load i18n static %}
 
-{% block title %}Toutes les annonces - Coloc.ai{% endblock %}
+{% block title %}{% translate "Toutes les annonces" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="feed-wrapper">
@@ -15,7 +15,7 @@
             </div>
 
             <form method="get" class="feed-search" id="feedSearchForm">
-                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="🔍 Rechercher un logement, une ville..." class="feed-search-input">
+                <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="🔍 {% translate 'Rechercher un logement, une ville…' %}" class="feed-search-input">
                 <!-- Champs avancés cachés, toggle par bouton filtre -->
                 <div class="feed-search-advanced" id="advancedSearch">
                     <div class="adv-group">
@@ -43,27 +43,27 @@
                     <div class="adv-group">{{ form.electricite.label_tag }}{{ form.electricite }}</div>
                     <div class="adv-group">{{ form.distance_universite_max.label_tag }}{{ form.distance_universite_max }}</div>
                     <div class="adv-group">{{ form.distance_hopital_max.label_tag }}{{ form.distance_hopital_max }}</div>
-                    <label class="adv-check">{{ form.disponible_immediatement }} Disponible immédiatement</label>
-                    <button type="submit" class="adv-submit">Appliquer</button>
+                    <label class="adv-check">{{ form.disponible_immediatement }} {% translate "Disponible immédiatement" %}</label>
+                    <button type="submit" class="adv-submit">{% translate "Appliquer" %}</button>
                 </div>
             </form>
 
-            <button type="button" class="feed-filter-toggle" onclick="toggleAdvanced()">⚙️ Filtres</button>
+            <button type="button" class="feed-filter-toggle" onclick="toggleAdvanced()">⚙️ {% translate "Filtres" %}</button>
         </div>
 
         <!-- CHIPS RAPIDES (façon TikTok "For You" tabs) -->
         <div class="feed-chips" id="feedChips">
-            <button type="button" class="chip {% if not request.GET.type_logement %}chip-active{% endif %}" data-filter="">✨ Tout</button>
-            <button type="button" class="chip" data-filter="chambre">🛏️ Chambres</button>
-            <button type="button" class="chip" data-filter="studio">🏢 Studios</button>
-            <button type="button" class="chip" data-filter="appartement">🏠 Appartements</button>
-            <button type="button" class="chip" data-filter="hotel">🏨 Hôtel/Nuitée</button>
+            <button type="button" class="chip {% if not request.GET.type_logement %}chip-active{% endif %}" data-filter="">✨ {% translate "Tout" %}</button>
+            <button type="button" class="chip" data-filter="chambre">🛏️ {% translate "Chambres" %}</button>
+            <button type="button" class="chip" data-filter="studio">🏢 {% translate "Studios" %}</button>
+            <button type="button" class="chip" data-filter="appartement">🏠 {% translate "Appartements" %}</button>
+            <button type="button" class="chip" data-filter="hotel">🏨 {% translate "Hôtel / nuitée" %}</button>
         </div>
     </div>
 
     <div class="feed-hero">
-        <h1>🇨🇮 Trouve ton prochain chez-toi</h1>
-        <p>{{ annonces|length }} logement{{ annonces|length|pluralize }} disponible{{ annonces|length|pluralize }} maintenant</p>
+        <h1>🇨🇮 {% translate "Trouvez votre prochain logement" %}</h1>
+        <p>{% blocktranslate count counter=annonces|length %}{{ counter }} logement disponible maintenant{% plural %}{{ counter }} logements disponibles maintenant{% endblocktranslate %}</p>
     </div>
 
     {% if annonces %}
@@ -98,11 +98,11 @@
                                 data-annonce-id="{{ annonce.id }}"
                                 onclick="toggleFavori(event, this, {{ annonce.id }})"
                                 ondblclick="burstHeart(event, this)"
-                                type="button" aria-label="Favori">
+                                type="button" aria-label="{% translate 'Favori' %}">
                             <span class="like-icon">{% if annonce.id in favoris_ids %}❤️{% else %}🤍{% endif %}</span>
                         </button>
                     {% else %}
-                        <button class="like-btn" onclick="alert('Connecte-toi pour ajouter aux favoris')" type="button" aria-label="Favori">
+                        <button class="like-btn" onclick="alert('{% translate 'Connectez-vous pour ajouter aux favoris' %}')" type="button" aria-label="{% translate 'Favori' %}">
                             <span class="like-icon">🤍</span>
                         </button>
                     {% endif %}
@@ -119,7 +119,7 @@
                                     {% elif annonce.prix %}
                                         {{ annonce.prix|floatformat:0 }}<small>FCFA</small>
                                     {% else %}
-                                        <small>Prix sur demande</small>
+                                        <small>{% translate "Prix sur demande" %}</small>
                                     {% endif %}
                                 </div>
                             </div>
@@ -137,7 +137,7 @@
 
                             <div class="feed-footer">
                                 <span class="feed-date">🕒 {{ annonce.created_at|timesince }}</span>
-                                <span class="feed-cta">Voir l'annonce →</span>
+                                <span class="feed-cta">{% translate "Voir l'annonce" %} →</span>
                             </div>
                         </div>
                     </a>
@@ -147,9 +147,9 @@
     {% else %}
         <div class="feed-empty">
             <div class="feed-empty-emoji">😔</div>
-            <h2>Aucune annonce ne correspond à ta recherche</h2>
-            <p>Essaie d'élargir tes critères ou reviens à toutes les annonces</p>
-            <a href="{% url 'logement:home' %}" class="btn-primary-lg">Voir toutes les annonces</a>
+            <h2>{% translate "Aucune annonce ne correspond à votre recherche" %}</h2>
+            <p>{% translate "Essayez d'élargir vos critères ou revenez à toutes les annonces" %}</p>
+            <a href="{% url 'logement:home' %}" class="btn-primary-lg">{% translate "Voir toutes les annonces" %}</a>
         </div>
     {% endif %}
 </div>

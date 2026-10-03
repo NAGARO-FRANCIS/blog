@@ -1,30 +1,31 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}Choisissez votre rôle - Inscription - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Choisissez votre rôle" %} - {% translate "Inscription" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
 <div class="role-page">
     <div class="role-shell">
 
         <!-- Indicateur d'étape -->
-        <div class="role-progress" aria-label="Étape 2 sur 2">
+        <div class="role-progress" aria-label="{% translate 'Étape 2 sur 2' %}">
             <div class="role-progress-step is-done">
                 <span class="role-progress-dot">
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </span>
-                <span class="role-progress-label">Compte créé</span>
+                <span class="role-progress-label">{% translate "Compte créé" %}</span>
             </div>
             <div class="role-progress-line"></div>
             <div class="role-progress-step is-active">
                 <span class="role-progress-dot">2</span>
-                <span class="role-progress-label">Choisissez votre rôle</span>
+                <span class="role-progress-label">{% translate "Choisissez votre rôle" %}</span>
             </div>
         </div>
 
         <header class="role-header">
-            <h1>Quel chemin vous ressemble?</h1>
-            <p>Votre réponse ajuste tout: ce que vous voyez en premier, et ce que vous pouvez faire sur Ivoire Connect.</p>
+            <h1>{% translate "Quel chemin vous ressemble?" %}</h1>
+            <p>{% translate "Votre réponse ajuste tout: ce que vous voyez en premier, et ce que vous pouvez faire sur Ivoire Connect." %}</p>
         </header>
 
         <form method="post" class="role-selection-form" novalidate>
@@ -46,13 +47,13 @@
                                 <path d="M17 32v-8h6v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
-                        <h3>Propriétaire</h3>
-                        <p class="role-description">Vous avez une maison ou des chambres à louer.</p>
+                        <h3>{% translate "Propriétaire" %}</h3>
+                        <p class="role-description">{% translate "Vous avez une maison ou des chambres à louer." %}</p>
                         <ul class="role-benefits">
-                            <li>Publier des annonces</li>
-                            <li>Gérer les réservations</li>
-                            <li>Suivre vos revenus</li>
-                            <li>Tableau de bord dédié</li>
+                            <li>{% translate "Publier des annonces" %}</li>
+                            <li>{% translate "Gérer les réservations" %}</li>
+                            <li>{% translate "Suivre vos revenus" %}</li>
+                            <li>{% translate "Tableau de bord dédié" %}</li>
                         </ul>
                     </label>
                 </div>
@@ -71,13 +72,13 @@
                                 <path d="M28 28l3-3M32 32l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </span>
-                        <h3>Locataire</h3>
-                        <p class="role-description">Vous avez de la place et cherchez à la partager.</p>
+                        <h3>{% translate "Locataire" %}</h3>
+                        <p class="role-description">{% translate "Vous avez de la place et cherchez à la partager." %}</p>
                         <ul class="role-benefits">
-                            <li>Publier une annonce de colocation</li>
-                            <li>Trouver un colocataire</li>
-                            <li>Gérer les candidatures</li>
-                            <li>Tableau de bord dédié</li>
+                            <li>{% translate "Publier une annonce de colocation" %}</li>
+                            <li>{% translate "Trouver un colocataire" %}</li>
+                            <li>{% translate "Gérer les candidatures" %}</li>
+                            <li>{% translate "Tableau de bord dédié" %}</li>
                         </ul>
                     </label>
                 </div>
@@ -96,13 +97,13 @@
                                 <path d="M10 21h20" stroke="currentColor" stroke-width="2"/>
                             </svg>
                         </span>
-                        <h3>Touriste</h3>
-                        <p class="role-description">Vous cherchez une chambre pour un séjour.</p>
+                        <h3>{% translate "Touriste" %}</h3>
+                        <p class="role-description">{% translate "Vous cherchez une chambre pour un séjour." %}</p>
                         <ul class="role-benefits">
-                            <li>Consulter toutes les annonces</li>
-                            <li>Contacter les propriétaires</li>
-                            <li>Profil public simplifié</li>
-                            <li>Sans publication d'annonce</li>
+                            <li>{% translate "Consulter toutes les annonces" %}</li>
+                            <li>{% translate "Contacter les propriétaires" %}</li>
+                            <li>{% translate "Profil public simplifié" %}</li>
+                            <li>{% translate "Sans publication d'annonce" %}</li>
                         </ul>
                     </label>
                 </div>
@@ -116,10 +117,10 @@
             <div class="role-actions">
                 <a href="{% url 'accounts:inscription' %}" class="role-btn role-btn-ghost">
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    Retour
+                    {% translate "Retour" %}
                 </a>
                 <button type="submit" class="role-btn role-btn-primary">
-                    Continuer
+                    {% translate "Continuer" %}
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8 4l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
             </div>

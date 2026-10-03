@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Compte activé - Coloc.ai{% endblock %}
+{% block title %}{% translate "Compte activé" %} - Coloc.ai{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 700px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-    <h1>✅ Compte activé</h1>
-    <p>Votre compte a été activé avec succès.</p>
-    <a href="{% url 'accounts:login' %}" class="btn">Se connecter</a>
+    <h1>✅ {% translate "Compte activé" %}</h1>
+    <p>{% translate "Votre compte a été activé avec succès." %}</p>
+    <a href="{% url 'accounts:login' %}" class="btn">{% translate "Se connecter" %}</a>
 </div>
 {% endblock %}

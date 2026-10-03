@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Mes Logements - Gestion{% endblock %}
+{% block title %}{% translate "Mes Logements - Gestion" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -146,8 +146,8 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>🏠 Mes Logements</h1>
-    <p>Gestion de vos propriétés - Total: {{ total }} logement(s)</p>
+    <h1>🏠 {% translate "Mes Logements" %}</h1>
+    <p>{% blocktranslate with total_logements=total %}Gestion de vos propriétés - Total: {{ total_logements }} logement(s){% endblocktranslate %}</p>
 </div>
 
 <div class="container">
@@ -170,10 +170,10 @@
                     <div>💰 {{ logement.prix }} FCFA/mois</div>
                 </div>
                 <div class="logement-actions">
-                    <a href="{% url 'logement:modifier_logement' logement.id %}" class="btn btn-edit">✏️ Modifier</a>
+                    <a href="{% url 'logement:modifier_logement' logement.id %}" class="btn btn-edit">✏️ {% translate "Modifier" %}</a>
                     <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" style="flex: 1; margin: 0; display: inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-delete" onclick="return confirm('❌ Êtes-vous sûr de vouloir supprimer cette annonce ?\n\nCette action est irréversible.')">🗑️ Supprimer</button>
+                        <button type="submit" class="btn btn-delete" onclick="return confirm('{% translate "Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible." %}')">🗑️ {% translate "Supprimer" %}</button>
                     </form>
                 </div>
             </div>
@@ -183,8 +183,8 @@
     {% else %}
     <div class="empty-state">
         <div class="empty-icon">🏠</div>
-        <p class="empty-text">Aucun logement trouvé</p>
-        <a href="{% url 'logement:ajouter_logement' %}">+ Ajouter votre premier logement</a>
+        <p class="empty-text">{% translate "Aucun logement trouvé" %}</p>
+        <a href="{% url 'logement:ajouter_logement' %}">+ {% translate "Ajouter votre premier logement" %}</a>
     </div>
     {% endif %}
 </div>

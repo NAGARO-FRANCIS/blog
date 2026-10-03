@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Conversation avec {{ other_participant.get_full_name|default:other_participant.username }} - Coloc.ai{% endblock %}
+{% block title %}{% blocktranslate with participant=other_participant.get_full_name|default:other_participant.username %}Conversation avec {{ participant }} - Coloc.ai{% endblocktranslate %}{% endblock %}
 
 {% block content %}
 <div class="container conversation-page">
@@ -8,7 +9,7 @@
         <div class="participant-info">
             <div class="participant-avatar">
                 {% if other_participant.profile.photo_profil %}
-                    <img src="{{ other_participant.profile.photo_profil.url }}" alt="Photo de {{ other_participant.get_full_name }}">
+                    <img src="{{ other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ other_participant.get_full_name }}">
                 {% else %}
                     <div class="avatar-placeholder">{{ other_participant.get_full_name|default:other_participant.username|first|upper }}</div>
                 {% endif %}
@@ -16,11 +17,11 @@
             <div class="participant-details">
                 <h1>{{ other_participant.get_full_name|default:other_participant.username }}</h1>
                 {% if conversation.annonce %}
-                    <p class="conversation-subject">📄 À propos de: {{ conversation.annonce.titre }}</p>
+                    <p class="conversation-subject">📄 {% translate "À propos de:" %} {{ conversation.annonce.titre }}</p>
                 {% endif %}
                 <p class="conversation-status">
                     {% if other_participant.profile.verified %}
-                        <span class="verified-badge">✓ Profil vérifié</span>
+                        <span class="verified-badge">✓ {% translate "Profil vérifié" %}</span>
                     {% endif %}
                     <span class="location">📍 {{ other_participant.profile.ville }}</span>
                 </p>
@@ -28,13 +29,13 @@
         </div>
 
         <div class="conversation-actions">
-            <a href="{% url 'messagerie:mes_conversations' %}" class="btn secondary">
-                ← Retour aux conversations
+            <a href="{% url 'messagerie:mes_conversations' %}" class="btn secondary" aria-label="{% translate 'Retour aux conversations' %}" title="{% translate 'Retour aux conversations' %}">
+                <span aria-hidden="true">←</span><span class="action-label"> {% translate "Retour aux conversations" %}</span>
             </a>
-            <button type="button" class="btn call-btn" id="videoCallBtn">📹 Appel vidéo</button>
-            <button type="button" class="btn call-btn" id="audioCallBtn">📞 Appel vocal</button>
-            <button type="button" class="btn danger" onclick="confirmerSuppression()">
-                🗑️ Supprimer la conversation
+            <button type="button" class="btn call-btn" id="videoCallBtn" aria-label="{% translate 'Appel vidéo' %}" title="{% translate 'Appel vidéo' %}">📹<span class="action-label"> {% translate "Appel vidéo" %}</span></button>
+            <button type="button" class="btn call-btn" id="audioCallBtn" aria-label="{% translate 'Appel vocal' %}" title="{% translate 'Appel vocal' %}">📞<span class="action-label"> {% translate "Appel vocal" %}</span></button>
+            <button type="button" class="btn danger" onclick="confirmerSuppression()" aria-label="{% translate 'Supprimer la conversation' %}" title="{% translate 'Supprimer la conversation' %}">
+                🗑️<span class="action-label"> {% translate "Supprimer" %}</span>
             </button>
         </div>
     </div>
@@ -50,12 +51,12 @@
                         {% if message.attachment %}
                             {% if message.is_audio %}
                                 <div class="message-attachment audio-attachment">
-                                    <span class="attachment-label-inline">🎤 Message vocal</span>
+                                    <span class="attachment-label-inline">🎤 {% translate "Message vocal" %}</span>
                                     <audio controls preload="metadata" src="{{ message.attachment.url }}"></audio>
                                 </div>
                             {% elif message.is_video %}
                                 <div class="message-attachment video-attachment">
-                                    <span class="attachment-label-inline">🎥 Message vidéo</span>
+                                    <span class="attachment-label-inline">🎥 {% translate "Message vidéo" %}</span>
                                     <video controls preload="metadata" src="{{ message.attachment.url }}"></video>
                                 </div>
                             {% else %}
@@ -69,16 +70,16 @@
                         <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
                         {% if message.expediteur == request.user %}
                             {% if message.lu %}
-                                <span class="read-status" title="Lu">✓✓</span>
+                                <span class="read-status" title="{% translate 'Lu' %}">✓✓</span>
                             {% else %}
-                                <span class="read-status" title="Envoyé">✓</span>
+                                <span class="read-status" title="{% translate 'Envoyé' %}">✓</span>
                             {% endif %}
                         {% endif %}
                     </div>
                 </div>
             </div>
         {% empty %}
-            <div class="empty-chat">Aucun message pour le moment. Démarrez la conversation.</div>
+            <div class="empty-chat">{% translate "Aucun message pour le moment. Démarrez la conversation." %}</div>
         {% endfor %}
     </div>
 
@@ -87,27 +88,27 @@
             {% csrf_token %}
             <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
             <div class="form-group">
-                <textarea name="contenu" id="messageContent" placeholder="Tapez votre message..." rows="1"></textarea>
-                <label for="messageAttachment" class="attachment-label" title="Joindre un fichier">
+                <textarea name="contenu" id="messageContent" placeholder="{% translate 'Tapez votre message...' %}" rows="1"></textarea>
+                <label for="messageAttachment" class="attachment-label" title="{% translate 'Joindre un fichier' %}">
                     📎
                     <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
                 </label>
             </div>
             <div class="message-tools">
-                <button type="button" id="voiceRecorderBtn" class="voice-btn" title="Envoyer un message vocal">🎤</button>
-                <span id="voiceStatus" class="voice-status">Enregistrer un vocal</span>
+                <button type="button" id="voiceRecorderBtn" class="voice-btn" title="{% translate 'Envoyer un message vocal' %}" aria-label="{% translate 'Enregistrer un message vocal' %}">🎤</button>
+                    <span id="voiceStatus" class="voice-status">{% translate "Enregistrer un vocal" %}</span>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn">📤 Envoyer</button>
+                <button type="submit" class="btn">📤 {% translate "Envoyer" %}</button>
             </div>
         </form>
     </div>
 
     <div class="call-panel" id="callPanel" hidden>
         <div class="call-panel-header">
-            <strong id="callStatus">Appel en cours</strong>
-            <button type="button" class="btn hold-btn" id="holdCallBtn">⏸ Mettre en attente</button>
-            <button type="button" class="btn danger" id="endCallBtn">Raccrocher</button>
+            <strong id="callStatus">{% translate "Appel en cours" %}</strong>
+            <button type="button" class="btn hold-btn" id="holdCallBtn">⏸ {% translate "Mettre en attente" %}</button>
+            <button type="button" class="btn danger" id="endCallBtn">{% translate "Raccrocher" %}</button>
         </div>
         <div class="call-videos">
             <video id="remoteVideo" autoplay playsinline></video>
@@ -116,22 +117,22 @@
     </div>
 
     <div class="incoming-call" id="incomingCall" hidden>
-        <span id="incomingCallText">Appel entrant</span>
-        <button type="button" class="btn" id="acceptCallBtn">📞 Décrocher</button>
-        <button type="button" class="btn secondary" id="rejectCallBtn">☎️ Raccrocher</button>
+        <span id="incomingCallText" data-call-template="{% blocktranslate with caller='__CALLER__' %}{{ caller }} vous appelle{% endblocktranslate %}">{% translate "Appel entrant" %}</span>
+        <button type="button" class="btn" id="acceptCallBtn">📞 {% translate "Décrocher" %}</button>
+        <button type="button" class="btn secondary" id="rejectCallBtn">☎️ {% translate "Raccrocher" %}</button>
     </div>
 </div>
 
 <!-- Modal de confirmation de suppression -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
-        <h3>Supprimer la conversation ?</h3>
-        <p>Cette action est irréversible. Tous les messages seront supprimés.</p>
+        <h3>{% translate "Supprimer la conversation ?" %}</h3>
+        <p>{% translate "Cette action est irréversible. Tous les messages seront supprimés." %}</p>
         <div class="modal-actions">
-            <button type="button" class="btn secondary" onclick="fermerModal()">Annuler</button>
+            <button type="button" class="btn secondary" onclick="fermerModal()">{% translate "Annuler" %}</button>
             <form method="post" action="{% url 'messagerie:supprimer_conversation' conversation.id %}">
                 {% csrf_token %}
-                <button type="submit" class="btn danger">Supprimer</button>
+                <button type="submit" class="btn danger">{% translate "Supprimer" %}</button>
             </form>
         </div>
     </div>
@@ -139,32 +140,34 @@
 
 <style>
     .conversation-page {
-        max-width: 1000px;
+        width: 100%;
+        max-width: 1280px;
         margin: 0 auto;
-        padding: 20px;
+        padding: clamp(10px, 1.8vw, 20px);
         background: #f0f2f5;
         display: flex;
         flex-direction: column;
-        height: 100vh;
-        max-height: 100vh;
+        gap: 8px;
     }
 
     .conversation-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 20px;
+        gap: 16px;
+        padding: 10px 14px;
         background: white;
         border-radius: 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        margin-bottom: 16px;
         border-bottom: 1px solid #e5e7eb;
+        flex: 0 0 auto;
     }
 
     .participant-info {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
     }
 
     .participant-avatar {
@@ -185,6 +188,7 @@
         font-size: 1.1rem;
         color: #1a1a1a;
         font-weight: 600;
+        overflow-wrap: anywhere;
     }
 
     .conversation-subject {
@@ -218,12 +222,14 @@
 
     .conversation-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
+        justify-content: flex-end;
     }
 
     .conversation-actions .btn {
-        padding: 8px 16px;
-        font-size: 0.9rem;
+        padding: 7px 10px;
+        font-size: 0.82rem;
     }
 
     .call-panel,
@@ -283,13 +289,16 @@
     .messages-container {
         background: white;
         border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 16px;
+        padding: 12px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        flex: 1;
+        flex: 0 1 auto;
+        min-height: 0;
+        max-height: min(55vh, 520px);
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        overscroll-behavior: contain;
+        scroll-behavior: smooth;
     }
 
     @keyframes messageSlideIn {
@@ -354,6 +363,10 @@
         word-wrap: break-word;
         line-height: 1.4;
         font-size: 0.95rem;
+    }
+
+    .message-bubble p {
+        margin: 0;
     }
 
     .message-row.sent .message-bubble {
@@ -434,9 +447,10 @@
     .message-form-container {
         background: white;
         border-radius: 12px;
-        padding: 16px;
+        padding: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         border-top: 1px solid #e5e7eb;
+        flex: 0 0 auto;
     }
 
     .message-form {
@@ -447,6 +461,7 @@
 
     .form-group {
         flex: 1;
+        min-width: 0;
         position: relative;
         display: flex;
         align-items: center;
@@ -456,11 +471,11 @@
     .message-form textarea {
         width: 100%;
         min-height: 44px;
-        max-height: 100px;
+        max-height: 120px;
         padding: 10px 44px 10px 14px;
         border: 1px solid #d0d0d0;
         border-radius: 20px;
-        resize: vertical;
+        resize: none;
         font-family: inherit;
         font-size: 0.95rem;
         color: #1a1a1a;
@@ -606,35 +621,169 @@
     }
 
     @media (max-width: 768px) {
+        .conversation-page {
+            gap: 6px;
+            padding: 6px 10px;
+        }
+
         .conversation-header {
-            flex-direction: column;
-            gap: 15px;
-            text-align: center;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+        }
+
+        .participant-info {
+            justify-content: flex-start;
+            flex: 1 1 auto;
+            gap: 8px;
+        }
+
+        .participant-avatar img,
+        .participant-avatar .avatar-placeholder {
+            width: 38px;
+            height: 38px;
+        }
+
+        .participant-details h1 {
+            font-size: 0.92rem;
+        }
+
+        .conversation-subject,
+        .location {
+            font-size: 0.72rem;
+        }
+
+        .conversation-status {
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        .verified-badge {
+            padding: 1px 6px;
+            font-size: 0.65rem;
         }
 
         .conversation-actions {
+            flex: 0 0 auto;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+        }
+
+        .conversation-actions .btn {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .conversation-actions .action-label {
+            display: none;
+        }
+
+        .messages-container {
+            max-height: 45dvh;
+            padding: 8px;
         }
 
         .message-form {
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 38px auto;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group {
+            grid-column: 1;
+            grid-row: 1;
+            width: 100%;
         }
 
         .message-form textarea {
-            min-height: 80px;
+            min-height: 40px;
+            font-size: 0.9rem;
+        }
+
+        .message-tools {
+            grid-column: 2;
+            grid-row: 1;
+            justify-content: center;
+        }
+
+        .voice-status {
+            display: none;
         }
 
         .form-actions {
-            width: 100%;
+            grid-column: 3;
+            grid-row: 1;
+            width: auto;
         }
 
         .form-actions .btn {
-            width: 100%;
+            width: auto;
+            padding: 8px 10px;
+            white-space: nowrap;
+            font-size: 0.82rem;
+        }
+
+        .message-bubble-item {
+            max-width: 86%;
+        }
+
+        .messages-container {
+            padding: 12px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .conversation-header {
+            padding: 7px;
+        }
+
+        .conversation-actions .btn {
+            width: 30px;
+            height: 30px;
+        }
+
+        .message-tools .voice-btn {
+            width: 36px;
+            height: 36px;
+        }
+
+        .form-actions .btn {
+            padding: 9px 10px;
+            font-size: 0.82rem;
         }
     }
 </style>
 
 <script>
+    {% translate "Micro indisponible" as unavailable_microphone %}
+    {% translate "Échec de l’envoi du vocal" as voice_send_failure %}
+    {% translate "Enregistrement…" as voice_recording %}
+    {% translate "Envoi du vocal…" as voice_sending %}
+    {% translate "Autorisez le micro dans le navigateur" as allow_microphone %}
+    {% translate "Les appels ne sont pas pris en charge par ce navigateur." as unsupported_calls %}
+    {% translate "En attente de réponse…" as waiting_for_answer %}
+    {% translate "Connexion…" as connecting_call %}
+    {% translate "L’appel est en attente" as call_on_hold %}
+    {% translate "Appel en cours" as call_in_progress %}
+    {% translate "Connexion interrompue" as connection_interrupted %}
+    {% translate "Mettre en attente" as hold_call %}
+    {% translate "Appel terminé" as call_ended %}
+    {% translate "Reprendre l’appel" as resume_call %}
+    {% translate "Votre appel est en attente" as your_call_on_hold %}
+    {% translate "Le serveur d’appel est indisponible." as call_server_unavailable %}
+    {% translate "Autorisez la caméra et le micro pour appeler." as allow_camera_microphone %}
+    {% translate "Autorisez le micro pour appeler." as allow_microphone_to_call %}
+    {% translate "Impossible de modifier l’état de l’appel." as cannot_change_call_state %}
+    {% translate "Impossible de rejoindre cet appel." as cannot_join_call %}
     // Auto-scroll vers le bas des messages
     function scrollToBottom() {
         const container = document.getElementById('messagesContainer');
@@ -685,7 +834,7 @@
 
     async function ensureMicrophoneAccess() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
-            voiceStatus.textContent = 'Micro indisponible';
+            voiceStatus.textContent = '{{ unavailable_microphone|escapejs }}';
             voiceButton.disabled = true;
             return false;
         }
@@ -710,7 +859,7 @@
                         const blob = new Blob(recordedChunks, {type: mediaRecorder.mimeType || 'audio/webm'});
                         await sendVoiceMessage(blob, `voice-message.${extension}`);
                     } catch (error) {
-                        voiceStatus.textContent = 'Échec de l’envoi du vocal';
+                        voiceStatus.textContent = '{{ voice_send_failure|escapejs }}';
                     } finally {
                         stream.getTracks().forEach(track => track.stop());
                     }
@@ -718,17 +867,17 @@
                 mediaRecorder.start();
                 isRecording = true;
                 voiceButton.classList.add('recording');
-                voiceStatus.textContent = 'Enregistrement…';
+                voiceStatus.textContent = '{{ voice_recording|escapejs }}';
             } else {
                 mediaRecorder.stop();
                 isRecording = false;
                 voiceButton.classList.remove('recording');
-                voiceStatus.textContent = 'Envoi du vocal…';
+                voiceStatus.textContent = '{{ voice_sending|escapejs }}';
             }
         } catch (error) {
             voiceStatus.textContent = error.name === 'NotAllowedError'
-                ? 'Autorisez le micro dans le navigateur'
-                : 'Micro indisponible';
+                ? '{{ allow_microphone|escapejs }}'
+                : '{{ unavailable_microphone|escapejs }}';
             isRecording = false;
             voiceButton.classList.remove('recording');
         }
@@ -752,7 +901,7 @@
         if (response.ok) {
             window.location.reload();
         } else {
-            voiceStatus.textContent = 'Échec de l’envoi du vocal';
+            voiceStatus.textContent = '{{ voice_send_failure|escapejs }}';
         }
     }
 
@@ -816,7 +965,7 @@
 
     async function startCall(mode) {
         if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia) {
-            alert('Les appels ne sont pas pris en charge par ce navigateur.');
+            alert('{{ unsupported_calls|escapejs }}');
             return;
         }
         callMode = mode;
@@ -832,7 +981,7 @@
             method: 'POST', headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({kind: 'offer', payload: offer}),
         });
-        callStatus.textContent = 'En attente de réponse…';
+        callStatus.textContent = '{{ waiting_for_answer|escapejs }}';
         pollCall();
     }
 
@@ -842,7 +991,7 @@
         incomingCall.hidden = true;
         isCaller = false;
         await preparePeer();
-        callStatus.textContent = 'Connexion…';
+        callStatus.textContent = '{{ connecting_call|escapejs }}';
         pollCall();
     }
 
@@ -867,12 +1016,12 @@
                 } else if (signal.kind === 'candidate') {
                     pendingCandidates.push(payload);
                 } else if (signal.kind === 'hold') {
-                    callStatus.textContent = payload.on_hold ? 'L’appel est en attente' : 'Appel en cours';
+                    callStatus.textContent = payload.on_hold ? '{{ call_on_hold|escapejs }}' : '{{ call_in_progress|escapejs }}';
                 }
             }
             if (state.status === 'ended') endCall(false);
         } catch (error) {
-            callStatus.textContent = 'Connexion interrompue';
+            callStatus.textContent = '{{ connection_interrupted|escapejs }}';
         }
         if (callSessionId) setTimeout(pollCall, 1000);
     }
@@ -882,8 +1031,8 @@
         callSessionId = null;
         isCallOnHold = false;
         incomingCall.hidden = true;
-        document.getElementById('holdCallBtn').textContent = '⏸ Mettre en attente';
-        callStatus.textContent = 'Appel terminé';
+        document.getElementById('holdCallBtn').textContent = '⏸ {{ hold_call|escapejs }}';
+        callStatus.textContent = '{{ call_ended|escapejs }}';
         if (notify && sessionId) await callRequest(`/messagerie/appels/${sessionId}/terminer/`, {method: 'POST'}).catch(() => {});
         peerConnection?.close();
         localStream?.getTracks().forEach(track => track.stop());
@@ -897,8 +1046,8 @@
         isCallOnHold = !isCallOnHold;
         localStream.getTracks().forEach(track => { track.enabled = !isCallOnHold; });
         const holdButton = document.getElementById('holdCallBtn');
-        holdButton.textContent = isCallOnHold ? '▶ Reprendre l’appel' : '⏸ Mettre en attente';
-        callStatus.textContent = isCallOnHold ? 'Votre appel est en attente' : 'Appel en cours';
+        holdButton.textContent = isCallOnHold ? '▶ {{ resume_call|escapejs }}' : '⏸ {{ hold_call|escapejs }}';
+        callStatus.textContent = isCallOnHold ? '{{ your_call_on_hold|escapejs }}' : '{{ call_in_progress|escapejs }}';
         await callRequest(`/messagerie/appels/${callSessionId}/signaler/`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -912,14 +1061,14 @@
     }
 
     document.getElementById('videoCallBtn').addEventListener('click', () => startCall('video').catch(error => {
-        showCallError(error.message === 'appel indisponible' ? 'Le serveur d’appel est indisponible.' : 'Autorisez la caméra et le micro pour appeler.');
+        showCallError(error.message === 'appel indisponible' ? '{{ call_server_unavailable|escapejs }}' : '{{ allow_camera_microphone|escapejs }}');
     }));
     document.getElementById('audioCallBtn').addEventListener('click', () => startCall('audio').catch(error => {
-        showCallError(error.message === 'appel indisponible' ? 'Le serveur d’appel est indisponible.' : 'Autorisez le micro pour appeler.');
+        showCallError(error.message === 'appel indisponible' ? '{{ call_server_unavailable|escapejs }}' : '{{ allow_microphone_to_call|escapejs }}');
     }));
     document.getElementById('endCallBtn').addEventListener('click', () => endCall(true));
-    document.getElementById('holdCallBtn').addEventListener('click', () => toggleHold().catch(() => showCallError('Impossible de modifier l’état de l’appel.')));
-    document.getElementById('acceptCallBtn').addEventListener('click', () => acceptCall().catch(() => showCallError('Impossible de rejoindre cet appel.')));
+    document.getElementById('holdCallBtn').addEventListener('click', () => toggleHold().catch(() => showCallError('{{ cannot_change_call_state|escapejs }}')));
+    document.getElementById('acceptCallBtn').addEventListener('click', () => acceptCall().catch(() => showCallError('{{ cannot_join_call|escapejs }}')));
     document.getElementById('rejectCallBtn').addEventListener('click', async () => {
         const sessionId = incomingCall.dataset.sessionId;
         incomingCall.hidden = true;
@@ -934,7 +1083,8 @@
         if (data.call) {
             incomingCall.dataset.sessionId = data.call.id;
             incomingCall.dataset.mediaType = data.call.media_type;
-            document.getElementById('incomingCallText').textContent = `${data.call.caller} vous appelle`;
+            const incomingCallText = document.getElementById('incomingCallText');
+            incomingCallText.textContent = incomingCallText.dataset.callTemplate.replace('__CALLER__', data.call.caller);
             incomingCall.hidden = false;
         }
     }

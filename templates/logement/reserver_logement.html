@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load i18n static %}
 
-{% block title %}Réserver - {{ logement.titre }} - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Réserver" %} - {{ logement.titre }} - Ivoire Connect{% endblock %}
 
 {% block content %}
 
@@ -530,8 +530,8 @@
         <div class="rb-form-header">
           <div class="rb-form-header-icon">📋</div>
           <div>
-            <h1 class="rb-form-title">Formulaire de réservation</h1>
-            <p class="rb-form-subtitle">Remplissez les informations ci-dessous pour continuer</p>
+            <h1 class="rb-form-title">{% translate "Formulaire de réservation" %}</h1>
+            <p class="rb-form-subtitle">{% translate "Remplissez les informations ci-dessous pour continuer" %}</p>
           </div>
         </div>
 
@@ -540,18 +540,18 @@
 
           <!-- Dates -->
           <section class="rb-section">
-            <p class="rb-section-label">📅 Dates de séjour</p>
+            <p class="rb-section-label">📅 {% translate "Dates de séjour" %}</p>
 
             <div class="rb-field-group">
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.date_arrivee.id_for_label }}">Date d'arrivée</label>
+                <label class="rb-label" for="{{ form.date_arrivee.id_for_label }}">{% translate "Date d'arrivée" %}</label>
                 {{ form.date_arrivee }}
                 {% if form.date_arrivee.errors %}
                   <div class="rb-error">{{ form.date_arrivee.errors }}</div>
                 {% endif %}
               </div>
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.date_depart.id_for_label }}">Date de départ</label>
+                <label class="rb-label" for="{{ form.date_depart.id_for_label }}">{% translate "Date de départ" %}</label>
                 {{ form.date_depart }}
                 {% if form.date_depart.errors %}
                   <div class="rb-error">{{ form.date_depart.errors }}</div>
@@ -562,15 +562,15 @@
 
           <!-- Personnes & chambres -->
           <section class="rb-section">
-            <p class="rb-section-label">👥 Occupation</p>
+            <p class="rb-section-label">👥 {% translate "Occupation" %}</p>
             <div class="rb-field-group {% if logement.account_type == 'hotel' %}single{% endif %}">
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.nombre_personnes.id_for_label }}">Nombre de personnes</label>
+                <label class="rb-label" for="{{ form.nombre_personnes.id_for_label }}">{% translate "Nombre de personnes" %}</label>
                 {{ form.nombre_personnes }}
               </div>
               {% if logement.account_type != 'hotel' %}
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.nombre_chambres.id_for_label }}">Nombre de chambres</label>
+                <label class="rb-label" for="{{ form.nombre_chambres.id_for_label }}">{% translate "Nombre de chambres" %}</label>
                 {{ form.nombre_chambres }}
               </div>
               {% endif %}
@@ -579,11 +579,11 @@
 
           <!-- Informations client -->
           <section class="rb-section">
-            <p class="rb-section-label">👤 Vos coordonnées</p>
+            <p class="rb-section-label">👤 {% translate "Vos coordonnées" %}</p>
 
             <div class="rb-field-group single">
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.client_nom.id_for_label }}">Nom complet</label>
+                <label class="rb-label" for="{{ form.client_nom.id_for_label }}">{% translate "Nom complet" %}</label>
                 {{ form.client_nom }}
                 {% if form.client_nom.errors %}
                   <div class="rb-error">{{ form.client_nom.errors }}</div>
@@ -593,14 +593,14 @@
 
             <div class="rb-field-group">
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.client_email.id_for_label }}">Adresse e-mail</label>
+                <label class="rb-label" for="{{ form.client_email.id_for_label }}">{% translate "Adresse e-mail" %}</label>
                 {{ form.client_email }}
                 {% if form.client_email.errors %}
                   <div class="rb-error">{{ form.client_email.errors }}</div>
                 {% endif %}
               </div>
               <div class="rb-field">
-                <label class="rb-label" for="{{ form.client_telephone.id_for_label }}">Téléphone</label>
+                <label class="rb-label" for="{{ form.client_telephone.id_for_label }}">{% translate "Téléphone" %}</label>
                 {{ form.client_telephone }}
                 {% if form.client_telephone.errors %}
                   <div class="rb-error">{{ form.client_telephone.errors }}</div>
@@ -611,9 +611,9 @@
 
           <!-- Remarques -->
           <section class="rb-section">
-            <p class="rb-section-label">📝 Remarques <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:#BDB8AE;">(optionnel)</span></p>
+            <p class="rb-section-label">📝 {% translate "Remarques" %} <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:#BDB8AE;">({% translate "optionnel" %})</span></p>
             <div class="rb-field">
-              <label class="rb-label" for="{{ form.remarques.id_for_label }}">Demandes particulières, informations utiles…</label>
+              <label class="rb-label" for="{{ form.remarques.id_for_label }}">{% translate "Demandes particulières, informations utiles…" %}</label>
               {{ form.remarques }}
             </div>
           </section>
@@ -624,18 +624,18 @@
 
           <div class="rb-actions">
             <button type="submit" class="rb-btn-primary">
-              Continuer vers le paiement
+              {% translate "Continuer vers le paiement" %}
               <span class="arrow">→</span>
             </button>
             <a href="{% url 'logement:detail_logement' logement.id %}" class="rb-btn-secondary">
-              ← Retour au logement
+              ← {% translate "Retour au logement" %}
             </a>
           </div>
 
           <div class="rb-trust">
-            <span class="rb-trust-item"><span>🔒</span> Paiement sécurisé</span>
-            <span class="rb-trust-item"><span>✓</span> Annulation flexible</span>
-            <span class="rb-trust-item"><span>📧</span> Confirmation immédiate</span>
+            <span class="rb-trust-item"><span>🔒</span> {% translate "Paiement sécurisé" %}</span>
+            <span class="rb-trust-item"><span>✓</span> {% translate "Annulation flexible" %}</span>
+            <span class="rb-trust-item"><span>📧</span> {% translate "Confirmation immédiate" %}</span>
           </div>
           <div style="height:1rem;"></div>
 

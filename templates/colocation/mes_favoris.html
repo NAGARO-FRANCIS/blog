@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Mes Favoris - Coloc.ai{% endblock %}
+{% block title %}{% translate "Mes Favoris - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="favoris-page">
@@ -8,7 +9,7 @@
     <div class="favoris-hero">
         <div class="hero-content">
             <div class="hero-icon">❤️</div>
-            <h1>Mes Annonces Favorites</h1>
+            <h1>{% translate "Mes Annonces Favorites" %}</h1>
             <p>{{ favoris|length }} annonce{{ favoris|length|pluralize }} sauvegardée{{ favoris|length|pluralize }}</p>
         </div>
         <div class="hero-shape"></div>
@@ -19,11 +20,11 @@
         <div class="favoris-stats">
             <div class="stat-card">
                 <span class="stat-number">{{ favoris|length }}</span>
-                <span class="stat-label">Annonces</span>
+                <span class="stat-label">{% translate "Annonces" %}</span>
             </div>
             <div class="stat-card">
                 <span class="stat-number">{{ favoris|length }}</span>
-                <span class="stat-label">À explorer</span>
+                <span class="stat-label">{% translate "À explorer" %}</span>
             </div>
         </div>
 
@@ -35,7 +36,7 @@
                         <!-- Card Image Section -->
                         <div class="favori-image-wrapper">
                             {% if fav.annonce.photos.all %}
-                                <img src="{{ fav.annonce.photos.first.photo.url }}" alt="Photo de l'annonce" class="favori-image">
+                                <img src="{{ fav.annonce.photos.first.photo.url }}" alt='{% translate "Photo de l'annonce" %}' class="favori-image">
                             {% else %}
                                 <div class="favori-image-placeholder">
                                     <span>🏠</span>
@@ -44,7 +45,7 @@
 
                             <!-- Overlay Badges -->
                             <div class="favori-overlay">
-                                <button class="favori-heart-btn" data-annonce-id="{{ fav.annonce.id }}" onclick="removeFavori(this, event)" title="Supprimer des favoris">
+                                <button class="favori-heart-btn" data-annonce-id="{{ fav.annonce.id }}" onclick="removeFavori(this, event)" title="{% translate 'Supprimer des favoris' %}">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                                     </svg>
@@ -52,12 +53,12 @@
                             </div>
 
                             <!-- Type Badge -->
-                            <div class="favori-type-badge">🏘️ Colocation</div>
+                            <div class="favori-type-badge">🏘️ {% translate "Colocation" %}</div>
 
                             <!-- Price Tag -->
                             <div class="favori-price-tag">
                                 <span class="price-amount">{{ fav.annonce.budget_mensuel|floatformat:0 }}</span>
-                                <span class="price-currency">FCFA/mois</span>
+                                <span class="price-currency">{% translate "FCFA/mois" %}</span>
                             </div>
                         </div>
 
@@ -100,13 +101,13 @@
                             {% if fav.annonce.climatisation or fav.annonce.wifi or fav.annonce.garage %}
                                 <div class="favori-equipements">
                                     {% if fav.annonce.climatisation %}
-                                        <span class="equip-tag">❄️ Clim</span>
+                                        <span class="equip-tag">❄️ {% translate "Clim" %}</span>
                                     {% endif %}
                                     {% if fav.annonce.wifi %}
-                                        <span class="equip-tag">📡 WiFi</span>
+                                        <span class="equip-tag">📡 {% translate "WiFi" %}</span>
                                     {% endif %}
                                     {% if fav.annonce.garage %}
-                                        <span class="equip-tag">🚗 Garage</span>
+                                        <span class="equip-tag">🚗 {% translate "Garage" %}</span>
                                     {% endif %}
                                 </div>
                             {% endif %}
@@ -129,9 +130,9 @@
         <!-- Empty State -->
         <div class="favoris-empty">
             <div class="empty-illustration">💭</div>
-            <h2>Aucun favori pour le moment</h2>
-            <p>Explorez nos annonces et marquez les colocations que vous aimez</p>
-            <a href="{% url 'colocation:colocation_home' %}" class="btn-empty">Découvrir les annonces</a>
+            <h2>{% translate "Aucun favori pour le moment" %}</h2>
+            <p>{% translate "Explorez nos annonces et marquez les colocations que vous aimez" %}</p>
+            <a href="{% url 'colocation:colocation_home' %}" class="btn-empty">{% translate "Découvrir les annonces" %}</a>
         </div>
     {% endif %}
 </div>

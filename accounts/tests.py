@@ -1,6 +1,7 @@
 import io
 import importlib
 import os
+from smtplib import SMTPException
 import tempfile
 from unittest import mock
 
@@ -14,6 +15,25 @@ from django.utils import timezone
 from PIL import Image
 
 from .models import DocumentVerification, Notification, ProfileVerification, Subscription
+from .notification_service import notify_user
+
+
+class PublicLanguageSelectionTests(TestCase):
+    def test_anonymous_visitor_can_select_english_from_the_public_header(self):
+        response = self.client.get(reverse('accounts:login'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="language-select"')
+        self.assertContains(response, '<option value="en"')
+
+    def test_anonymous_visitor_language_change_returns_to_current_page(self):
+        response = self.client.post(
+            reverse('set_language'),
+            {'language': 'en', 'next': reverse('accounts:login')},
+        )
+
+        self.assertRedirects(response, reverse('accounts:login'))
+        self.assertEqual(response.cookies['django_language'].value, 'en')
 
 
 class AccountActivationTests(TestCase):
@@ -51,7 +71,7 @@ class AccountActivationTests(TestCase):
             'EMAIL_BACKEND': '',
             'EMAIL_HOST': 'smtp.gmail.com',
             'EMAIL_HOST_USER': 'user@example.com',
-            'EMAIL_HOST_PASSWORD': 'secret',
+            'EMAIL_HOST_PASSWORD': ' abcd efgh ijkl mnop ',
             'EMAIL_PORT': '587',
             'EMAIL_USE_TLS': 'True',
             'DEFAULT_FROM_EMAIL': 'user@example.com',
@@ -63,6 +83,27 @@ class AccountActivationTests(TestCase):
             reloaded_settings.EMAIL_BACKEND,
             'django.core.mail.backends.smtp.EmailBackend'
         )
+        self.assertEqual(reloaded_settings.EMAIL_HOST_PASSWORD, 'abcdefghijklmnop')
+
+    def test_notification_smtp_errors_are_not_silenced(self):
+        recipient = User.objects.create_user(
+            username='email_error_test',
+            email='email.error@example.com',
+            password='StrongPassword123!',
+        )
+
+        with mock.patch(
+            'accounts.notification_service.send_mail',
+            side_effect=SMTPException('SMTP authentication failed'),
+        ):
+            with self.assertRaises(SMTPException):
+                notify_user(
+                    recipient,
+                    'system',
+                    'Test',
+                    'Test message',
+                    email_subject='Test email',
+                )
 
     def test_password_reset_done_page_shows_resend_button_after_submit(self):
         user = User.objects.create_user(

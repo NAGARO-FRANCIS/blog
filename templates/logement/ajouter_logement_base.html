@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Publier une Annonce - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Publier une Annonce - Ivoire Connect" %}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -9,28 +9,28 @@
         <div class="col-lg-12">
             <!-- Breadcrumb -->
             <nav class="breadcrumb-nav mb-4">
-                <a href="{% url 'logement:home' %}">Accueil</a> > 
-                <span>Publier une annonce</span>
+                <a href="{% url 'logement:home' %}">{% translate "Accueil" %}</a> >
+                <span>{% translate "Publier une annonce" %}</span>
             </nav>
 
             <!-- Titre et description -->
             <div class="page-header mb-5">
-                <h1>📝 Publier une Annonce</h1>
-                <p class="text-muted">Remplissez les informations de votre logement</p>
+                <h1>📝 {% translate "Publier une Annonce" %}</h1>
+                <p class="text-muted">{% translate "Remplissez les informations de votre logement" %}</p>
                 
                 <!-- Info sur le type de publication -->
                 <div class="role-publication-info mt-4">
                     {% if role == 'proprietaire' %}
                         <div class="alert alert-info">
-                            🏠 <strong>Mode Propriétaire</strong> - Vous publiez votre maison/chambres à louer
+                            🏠 <strong>{% translate "Mode Propriétaire" %}</strong> - {% translate "Vous publiez votre maison/chambres à louer" %}
                         </div>
                     {% elif role == 'locataire' %}
                         <div class="alert alert-info">
-                            🔑 <strong>Mode Locataire</strong> - Vous cherchez un touriste pour partager votre maison
+                            🔑 <strong>{% translate "Mode Locataire" %}</strong> - {% translate "Vous cherchez un touriste pour partager votre maison" %}
                         </div>
                     {% else %}
                         <div class="alert alert-info">
-                            👥 <strong>Mode Individu</strong> - Publiez votre annonce
+                            👥 <strong>{% translate "Mode Individu" %}</strong> - {% translate "Publiez votre annonce" %}
                         </div>
                     {% endif %}
                 </div>
@@ -49,7 +49,7 @@
 
                 <!-- Section: Informations de Base -->
                 <fieldset class="form-section">
-                    <legend>📍 Informations de Base</legend>
+                    <legend>📍 {% translate "Informations de Base" %}</legend>
                     
                     <div class="form-group">
                         <label for="{{ form.titre.id_for_label }}">{{ form.titre.label }}</label>
@@ -112,7 +112,7 @@
 
                 <!-- Section: Caractéristiques -->
                 <fieldset class="form-section">
-                    <legend>🏠 Caractéristiques du Logement</legend>
+                    <legend>🏠 {% translate "Caractéristiques du Logement" %}</legend>
                     
                     <div class="row">
                         <div class="col-md-3">
@@ -165,7 +165,7 @@
 
                 <!-- Section: Équipements -->
                 <fieldset class="form-section">
-                    <legend>✨ Équipements</legend>
+                    <legend>✨ {% translate "Équipements" %}</legend>
                     
                     <div class="equipements-grid">
                         <div class="form-check">
@@ -209,7 +209,7 @@
 
                 <!-- Section: Photos (formset) -->
                 <fieldset class="form-section">
-                    <legend>📷 Photos (jusqu'à 20)</legend>
+                    <legend>📷 {% translate "Photos (jusqu'à 20)" %}</legend>
                     
                     <div id="formset-container">
                         {{ formset.management_form }}
@@ -237,10 +237,10 @@
                 <!-- Boutons -->
                 <div class="form-actions mt-5">
                     <button type="submit" class="btn btn-primary btn-lg w-100">
-                        ✅ Publier mon annonce
+                        ✅ {% translate "Publier mon annonce" %}
                     </button>
                     <a href="{% url 'logement:home' %}" class="btn btn-secondary btn-lg w-100 mt-2">
-                        ← Annuler
+                        ← {% translate "Annuler" %}
                     </a>
                 </div>
             </form>

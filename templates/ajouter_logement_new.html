@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Ajouter un logement - Coloc.ai{% endblock %}
+{% block title %}{% translate "Ajouter un logement - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="property-wrapper">
@@ -17,8 +18,8 @@
                 <div class="progress-line"></div>
                 <div class="progress-step" id="step4-indicator">4</div>
             </div>
-            <h1 id="step-title">Ajouter votre logement</h1>
-            <p id="step-subtitle">Informations principales</p>
+            <h1 id="step-title">{% translate "Ajouter votre logement" %}</h1>
+            <p id="step-subtitle">{% translate "Informations principales" %}</p>
         </div>
 
         <!-- Progress Bar -->
@@ -32,22 +33,22 @@
             <!-- STEP 1: Basic Information -->
             <div class="property-step visible" id="step1">
                 <div class="step-content">
-                    <h2 class="step-heading">📍 Informations principales</h2>
+                    <h2 class="step-heading">📍 {% translate "Informations principales" %}</h2>
 
                     <div class="form-group">
-                        <label for="{{ form.titre.id_for_label }}">Titre de l'annonce</label>
+                        <label for="{{ form.titre.id_for_label }}">{% translate "Titre de l'annonce" %}</label>
                         {{ form.titre }}
                         {% if form.titre.errors %}<span class="field-error">{{ form.titre.errors.0 }}</span>{% endif %}
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.type_logement.id_for_label }}">Type de logement</label>
+                            <label for="{{ form.type_logement.id_for_label }}">{% translate "Type de logement" %}</label>
                             {{ form.type_logement }}
                             {% if form.type_logement.errors %}<span class="field-error">{{ form.type_logement.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.ville.id_for_label }}">📍 Ville</label>
+                            <label for="{{ form.ville.id_for_label }}">📍 {% translate "Ville" %}</label>
                             {{ form.ville }}
                             {% if form.ville.errors %}<span class="field-error">{{ form.ville.errors.0 }}</span>{% endif %}
                         </div>
@@ -55,26 +56,26 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.quartier.id_for_label }}">Quartier</label>
+                            <label for="{{ form.quartier.id_for_label }}">{% translate "Quartier" %}</label>
                             {{ form.quartier }}
                             {% if form.quartier.errors %}<span class="field-error">{{ form.quartier.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.disponible_depuis.id_for_label }}">📅 Disponible à partir du</label>
+                            <label for="{{ form.disponible_depuis.id_for_label }}">📅 {% translate "Disponible à partir du" %}</label>
                             {{ form.disponible_depuis }}
                             {% if form.disponible_depuis.errors %}<span class="field-error">{{ form.disponible_depuis.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="{{ form.description.id_for_label }}">📝 Description</label>
+                        <label for="{{ form.description.id_for_label }}">📝 {% translate "Description" %}</label>
                         {{ form.description }}
                         {% if form.description.errors %}<span class="field-error">{{ form.description.errors.0 }}</span>{% endif %}
-                        <small class="form-hint">Soyez précis : état, luminosité, environnement, transports...</small>
+                        <small class="form-hint">{% translate "Soyez précis : état, luminosité, environnement, transports..." %}</small>
                     </div>
 
                     <div class="step-actions">
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -82,21 +83,21 @@
             <!-- STEP 2: Characteristics -->
             <div class="property-step" id="step2">
                 <div class="step-content">
-                    <h2 class="step-heading">🏠 Caractéristiques</h2>
+                    <h2 class="step-heading">🏠 {% translate "Caractéristiques" %}</h2>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.prix.id_for_label }}">💰 Loyer mensuel (FCFA)</label>
+                            <label for="{{ form.prix.id_for_label }}">💰 {% translate "Loyer mensuel (FCFA)" %}</label>
                             {{ form.prix }}
                             {% if form.prix.errors %}<span class="field-error">{{ form.prix.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.surface.id_for_label }}">📐 Surface (m²)</label>
+                            <label for="{{ form.surface.id_for_label }}">📐 {% translate "Surface (m²)" %}</label>
                             {{ form.surface }}
                             {% if form.surface.errors %}<span class="field-error">{{ form.surface.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.etage.id_for_label }}">🏢 Étage</label>
+                            <label for="{{ form.etage.id_for_label }}">🏢 {% translate "Étage" %}</label>
                             {{ form.etage }}
                             {% if form.etage.errors %}<span class="field-error">{{ form.etage.errors.0 }}</span>{% endif %}
                         </div>
@@ -104,25 +105,25 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="{{ form.nombre_pieces.id_for_label }}">🚪 Nombre de pièces</label>
+                            <label for="{{ form.nombre_pieces.id_for_label }}">🚪 {% translate "Nombre de pièces" %}</label>
                             {{ form.nombre_pieces }}
                             {% if form.nombre_pieces.errors %}<span class="field-error">{{ form.nombre_pieces.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.nombre_chambres.id_for_label }}">🛏️ Chambres</label>
+                            <label for="{{ form.nombre_chambres.id_for_label }}">🛏️ {% translate "Chambres" %}</label>
                             {{ form.nombre_chambres }}
                             {% if form.nombre_chambres.errors %}<span class="field-error">{{ form.nombre_chambres.errors.0 }}</span>{% endif %}
                         </div>
                         <div class="form-group">
-                            <label for="{{ form.nombre_salles_bain.id_for_label }}">🚿 Salles de bain</label>
+                            <label for="{{ form.nombre_salles_bain.id_for_label }}">🚿 {% translate "Salles de bain" %}</label>
                             {{ form.nombre_salles_bain }}
                             {% if form.nombre_salles_bain.errors %}<span class="field-error">{{ form.nombre_salles_bain.errors.0 }}</span>{% endif %}
                         </div>
                     </div>
 
                     <div class="step-actions two-btn">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -130,42 +131,42 @@
             <!-- STEP 3: Amenities -->
             <div class="property-step" id="step3">
                 <div class="step-content">
-                    <h2 class="step-heading">⚙️ Équipements disponibles</h2>
+                    <h2 class="step-heading">⚙️ {% translate "Équipements disponibles" %}</h2>
 
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
                             {{ form.climatisation }}
-                            <span class="checkbox-label">🌡️ Climatisation</span>
+                            <span class="checkbox-label">🌡️ {% translate "Climatisation" %}</span>
                         </label>
                         <label class="checkbox-item">
                             {{ form.wifi }}
-                            <span class="checkbox-label">📶 WiFi</span>
+                            <span class="checkbox-label">📶 {% translate "WiFi" %}</span>
                         </label>
                         <label class="checkbox-item">
                             {{ form.cuisine_equipee }}
-                            <span class="checkbox-label">🍳 Cuisine équipée</span>
+                            <span class="checkbox-label">🍳 {% translate "Cuisine équipée" %}</span>
                         </label>
                         <label class="checkbox-item">
                             {{ form.garage }}
-                            <span class="checkbox-label">🚗 Garage</span>
+                            <span class="checkbox-label">🚗 {% translate "Garage" %}</span>
                         </label>
                         <label class="checkbox-item">
                             {{ form.jardin }}
-                            <span class="checkbox-label">🌿 Jardin</span>
+                            <span class="checkbox-label">🌿 {% translate "Jardin" %}</span>
                         </label>
                         <label class="checkbox-item">
                             {{ form.piscine }}
-                            <span class="checkbox-label">🏊 Piscine</span>
+                            <span class="checkbox-label">🏊 {% translate "Piscine" %}</span>
                         </label>
                         <label class="checkbox-item">
                             {{ form.meuble }}
-                            <span class="checkbox-label">🪴 Meublé</span>
+                            <span class="checkbox-label">🪴 {% translate "Meublé" %}</span>
                         </label>
                     </div>
 
                     <div class="step-actions two-btn">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="button" class="btn btn-next" onclick="nextStep()">Continuer →</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="button" class="btn btn-next" onclick="nextStep()">{% translate "Continuer" %} →</button>
                     </div>
                 </div>
             </div>
@@ -173,15 +174,15 @@
             <!-- STEP 4: Photos -->
             <div class="property-step" id="step4">
                 <div class="step-content">
-                    <h2 class="step-heading">📸 Ajouter des photos (max 5)</h2>
+                    <h2 class="step-heading">📸 {% translate "Ajouter des photos (max 5)" %}</h2>
 
                     {{ formset.management_form }}
 
                     <div class="photo-upload-zone" onclick="document.getElementById('photo-input').click()">
                         <div class="upload-icon">📷</div>
-                        <h3>Ajouter des photos</h3>
-                        <p>Cliquez pour sélectionner ou glissez-déposez</p>
-                        <small>JPG, PNG, GIF • Max 5 Mo par photo</small>
+                        <h3>{% translate "Ajouter des photos" %}</h3>
+                        <p>{% translate "Cliquez pour sélectionner ou glissez-déposez" %}</p>
+                        <small>{% translate "JPG, PNG, GIF • Max 5 Mo par photo" %}</small>
                         <input type="file" id="photo-input" multiple accept="image/*" style="display:none" onchange="handlePhotos(event)">
                     </div>
 
@@ -196,8 +197,8 @@
                     </div>
 
                     <div class="step-actions two-btn">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← Retour</button>
-                        <button type="submit" class="btn btn-success">✅ Publier le logement</button>
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">← {% translate "Retour" %}</button>
+                        <button type="submit" class="btn btn-success">✅ {% translate "Publier le logement" %}</button>
                     </div>
                 </div>
             </div>
@@ -654,18 +655,26 @@
             }
         }
 
+        {% translate "Ajouter votre logement" as title_add_property %}
+        {% translate "Caractéristiques" as title_features %}
+        {% translate "Équipements" as title_amenities %}
+        {% translate "Ajouter des photos" as title_add_photos %}
+        {% translate "Informations principales" as subtitle_main_info %}
+        {% translate "Détails du bien" as subtitle_property_details %}
+        {% translate "Équipements disponibles" as subtitle_amenities %}
+        {% translate "Photos de votre logement" as subtitle_property_photos %}
         const titles = {
-            1: 'Ajouter votre logement',
-            2: 'Caractéristiques',
-            3: 'Équipements',
-            4: 'Ajouter des photos'
+            1: '{{ title_add_property|escapejs }}',
+            2: '{{ title_features|escapejs }}',
+            3: '{{ title_amenities|escapejs }}',
+            4: '{{ title_add_photos|escapejs }}'
         };
 
         const subtitles = {
-            1: 'Informations principales',
-            2: 'Détails du bien',
-            3: 'Équipements disponibles',
-            4: 'Photos de votre logement'
+            1: '{{ subtitle_main_info|escapejs }}',
+            2: '{{ subtitle_property_details|escapejs }}',
+            3: '{{ subtitle_amenities|escapejs }}',
+            4: '{{ subtitle_property_photos|escapejs }}'
         };
 
         document.getElementById('step-title').textContent = titles[currentStep];
@@ -695,7 +704,8 @@
         }
 
         if (files.length > 5) {
-            alert('Maximum 5 photos autorisées');
+            {% translate "Maximum 5 photos autorisées" as max_photos_message %}
+            alert('{{ max_photos_message|escapejs }}');
         }
     }
 </script>

@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Envoyer un message - Coloc.ai{% endblock %}
+{% block title %}{% translate "Envoyer un message - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="container form-page">
     <div class="hero hero-compact">
         {% if annonce %}
-            <h1>💬 Contacter le propriétaire</h1>
-            <p>Envoyez un message à propos de cette annonce</p>
+            <h1>💬 {% translate "Contacter le propriétaire" %}</h1>
+            <p>{% translate "Envoyez un message à propos de cette annonce" %}</p>
         {% elif conversation %}
-            <h1>💬 Continuer la conversation</h1>
+            <h1>💬 {% translate "Continuer la conversation" %}</h1>
             <p>Répondez à {{ destinataire.get_full_name|default:destinataire.username }}</p>
         {% else %}
-            <h1>💬 Démarrer une conversation</h1>
+            <h1>💬 {% translate "Démarrer une conversation" %}</h1>
             <p>Envoyez un message à {{ destinataire.get_full_name|default:destinataire.username }}</p>
         {% endif %}
     </div>
@@ -38,7 +39,7 @@
         <div class="user-card">
             <div class="user-avatar">
                 {% if destinataire.profile.photo_profil %}
-                    <img src="{{ destinataire.profile.photo_profil.url }}" alt="Photo de {{ destinataire.get_full_name }}">
+                    <img src="{{ destinataire.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ destinataire.get_full_name }}">
                 {% else %}
                     <div class="avatar-placeholder">{{ destinataire.get_full_name|default:destinataire.username|first|upper }}</div>
                 {% endif %}
@@ -47,7 +48,7 @@
                 <h3>{{ destinataire.get_full_name|default:destinataire.username }}</h3>
                 <p class="user-location">📍 {{ destinataire.profile.ville }}</p>
                 {% if destinataire.profile.verified %}
-                    <span class="verified-badge">✓ Profil vérifié</span>
+                    <span class="verified-badge">✓ {% translate "Profil vérifié" %}</span>
                 {% endif %}
             </div>
         </div>
@@ -60,33 +61,33 @@
         {% endif %}
 
         <div class="form-section">
-            <h3 class="section-title">✍️ Votre message</h3>
+            <h3 class="section-title">✍️ {% translate "Votre message" %}</h3>
 
             <div class="form-group">
-                <textarea name="contenu" id="contenu" placeholder="Bonjour, je suis intéressé par votre annonce..." rows="6"></textarea>
-                <small class="form-help">Soyez poli et précis dans votre message pour maximiser vos chances d'obtenir une réponse.</small>
+                <textarea name="contenu" id="contenu" placeholder="{% translate 'Bonjour, je suis intéressé par votre annonce...' %}" rows="6"></textarea>
+                <small class="form-help">{% translate "Soyez poli et précis dans votre message pour maximiser vos chances d'obtenir une réponse." %}</small>
             </div>
 
             <div class="form-group attachment-group">
-                <label for="attachment" class="attachment-field-label">📎 Joindre un fichier (optionnel)</label>
+                <label for="attachment" class="attachment-field-label">📎 {% translate "Joindre un fichier (optionnel)" %}</label>
                 <input type="file" name="attachment" id="attachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
             </div>
         </div>
 
         <div class="form-actions">
-            <a href="javascript:history.back()" class="btn secondary">Annuler</a>
-            <button type="submit" class="btn">📤 Envoyer le message</button>
+            <a href="javascript:history.back()" class="btn secondary">{% translate "Annuler" %}</a>
+            <button type="submit" class="btn">📤 {% translate "Envoyer le message" %}</button>
         </div>
     </form>
 
     <!-- Conseils pour bien communiquer -->
     <div class="communication-tips">
-        <h3>💡 Conseils pour une bonne communication</h3>
+        <h3>💡 {% translate "Conseils pour une bonne communication" %}</h3>
         <ul>
-            <li>Présentez-vous brièvement</li>
-            <li>Mentionnez ce qui vous intéresse dans l'annonce</li>
-            <li>Indiquez vos disponibilités</li>
-            <li>Soyez respectueux et courtois</li>
+            <li>{% translate "Présentez-vous brièvement" %}</li>
+            <li>{% translate "Mentionnez ce qui vous intéresse dans l'annonce" %}</li>
+            <li>{% translate "Indiquez vos disponibilités" %}</li>
+            <li>{% translate "Soyez respectueux et courtois" %}</li>
         </ul>
     </div>
 </div>

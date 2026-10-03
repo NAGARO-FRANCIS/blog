@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}Toutes les annonces - Coloc.ai{% endblock %}
+{% block title %}{% translate "Toutes les annonces - Coloc.ai" %}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -11,8 +12,8 @@
             <span class="flag-white"></span>
             <span class="flag-green"></span>
         </div>
-        <h1>🏠 Tous les Logements Disponibles</h1>
-        <p>Découvrez toutes les offres sur la plateforme</p>
+        <h1>🏠 {% translate "Tous les Logements Disponibles" %}</h1>
+        <p>{% translate "Découvrez toutes les offres sur la plateforme" %}</p>
     </div>
 
     <form method="get" class="search-form">
@@ -32,7 +33,7 @@
             {{ form.type_logement.label_tag }}
             {{ form.type_logement }}
         </div>
-        <button type="submit">🔍 Rechercher</button>
+        <button type="submit">🔍 {% translate "Rechercher" %}</button>
     </form>
 
     {% if annonces %}
@@ -55,7 +56,8 @@
                                     {% if annonce.id in favoris_ids %}❤️{% else %}🤍{% endif %}
                                 </button>
                             {% else %}
-                                <button class="favorite-btn" onclick="alert('Veuillez vous connecter pour ajouter aux favoris')" style="opacity: 0.5;" type="button">
+                                {% translate "Veuillez vous connecter pour ajouter aux favoris" as login_to_favorite %}
+                                <button class="favorite-btn" onclick="alert('{{ login_to_favorite|escapejs }}')" style="opacity: 0.5;" type="button">
                                     🤍
                                 </button>
                             {% endif %}
@@ -72,13 +74,13 @@
                                 <h3 class="annonce-titre">{{ annonce.titre }}</h3>
                                 <div class="annonce-prix">
                                     {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
-                                        {{ annonce.prix_par_nuit|floatformat:0 }} <span>FCFA/nuit</span>
+                                        {{ annonce.prix_par_nuit|floatformat:0 }} <span>{% translate "FCFA/nuit" %}</span>
                                     {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
-                                        {{ annonce.prix_par_mois|floatformat:0 }} <span>FCFA/mois</span>
+                                        {{ annonce.prix_par_mois|floatformat:0 }} <span>{% translate "FCFA/mois" %}</span>
                                     {% elif annonce.prix %}
                                         {{ annonce.prix|floatformat:0 }} <span>FCFA</span>
                                     {% else %}
-                                        <span>Prix sur demande</span>
+                                        <span>{% translate "Prix sur demande" %}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -116,9 +118,9 @@
         </div>
     {% else %}
         <div class="text-center section-empty">
-            <h2>Aucune annonce ne correspond à vos critères 😔</h2>
-            <p class="text-muted">Essayez de modifier votre recherche ou consultez toutes les annonces</p>
-            <a href="{% url 'logement:home' %}" class="btn btn-primary">Voir toutes les annonces</a>
+            <h2>{% translate "Aucune annonce ne correspond à vos critères" %} 😔</h2>
+            <p class="text-muted">{% translate "Essayez de modifier votre recherche ou consultez toutes les annonces" %}</p>
+            <a href="{% url 'logement:home' %}" class="btn btn-primary">{% translate "Voir toutes les annonces" %}</a>
         </div>
     {% endif %}
 </div>

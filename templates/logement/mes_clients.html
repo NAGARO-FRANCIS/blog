@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Clients & Locataires{% endblock %}
+{% block title %}{% translate "Clients & Locataires" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -70,20 +70,21 @@
 {% endblock %}
 
 {% block content %}
+{% translate "Clients & Locataires" as default_clients_title %}
 <div class="page-header">
-    <h1>👥 {{ titre|default:"Clients & Locataires" }}</h1>
-    <p>Gérez vos clients et locataires</p>
+    <h1>👥 {{ titre|default:default_clients_title }}</h1>
+    <p>{% translate "Gérez vos clients et locataires" %}</p>
 </div>
 
 <div class="container">
     <div class="summary-grid">
         <div class="stat-box green">
             <div class="stat-kpi">{{ nb_clients|default:0 }}</div>
-            <div class="stat-label">Clients</div>
+            <div class="stat-label">{% translate "Clients" %}</div>
         </div>
         <div class="stat-box orange">
             <div class="stat-kpi">{{ clients|length|default:0 }}</div>
-            <div class="stat-label">Contacts actifs</div>
+            <div class="stat-label">{% translate "Contacts actifs" %}</div>
         </div>
     </div>
 
@@ -91,12 +92,12 @@
         <table class="clients-table">
             <thead>
                 <tr>
-                    <th>Client</th>
-                    <th>Email</th>
-                    <th>Téléphone</th>
-                    <th>Réservations</th>
-                    <th>Montant total</th>
-                    <th>Dernière visite</th>
+                    <th>{% translate "Client" %}</th>
+                    <th>{% translate "Email" %}</th>
+                    <th>{% translate "Téléphone" %}</th>
+                    <th>{% translate "Réservations" %}</th>
+                    <th>{% translate "Montant total" %}</th>
+                    <th>{% translate "Dernière visite" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -111,7 +112,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="empty-row">Aucun client pour le moment.</td>
+                    <td colspan="6" class="empty-row">{% translate "Aucun client pour le moment." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -119,7 +120,7 @@
     </div>
 
     <div class="actions-row">
-        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
+        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← {% translate "Retour à la Gestion" %}</a>
     </div>
 </div>
 

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Avis & Évaluations{% endblock %}
+{% block title %}{% translate "Avis & Évaluations" %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -71,19 +71,19 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>⭐ Avis & Évaluations</h1>
-    <p>Consultez les avis de vos clients</p>
+    <h1>⭐ {% translate "Avis & Évaluations" %}</h1>
+    <p>{% translate "Consultez les avis de vos clients" %}</p>
 </div>
 
 <div class="container">
     <div class="summary-grid">
         <div class="stat-box green">
             <div class="stat-kpi">{{ note_moyenne|default:0 }}/5</div>
-            <div class="stat-label">Note moyenne</div>
+            <div class="stat-label">{% translate "Note moyenne" %}</div>
         </div>
         <div class="stat-box orange">
             <div class="stat-kpi">{{ nb_avis|default:0 }}</div>
-            <div class="stat-label">Avis reçus</div>
+            <div class="stat-label">{% translate "Avis reçus" %}</div>
         </div>
     </div>
 
@@ -98,15 +98,15 @@
                 <div class="stars">{% for i in '12345' %}{% if forloop.counter <= item.note_logement %}★{% else %}☆{% endif %}{% endfor %}</div>
             </div>
             <blockquote>{{ item.commentaire }}</blockquote>
-            <div class="review-meta">{{ item.created_at|date:'d/m/Y' }} • Séjour: {{ item.reservation.date_arrivee|date:'d/m/Y' }} → {{ item.reservation.date_depart|date:'d/m/Y' }}</div>
+            <div class="review-meta">{{ item.created_at|date:'d/m/Y' }} • {% translate "Séjour" %}: {{ item.reservation.date_arrivee|date:'d/m/Y' }} → {{ item.reservation.date_depart|date:'d/m/Y' }}</div>
         </article>
         {% empty %}
-        <div class="empty-state">Aucun avis client pour le moment.</div>
+        <div class="empty-state">{% translate "Aucun avis client pour le moment." %}</div>
         {% endfor %}
     </div>
 
     <div class="actions-row">
-        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← Retour à la Gestion</a>
+        <a href="{% url 'logement:gestion_logements' %}" class="back-link">← {% translate "Retour à la Gestion" %}</a>
     </div>
 </div>
 

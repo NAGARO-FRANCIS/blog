@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}{{ titre }}{% endblock %}
 
@@ -23,10 +24,14 @@
     .calendar-toolbar a { color: #047857; text-decoration: none; font-weight: 700; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
     .weekday { text-align: center; color: #6b7280; font-size: .75rem; font-weight: 700; padding: 7px 0; }
-    .day { min-height: 74px; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; }
+    .day { min-height: 94px; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; }
     .day-empty { border-color: transparent; background: transparent; }
     .day-number { font-weight: 800; color: #111827; }
     .day-label { display: block; margin-top: 8px; font-size: .68rem; line-height: 1.2; }
+    .day-occupancy { display: block; margin-top: 5px; color: #374151; font-size: .67rem; font-weight: 700; line-height: 1.2; }
+    .day-guests { margin: 4px 0 0; padding: 0; list-style: none; color: #4b5563; font-size: .62rem; line-height: 1.2; }
+    .day-guests li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .day-room-number { color: #047857; font-weight: 700; }
     .day-available { background: #ecfdf5; border-color: #a7f3d0; }
     .day-available .day-label { color: #047857; }
     .day-reserved { background: #fef2f2; border-color: #fecaca; }
@@ -45,43 +50,43 @@
     <div class="calendar-header">
         <div>
             <h1>📆 {{ titre }}</h1>
-            <p>Suivez l'inventaire et bloquez les dates de vos chambres ou appartements.</p>
+            <p>{% translate "Visualisez les réservations et le nombre de chambres occupées chaque jour." %}</p>
         </div>
     </div>
 
     <div class="calendar-layout">
         <aside class="calendar-panel">
-            <h2>Logement professionnel</h2>
+            <h2>{% translate "Logement professionnel" %}</h2>
             <form method="get">
-                <label for="calendar-logement">Catégorie</label>
+                <label for="calendar-logement">{% translate "Catégorie" %}</label>
                 <select id="calendar-logement" name="logement" onchange="this.form.submit()">
                     {% for item in logements %}
                         <option value="{{ item.id }}" {% if logement.id == item.id %}selected{% endif %}>{{ item.titre }}</option>
                     {% empty %}
-                        <option>Aucun logement professionnel</option>
+                        <option>{% translate "Aucun logement professionnel" %}</option>
                     {% endfor %}
                 </select>
             </form>
 
             {% if logement %}
                 <div class="inventory">
-                    <div><strong>{{ inventory_total }}</strong><span>Total</span></div>
-                    <div><strong>{{ inventory_reserved }}</strong><span>Réservées</span></div>
-                    <div><strong>{{ inventory_available }}</strong><span>Disponibles</span></div>
+                    <div><strong>{{ inventory_total }}</strong><span>{% translate "Total" %}</span></div>
+                    <div><strong>{{ inventory_reserved }}</strong><span>{% translate "Réservées" %}</span></div>
+                    <div><strong>{{ inventory_available }}</strong><span>{% translate "Disponibles" %}</span></div>
                 </div>
             {% endif %}
 
-            <h2>Bloquer une période</h2>
+            <h2>{% translate "Bloquer une période" %}</h2>
             <form method="post">
                 {% csrf_token %}
                 {{ blocage_form.logement.as_hidden }}
-                <label for="{{ blocage_form.date_debut.id_for_label }}">Du</label>
+                <label for="{{ blocage_form.date_debut.id_for_label }}">{% translate "Du" %}</label>
                 {{ blocage_form.date_debut }}
-                <label for="{{ blocage_form.date_fin.id_for_label }}">Au</label>
+                <label for="{{ blocage_form.date_fin.id_for_label }}">{% translate "Au" %}</label>
                 {{ blocage_form.date_fin }}
-                <label for="{{ blocage_form.motif.id_for_label }}">Motif</label>
+                <label for="{{ blocage_form.motif.id_for_label }}">{% translate "Motif" %}</label>
                 {{ blocage_form.motif }}
-                <button type="submit">Bloquer les dates</button>
+                <button type="submit">{% translate "Bloquer les dates" %}</button>
             </form>
         </aside>
 
@@ -98,6 +103,21 @@
                         <div class="day day-{{ day.status }}" title="{{ day.label }}">
                             <span class="day-number">{{ day.number }}</span>
                             <span class="day-label">{{ day.label }}</span>
+                            {% if day.reserved_units %}
+                            <span class="day-occupancy">{% blocktranslate with total=inventory_total count reserved=day.reserved_units %}{{ reserved }}/{{ total }} chambre occupée{% pluralize %}{{ reserved }}/{{ total }} chambres occupées{% endblocktranslate %}</span>
+                            {% endif %}
+                            {% if day.available_units and not day.is_blocked %}
+                            <span class="day-occupancy">{% blocktranslate count available=day.available_units %}{{ available }} disponible{% pluralize %}{{ available }} disponibles{% endblocktranslate %}</span>
+                            {% endif %}
+                            {% if day.reservations %}
+                            <ul class="day-guests">
+                                {% for reservation in day.reservations %}
+                                <li>{{ reservation.client_user.get_full_name|default:reservation.client_nom }}:
+                                    {% for unite in reservation.unites.all %}<span class="day-room-number">n°{{ unite.numero }}</span>{% empty %}{% translate "chambre non attribuée" %}{% endfor %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
                         </div>
                     {% else %}
                         <div class="day day-empty"></div>
@@ -105,10 +125,10 @@
                 {% endfor %}
             </div>
             <div class="legend">
-                <span class="legend-available">Disponible</span>
-                <span class="legend-reserved">Réservé</span>
-                <span class="legend-pending">En attente</span>
-                <span class="legend-blocked">Indisponible</span>
+                <span class="legend-available">{% translate "Disponible" %}</span>
+                <span class="legend-reserved">{% translate "Réservé" %}</span>
+                <span class="legend-pending">{% translate "En attente" %}</span>
+                <span class="legend-blocked">{% translate "Indisponible" %}</span>
             </div>
         </section>
     </div>

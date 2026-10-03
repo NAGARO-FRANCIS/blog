@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Publier un Logement - Résidence Professional{% endblock %}
+{% block title %}{% translate "Publier un Logement - Résidence Professional" %}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'form_fields.css' %}">
@@ -428,9 +428,9 @@
 <div class="residence-publish-container">
     <!-- Header -->
     <div class="publish-header">
-        <h1>🏢 Publier un Logement en Résidence</h1>
-        <p>Présentez votre logement de manière professionnelle</p>
-        <div class="badge">Pour les résidences et habitations collectives</div>
+        <h1>🏢 {% translate "Publier un Logement en Résidence" %}</h1>
+        <p>{% translate "Présentez votre logement de manière professionnelle" %}</p>
+        <div class="badge">{% translate "Pour les résidences et habitations collectives" %}</div>
     </div>
 
     <!-- Progress -->
@@ -443,27 +443,27 @@
         <div class="steps-container">
             <div class="step active" onclick="goToStep(0)">
                 <div class="step-icon">📍</div>
-                <div class="step-label">Localisation</div>
+                <div class="step-label">{% translate "Localisation" %}</div>
             </div>
             <div class="step" onclick="goToStep(1)">
                 <div class="step-icon">🏠</div>
-                <div class="step-label">Détails</div>
+                <div class="step-label">{% translate "Détails" %}</div>
             </div>
             <div class="step" onclick="goToStep(2)">
                 <div class="step-icon">💰</div>
-                <div class="step-label">Loyer</div>
+                <div class="step-label">{% translate "Loyer" %}</div>
             </div>
             <div class="step" onclick="goToStep(3)">
                 <div class="step-icon">⚙️</div>
-                <div class="step-label">Équipements</div>
+                <div class="step-label">{% translate "Équipements" %}</div>
             </div>
             <div class="step" onclick="goToStep(4)">
                 <div class="step-icon">📸</div>
-                <div class="step-label">Photos</div>
+                <div class="step-label">{% translate "Photos" %}</div>
             </div>
             <div class="step" onclick="goToStep(5)">
                 <div class="step-icon">🎬</div>
-                <div class="step-label">Vidéos</div>
+                <div class="step-label">{% translate "Vidéos" %}</div>
             </div>
         </div>
     </div>
@@ -477,27 +477,27 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">📍</span>
-                    Informations de Localisation
+                    {% translate "Informations de Localisation" %}
                 </div>
                 <div class="card-description">
-                    Indiquez où se trouve votre logement
+                    {% translate "Indiquez où se trouve votre logement" %}
                 </div>
 
                 <div class="fields-grid full">
                     <div class="field-group required">
-                        <label>Titre de l'annonce</label>
+                        <label>{% translate "Titre de l'annonce" %}</label>
                         {{ form.titre }}
-                        <div class="field-hint">Exemple: "Bel Appartement 2 pièces climatisé" ou "Studio moderne proche gare"</div>
+                        <div class="field-hint">{% translate 'Exemple: "Bel Appartement 2 pièces climatisé" ou "Studio moderne proche gare"' %}</div>
                     </div>
                 </div>
 
                 <div class="fields-grid">
                     <div class="field-group required">
-                        <label>Ville</label>
+                        <label>{% translate "Ville" %}</label>
                         {{ form.ville }}
                     </div>
                     <div class="field-group required">
-                        <label>Quartier / Zone</label>
+                        <label>{% translate "Quartier / Zone" %}</label>
                         {{ form.quartier }}
                     </div>
                     
@@ -506,14 +506,14 @@
 
                 <div class="fields-grid full">
                     <div class="field-group required">
-                        <label>Description du Logement</label>
+                        <label>{% translate "Description du Logement" %}</label>
                         {{ form.description }}
-                        <div class="field-hint">Décrivez le logement, son état, la luminosité, les transports, les commerces à proximité...</div>
+                        <div class="field-hint">{% translate "Décrivez le logement, son état, la luminosité, les transports, les commerces à proximité..." %}</div>
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-next" onclick="goToStep(1)">Suivant →</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(1)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -523,36 +523,36 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">🏠</span>
-                    Détails du Logement
+                    {% translate "Détails du Logement" %}
                 </div>
                 <div class="card-description">
-                    Précisez les caractéristiques de votre logement
+                    {% translate "Précisez les caractéristiques de votre logement" %}
                 </div>
 
                 <div class="fields-grid">
                     <div class="field-group required">
-                        <label>Type de Logement</label>
+                        <label>{% translate "Type de Logement" %}</label>
                         {{ form.type_logement }}
-                        <div class="field-hint">Studio, T2, Appartement, Maison, Villa...</div>
+                        <div class="field-hint">{% translate "Studio, T2, Appartement, Maison, Villa..." %}</div>
                     </div>
                     <div class="field-group required">
-                        <label>Surface (m²)</label>
+                        <label>{% translate "Surface (m²)" %}</label>
                         {{ form.surface }}
                     </div>
                     <div class="field-group required">
-                        <label>Nombre de Pièces</label>
+                        <label>{% translate "Nombre de Pièces" %}</label>
                         {{ form.nombre_pieces }}
                     </div>
                     <div class="field-group required">
-                        <label>Nombre de Chambres</label>
+                        <label>{% translate "Nombre de Chambres" %}</label>
                         {{ form.nombre_chambres }}
                     </div>
                     <div class="field-group required">
-                        <label>Salles de Bain</label>
+                        <label>{% translate "Salles de Bain" %}</label>
                         {{ form.nombre_salles_bain }}
                     </div>
                     <div class="field-group required">
-                        <label>Étage</label>
+                        <label>{% translate "Étage" %}</label>
                         {{ form.etage }}
                     </div>
                 </div>
@@ -562,21 +562,21 @@
                         <label>{{ form.meuble.label }}</label>
                         <div class="amenity-card" style="justify-content: flex-start; background: white;">
                             {{ form.meuble }}
-                            <label for="{{ form.meuble.id_for_label }}" style="margin-left: 10px;">🪴 Logement Meublé</label>
+                            <label for="{{ form.meuble.id_for_label }}" style="margin-left: 10px;">🪴 {% translate "Logement Meublé" %}</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="fields-grid full">
                     <div class="field-group">
-                        <label>Conditions Spéciales</label>
+                        <label>{% translate "Conditions Spéciales" %}</label>
                         {{ form.conditions_speciales }}
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(0)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(2)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(0)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(2)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -586,47 +586,47 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">💰</span>
-                    Conditions Financières
+                    {% translate "Conditions Financières" %}
                 </div>
                 <div class="card-description">
-                    Définissez le loyer et les conditions
+                    {% translate "Définissez le loyer et les conditions" %}
                 </div>
 
                 <div class="pricing-section">
                     <div class="fields-grid">
                         <div class="field-group required">
-                            <label>Loyer Mensuel (FCFA)</label>
+                            <label>{% translate "Loyer Mensuel (FCFA)" %}</label>
                             {{ form.prix_par_mois }}
-                            <div class="field-hint">Montant en Franc CFA Ouest-Africain</div>
+                            <div class="field-hint">{% translate "Montant en Franc CFA Ouest-Africain" %}</div>
                         </div>
                         <div class="field-group">
-                            <label>Caution (mois de loyer)</label>
+                            <label>{% translate "Caution (mois de loyer)" %}</label>
                             {{ form.caution_mois }}
                         </div>
                         <div class="field-group">
-                            <label>Frais d'Agence</label>
+                            <label>{% translate "Frais d'Agence" %}</label>
                             {{ form.frais_agence }}
                         </div>
                         <div class="field-group">
-                            <label>Disponible à partir du</label>
+                            <label>{% translate "Disponible à partir du" %}</label>
                             {{ form.disponible_depuis }}
                         </div>
                         <div class="field-group">
-                            <label>Durée minimale de bail</label>
+                            <label>{% translate "Durée minimale de bail" %}</label>
                             {{ form.duree_min_bail }}
                         </div>
-                        <div class="field-group"><label>Nombre total d'unités</label>{{ form.unites_totales }}</div>
+                        <div class="field-group"><label>{% translate "Nombre total d'unités" %}</label>{{ form.unites_totales }}</div>
                        
                         <div class="field-group">
-                            <label>Type de Charge</label>
+                            <label>{% translate "Type de Charge" %}</label>
                             {{ form.type_charge }}
                         </div>
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(1)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(3)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(1)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(3)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -636,54 +636,54 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">⚙️</span>
-                    Équipements & Caractéristiques
+                    {% translate "Équipements & Caractéristiques" %}
                 </div>
                 <div class="card-description">
-                    Sélectionnez tous les équipements disponibles
+                    {% translate "Sélectionnez tous les équipements disponibles" %}
                 </div>
 
                 <div class="amenities-grid">
                     <div class="amenity-card">
                         {{ form.wifi }}
-                        <label for="{{ form.wifi.id_for_label }}">📶 WiFi</label>
+                        <label for="{{ form.wifi.id_for_label }}">📶 {% translate "WiFi" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.climatisation }}
-                        <label for="{{ form.climatisation.id_for_label }}">❄️ Climatisation</label>
+                        <label for="{{ form.climatisation.id_for_label }}">❄️ {% translate "Climatisation" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.cuisine_equipee }}
-                        <label for="{{ form.cuisine_equipee.id_for_label }}">🍳 Cuisine Équipée</label>
+                        <label for="{{ form.cuisine_equipee.id_for_label }}">🍳 {% translate "Cuisine Équipée" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.garage }}
-                        <label for="{{ form.garage.id_for_label }}">🅿️ Garage/Parking</label>
+                        <label for="{{ form.garage.id_for_label }}">🅿️ {% translate "Garage/Parking" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.jardin }}
-                        <label for="{{ form.jardin.id_for_label }}">🌳 Jardin</label>
+                        <label for="{{ form.jardin.id_for_label }}">🌳 {% translate "Jardin" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.ascenseur }}
-                        <label for="{{ form.ascenseur.id_for_label }}">🛗 Ascenseur</label>
+                        <label for="{{ form.ascenseur.id_for_label }}">🛗 {% translate "Ascenseur" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.gardien }}
-                        <label for="{{ form.gardien.id_for_label }}">🔒 Sécurité/Gardien</label>
+                        <label for="{{ form.gardien.id_for_label }}">🔒 {% translate "Sécurité/Gardien" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.buanderie }}
-                        <label for="{{ form.buanderie.id_for_label }}">🧺 Blanchisserie</label>
+                        <label for="{{ form.buanderie.id_for_label }}">🧺 {% translate "Blanchisserie" %}</label>
                     </div>
                     <div class="amenity-card">
                         {{ form.piscine }}
-                        <label for="{{ form.piscine.id_for_label }}">🏊 Piscine/Communauté</label>
+                        <label for="{{ form.piscine.id_for_label }}">🏊 {% translate "Piscine/Communauté" %}</label>
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(2)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(4)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(2)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(4)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -693,10 +693,10 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">📸</span>
-                    Galerie Photos
+                    {% translate "Galerie Photos" %}
                 </div>
                 <div class="card-description">
-                    Ajoutez des photos de haute qualité de votre logement
+                    {% translate "Ajoutez des photos de haute qualité de votre logement" %}
                 </div>
 
                 <div class="photo-upload-section">
@@ -706,20 +706,20 @@
                     <!-- Photos Upload Zone -->
                     <div id="photo-forms-container">
                         <div style="margin-bottom: 10px; color: #6b7280; font-size: 0.95rem;">
-                            Ajoutez plusieurs photos en cliquant sur le bouton ci-dessous.
+                            {% translate "Ajoutez plusieurs photos en cliquant sur le bouton ci-dessous." %}
                         </div>
                         {% for photo_form in formset %}
                         <div class="photo-form-item" style="margin-bottom: 20px;">
                             <div style="border: 2px dashed #e5e7eb; border-radius: 8px; padding: 15px; background: #f9fafb;">
                                 <div class="field-group">
-                                    <label>Photo {{ forloop.counter }}</label>
+                                    <label>{% blocktranslate with counter=forloop.counter %}Photo {{ counter }}{% endblocktranslate %}</label>
                                     {{ photo_form.image }}
                                     {% if photo_form.image.errors %}
                                         <div class="field-error">{{ photo_form.image.errors }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="field-group">
-                                    <label>Description (optionnel)</label>
+                                    <label>{% translate "Description (optionnel)" %}</label>
                                     {{ photo_form.alt_text }}
                                 </div>
                                 <div class="field-group">
@@ -728,7 +728,7 @@
                                 {% if not forloop.first %}
                                     <div style="margin-top: 10px;">
                                         {{ photo_form.DELETE }}
-                                        <label for="{{ photo_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">Supprimer cette photo</label>
+                                        <label for="{{ photo_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">{% translate "Supprimer cette photo" %}</label>
                                     </div>
                                 {% endif %}
                             </div>
@@ -738,17 +738,17 @@
 
                     <!-- Add More Photos Button -->
                     <button type="button" id="add-photo-form" class="btn btn-secondary" style="margin-top: 20px;">
-                        + Ajouter une autre photo
+                        + {% translate "Ajouter une autre photo" %}
                     </button>
 
                     <div class="field-hint" style="margin-top: 20px;">
-                        💡 Conseil: Téléchargez autant de photos que nécessaire pour présenter votre bien. Vous pouvez ajouter plusieurs photos, jusqu'à 20 au total.
+                        💡 {% translate "Conseil: Téléchargez autant de photos que nécessaire pour présenter votre bien. Vous pouvez ajouter plusieurs photos, jusqu'à 20 au total." %}
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(3)">← Précédent</button>
-                    <button type="button" class="btn btn-next" onclick="goToStep(5)">Suivant →</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(3)">← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-next" onclick="goToStep(5)">{% translate "Suivant" %} →</button>
                 </div>
             </div>
         </div>
@@ -758,10 +758,10 @@
             <div class="form-card">
                 <div class="card-title">
                     <span class="card-title-icon">🎬</span>
-                    Ajouter des Vidéos (Optionnel)
+                    {% translate "Ajouter des Vidéos (Optionnel)" %}
                 </div>
                 <div class="card-description">
-                    Ajoutez des vidéos de visite pour attirer plus de locataires
+                    {% translate "Ajoutez des vidéos de visite pour attirer plus de locataires" %}
                 </div>
 
                 <div class="video-upload-section">
@@ -771,37 +771,37 @@
                     <!-- Videos Upload Zone -->
                     <div id="video-forms-container">
                         <div style="margin-bottom: 10px; color: #6b7280; font-size: 0.95rem;">
-                            Ajoutez plusieurs vidéos en cliquant sur le bouton ci-dessous.
+                            {% translate "Ajoutez plusieurs vidéos en cliquant sur le bouton ci-dessous." %}
                         </div>
                         {% for video_form in video_formset %}
                         <div class="video-form-item" style="margin-bottom: 20px;">
                             <div style="border: 2px dashed #10b981; border-radius: 8px; padding: 15px; background: #ecfdf5;">
                                 <div class="field-group">
-                                    <label>Fichier vidéo {{ forloop.counter }}</label>
+                                    <label>{% blocktranslate with counter=forloop.counter %}Fichier vidéo {{ counter }}{% endblocktranslate %}</label>
                                     {{ video_form.video }}
                                     {% if video_form.video.errors %}
                                         <div class="field-error">{{ video_form.video.errors }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="field-group">
-                                    <label>Titre de la vidéo (ex: Visite complète)</label>
+                                    <label>{% translate "Titre de la vidéo (ex: Visite complète)" %}</label>
                                     {{ video_form.titre }}
                                     {% if video_form.titre.errors %}
                                         <div class="field-error">{{ video_form.titre.errors }}</div>
                                     {% endif %}
                                 </div>
                                 <div class="field-group">
-                                    <label>Description</label>
+                                    <label>{% translate "Description" %}</label>
                                     {{ video_form.description }}
                                 </div>
                                 <div class="field-group">
-                                    <label>Ordre</label>
+                                    <label>{% translate "Ordre" %}</label>
                                     {{ video_form.order }}
                                 </div>
                                 {% if not forloop.first %}
                                     <div style="margin-top: 10px;">
                                         {{ video_form.DELETE }}
-                                        <label for="{{ video_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">Supprimer cette vidéo</label>
+                                        <label for="{{ video_form.DELETE.id_for_label }}" style="font-weight: normal; margin-left: 8px;">{% translate "Supprimer cette vidéo" %}</label>
                                     </div>
                                 {% endif %}
                             </div>
@@ -811,17 +811,17 @@
 
                     <!-- Add More Videos Button -->
                     <button type="button" id="add-video-form" class="btn btn-secondary" style="margin-top: 20px;">
-                        + Ajouter une autre vidéo
+                        + {% translate "Ajouter une autre vidéo" %}
                     </button>
 
                     <div class="field-hint" style="margin-top: 20px;">
-                        💡 Conseil: Les vidéos augmentent les demandes de 60%. Vous pouvez ajouter jusqu'à 10 vidéos.
+                        💡 {% translate "Conseil: Les vidéos augmentent les demandes de 60%. Vous pouvez ajouter jusqu'à 10 vidéos." %}
                     </div>
                 </div>
 
                 <div class="form-nav">
-                    <button type="button" class="btn btn-prev" onclick="goToStep(4)">← Précédent</button>
-                    <button type="submit" class="btn btn-submit">✓ Publier le Logement</button>
+                    <button type="button" class="btn btn-prev" onclick="goToStep(4)">← {% translate "Précédent" %}</button>
+                    <button type="submit" class="btn btn-submit">✓ {% translate "Publier le Logement" %}</button>
                 </div>
             </div>
         </div>

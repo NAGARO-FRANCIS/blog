@@ -1,9 +1,85 @@
 from django import forms
 from django.forms import inlineformset_factory
+from django.utils.translation import gettext_lazy as _
 from .models import BlocageCalendrier, Logement, PhotoLogement, VideoLogement, Reservation
 from datetime import datetime, timedelta
 
-class LogementProprietaireForm(forms.ModelForm):
+
+LOGEMENT_FIELD_LABELS = {
+    'titre': _('Titre'),
+    'description': _('Description'),
+    'type_logement': _('Type de logement'),
+    'prix': _('Prix'),
+    'ville': _('Ville'),
+    'quartier': _('Quartier'),
+    'surface': _('Surface'),
+    'nombre_pieces': _('Nombre de pièces'),
+    'nombre_chambres': _('Nombre de chambres'),
+    'nombre_lits': _('Nombre de lits'),
+    'nombre_salles_bain': _('Nombre de salles de bain'),
+    'etage': _('Étage'),
+    'meuble': _('Meublé'),
+    'disponible_depuis': _('Disponible à partir du'),
+    'latitude': _('Latitude'),
+    'longitude': _('Longitude'),
+    'distance_universite': _('Distance à l’université (km)'),
+    'distance_hopital': _('Distance à l’hôpital (km)'),
+    'capacite': _('Capacité'),
+    'unites_totales': _('Nombre total d’unités'),
+    'prix_par_nuit': _('Prix par nuit'),
+    'prix_par_mois': _('Prix par mois'),
+    'frais_nettoyage': _('Frais de nettoyage'),
+    'min_sejour': _('Séjour minimum'),
+    'politique_annulation': _('Politique d’annulation'),
+    'heure_arrivee': _('Heure d’arrivée'),
+    'heure_depart': _('Heure de départ'),
+    'caution_mois': _('Mois de caution'),
+    'frais_agence': _('Frais d’agence'),
+    'duree_min_bail': _('Durée minimale du bail'),
+    'type_charge': _('Type de charges'),
+    'conditions_speciales': _('Conditions spéciales'),
+    'climatisation': _('Climatisation'),
+    'wifi': _('Wi-Fi'),
+    'garage': _('Garage'),
+    'jardin': _('Jardin'),
+    'piscine': _('Piscine'),
+    'cuisine_equipee': _('Cuisine équipée'),
+    'minibar': _('Minibar'),
+    'television': _('Télévision'),
+    'coffre_fort': _('Coffre-fort'),
+    'reception_24h': _('Réception 24h'),
+    'restaurant': _('Restaurant'),
+    'ascenseur': _('Ascenseur'),
+    'gardien': _('Gardien'),
+    'securite': _('Sécurité'),
+    'buanderie': _('Buanderie'),
+    'image': _('Photo'),
+    'alt_text': _('Description de la photo'),
+    'order': _('Ordre d’affichage'),
+    'video': _('Vidéo'),
+    'date_arrivee': _('Date d’arrivée'),
+    'date_depart': _('Date de départ'),
+    'nombre_personnes': _('Nombre de personnes'),
+    'client_nom': _('Nom complet'),
+    'client_email': _('Adresse e-mail'),
+    'client_telephone': _('Téléphone'),
+    'remarques': _('Remarques'),
+    'logement': _('Logement'),
+    'date_debut': _('Date de début'),
+    'date_fin': _('Date de fin'),
+    'motif': _('Motif'),
+}
+
+
+class LocalizedModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, label in LOGEMENT_FIELD_LABELS.items():
+            if field_name in self.fields:
+                self.fields[field_name].label = label
+
+
+class LogementProprietaireForm(LocalizedModelForm):
     """Formulaire pour propriétaire publiant un logement complet"""
     class Meta:
         model = Logement
@@ -90,7 +166,7 @@ class LogementProprietaireForm(forms.ModelForm):
         return cleaned_data
 
 
-class LogementHotelForm(forms.ModelForm):
+class LogementHotelForm(LocalizedModelForm):
     """Formulaire spécialisé pour les hôtels"""
     class Meta:
         model = Logement
@@ -197,12 +273,12 @@ class LogementHotelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['type_logement'].choices = [
-            ('', 'Sélectionnez le type de chambre'),
-            ('simple', 'Chambre simple'),
-            ('double', 'Chambre double'),
-            ('duplex', 'Duplex'),
-            ('suite', 'Suite'),
-            ('familiale', 'Chambre familiale'),
+            ('', _('Sélectionnez le type de chambre')),
+            ('simple', _('Chambre simple')),
+            ('double', _('Chambre double')),
+            ('duplex', _('Duplex')),
+            ('suite', _('Suite')),
+            ('familiale', _('Chambre familiale')),
         ]
         # Rendre les champs optionnels avec valeurs par défaut
         self.fields['surface'].required = False
@@ -236,7 +312,7 @@ class LogementHotelForm(forms.ModelForm):
         return cleaned_data
 
 
-class LogementResidenceForm(forms.ModelForm):
+class LogementResidenceForm(LocalizedModelForm):
     """Formulaire spécialisé pour les résidences"""
     class Meta:
         model = Logement
@@ -356,7 +432,7 @@ class LogementResidenceForm(forms.ModelForm):
         return cleaned_data
 
 
-class LogementTouristeForm(forms.ModelForm):
+class LogementTouristeForm(LocalizedModelForm):
     """Formulaire pour locataire cherchant un touriste"""
     class Meta:
         model = Logement
@@ -454,7 +530,7 @@ class LogementTouristeForm(forms.ModelForm):
         return cleaned_data
 
 
-class PhotoLogementForm(forms.ModelForm):
+class PhotoLogementForm(LocalizedModelForm):
     class Meta:
         model = PhotoLogement
         fields = ['image', 'alt_text', 'order']
@@ -505,7 +581,7 @@ PhotoLogementFormSet = inlineformset_factory(
 )
 
 
-class VideoLogementForm(forms.ModelForm):
+class VideoLogementForm(LocalizedModelForm):
     """Formulaire pour ajouter des vidéos"""
     class Meta:
         model = VideoLogement
@@ -565,63 +641,73 @@ VideoLogementFormSet = inlineformset_factory(
 
 class RechercheLogementForm(forms.Form):
     q = forms.CharField(
-        label='Mot clé',
+        label=_('Mot clé'),
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-input',
-            'placeholder': 'Chercher un logement...'
+            'placeholder': _('Chercher un logement...')
         })
     )
     ville = forms.CharField(
-        label='Ville',
+        label=_('Ville'),
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-input',
-            'placeholder': 'Ville'
+            'placeholder': _('Ville')
         })
     )
-    commune = forms.CharField(label='Commune', required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Commune'}))
-    quartier = forms.CharField(label='Quartier', required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Quartier'}))
-    prix_min = forms.DecimalField(label='Prix minimum', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Prix min'}))
+    commune = forms.CharField(label=_('Commune'), required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': _('Commune')}))
+    quartier = forms.CharField(label=_('Quartier'), required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': _('Quartier')}))
+    prix_min = forms.DecimalField(label=_('Prix minimum'), required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'placeholder': _('Prix min')}))
     prix_max = forms.DecimalField(
-        label='Prix maximum',
+        label=_('Prix maximum'),
         required=False,
         widget=forms.NumberInput(attrs={
             'class': 'form-input',
-            'placeholder': 'Prix max'
+            'placeholder': _('Prix max')
         })
     )
-    nombre_chambres_min = forms.IntegerField(label='Chambres minimum', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0'}))
+    nombre_chambres_min = forms.IntegerField(label=_('Chambres minimum'), required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0'}))
     type_logement = forms.ChoiceField(
-        label='Type de logement',
+        label=_('Type de logement'),
         required=False,
-        choices=[('', 'Tous les types')] + list(Logement.TYPE_LOGEMENT),
+        choices=[('', _('Tous les types'))] + list(Logement.TYPE_LOGEMENT),
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     account_type = forms.ChoiceField(
         required=False,
-        choices=[('', 'Tous les comptes')] + list(Logement.ACCOUNT_TYPE),
+        choices=[('', _('Tous les comptes'))] + list(Logement.ACCOUNT_TYPE),
         widget=forms.HiddenInput()
     )
-    _availability_choices = [('', 'Indifférent'), ('1', 'Oui'), ('0', 'Non')]
-    meuble = forms.ChoiceField(label='Meublé', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    _availability_choices = [('', _('Indifférent')), ('1', _('Oui')), ('0', _('Non'))]
+    meuble = forms.ChoiceField(label=_('Meublé'), required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
     wifi = forms.ChoiceField(label='WiFi', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
-    garage = forms.ChoiceField(label='Garage', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
-    climatisation = forms.ChoiceField(label='Climatisation', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
-    securite = forms.ChoiceField(label='Sécurité', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
-    eau = forms.ChoiceField(label='Eau', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
-    electricite = forms.ChoiceField(label='Électricité', required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
-    distance_universite_max = forms.DecimalField(label='Distance université maximale', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'step': '0.01'}))
-    distance_hopital_max = forms.DecimalField(label='Distance hôpital maximale', required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'step': '0.01'}))
-    disponible_immediatement = forms.BooleanField(label='Disponible immédiatement', required=False)
+    garage = forms.ChoiceField(label=_('Garage'), required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    climatisation = forms.ChoiceField(label=_('Climatisation'), required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    securite = forms.ChoiceField(label=_('Sécurité'), required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    eau = forms.ChoiceField(label=_('Eau'), required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    electricite = forms.ChoiceField(label=_('Électricité'), required=False, choices=_availability_choices, widget=forms.Select(attrs={'class': 'form-select'}))
+    distance_universite_max = forms.DecimalField(label=_('Distance université maximale'), required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'step': '0.01'}))
+    distance_hopital_max = forms.DecimalField(label=_('Distance hôpital maximale'), required=False, min_value=0, widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0', 'step': '0.01'}))
+    disponible_immediatement = forms.BooleanField(label=_('Disponible immédiatement'), required=False)
 
 
-class ReservationForm(forms.ModelForm):
+class ReservationForm(LocalizedModelForm):
     """Formulaire pour créer une réservation"""
     
     class Meta:
         model = Reservation
         fields = ['date_arrivee', 'date_depart', 'nombre_personnes', 'nombre_chambres', 'client_nom', 'client_email', 'client_telephone', 'remarques']
+        labels = {
+            'date_arrivee': _('Date d’arrivée'),
+            'date_depart': _('Date de départ'),
+            'nombre_personnes': _('Nombre de personnes'),
+            'nombre_chambres': _('Nombre de chambres'),
+            'client_nom': _('Nom complet'),
+            'client_email': _('Adresse e-mail'),
+            'client_telephone': _('Téléphone'),
+            'remarques': _('Remarques'),
+        }
         widgets = {
             'date_arrivee': forms.DateInput(attrs={
                 'type': 'date',
@@ -645,12 +731,12 @@ class ReservationForm(forms.ModelForm):
             }),
             'client_nom': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'Votre nom complet',
+                'placeholder': _('Votre nom complet'),
                 'required': True
             }),
             'client_email': forms.EmailInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'votre@email.com',
+                'placeholder': _('votre@email.com'),
                 'required': True
             }),
             'client_telephone': forms.TextInput(attrs={
@@ -660,7 +746,7 @@ class ReservationForm(forms.ModelForm):
             }),
             'remarques': forms.Textarea(attrs={
                 'class': 'form-textarea',
-                'placeholder': 'Remarques ou demandes spéciales (optionnel)',
+                'placeholder': _('Remarques ou demandes spéciales (optionnel)'),
                 'rows': 4
             }),
         }
@@ -685,36 +771,29 @@ class ReservationForm(forms.ModelForm):
         # Vérifier que le logement est un hôtel ou une résidence
         if self.logement and self.logement.account_type not in ['hotel', 'residence']:
             raise forms.ValidationError(
-                "Les réservations ne sont possibles que pour les hôtels et résidences."
+                _("Les réservations ne sont possibles que pour les hôtels et résidences.")
             )
         
         if date_arrivee and date_depart:
             if date_depart <= date_arrivee:
                 raise forms.ValidationError(
-                    "La date de départ doit être après la date d'arrivée"
+                    _("La date de départ doit être après la date d'arrivée")
                 )
             
-            # Vérifier les disponibilités
             if self.logement:
-                from django.db.models import Q
-                from .models import Reservation
-                
-                conflicting = Reservation.objects.filter(
-                    logement=self.logement,
-                    statut__in=['confirmed', 'completed'],
-                    date_arrivee__lt=date_depart,
-                    date_depart__gt=date_arrivee
-                ).exists()
-                
-                if conflicting:
+                requested_units = cleaned_data.get('nombre_chambres') or 1
+                if self.logement.available_units_for_period(
+                    date_arrivee,
+                    date_depart,
+                ).count() < requested_units:
                     raise forms.ValidationError(
-                        "Ces dates ne sont pas disponibles pour ce logement"
+                        _("Il ne reste pas assez de chambres disponibles pour toute la durée du séjour.")
                     )
         
         return cleaned_data
 
 
-class BlocageCalendrierForm(forms.ModelForm):
+class BlocageCalendrierForm(LocalizedModelForm):
     class Meta:
         model = BlocageCalendrier
         fields = ['logement', 'date_debut', 'date_fin', 'motif']
@@ -730,5 +809,3 @@ class BlocageCalendrierForm(forms.ModelForm):
         if cleaned_data.get('date_debut') and cleaned_data.get('date_fin') and cleaned_data['date_fin'] <= cleaned_data['date_debut']:
             raise forms.ValidationError('La date de fin doit être après la date de début.')
         return cleaned_data
-
-

@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Inscription - {{ role_label }} - Ivoire Connect{% endblock %}
+{% load i18n %}
+
+{% block title %}{% translate "Inscription" %} - {{ role_label }} - Ivoire Connect{% endblock %}
 
 {% block content %}
 
@@ -9,16 +11,16 @@
 
     <!-- HEADER -->
     <div class="signup-header">
-        <h1>📝 Créer mon compte 🇨🇮</h1>
-        <p>Rejoignez Ivoire Connect et trouvez votre logement facilement</p>
+        <h1>📝 {% translate "Créer mon compte" %} 🇨🇮</h1>
+        <p>{% translate "Rejoignez Ivoire Connect et trouvez votre logement facilement" %}</p>
 
         <div class="role-badge">
             {% if role == 'proprietaire' %}
-                🏠 Propriétaire
+                🏠 {% translate "Propriétaire" %}
             {% elif role == 'locataire' %}
-                🔑 Locataire
+                🔑 {% translate "Locataire" %}
             {% else %}
-                👥 Touriste
+                👥 {% translate "Touriste" %}
             {% endif %}
         </div>
     </div>
@@ -45,26 +47,26 @@
 
             <!-- AUTH -->
             <div class="form-section">
-                <h2>🔐 Compte</h2>
+                <h2>🔐 {% translate "Compte" %}</h2>
 
                 <div class="grid">
                     <div>
-                        <label>Username</label>
+                        <label>{% translate "Nom d'utilisateur" %}</label>
                         {{ form.username }}
                     </div>
 
                     <div>
-                        <label>Email</label>
+                        <label>{% translate "Email" %}</label>
                         {{ form.email }}
                     </div>
 
                     <div>
-                        <label>Mot de passe</label>
+                        <label>{% translate "Mot de passe" %}</label>
                         {{ form.password1 }}
                     </div>
 
                     <div>
-                        <label>Confirmation</label>
+                        <label>{% translate "Confirmation" %}</label>
                         {{ form.password2 }}
                     </div>
                 </div>
@@ -72,31 +74,31 @@
 
             <!-- PERSONAL -->
             <div class="form-section">
-                <h2>👤 Informations personnelles</h2>
+                <h2>👤 {% translate "Informations personnelles" %}</h2>
 
                 <div class="grid">
                     <div>
-                        <label>Nom</label>
+                        <label>{% translate "Nom" %}</label>
                         {{ form.first_name }}
                     </div>
 
                     <div>
-                        <label>Prénom</label>
+                        <label>{% translate "Prénom" %}</label>
                         {{ form.last_name }}
                     </div>
 
                     <div>
-                        <label>Date de naissance</label>
+                        <label>{% translate "Date de naissance" %}</label>
                         {{ form.date_naissance }}
                     </div>
 
                     <div>
-                        <label>Sexe</label>
+                        <label>{% translate "Sexe" %}</label>
                         {{ form.sexe }}
                     </div>
 
                     <div class="full">
-                        <label>Profession</label>
+                        <label>{% translate "Profession" %}</label>
                         {{ form.profession }}
                     </div>
                 </div>
@@ -104,21 +106,21 @@
 
             <!-- LOCATION -->
             <div class="form-section">
-                <h2>📍 Localisation</h2>
+                <h2>📍 {% translate "Localisation" %}</h2>
 
                 <div class="grid">
                     <div>
-                        <label>Ville</label>
+                        <label>{% translate "Ville" %}</label>
                         {{ form.ville }}
                     </div>
 
                     <div>
-                        <label>Quartier</label>
+                        <label>{% translate "Quartier" %}</label>
                         {{ form.quartier }}
                     </div>
 
                     <div class="full">
-                        <label>Téléphone</label>
+                        <label>{% translate "Téléphone" %}</label>
                         {{ form.telephone }}
                     </div>
                 </div>
@@ -126,16 +128,16 @@
 
             <!-- ID -->
             <div class="form-section">
-                <h2>🪪 Identité</h2>
+                <h2>🪪 {% translate "Identité" %}</h2>
 
                 <div class="grid">
                     <div>
-                        <label>Type pièce</label>
+                        <label>{% translate "Type pièce" %}</label>
                         {{ form.type_piece_identite }}
                     </div>
 
                     <div>
-                        <label>Numéro</label>
+                        <label>{% translate "Numéro" %}</label>
                         {{ form.numero_piece_identite }}
                     </div>
                 </div>
@@ -143,24 +145,24 @@
 
             <!-- PHOTO -->
             <div class="form-section">
-                <h2>📷 Photo de profil</h2>
+                <h2>📷 {% translate "Photo de profil" %}</h2>
 
                 {{ form.photo_profil }}
-                <small>Ajoutez une photo claire pour votre profil</small>
+                <small>{% translate "Ajoutez une photo claire pour votre profil" %}</small>
             </div>
 
             <!-- INFO -->
             <div class="info-box">
-                ℹ️ En créant un compte, vous acceptez nos conditions d’utilisation.
+                ℹ️ {% translate "En créant un compte, vous acceptez nos conditions d’utilisation." %}
             </div>
 
             <!-- BUTTONS -->
             <button type="submit" class="btn-primary">
-                ✅ Créer mon compte
+                ✅ {% translate "Créer mon compte" %}
             </button>
 
             <a href="{% url 'accounts:inscription_individu' %}" class="btn-secondary">
-                ← Retour
+                ← {% translate "Retour" %}
             </a>
 
         </form>

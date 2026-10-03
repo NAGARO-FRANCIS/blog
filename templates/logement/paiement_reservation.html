@@ -1,60 +1,60 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load i18n static %}
 
-{% block title %}Paiement - Ivoire Connect{% endblock %}
+{% block title %}{% translate "Paiement" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <h1 class="mb-4">Paiement de votre réservation</h1>
+            <h1 class="mb-4">{% translate "Paiement de votre réservation" %}</h1>
 
             <div class="row">
                 <!-- Détails de la réservation (Gauche) -->
                 <div class="col-md-6">
                     <div class="reservation-summary p-3 bg-light rounded mb-4">
-                        <h5>Résumé de votre réservation</h5>
+                        <h5>{% translate "Résumé de votre réservation" %}</h5>
                         
                         <div class="summary-item">
                             <strong>{{ reservation.logement.titre }}</strong>
                         </div>
                         
                         <div class="summary-item mt-2">
-                            <p class="mb-1"><small>Client:</small> {{ reservation.client_nom }}</p>
-                            <p class="mb-1"><small>Email:</small> {{ reservation.client_email }}</p>
-                            <p class="mb-1"><small>Téléphone:</small> {{ reservation.client_telephone }}</p>
+                            <p class="mb-1"><small>{% translate "Client" %}:</small> {{ reservation.client_nom }}</p>
+                            <p class="mb-1"><small>{% translate "Email" %}:</small> {{ reservation.client_email }}</p>
+                            <p class="mb-1"><small>{% translate "Téléphone" %}:</small> {{ reservation.client_telephone }}</p>
                         </div>
                         
                         <div class="summary-item mt-2 border-top pt-2">
-                            <p class="mb-1"><small>Arrivée:</small> <strong>{{ reservation.date_arrivee|date:'d/m/Y' }}</strong></p>
-                            <p class="mb-1"><small>Départ:</small> <strong>{{ reservation.date_depart|date:'d/m/Y' }}</strong></p>
-                            <p class="mb-1"><small>Nombre de nuits:</small> <strong>{{ reservation.nombre_nuits }}</strong></p>
+                            <p class="mb-1"><small>{% translate "Arrivée" %}:</small> <strong>{{ reservation.date_arrivee|date:'d/m/Y' }}</strong></p>
+                            <p class="mb-1"><small>{% translate "Départ" %}:</small> <strong>{{ reservation.date_depart|date:'d/m/Y' }}</strong></p>
+                            <p class="mb-1"><small>{% translate "Nombre de nuits" %}:</small> <strong>{{ reservation.nombre_nuits }}</strong></p>
                         </div>
                         
                         <div class="summary-item mt-3 p-2 bg-white rounded border">
                             <p class="mb-1">
-                                <small>Prix par nuit:</small>
+                                <small>{% translate "Prix par nuit" %}:</small>
                                 <strong class="float-end">{{ reservation.prix_par_nuit|floatformat:0 }} FCFA</strong>
                             </p>
                             <p class="mb-1">
-                                <small>Subtotal:</small>
+                                <small>{% translate "Sous-total" %}:</small>
                                 <strong class="float-end">{{ reservation.prix_total|floatformat:0 }} FCFA</strong>
                             </p>
                             {% if reservation.frais_service > 0 %}
                                 <p class="mb-1">
-                                    <small>Frais service:</small>
+                                    <small>{% translate "Frais de service" %}:</small>
                                     <strong class="float-end">{{ reservation.frais_service|floatformat:0 }} FCFA</strong>
                                 </p>
                             {% endif %}
                             {% if reservation.frais_nettoyage_reservation > 0 %}
                                 <p class="mb-1">
-                                    <small>Frais nettoyage:</small>
+                                    <small>{% translate "Frais de nettoyage" %}:</small>
                                     <strong class="float-end">{{ reservation.frais_nettoyage_reservation|floatformat:0 }} FCFA</strong>
                                 </p>
                             {% endif %}
                             <hr>
                             <p class="mb-0">
-                                <strong>TOTAL:</strong>
+                                <strong>{% translate "TOTAL" %}:</strong>
                                 <strong class="float-end text-success" style="font-size: 1.3rem;">
                                     {{ reservation.montant_final|floatformat:0 }} FCFA
                                 </strong>
@@ -66,7 +66,7 @@
                 <!-- Formulaire de paiement (Droite) -->
                 <div class="col-md-6">
                     <div class="payment-form p-3 bg-white rounded border">
-                        <h5 class="mb-3">🔒 Sélectionnez votre mode de paiement</h5>
+                        <h5 class="mb-3">🔒 {% translate "Sélectionnez votre mode de paiement" %}</h5>
                         
                         <form id="payment-form" method="post">
                             {% csrf_token %}
@@ -106,7 +106,7 @@
                                         <input type="radio" name="payment_method" value="stripe" onclick="updatePaymentMethod('stripe')">
                                         <div class="method-card stripe">
                                             <span class="method-icon">💳</span>
-                                            <span class="method-name">Carte Bancaire</span>
+                                            <span class="method-name">{% translate "Carte bancaire" %}</span>
                                         </div>
                                     </label>
                                     
@@ -115,7 +115,7 @@
                                         <input type="radio" name="payment_method" value="virement" onclick="updatePaymentMethod('virement')">
                                         <div class="method-card virement">
                                             <span class="method-icon">🏦</span>
-                                            <span class="method-name">Virement</span>
+                                            <span class="method-name">{% translate "Virement" %}</span>
                                         </div>
                                     </label>
                                     
@@ -124,7 +124,7 @@
                                         <input type="radio" name="payment_method" value="cash" onclick="updatePaymentMethod('cash')">
                                         <div class="method-card cash">
                                             <span class="method-icon">💵</span>
-                                            <span class="method-name">Sur place</span>
+                                            <span class="method-name">{% translate "Sur place" %}</span>
                                         </div>
                                     </label>
                                 </div>
@@ -135,47 +135,47 @@
                                 <!-- MOUV -->
                                 <div id="method-mouv" class="method-content">
                                     <div class="alert alert-info">
-                                        <strong>📱 Paiement via MOUV</strong><br>
-                                        Composez <strong>*111#</strong> et entrez le montant de <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                                        <strong>📱 {% translate "Paiement via MOUV" %}</strong><br>
+                                        {% translate "Composez" %} <strong>*111#</strong> {% translate "et entrez le montant de" %} <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Numéro MOUV (confirmez)</label>
+                                        <label class="form-label">{% translate "Numéro MOUV (confirmez)" %}</label>
                                         <input type="tel" class="form-control" id="mouv_number" name="mouv_number" placeholder="+225 XX XX XX XX">
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Confirmer le paiement MOUV</button>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ {% translate "Confirmer le paiement MOUV" %}</button>
                                 </div>
 
                                 <!-- Orange Money -->
                                 <div id="method-orange" class="method-content" style="display:none;">
                                     <div class="alert alert-info">
-                                        <strong>📱 Paiement via Orange Money</strong><br>
-                                        Composez <strong>#144#</strong> et entrez le montant de <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
+                                        <strong>📱 {% translate "Paiement via Orange Money" %}</strong><br>
+                                        {% translate "Composez" %} <strong>#144#</strong> {% translate "et entrez le montant de" %} <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Numéro Orange (confirmez)</label>
+                                        <label class="form-label">{% translate "Numéro Orange (confirmez)" %}</label>
                                         <input type="tel" class="form-control" id="orange_number" name="orange_number" placeholder="+225 XX XX XX XX">
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Confirmer le paiement Orange Money</button>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ {% translate "Confirmer le paiement Orange Money" %}</button>
                                 </div>
 
                                 <!-- Wave -->
                                 <div id="method-wave" class="method-content" style="display:none;">
                                     <div class="alert alert-info">
-                                        <strong>🔵 Paiement via Wave</strong><br>
-                                        Ouvrez l'application Wave et envoyez <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> au numéro fourni
+                                        <strong>🔵 {% translate "Paiement via Wave" %}</strong><br>
+                                        {% translate "Ouvrez l'application Wave et envoyez" %} <strong>{{ reservation.montant_final|floatformat:0 }} FCFA</strong> {% translate "au numéro fourni" %}
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Numéro Wave (confirmez)</label>
+                                        <label class="form-label">{% translate "Numéro Wave (confirmez)" %}</label>
                                         <input type="tel" class="form-control" id="wave_number" name="wave_number" placeholder="+225 XX XX XX XX">
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Confirmer le paiement Wave</button>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ {% translate "Confirmer le paiement Wave" %}</button>
                                 </div>
 
                                 <!-- Carte Bancaire -->
                                 <div id="method-stripe" class="method-content" style="display:none;">
                                     <div class="alert alert-warning">
-                                        <strong>💳 Paiement par Carte Bancaire</strong><br>
-                                        Entrez les détails de votre carte ci-dessous
+                                        <strong>💳 {% translate "Paiement par carte bancaire" %}</strong><br>
+                                        {% translate "Entrez les détails de votre carte ci-dessous" %}
                                     </div>
                                     <div id="card-element" class="form-control mb-3" style="height: 40px; padding-top: 10px;"></div>
                                     <div id="card-errors" class="alert alert-danger d-none" role="alert"></div>
@@ -185,28 +185,28 @@
                                 <!-- Virement -->
                                 <div id="method-virement" class="method-content" style="display:none;">
                                     <div class="alert alert-info">
-                                        <strong>🏦 Paiement par Virement Bancaire</strong><br>
-                                        Nos coordonnées bancaires vous seront envoyées par email
+                                        <strong>🏦 {% translate "Paiement par virement bancaire" %}</strong><br>
+                                        {% translate "Nos coordonnées bancaires vous seront envoyées par email" %}
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Email pour recevoir les coordonnées</label>
+                                        <label class="form-label">{% translate "Email pour recevoir les coordonnées" %}</label>
                                         <input type="email" class="form-control" id="virement_email" name="virement_email" value="{{ reservation.client_email }}" readonly>
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Demander les coordonnées bancaires</button>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ {% translate "Demander les coordonnées bancaires" %}</button>
                                 </div>
 
                                 <!-- Paiement sur place -->
                                 <div id="method-cash" class="method-content" style="display:none;">
                                     <div class="alert alert-info">
-                                        <strong>💵 Paiement à l'arrivée</strong><br>
-                                        Vous paierez {{ reservation.montant_final|floatformat:0 }} FCFA directement au propriétaire
+                                        <strong>💵 {% translate "Paiement à l'arrivée" %}</strong><br>
+                                        {% translate "Vous paierez" %} {{ reservation.montant_final|floatformat:0 }} FCFA {% translate "directement au propriétaire" %}
                                     </div>
                                     <div class="mb-3">
                                         <div class="alert alert-warning">
-                                            Une caution de confirmation peut être demandée
+                                            {% translate "Une caution de confirmation peut être demandée" %}
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ Réserver avec paiement sur place</button>
+                                    <button type="submit" class="btn btn-success btn-lg w-100">✓ {% translate "Réserver avec paiement sur place" %}</button>
                                 </div>
                             </div>
 
@@ -320,7 +320,7 @@
         } catch (error) {
             console.error('Erreur:', error);
             document.getElementById("payment-message").innerHTML = 
-                '<div class="alert alert-danger">❌ Erreur lors du paiement: ' + error.message + '</div>';
+                '<div class="alert alert-danger">❌ {% translate "Erreur lors du paiement" %}: ' + error.message + '</div>';
         }
     });
 
