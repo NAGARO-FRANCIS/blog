@@ -7,7 +7,11 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.views import PasswordResetView as DjangoPasswordResetView
+from django.contrib.auth.views import (
+    PasswordChangeView as DjangoPasswordChangeView,
+    PasswordResetConfirmView as DjangoPasswordResetConfirmView,
+    PasswordResetView as DjangoPasswordResetView,
+)
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
@@ -33,6 +37,20 @@ class PasswordResetView(DjangoPasswordResetView):
         email = form.cleaned_data['email']
         self.request.session['password_reset_email'] = email
         return super().form_valid(form)
+
+
+class PasswordResetConfirmView(DjangoPasswordResetConfirmView):
+    """Ensure the completion redirect uses the app namespace configured for this project."""
+
+    def get_success_url(self):
+        return reverse('accounts:password_reset_complete')
+
+
+class PasswordChangeView(DjangoPasswordChangeView):
+    """Ensure password-change redirects use the namespaced success URL."""
+
+    def get_success_url(self):
+        return reverse('accounts:password_change_done')
 
 
 def send_sms(phone_number: str, message: str):

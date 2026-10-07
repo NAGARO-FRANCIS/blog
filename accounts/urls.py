@@ -7,7 +7,8 @@ from .views import (
     resend_activation,
     verify_phone, resend_phone_code,
     dashboard, dashboard_individu, dashboard_residence, dashboard_hotel,
-    profil, profil_user, edit_profil, verification_docs, upload_document, verify_profile, PasswordResetView
+    profil, profil_user, edit_profil, verification_docs, upload_document, verify_profile,
+    PasswordChangeView, PasswordResetConfirmView, PasswordResetView,
 )
 from .subscription_views import (
     subscribe, unsubscribe, is_subscribed, get_subscriber_count,
@@ -61,5 +62,11 @@ urlpatterns = [
     path('password_reset/', PasswordResetView.as_view(
         success_url=reverse_lazy('accounts:password_reset_done')
     ), name='password_reset'),
-    path('', include('django.contrib.auth.urls')),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('password_change/', PasswordChangeView.as_view(), name='password_change'),
+    path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
 ]

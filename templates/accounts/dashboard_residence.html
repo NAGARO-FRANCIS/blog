@@ -2,8 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% translate "Ma Résidence" as default_establishment_name %}
-{% block title %}Dashboard — {{ prof_profile.establishment_name|default:default_establishment_name }}{% endblock %}
+{% block title %}Dashboard — {% if prof_profile.establishment_name %}{{ prof_profile.establishment_name }}{% else %}{% translate "Ma Résidence" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="dr-wrapper">
@@ -15,7 +14,7 @@
                 <span class="dr-header__flag">🇨🇮</span>
                 <div>
                     <h1 class="dr-header__title">
-                        {% if prof_profile %}{{ prof_profile.establishment_name }}{% else %}{{ default_establishment_name }}{% endif %}
+                        {% if prof_profile.establishment_name %}{{ prof_profile.establishment_name }}{% else %}{% translate "Ma Résidence" %}{% endif %}
                     </h1>
                     <p class="dr-header__sub">
                         {% if prof_profile.establishment_city %}{{ prof_profile.establishment_city }} &mdash; {% endif %}

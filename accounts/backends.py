@@ -1,6 +1,7 @@
 # accounts/backends.py
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+from django.db.models import Q
 from django.utils import timezone
 
 User = get_user_model()
@@ -15,11 +16,13 @@ class EmailOrUsernameBackend(ModelBackend):
         if not username or not password:
             return None
 
-        try:
-            # Chercher l'utilisateur par email ou username
-            user = User.objects.get(email=username) if '@' in username else User.objects.get(username=username)
-        except User.DoesNotExist:
+        username = username.strip()
+        users = User.objects.filter(
+            Q(username__iexact=username) | Q(email__iexact=username)
+        )
+        if users.count() != 1:
             return None
+        user = users.get()
 
         # Vérifier le mot de passe
         if not user.check_password(password):

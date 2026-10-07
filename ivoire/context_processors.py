@@ -10,7 +10,8 @@ def unread_messages_count(request):
     if request.user.is_authenticated:
         # Compter le nombre total de messages non lus pour cet utilisateur
         conversations = Conversation.objects.filter(
-            participants=request.user
+            participationconversation__user=request.user,
+            participationconversation__masquee=False,
         ).prefetch_related('messages')
         
         for conversation in conversations:

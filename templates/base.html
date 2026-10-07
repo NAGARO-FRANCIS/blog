@@ -23,12 +23,7 @@
     <link rel="stylesheet" href="{% static 'responsive.css' %}">
 
     {% block extra_css %}{% endblock %}
-<form action="{% url 'set_language' %}" method="post" style="display:inline">
-  {% csrf_token %}
-  <input type="hidden" name="next" value="{{ request.get_full_path }}">
-  <button type="submit" name="language" value="fr">FR</button>
-  <button type="submit" name="language" value="en">EN</button>
-</form>
+
     <style>
         /* Évite le décalage horizontal sur mobile */
         *, *::before, *::after { box-sizing: border-box; }

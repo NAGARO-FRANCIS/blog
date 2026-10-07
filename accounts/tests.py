@@ -7,11 +7,14 @@ from unittest import mock
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
 from .models import DocumentVerification, Notification, ProfileVerification, Subscription
@@ -118,6 +121,34 @@ class AccountActivationTests(TestCase):
         self.assertEqual(self.client.session['password_reset_email'], user.email)
         self.assertContains(response, 'Recevoir un nouveau lien')
 
+    def test_password_reset_confirm_redirects_to_complete_page(self):
+        user = User.objects.create_user(
+            username='reset_confirm_test',
+            email='reset.confirm@example.com',
+            password='StrongPassword123!'
+        )
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        response = self.client.post(
+            reverse('accounts:password_reset_confirm', kwargs={'uidb64': uidb64, 'token': token}),
+            {'new_password1': 'NewStrongPassword456!', 'new_password2': 'NewStrongPassword456!'},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse('accounts:password_reset_complete'))
+        user.refresh_from_db()
+        self.assertTrue(user.check_password('NewStrongPassword456!'))
+        self.assertTrue(self.client.login(
+            username=user.email,
+            password='NewStrongPassword456!',
+        ))
+        self.assertIsNotNone(authenticate(
+            username=user.username.upper(),
+            password='NewStrongPassword456!',
+        ))
+
     def test_profile_page_renders_with_verification_state(self):
         viewer = User.objects.create_user(
             username='viewer_test',
@@ -137,6 +168,21 @@ class AccountActivationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'vérification')
+
+    def test_residence_dashboard_renders_without_professional_profile(self):
+        user = User.objects.create_user(
+            username='residence_without_professional_profile',
+            email='residence.dashboard@example.com',
+            password='StrongPassword123!',
+        )
+        user.profile.account_type = 'residence'
+        user.profile.save(update_fields=['account_type'])
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('accounts:dashboard_residence'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ma Résidence')
 
     def test_profile_page_for_other_user_shows_follow_button(self):
         owner = User.objects.create_user(

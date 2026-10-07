@@ -101,6 +101,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'ivoire.context_processors.unread_messages_count',
+                'django.template.context_processors.i18n',
             ],
         },
     },
@@ -118,6 +119,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameBackend',
+]
 
 
 # Password validation

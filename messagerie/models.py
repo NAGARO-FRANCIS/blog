@@ -59,6 +59,7 @@ class ParticipationConversation(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     joined_at = models.DateTimeField(auto_now_add=True)
     last_seen = models.DateTimeField(auto_now=True)
+    masquee = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['user', 'conversation']

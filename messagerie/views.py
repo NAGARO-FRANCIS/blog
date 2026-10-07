@@ -12,11 +12,27 @@ from colocation.models import ColocationAnnonce
 from logement.models import Logement
 
 
+def _trouver_ou_creer_conversation(user, destinataire, annonce_coloc=None, sujet=''):
+    """Une conversation par paire d'utilisateurs (et par annonce de colocation)."""
+    qs = Conversation.objects.filter(participants=user).filter(participants=destinataire)
+    if annonce_coloc is not None:
+        qs = qs.filter(annonce=annonce_coloc)
+    else:
+        qs = qs.filter(annonce__isnull=True)
+    conversation = qs.first()
+    if conversation is None:
+        conversation = Conversation.objects.create(sujet=sujet, annonce=annonce_coloc)
+        ParticipationConversation.objects.get_or_create(conversation=conversation, user=user)
+        ParticipationConversation.objects.get_or_create(conversation=conversation, user=destinataire)
+    return conversation
+
+
 @login_required
 def mes_conversations(request):
     """Affiche toutes les conversations de l'utilisateur"""
     conversations = Conversation.objects.filter(
-        participants=request.user
+        participationconversation__user=request.user,
+        participationconversation__masquee=False,
     ).prefetch_related('participants', 'messages').order_by('-updated_at')
 
     # Ajouter des informations supplémentaires pour chaque conversation
@@ -190,58 +206,23 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
             return redirect(request.META.get('HTTP_REFERER', 'messagerie:mes_conversations'))
 
         try:
-            # Créer ou récupérer la conversation
-            if annonce:
-                # Conversation liée à une annonce.
-                # Les conversations sont stockées avec une relation vers des annonces de colocation,
-                # donc pour les logements on crée une conversation simple avec un sujet adapté.
-                if annonce_type == 'colocation':
-                    sujet = f"Colocation à {annonce.ville}"
-                    if annonce.quartier:
-                        sujet += f" - {annonce.quartier}"
-
-                    conversation, created = Conversation.objects.get_or_create(
-                        annonce=annonce,
-                        defaults={'sujet': sujet}
-                    )
-                    if created:
-                        conversation.participants.add(request.user, destinataire)
-                else:
-                    sujet = f"Logement à {annonce.ville}"
-                    if getattr(annonce, 'quartier', None):
-                        sujet += f" - {annonce.quartier}"
-
-                    conversation = Conversation.objects.filter(
-                        participants=request.user
-                    ).filter(
-                        participants=destinataire
-                    ).filter(
-                        annonce__isnull=True
-                    ).first()
-
-                    if conversation:
-                        created = False
-                    else:
-                        conversation = Conversation.objects.create(sujet=sujet)
-                        conversation.participants.add(request.user, destinataire)
-                        created = True
+            # Créer ou récupérer la conversation (une par paire, et par annonce de colocation)
+            if annonce and annonce_type == 'colocation':
+                sujet = f"Colocation à {annonce.ville}"
+                if annonce.quartier:
+                    sujet += f" - {annonce.quartier}"
+                conversation = _trouver_ou_creer_conversation(
+                    request.user, destinataire, annonce_coloc=annonce, sujet=sujet
+                )
+            elif annonce:
+                sujet = f"Logement à {annonce.ville}"
+                if getattr(annonce, 'quartier', None):
+                    sujet += f" - {annonce.quartier}"
+                conversation = _trouver_ou_creer_conversation(
+                    request.user, destinataire, sujet=sujet
+                )
             else:
-                # Conversation directe (sans annonce)
-                # Chercher une conversation existante entre ces deux utilisateurs
-                conversation = Conversation.objects.filter(
-                    participants=request.user
-                ).filter(
-                    participants=destinataire
-                ).filter(
-                    annonce__isnull=True
-                ).first()
-
-                if conversation:
-                    created = False
-                else:
-                    conversation = Conversation.objects.create()
-                    conversation.participants.add(request.user, destinataire)
-                    created = True
+                conversation = _trouver_ou_creer_conversation(request.user, destinataire)
 
             message_type = 'text'
             if attachment:
@@ -268,6 +249,7 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
                 attachment=attachment,
                 message_type=message_type,
             )
+            ParticipationConversation.objects.filter(conversation=conversation).update(masquee=False)
             from accounts.notification_service import message_sent
             message_sent(message)
 
@@ -335,12 +317,10 @@ def supprimer_conversation(request, conversation_id):
         participants=request.user
     )
 
-    # Retirer l'utilisateur de la conversation
-    conversation.participants.remove(request.user)
-
-    # Si plus de participants, supprimer la conversation
-    if conversation.participants.count() == 0:
-        conversation.delete()
+    # Suppression douce : masquée pour cet utilisateur seulement
+    ParticipationConversation.objects.filter(
+        conversation=conversation, user=request.user
+    ).update(masquee=True)
 
     django_messages.success(request, "Conversation supprimée.")
     return redirect('messagerie:mes_conversations')
