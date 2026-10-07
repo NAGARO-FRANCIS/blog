@@ -104,10 +104,10 @@
                             <span class="day-number">{{ day.number }}</span>
                             <span class="day-label">{{ day.label }}</span>
                             {% if day.reserved_units %}
-                            <span class="day-occupancy">{% blocktranslate with total=inventory_total count reserved=day.reserved_units %}{{ reserved }}/{{ total }} chambre occupée{% pluralize %}{{ reserved }}/{{ total }} chambres occupées{% endblocktranslate %}</span>
+                            <span class="day-occupancy">{% blocktranslate with total=inventory_total count reserved=day.reserved_units %}{{ reserved }}/{{ total }} chambre occupée{% plural %}{{ reserved }}/{{ total }} chambres occupées{% endblocktranslate %}</span>
                             {% endif %}
                             {% if day.available_units and not day.is_blocked %}
-                            <span class="day-occupancy">{% blocktranslate count available=day.available_units %}{{ available }} disponible{% pluralize %}{{ available }} disponibles{% endblocktranslate %}</span>
+                            <span class="day-occupancy">{% blocktranslate count available=day.available_units %}{{ available }} disponible{% plural %}{{ available }} disponibles{% endblocktranslate %}</span>
                             {% endif %}
                             {% if day.reservations %}
                             <ul class="day-guests">

@@ -909,3 +909,5 @@ msgstr "❌ Rejected"
 
 msgid "⚠️ Signalé"
 msgstr "⚠️ Flagged"
+msgid "Cet email est déjà utilisé."
+msgstr "This email is already in use."

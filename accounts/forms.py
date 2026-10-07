@@ -1,3 +1,5 @@
+import email
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -484,7 +486,16 @@ class ProfileEditForm(forms.ModelForm):
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
             self.fields['email'].initial = user.email
-
+            
+        def clean_email(self):
+            email = (self.cleaned_data.get('email') or '').strip()
+        doublons = User.objects.filter(email__iexact=email)
+        if self.user:
+            doublons = doublons.exclude(pk=self.user.pk)
+        if doublons.exists():
+            raise forms.ValidationError(_('Cet email est déjà utilisé.'))
+        return email
+    
     def save(self, commit=True):
         profile = super().save(commit=False)
         if self.user:

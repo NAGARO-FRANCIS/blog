@@ -646,6 +646,11 @@ class Paiement(models.Model):
         blank=True,
         help_text="payment_token renvoyé par CinetPay à l'initialisation"
     )
+    cinetpay_notify_token = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="notify_token renvoyé par CinetPay (vérifie les notifications)"
+    )
     transaction_id = models.CharField(
         max_length=100,
         unique=True,

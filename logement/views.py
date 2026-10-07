@@ -451,8 +451,39 @@ def paiement_reservation(request, reservation_id):
         
         # Traiter selon la méthode
         try:
-            if payment_method == 'mouv':
-                # MOUV - Mobile Money
+            if payment_method in ('mobile_money', 'mouv', 'orange', 'wave'):
+                # Mobile Money (Orange, MTN, Moov, Wave) via la page sécurisée CinetPay
+                import logging
+                from cinetpay import CinetPayError
+                from .cinetpay_paiement import CinetPayNonConfigure, initier_paiement
+
+                if paiement.statut == 'completed':
+                    return JsonResponse({
+                        'success': True,
+                        'message': _('Cette réservation est déjà payée.'),
+                        'redirect_url': f'/logement/reservation/{reservation.id}/confirmation/'
+                    })
+                try:
+                    url_paiement = initier_paiement(paiement)
+                except CinetPayNonConfigure:
+                    return JsonResponse({
+                        'success': False,
+                        'message': _("Le paiement en ligne n'est pas encore configuré.")
+                    }, status=503)
+                except CinetPayError:
+                    logging.getLogger(__name__).exception('CinetPay : initialisation impossible')
+                    return JsonResponse({
+                        'success': False,
+                        'message': _("Impossible d'initialiser le paiement. Réessayez dans un instant.")
+                    }, status=502)
+                return JsonResponse({
+                    'success': True,
+                    'message': _('Redirection vers la page de paiement sécurisée...'),
+                    'redirect_url': url_paiement
+                })
+
+            elif payment_method == 'mouv_ancien':
+                # Ancien code MOUV (désormais inutilisé)
                 mouv_number = request.POST.get('mouv_number', '')
                 if not mouv_number:
                     return JsonResponse({

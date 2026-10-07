@@ -6,6 +6,7 @@ from .views import (
     mes_clients, avis_clients, statistiques_professionnel,
     detail_logement, toggle_favori, mes_favoris, reserver_logement, paiement_reservation, confirmation_reservation,
 )
+from .cinetpay_paiement import cinetpay_notify, cinetpay_retour
 
 app_name = 'logement'
 
@@ -43,5 +44,7 @@ urlpatterns = [
     path('<int:id>/toggle-favori/', toggle_favori, name='toggle_favori'),
     path('<int:id>/reserver/', reserver_logement, name='reserver_logement'),
     path('reservation/<int:reservation_id>/paiement/', paiement_reservation, name='paiement'),
+    path('reservation/<int:reservation_id>/paiement/retour/', cinetpay_retour, name='cinetpay_retour'),
+    path('paiement/cinetpay/notify/', cinetpay_notify, name='cinetpay_notify'),
     path('reservation/<int:reservation_id>/confirmation/', confirmation_reservation, name='confirmation_reservation'),
 ]

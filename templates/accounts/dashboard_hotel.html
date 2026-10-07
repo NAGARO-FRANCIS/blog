@@ -2,9 +2,7 @@
 {% load static %}
 {% load i18n %}
 
-{% translate "Mon Hôtel" as default_establishment_name %}
-{% translate "Client" as default_guest_name %}
-{% block title %}Dashboard — {{ prof_profile.establishment_name|default:default_establishment_name }}{% endblock %}
+{% block title %}Dashboard — {% if prof_profile and prof_profile.establishment_name %}{{ prof_profile.establishment_name }}{% else %}{% translate "Mon Hôtel" %}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="dh-wrapper">
@@ -16,15 +14,15 @@
                 <span class="dh-header__flag">🇨🇮</span>
                 <div>
                     <h1 class="dh-header__title">
-                        {% if prof_profile %}{{ prof_profile.establishment_name }}{% else %}{{ default_establishment_name }}{% endif %}
+                        {% if prof_profile and prof_profile.establishment_name %}{{ prof_profile.establishment_name }}{% else %}{% translate "Mon Hôtel" %}{% endif %}
                     </h1>
                     <p class="dh-header__sub">
-                        {% if prof_profile.establishment_city %}{{ prof_profile.establishment_city }} &mdash; {% endif %}Tableau de bord
+                        {% if prof_profile and prof_profile.establishment_city %}{{ prof_profile.establishment_city }} &mdash; {% endif %}Tableau de bord
                     </p>
                 </div>
             </div>
-            <span class="dh-badge {% if prof_profile.is_verified %}dh-badge--verified{% endif %}">
-                {% if prof_profile.is_verified %}{% translate "Compte vérifié" %}{% else %}{% translate "Non vérifié" %}{% endif %}
+            <span class="dh-badge {% if prof_profile and prof_profile.is_verified %}dh-badge--verified{% endif %}">
+                {% if prof_profile and prof_profile.is_verified %}{% translate "Compte vérifié" %}{% else %}{% translate "Non vérifié" %}{% endif %}
             </span>
         </header>
 
@@ -119,7 +117,7 @@
                     {% for reservation in recent_reservations %}
                     <div class="dh-reservation {% if not forloop.last %}dh-reservation--border{% endif %}">
                         <div>
-                            <p class="dh-reservation__guest">{{ reservation.guest_name|default:default_guest_name }}</p>
+                            <p class="dh-reservation__guest">{% if reservation.guest_name %}{{ reservation.guest_name }}{% else %}{% translate "Client" %}{% endif %}</p>
                             <p class="dh-reservation__dates">
                                 {{ reservation.check_in|date:"d/m/y"|default:"—" }} → {{ reservation.check_out|date:"d/m/y"|default:"—" }}
                             </p>
@@ -143,12 +141,12 @@
         <section class="dh-section">
             <h2 class="dh-section__title">{% translate "Équipements & services" %}</h2>
             <div class="dh-amenities">
-                {% if prof_profile.wifi %}<span class="dh-amenity">WiFi</span>{% endif %}
-                {% if prof_profile.parking %}<span class="dh-amenity">Parking</span>{% endif %}
-                {% if prof_profile.restaurant %}<span class="dh-amenity">Restaurant</span>{% endif %}
-                {% if prof_profile.reception_24h %}<span class="dh-amenity">{% translate "Réception 24h" %}</span>{% endif %}
-                {% if prof_profile.air_conditioning %}<span class="dh-amenity">{% translate "Climatisation" %}</span>{% endif %}
-                {% if prof_profile.gym %}<span class="dh-amenity">{% translate "Salle de sport" %}</span>{% endif %}
+                {% if prof_profile and prof_profile.wifi %}<span class="dh-amenity">WiFi</span>{% endif %}
+                {% if prof_profile and prof_profile.parking %}<span class="dh-amenity">Parking</span>{% endif %}
+                {% if prof_profile and prof_profile.restaurant %}<span class="dh-amenity">Restaurant</span>{% endif %}
+                {% if prof_profile and prof_profile.reception_24h %}<span class="dh-amenity">{% translate "Réception 24h" %}</span>{% endif %}
+                {% if prof_profile and prof_profile.air_conditioning %}<span class="dh-amenity">{% translate "Climatisation" %}</span>{% endif %}
+                {% if prof_profile and prof_profile.gym %}<span class="dh-amenity">{% translate "Salle de sport" %}</span>{% endif %}
             </div>
         </section>
         {% endif %}
