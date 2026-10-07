@@ -469,7 +469,7 @@
     </div>
 
     <!-- Form -->
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
         <!-- Step 1: Localisation -->
@@ -589,15 +589,25 @@
                     {% translate "Conditions Financières" %}
                 </div>
                 <div class="card-description">
-                    {% translate "Définissez le loyer et les conditions" %}
+                    {% translate "Définissez le tarif journalier utilisé pour les réservations, ainsi que vos conditions de location" %}
                 </div>
 
                 <div class="pricing-section">
                     <div class="fields-grid">
                         <div class="field-group required">
-                            <label>{% translate "Loyer Mensuel (FCFA)" %}</label>
+                            <label for="{{ form.prix_par_nuit.id_for_label }}">{% translate "Tarif Journalier (FCFA)" %} *</label>
+                            {{ form.prix_par_nuit }}
+                            {% if form.prix_par_nuit.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form.prix_par_nuit.errors }}</div>
+                            {% endif %}
+                            <div class="field-hint">{% translate "Obligatoire : ce tarif sert au calcul des réservations par jour." %}</div>
+                        </div>
+                        <div class="field-group">
+                            <label for="{{ form.prix_par_mois.id_for_label }}">{% translate "Loyer Mensuel (FCFA, optionnel)" %}</label>
                             {{ form.prix_par_mois }}
-                            <div class="field-hint">{% translate "Montant en Franc CFA Ouest-Africain" %}</div>
+                            {% if form.prix_par_mois.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form.prix_par_mois.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="field-group">
                             <label>{% translate "Caution (mois de loyer)" %}</label>

@@ -467,7 +467,7 @@
 
         <div class="rb-aside-body">
           <p class="rb-prop-type">{{ logement.get_type_logement_display }}</p>
-          <h2 class="rb-prop-title">{{ logement.titre }}</h2>
+          <h2 class="rb-prop-title" id="reservation-logement-title">{{ logement.titre }}</h2>
 
           <ul class="rb-meta-list">
             <li class="rb-meta-item">
@@ -492,8 +492,10 @@
         <div class="rb-price-block">
           {% if logement.account_type == 'hotel' %}
             <div class="rb-price-row">
-              <span class="rb-price-label">Par nuit</span>
-              <span class="rb-price-value">{{ logement.prix_par_nuit|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA</small></span>
+              <span class="rb-price-label">{% translate "Par jour" %}</span>
+              <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_journalier|default_if_none:'' }}">
+                {% if logement.prix_journalier %}{{ logement.prix_journalier|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA / {% translate "jour" %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
+              </span>
             </div>
             {% if logement.frais_nettoyage %}
             <div class="rb-price-row">
@@ -503,8 +505,10 @@
             {% endif %}
           {% elif logement.account_type == 'residence' %}
             <div class="rb-price-row">
-              <span class="rb-price-label">Par mois</span>
-              <span class="rb-price-value">{{ logement.prix_par_mois|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA</small></span>
+              <span class="rb-price-label">{% translate "Par jour" %}</span>
+              <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_journalier|default_if_none:'' }}">
+                {% if logement.prix_journalier %}{{ logement.prix_journalier|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA / {% translate "jour" %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
+              </span>
             </div>
             {% if logement.caution_mois %}
             <div class="rb-price-row">
@@ -537,6 +541,19 @@
 
         <form method="post">
           {% csrf_token %}
+
+          {% if form.categorie_logement %}
+          <section class="rb-section">
+            <p class="rb-section-label">🏠 {% translate "Catégorie du logement" %}</p>
+            <div class="rb-field">
+              <label class="rb-label" for="{{ form.categorie_logement.id_for_label }}">{{ form.categorie_logement.label }}</label>
+              {{ form.categorie_logement }}
+              {% if form.categorie_logement.errors %}
+                <div class="rb-error">{{ form.categorie_logement.errors }}</div>
+              {% endif %}
+            </div>
+          </section>
+          {% endif %}
 
           <!-- Dates -->
           <section class="rb-section">
@@ -646,4 +663,32 @@
   </div>
 </div>
 
+{% if form.category_prices %}
+{{ form.category_prices|json_script:"reservation-category-prices" }}
+<script>
+  (() => {
+    const categorySelect = document.getElementById("id_categorie_logement");
+    const prices = JSON.parse(document.getElementById("reservation-category-prices").textContent);
+    const priceElement = document.getElementById("reservation-unit-price");
+    const titleElement = document.getElementById("reservation-logement-title");
+
+    if (!categorySelect || !priceElement) return;
+
+    const updateCategorySummary = () => {
+      const category = prices[categorySelect.value];
+      if (!category) return;
+
+      priceElement.textContent = Number(category.price).toLocaleString("fr-FR");
+      const suffix = document.createElement("small");
+      suffix.textContent = " FCFA / jour";
+      suffix.style.cssText = "font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;";
+      priceElement.append(suffix);
+      if (titleElement) titleElement.textContent = category.title;
+    };
+
+    categorySelect.addEventListener("change", updateCategorySummary);
+    updateCategorySummary();
+  })();
+</script>
+{% endif %}
 {% endblock %}

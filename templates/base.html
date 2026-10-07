@@ -137,7 +137,12 @@
     <div class="navbar">
         <div class="container flex justify-between items-center">
             <a href="{% url 'home' %}" class="navbar-brand hover-scale">
-                🌍 Ivoire Connect
+                <img
+                    src="{% static 'images/ivoire-connect-logo.png' %}"
+                    alt="Ivoire Connect"
+                    width="56"
+                    height="56"
+                >
             </a>
             <button class="menu-toggle" id="menuToggle" aria-label="{% translate 'Toggle menu' %}">
                 <span></span>

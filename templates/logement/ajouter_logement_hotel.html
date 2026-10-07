@@ -640,7 +640,7 @@
     </div>
 
     <!-- Form -->
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
         {% if form.errors or formset.non_form_errors or video_formset.non_form_errors %}
@@ -805,8 +805,11 @@
                 <div class="pricing-section">
                     <div class="fields-grid">
                         <div class="field-group required">
-                            <label>{% translate "Prix par Nuit (FCFA)" %}</label>
+                            <label for="{{ form.prix_par_nuit.id_for_label }}">{% translate "Prix par Nuit (FCFA)" %} *</label>
                             {{ form.prix_par_nuit }}
+                            {% if form.prix_par_nuit.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form.prix_par_nuit.errors }}</div>
+                            {% endif %}
                             <div class="field-hint">{% translate "Prix en Franc CFA Ouest-Africain" %}</div>
                         </div>
                         <div class="field-group">

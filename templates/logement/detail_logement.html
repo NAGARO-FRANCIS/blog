@@ -77,7 +77,7 @@
                             <strong>{% translate "Autres catégories disponibles" %}</strong>
                             {% for category in etablissement_categories %}
                                 <a href="{% url 'logement:detail_logement' category.id %}">
-                                    {{ category.get_type_logement_display }}{% if category.prix_par_nuit %} · {{ category.prix_par_nuit|floatformat:0 }} FCFA/nuit{% endif %}
+                                    {{ category.get_type_logement_display }}{% if category.prix_journalier %} · {{ category.prix_journalier|floatformat:0 }} FCFA/jour{% else %} · {% translate "Tarif journalier non renseigné" %}{% endif %}
                                 </a>
                             {% endfor %}
                         </div>
@@ -180,12 +180,12 @@
 
                 <!-- Prix -->
                 <div class="dl-card__price">
-                    {% if logement.account_type == 'hotel' and logement.prix_par_nuit %}
-                        <span class="dl-price">{{ logement.prix_par_nuit|floatformat:0 }} <small>FCFA / nuit</small></span>
-                    {% elif logement.account_type == 'residence' and logement.prix_par_mois %}
-                        <span class="dl-price">{{ logement.prix_par_mois|floatformat:0 }} <small>FCFA / mois</small></span>
-                    {% elif logement.prix %}
+                    {% if logement.prix_journalier %}
+                        <span class="dl-price">{{ logement.prix_journalier|floatformat:0 }} <small>FCFA / jour</small></span>
+                    {% elif logement.account_type == 'individu' and logement.prix %}
                         <span class="dl-price">{{ logement.prix|floatformat:0 }} <small>FCFA</small></span>
+                    {% elif logement.account_type == 'hotel' or logement.account_type == 'residence' %}
+                        <span class="dl-price">{% translate "Tarif journalier non renseigné" %}</span>
                     {% endif %}
                 </div>
 
@@ -193,7 +193,7 @@
                 {% if logement.account_type == 'hotel' or logement.account_type == 'residence' %}
                     <div class="dl-card__pricing">
                         <h4 class="dl-pricing__title">{% translate "Tarification" %}</h4>
-                        {% if logement.prix_par_nuit %}<p>💰 {% translate "Par nuit" %}: <strong>{{ logement.prix_par_nuit|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.prix_journalier %}<p>💰 {% translate "Par jour" %}: <strong>{{ logement.prix_journalier|floatformat:0 }} FCFA</strong></p>{% endif %}
                         {% if logement.prix_par_mois %}<p>💰 {% translate "Par mois" %}: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
                         {% if logement.frais_nettoyage %}<p>🧹 {% translate "Nettoyage" %}: <strong>{{ logement.frais_nettoyage|floatformat:0 }} FCFA</strong></p>{% endif %}
                         {% if logement.frais_agence %}<p>📋 {% translate "Agence" %}: <strong>{{ logement.frais_agence|floatformat:0 }} FCFA</strong></p>{% endif %}

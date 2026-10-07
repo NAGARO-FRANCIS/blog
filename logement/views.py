@@ -341,12 +341,12 @@ def reserver_logement(request, id):
 
         if form.is_valid():
             reservation          = form.save(commit=False)
-            reservation.logement = logement
+            logement_reserve = form.cleaned_data.get('categorie_logement') or logement
+            reservation.logement = logement_reserve
             
-            # Les anciennes annonces peuvent encore stocker leur tarif dans `prix`.
-            reservation.prix_par_nuit = logement.prix_par_nuit or logement.prix or 0
-            if logement.frais_nettoyage:
-                reservation.frais_nettoyage_reservation = logement.frais_nettoyage
+            reservation.prix_par_nuit = logement_reserve.prix_journalier or 0
+            if logement_reserve.frais_nettoyage:
+                reservation.frais_nettoyage_reservation = logement_reserve.frais_nettoyage
             
             if request.user.is_authenticated:
                 reservation.client_user  = request.user
@@ -354,7 +354,7 @@ def reserver_logement(request, id):
                 reservation.client_email = request.user.email
 
             with transaction.atomic():
-                locked_logement = Logement.objects.select_for_update().get(pk=logement.pk)
+                locked_logement = Logement.objects.select_for_update().get(pk=logement_reserve.pk)
                 requested_units = reservation.nombre_chambres or 1
                 available_units = list(
                     locked_logement.available_units_for_period(

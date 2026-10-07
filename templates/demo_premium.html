@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% translate "Démonstration Design Premium" %}{% endblock %}
 
@@ -7,6 +7,16 @@
 <main class="animate-slide-up">
     <div class="container my-5">
         <h1 class="mb-4">✨ {% translate "Démonstration Design Premium Ivoire Connect" %}</h1>
+
+        <!-- LOGO -->
+        <section class="mb-5 animate-slide-up">
+            <h2 class="h3 mb-3 text-primary">{% translate "Logo" %}</h2>
+            <img
+                class="brand-logo-demo"
+                src="{% static 'images/ivoire-connect-logo.png' %}"
+                alt="Ivoire Connect — Trouvez votre logement, vivez votre Côte d’Ivoire"
+            >
+        </section>
 
         <!-- SECTION COULEURS -->
         <section class="mb-5 animate-slide-up">
@@ -248,6 +258,14 @@
 
 <style>
     /* Style for demo page */
+    .brand-logo-demo {
+        display: block;
+        width: min(100%, 320px);
+        height: auto;
+        border-radius: 50%;
+        box-shadow: 0 8px 24px rgb(17 24 39 / 12%);
+    }
+
     .grid-cols-2 {
         display: grid;
         grid-template-columns: repeat(2, 1fr);

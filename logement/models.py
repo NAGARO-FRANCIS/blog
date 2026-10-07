@@ -202,6 +202,14 @@ class Logement(models.Model):
     def __str__(self):
         return self.titre
 
+    @property
+    def prix_journalier(self):
+        if self.prix_par_nuit:
+            return self.prix_par_nuit
+        if self.account_type == 'hotel':
+            return self.prix
+        return None
+
     def get_nombre_photos(self):
         return self.photos.count()
 

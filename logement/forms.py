@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from django.forms import inlineformset_factory
 from django.utils.translation import gettext_lazy as _
 from .models import BlocageCalendrier, Logement, PhotoLogement, VideoLogement, Reservation
@@ -287,7 +288,9 @@ class LogementHotelForm(LocalizedModelForm):
         self.fields['capacite'].required = False
         self.fields['nombre_salles_bain'].required = False
         self.fields['etage'].required = False
-        self.fields['prix_par_nuit'].required = False
+        self.fields['prix_par_nuit'].required = True
+        self.fields['prix_par_nuit'].min_value = 0.01
+        self.fields['prix_par_nuit'].widget.attrs.update({'min': '0.01', 'step': '0.01', 'required': True})
         self.fields['frais_nettoyage'].required = False
         self.fields['min_sejour'].required = False
     
@@ -304,8 +307,6 @@ class LogementHotelForm(LocalizedModelForm):
             cleaned_data['capacite'] = 2
         if not cleaned_data.get('nombre_salles_bain'):
             cleaned_data['nombre_salles_bain'] = 1
-        if not cleaned_data.get('prix_par_nuit'):
-            cleaned_data['prix_par_nuit'] = 0
         if not cleaned_data.get('min_sejour'):
             cleaned_data['min_sejour'] = 1
         
@@ -325,7 +326,7 @@ class LogementResidenceForm(LocalizedModelForm):
             'nombre_salles_bain', 'etage', 'meuble',
             
             # Tarification résidence
-            'prix_par_mois', 'caution_mois', 'frais_agence',
+            'prix_par_nuit', 'prix_par_mois', 'caution_mois', 'frais_agence',
             'duree_min_bail', 'type_charge', 'conditions_speciales', 'politique_annulation', 'heure_arrivee', 'heure_depart',
             'disponible_depuis',
             
@@ -376,6 +377,13 @@ class LogementResidenceForm(LocalizedModelForm):
                 'class': 'form-input',
                 'placeholder': 'Loyer en FCFA/mois'
             }),
+            'prix_par_nuit': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Prix journalier en FCFA',
+                'min': '0.01',
+                'step': '0.01',
+                'required': True,
+            }),
             'caution_mois': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'placeholder': 'Nombre de mois'
@@ -409,6 +417,9 @@ class LogementResidenceForm(LocalizedModelForm):
         self.fields['etage'].required = False
         self.fields['surface'].required = False
         self.fields['prix_par_mois'].required = False
+        self.fields['prix_par_nuit'].required = True
+        self.fields['prix_par_nuit'].min_value = 0.01
+        self.fields['prix_par_nuit'].widget.attrs.update({'min': '0.01', 'step': '0.01', 'required': True})
         self.fields['caution_mois'].required = False
     
     def clean(self):
@@ -424,8 +435,6 @@ class LogementResidenceForm(LocalizedModelForm):
             cleaned_data['nombre_salles_bain'] = 1
         if not cleaned_data.get('surface'):
             cleaned_data['surface'] = 30  # Valeur par défaut
-        if not cleaned_data.get('prix_par_mois'):
-            cleaned_data['prix_par_mois'] = 0
         if not cleaned_data.get('caution_mois'):
             cleaned_data['caution_mois'] = 2
         
@@ -692,6 +701,15 @@ class RechercheLogementForm(forms.Form):
     disponible_immediatement = forms.BooleanField(label=_('Disponible immédiatement'), required=False)
 
 
+class CategoryLogementChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, logement):
+        return _('%(category)s — %(title)s — %(price)s FCFA / jour') % {
+            'category': logement.get_type_logement_display(),
+            'title': logement.titre,
+            'price': logement.prix_journalier,
+        }
+
+
 class ReservationForm(LocalizedModelForm):
     """Formulaire pour créer une réservation"""
     
@@ -754,6 +772,34 @@ class ReservationForm(LocalizedModelForm):
     def __init__(self, *args, logement=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.logement = logement
+        self.category_prices = {}
+
+        if logement and logement.etablissement_id:
+            categories = Logement.objects.filter(
+                etablissement_id=logement.etablissement_id,
+                account_type=logement.account_type,
+            ).order_by('type_logement', 'titre')
+            if categories.count() > 1:
+                available_categories = categories.filter(
+                    Q(prix_par_nuit__gt=0)
+                    | (Q(account_type='hotel') & Q(prix__gt=0))
+                )
+                self.fields['categorie_logement'] = CategoryLogementChoiceField(
+                    label=_('Catégorie du logement'),
+                    queryset=available_categories,
+                    empty_label=_('Choisissez une catégorie'),
+                    required=True,
+                    widget=forms.Select(attrs={'class': 'form-select'}),
+                )
+                if available_categories.filter(pk=logement.pk).exists():
+                    self.initial['categorie_logement'] = logement.pk
+                self.category_prices = {
+                    str(category.pk): {
+                        'title': category.titre,
+                        'price': str(category.prix_journalier),
+                    }
+                    for category in available_categories
+                }
         
         # Si utilisateur connecté, préremplir les champs
         if self.initial:
@@ -767,22 +813,33 @@ class ReservationForm(LocalizedModelForm):
         cleaned_data = super().clean()
         date_arrivee = cleaned_data.get('date_arrivee')
         date_depart = cleaned_data.get('date_depart')
+        logement_reserve = cleaned_data.get('categorie_logement') or self.logement
         
         # Vérifier que le logement est un hôtel ou une résidence
-        if self.logement and self.logement.account_type not in ['hotel', 'residence']:
+        if logement_reserve and logement_reserve.account_type not in ['hotel', 'residence']:
             raise forms.ValidationError(
                 _("Les réservations ne sont possibles que pour les hôtels et résidences.")
             )
-        
+
+        if logement_reserve and (
+            logement_reserve.prix_journalier is None
+            or logement_reserve.prix_journalier <= 0
+        ):
+            self.add_error(
+                'categorie_logement' if 'categorie_logement' in self.fields else None,
+                _("Cette catégorie n'a pas de tarif journalier renseigné."),
+            )
+            return cleaned_data
+
         if date_arrivee and date_depart:
             if date_depart <= date_arrivee:
                 raise forms.ValidationError(
                     _("La date de départ doit être après la date d'arrivée")
                 )
             
-            if self.logement:
+            if logement_reserve:
                 requested_units = cleaned_data.get('nombre_chambres') or 1
-                if self.logement.available_units_for_period(
+                if logement_reserve.available_units_for_period(
                     date_arrivee,
                     date_depart,
                 ).count() < requested_units:

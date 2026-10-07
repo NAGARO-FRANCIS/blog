@@ -4,8 +4,12 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .forms import RechercheLogementForm
-from .models import AvisLogement, Paiement, Reservation, Logement
+from .forms import (
+    LogementHotelForm,
+    LogementResidenceForm,
+    RechercheLogementForm,
+)
+from .models import AvisLogement, Etablissement, Paiement, Reservation, Logement
 from .views import _apply_logement_filters
 
 
@@ -114,6 +118,92 @@ class PaymentViewTests(TestCase):
 
 
 class ReservationSecurityTests(TestCase):
+    def test_tarif_journalier_est_obligatoire_a_la_publication_professionnelle(self):
+        self.assertTrue(LogementHotelForm().fields['prix_par_nuit'].required)
+        self.assertEqual(str(LogementHotelForm().fields['prix_par_nuit'].min_value), '0.01')
+        self.assertTrue(LogementResidenceForm().fields['prix_par_nuit'].required)
+        self.assertEqual(str(LogementResidenceForm().fields['prix_par_nuit'].min_value), '0.01')
+
+    def test_reservation_permet_de_choisir_une_categorie_et_applique_son_tarif(self):
+        owner = User.objects.create_user(username='owner_categories', password='StrongPassword123!')
+        etablissement = Etablissement.objects.create(
+            proprietaire=owner,
+            nom='Hôtel catégories',
+            type_etablissement='hotel',
+            ville='Abidjan',
+        )
+        logement_depart = Logement.objects.create(
+            titre='Chambre simple',
+            description='Chambre simple',
+            ville='Abidjan',
+            account_type='hotel',
+            prix_par_nuit=10000,
+            proprietaire=owner,
+            etablissement=etablissement,
+        )
+        logement_choisi = Logement.objects.create(
+            titre='Suite familiale',
+            description='Suite familiale',
+            ville='Abidjan',
+            account_type='hotel',
+            type_logement='familiale',
+            prix_par_nuit=25000,
+            proprietaire=owner,
+            etablissement=etablissement,
+        )
+
+        response = self.client.post(
+            reverse('logement:reserver_logement', args=[logement_depart.id]),
+            {
+                'categorie_logement': logement_choisi.id,
+                'date_arrivee': '2026-10-10',
+                'date_depart': '2026-10-12',
+                'nombre_personnes': 2,
+                'nombre_chambres': 1,
+                'client_nom': 'Client catégorie',
+                'client_email': 'categories@example.com',
+                'client_telephone': '+2250700000000',
+                'remarques': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        reservation = Reservation.objects.get()
+        self.assertEqual(reservation.logement, logement_choisi)
+        self.assertEqual(reservation.prix_par_nuit, 25000)
+        self.assertEqual(reservation.montant_final, 50000)
+
+    def test_reservation_residence_utilise_le_tarif_journalier_et_non_le_mensuel(self):
+        owner = User.objects.create_user(username='owner_residence_daily', password='StrongPassword123!')
+        logement = Logement.objects.create(
+            titre='Studio en résidence',
+            description='Studio',
+            ville='Abidjan',
+            account_type='residence',
+            prix_par_nuit=12000,
+            prix_par_mois=200000,
+            proprietaire=owner,
+        )
+
+        response = self.client.post(
+            reverse('logement:reserver_logement', args=[logement.id]),
+            {
+                'date_arrivee': '2026-10-10',
+                'date_depart': '2026-10-11',
+                'nombre_personnes': 1,
+                'nombre_chambres': 1,
+                'client_nom': 'Client résidence',
+                'client_email': 'residence@example.com',
+                'client_telephone': '+2250700000000',
+                'remarques': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        reservation = Reservation.objects.get(logement=logement)
+        self.assertEqual(reservation.prix_par_nuit, 12000)
+        self.assertEqual(reservation.montant_final, 12000)
+
     def test_reservation_utilise_le_prix_legacy_si_prix_par_nuit_est_vide(self):
         logement = Logement.objects.create(
             titre='Annonce legacy',

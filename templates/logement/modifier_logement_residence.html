@@ -353,6 +353,16 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
+                        <label for="{{ form.prix_par_nuit.id_for_label }}">{{ form.prix_par_nuit.label }}</label>
+                        {{ form.prix_par_nuit }}
+                        {% if form.prix_par_nuit.errors %}
+                            <div class="alert alert-danger small mt-2">{{ form.prix_par_nuit.errors }}</div>
+                        {% endif %}
+                        <small style="color: #6b7280;">{% translate "Tarif journalier obligatoire pour les réservations" %}</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
                         <label for="{{ form.prix_par_mois.id_for_label }}">{{ form.prix_par_mois.label }}</label>
                         {{ form.prix_par_mois }}
                         <small style="color: #6b7280;">{% translate "Loyer mensuel en FCFA" %}</small>

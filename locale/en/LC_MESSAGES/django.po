@@ -911,3 +911,30 @@ msgid "⚠️ Signalé"
 msgstr "⚠️ Flagged"
 msgid "Cet email est déjà utilisé."
 msgstr "This email is already in use."
+
+msgid "Réservation"
+msgstr "Booking"
+
+msgid "Cette réservation est déjà payée."
+msgstr "This booking has already been paid."
+
+msgid "Le paiement en ligne n'est pas encore configuré."
+msgstr "Online payment is not configured yet."
+
+msgid "Impossible d'initialiser le paiement. Réessayez dans un instant."
+msgstr "Unable to start the payment. Please try again in a moment."
+
+msgid "Redirection vers la page de paiement sécurisée..."
+msgstr "Redirecting to the secure payment page..."
+
+msgid "✅ Paiement confirmé. Votre réservation est validée."
+msgstr "✅ Payment confirmed. Your booking is validated."
+
+msgid "❌ Le paiement a échoué ou a été annulé. Vous pouvez réessayer."
+msgstr "❌ The payment failed or was cancelled. You can try again."
+
+msgid "⏳ Paiement en cours de validation. La réservation sera confirmée dès réception."
+msgstr "⏳ Payment pending validation. The booking will be confirmed as soon as it is received."
+
+msgid "Cet email est déjà utilisé."
+msgstr "This email is already in use."
