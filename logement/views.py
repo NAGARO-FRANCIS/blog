@@ -1008,27 +1008,43 @@ def calendrier_reservations(request):
     days = []
     if logement:
         month_days = calendar_module.Calendar(firstweekday=0).monthdayscalendar(year, month)
+        month_start = date(year, month, 1)
+        month_end = date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1)
         reservations = logement.reservations.filter(
-            date_arrivee__lt=date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1),
-            date_depart__gt=date(year, month, 1),
+            date_arrivee__lt=month_end,
+            date_depart__gt=month_start,
             statut__in=['pending', 'confirmed'],
         ).select_related('client_user').prefetch_related('unites').order_by('date_arrivee')
         blocks = logement.blocages.filter(
-            date_debut__lt=date(year, month, calendar_module.monthrange(year, month)[1]) + timedelta(days=1),
-            date_fin__gt=date(year, month, 1),
+            date_debut__lt=month_end,
+            date_fin__gt=month_start,
         )
         overrides = {item.date: item for item in logement.disponibilites.filter(date__year=year, date__month=month)}
+
+        day_reservations_by_date = {}
+        for reservation in reservations:
+            current = reservation.date_arrivee
+            while current < reservation.date_depart and current < month_end:
+                if current >= month_start:
+                    day_reservations_by_date.setdefault(current, []).append(reservation)
+                current += timedelta(days=1)
+
+        block_by_date = {}
+        for block in blocks:
+            current = block.date_debut
+            while current < block.date_fin and current < month_end:
+                if current >= month_start:
+                    block_by_date[current] = block
+                current += timedelta(days=1)
+
         for week in month_days:
             for day_number in week:
                 if not day_number:
                     days.append(None)
                     continue
                 current = date(year, month, day_number)
-                block = next((item for item in blocks if item.date_debut <= current < item.date_fin), None)
-                day_reservations = [
-                    item for item in reservations
-                    if item.date_arrivee <= current < item.date_depart
-                ]
+                block = block_by_date.get(current)
+                day_reservations = day_reservations_by_date.get(current, [])
                 reserved_units = sum(
                     len(item.unites.all()) or item.nombre_chambres or 1
                     for item in day_reservations

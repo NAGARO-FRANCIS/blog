@@ -13,7 +13,6 @@ from django.contrib.auth.views import (
     PasswordResetView as DjangoPasswordResetView,
 )
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.template.loader import render_to_string
@@ -26,6 +25,7 @@ from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileE
 from django.contrib import messages
 import logging
 from django.http import HttpResponseRedirect
+from .notification_service import safe_send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ def send_activation_email(request, user, subject='Activation de votre compte Col
         'activation_link': activation_link,
         'site_name': get_current_site(request).name,
     })
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
+    safe_send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
 
 
 def inscription(request):

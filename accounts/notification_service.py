@@ -9,6 +9,19 @@ from .models import Notification
 logger = logging.getLogger(__name__)
 
 
+def safe_send_mail(subject, message, from_email, recipient_list, **kwargs):
+    """Envoie un e-mail sans faire planter la demande si le SMTP échoue."""
+    try:
+        return send_mail(subject, message, from_email, recipient_list, **kwargs)
+    except Exception:
+        logger.exception(
+            'Echec d\'envoi email subject=%s recipients=%s',
+            subject,
+            recipient_list,
+        )
+        return False
+
+
 def _phone(user):
     try:
         return user.profile.telephone
@@ -43,7 +56,7 @@ def notify_user(user, notification_type, title, message, actor=None,
         related_payment_id=payment_id,
     )
     if user.email and email_subject:
-        send_mail(email_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        safe_send_mail(email_subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
     if sms_message:
         _send_sms(user, sms_message)
     return notification
