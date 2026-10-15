@@ -1,0 +1,568 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}{% if account_type == 'hotel' %}{% translate "Publier une Chambre d'Hôtel" %}{% else %}{% translate "Publier un Logement en Résidence" %}{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'form_fields.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Ivoire Connect — publication d'un établissement
+   Orange (hôtel) et vert (résidence) viennent du drapeau ivoirien. */
+.professional-publish-page {
+  --ink: #1a2332; --muted: #6b7280; --line: #e5e7eb; --paper: #f8fafc; --surface: #fff;
+  --accent: #f59e0b; --accent-deep: #d97706; --accent-soft: #fff2db;
+  --danger: #b42318;
+  max-width: 1100px; margin: 0 auto; padding: 36px 20px 64px;
+  color: var(--ink); font: 400 15px/1.6 'Figtree', system-ui, sans-serif;
+}
+.professional-publish-page.residence {
+  --accent: #10b981; --accent-deep: #059669; --accent-soft: #e6f8f1;
+}
+.professional-publish-page *, .professional-publish-page *::before, .professional-publish-page *::after { box-sizing: border-box; }
+body:has(.professional-publish-page) { background: #f8fafc; }
+
+/* ---------- En-tête et progression ---------- */
+.pp-head { margin-bottom: 28px; }
+.publish-header {
+  margin-bottom: 26px; padding: 32px 24px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+  box-shadow: 0 18px 42px rgba(0,0,0,.12);
+  color: #fff; text-align: center;
+}
+.publish-header h1 { margin: 0 0 8px; font: 700 clamp(1.8rem, 4vw, 2.5rem)/1.15 'Bricolage Grotesque', 'Figtree', sans-serif; letter-spacing: -.02em; }
+.publish-header p { margin: 0 0 16px; color: #fff; opacity: .95; }
+.publish-header .badge { display: inline-block; padding: 6px 14px; border-radius: 99px; background: rgba(255,255,255,.2); font-size: .9rem; }
+.progress-bar { height: 4px; margin-bottom: 14px; overflow: hidden; border-radius: 99px; background: var(--line); }
+.progress-bar-fill { width: 25%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width .3s ease; }
+.publish-progress { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 0 0 26px; padding: 0; list-style: none; }
+.publish-progress-item { min-width: 0; }
+.publish-progress-button {
+  display: flex; min-width: 0; min-height: 86px; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; padding: 10px 8px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff;
+  color: #374151; text-align: center; font-weight: 600; font-size: .85rem; transition: border-color .2s, background .2s;
+  font-family: inherit; cursor: pointer;
+}
+.publish-progress-item.is-active .publish-progress-button { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.publish-progress-item.is-complete .publish-progress-button { border-color: var(--accent-deep); color: var(--ink); }
+.publish-progress-button:hover { border-color: var(--accent); }
+.publish-progress-button:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+.publish-progress-icon { font-size: 1.65rem; line-height: 1; }
+
+/* ---------- Mise en page : formulaire + aperçu ---------- */
+.pp-layout { display: block; }
+.pp-layout form { margin: 0; padding: clamp(22px, 4vw, 32px); border-radius: 14px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+
+.professional-publish-page .card { margin: 0 0 20px !important; border: 0 !important; border-radius: 14px !important; background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,.05) !important; }
+.professional-publish-page .wizard-panel.card { margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+.professional-publish-page .wizard-panel .card-body { padding: 0 !important; }
+.wizard-heading { margin-bottom: 22px; }
+.wizard-heading h2 { margin: 0 0 6px; font: 700 1.4rem/1.25 'Bricolage Grotesque', 'Figtree', sans-serif; letter-spacing: -.01em; }
+.wizard-heading p { margin: 0; max-width: 60ch; color: var(--muted); }
+.wizard-panel { animation: ppIn .25s ease-out; }
+@keyframes ppIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.wizard-panel[hidden], .professional-publish-page [hidden] { display: none !important; }
+
+/* ---------- Champs ---------- */
+.professional-publish-page .row { --bs-gutter-x: 18px; --bs-gutter-y: 18px; }
+.professional-publish-page label { display: inline-block; margin-bottom: 6px; font-weight: 600; font-size: .9rem; color: var(--ink); }
+.professional-publish-page input:not([type=checkbox]):not([type=radio]):not([type=file]),
+.professional-publish-page select, .professional-publish-page textarea {
+  display: block; width: 100%; min-height: 46px; padding: 10px 13px;
+  border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+  font: inherit; transition: border-color .15s, box-shadow .15s;
+}
+.professional-publish-page textarea { min-height: 112px; resize: vertical; }
+.professional-publish-page input::placeholder, .professional-publish-page textarea::placeholder { color: #7d8a82; }
+.professional-publish-page input:hover, .professional-publish-page select:hover, .professional-publish-page textarea:hover { border-color: #9fb0a5; }
+.professional-publish-page input:focus-visible, .professional-publish-page select:focus-visible, .professional-publish-page textarea:focus-visible {
+  border-color: var(--accent-deep); outline: 3px solid var(--accent-soft); outline-offset: 0;
+}
+.professional-publish-page .is-invalid, .professional-publish-page [aria-invalid=true] { border-color: var(--danger) !important; }
+.professional-publish-page .text-danger, .professional-publish-page .errorlist { color: var(--danger) !important; font-size: .85rem; margin: 6px 0 0; padding-left: 0; list-style: none; }
+
+.professional-publish-page .form-check { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 10px 13px !important; margin: 0 !important; border: 1.5px solid var(--line) !important; border-radius: 8px !important; background: #fff; cursor: pointer; }
+.professional-publish-page .form-check:hover { border-color: var(--accent); }
+.professional-publish-page .form-check:has(input:checked) { border-color: var(--accent-deep) !important; background: var(--accent-soft); }
+.professional-publish-page .form-check input { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; accent-color: var(--accent-deep); }
+.professional-publish-page .form-check label { margin: 0; font-weight: 500; cursor: pointer; }
+
+/* ---------- Types de chambres ---------- */
+.room-card { margin: 0 0 20px !important; padding: clamp(16px, 3vw, 26px) !important; border: 1px solid var(--line) !important; border-left: 5px solid var(--accent) !important; border-radius: 10px !important; background: #fafcfa; }
+.room-card:focus-within { border-color: var(--accent-deep) !important; }
+.room-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.room-card-heading h3 { display: flex; align-items: center; gap: 12px; margin: 0; font: 700 1.1rem 'Bricolage Grotesque', 'Figtree', sans-serif; }
+.room-number { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: .95rem; }
+.professional-publish-page.hotel .room-number { color: #1a0f00; }
+.room-card-heading [data-remove-room] { min-height: 38px; padding: 6px 14px; border: 1.5px solid #f2b8b5; border-radius: 8px; background: #fff; color: var(--danger); font-weight: 600; font-size: .85rem; }
+.room-card-heading [data-remove-room]:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+.room-card .row { --bs-gutter-y: 16px; }
+
+.room-media-section { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
+.room-media-heading { margin: 0 0 6px; font: 700 1.05rem 'Bricolage Grotesque', 'Figtree', sans-serif; }
+.room-media-help { margin: 0 0 16px; color: var(--muted); font-size: .9rem; }
+.media-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.media-form-card { min-width: 0; padding: 14px; border: 1.5px dashed #a9b8ae; border-radius: 10px; background: #fff; }
+.media-form-card:hover, .media-form-card:focus-within { border-color: var(--accent-deep); background: var(--accent-soft); }
+.media-form-card input[type=file] { width: 100%; min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; font-size: .82rem; }
+.media-form-card input[type=file]::file-selector-button { margin-right: 8px; padding: 7px 11px; border: 0; border-radius: 6px; background: var(--accent-deep); color: #fff; font-weight: 600; cursor: pointer; }
+.media-form-card .media-detail-fields { margin-top: 12px; }
+.media-form-card .text-danger { overflow-wrap: anywhere; }
+
+.professional-publish-page .add-room-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 6px; border: 2px dashed var(--accent-deep) !important; border-radius: 10px !important; background: transparent !important; color: var(--accent-deep) !important; font-weight: 700; }
+.professional-publish-page .add-room-button:hover { background: var(--accent-soft) !important; }
+#room-count { color: var(--muted); }
+
+/* ---------- Vérification ---------- */
+.wizard-review-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin: 0; }
+.wizard-review-item { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.wizard-review-item span { color: var(--muted); }
+.wizard-review-item strong { text-align: right; overflow-wrap: anywhere; }
+.wizard-review-note { margin-top: 20px; padding: 14px 16px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; }
+.wizard-validation-message { display: none; margin-bottom: 18px; padding: 12px 16px; border: 1px solid #f2b8b5; border-radius: 8px; background: #fef3f2; color: var(--danger); font-weight: 500; }
+.wizard-validation-message.is-visible { display: block; }
+.professional-publish-page .alert { padding: 13px 16px; border-radius: 8px; }
+
+/* ---------- Boutons ---------- */
+.publish-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+.publish-actions .wizard-spacer { display: none; }
+.publish-actions[data-current-step="1"] { grid-template-columns: 1fr; }
+.publish-actions[data-current-step="1"] #wizard-next { grid-row: 1; }
+.publish-actions[data-current-step="1"] #cancel-publish { grid-row: 2; justify-self: center; min-height: 0; padding: 0; border: 0 !important; background: transparent !important; color: var(--muted) !important; font-size: .85rem; }
+.professional-publish-page .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; border-radius: 8px; font: 700 .95rem 'Figtree', sans-serif; text-decoration: none; cursor: pointer; }
+.professional-publish-page .btn-primary { border: 0 !important; background: linear-gradient(135deg, var(--accent), var(--accent-deep)) !important; color: #fff !important; box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 28%, transparent); }
+.professional-publish-page .btn-primary:hover { filter: brightness(.92); }
+.professional-publish-page .btn-secondary { border: 1.5px solid var(--line) !important; background: #fff !important; color: var(--ink) !important; }
+.professional-publish-page .btn-secondary:hover { border-color: var(--ink) !important; }
+.professional-publish-page .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.professional-publish-page .btn-loading { pointer-events: none; opacity: .75; }
+
+@media (max-width: 767px) {
+  .professional-publish-page { padding: 20px 12px 40px; }
+  .publish-header { padding: 34px 20px; }
+  .publish-progress { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .media-form-grid, .wizard-review-list { grid-template-columns: 1fr; }
+  .publish-actions .btn { width: 100%; padding-right: 10px; padding-left: 10px; }
+  .room-card-heading h3 { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wizard-panel { animation: none; }
+  .professional-publish-page * { transition: none !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="professional-publish-page {% if account_type == 'residence' %}residence{% else %}hotel{% endif %}" id="publication-wizard">
+  <header class="pp-head">
+    <div class="publish-header">
+      <h1>{% if account_type == 'hotel' %}🏨 {% translate "Publier une Chambre d'Hôtel" %}{% else %}🏢 {% translate "Publier un Logement en Résidence" %}{% endif %}</h1>
+      <p>
+      {% if account_type == 'hotel' %}
+        {% translate "Ajoutez une catégorie de chambre à votre établissement" %}
+      {% else %}
+        {% translate "Présentez votre logement de manière professionnelle" %}
+      {% endif %}
+      </p>
+      <span class="badge">{% if account_type == 'hotel' %}{% translate "Pour les hôtels et établissements officiels" %}{% else %}{% translate "Pour les résidences et habitations collectives" %}{% endif %}</span>
+    </div>
+    <div class="progress-bar" aria-hidden="true"><div class="progress-bar-fill" id="publish-progress-fill"></div></div>
+    <ol class="publish-progress" aria-label="{% translate 'Progression de la publication' %}">
+      <li class="publish-progress-item is-active" data-progress-step="1" aria-current="step"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">📍</span><span>{% translate "Localisation" %}</span></button></li>
+      <li class="publish-progress-item" data-progress-step="2"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">{% if account_type == 'hotel' %}🛏️{% else %}🏠{% endif %}</span><span>{% if account_type == 'hotel' %}{% translate "Caractéristiques" %}{% else %}{% translate "Détails" %}{% endif %}</span></button></li>
+      <li class="publish-progress-item" data-progress-step="3"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">💰</span><span>{% if account_type == 'hotel' %}{% translate "Tarification" %}{% else %}{% translate "Loyer" %}{% endif %}</span></button></li>
+      <li class="publish-progress-item" data-progress-step="4"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">⚙️</span><span>{% translate "Équipements" %}</span></button></li>
+      <li class="publish-progress-item" data-progress-step="5"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">📸</span><span>{% translate "Photos" %}</span></button></li>
+      <li class="publish-progress-item" data-progress-step="6"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">🎬</span><span>{% translate "Vidéos" %}</span></button></li>
+    </ol>
+  </header>
+
+  <div class="pp-layout">
+    <form method="post" enctype="multipart/form-data" id="establishment-publish-form" novalidate>
+      {% csrf_token %}
+      {{ type_formset.management_form }}
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} mb-4">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="wizard-validation-message" id="wizard-validation-message" role="alert">{% translate "Veuillez vérifier les champs obligatoires avant de continuer." %}</div>
+
+      <!-- Étape 1 : établissement -->
+      <section class="card wizard-panel" data-wizard-panel="1">
+        <div class="card-body">
+          <div class="wizard-heading">
+            <h2>📍 {% translate "Informations de Localisation" %}</h2>
+            <p>{% translate "Son nom et son adresse : c'est ce que les clients verront en premier." %}</p>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              {{ etablissement_form.nom.label_tag }}
+              {{ etablissement_form.nom }}
+              {% if etablissement_form.nom.errors %}<div class="text-danger small mt-1">{{ etablissement_form.nom.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ etablissement_form.ville.label_tag }}
+              {{ etablissement_form.ville }}
+              {% if etablissement_form.ville.errors %}<div class="text-danger small mt-1">{{ etablissement_form.ville.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ etablissement_form.commune.label_tag }}
+              {{ etablissement_form.commune }}
+              {% if etablissement_form.commune.errors %}<div class="text-danger small mt-1">{{ etablissement_form.commune.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ etablissement_form.quartier.label_tag }}
+              {{ etablissement_form.quartier }}
+              {% if etablissement_form.quartier.errors %}<div class="text-danger small mt-1">{{ etablissement_form.quartier.errors }}</div>{% endif %}
+            </div>
+            <div class="col-12">
+              {{ etablissement_form.description.label_tag }}
+              {{ etablissement_form.description }}
+              {% if etablissement_form.description.errors %}<div class="text-danger small mt-1">{{ etablissement_form.description.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                {{ etablissement_form.eau }}
+                <label class="form-check-label" for="{{ etablissement_form.eau.id_for_label }}">{{ etablissement_form.eau.label }}</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                {{ etablissement_form.electricite }}
+                <label class="form-check-label" for="{{ etablissement_form.electricite.id_for_label }}">{{ etablissement_form.electricite.label }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Étapes 2 à 6 : caractéristiques, tarif, équipements et médias -->
+      <section class="card wizard-panel" data-wizard-panel="2-6" hidden>
+        <div class="card-body">
+          <div class="wizard-heading" data-room-step-heading="2">
+            <h2>{% if account_type == 'hotel' %}🛏️ {% translate "Caractéristiques de la chambre" %}{% else %}🏠 {% translate "Détails du logement" %}{% endif %}</h2>
+            <p>{% translate "Précisez les caractéristiques et la capacité de chaque catégorie." %}</p>
+          </div>
+          <div class="wizard-heading" data-room-step-heading="3" hidden>
+            <h2>💰 {% if account_type == 'hotel' %}{% translate "Tarification" %}{% else %}{% translate "Conditions de loyer" %}{% endif %}</h2>
+            <p>{% translate "Définissez le prix et les conditions de location pour chaque catégorie." %}</p>
+          </div>
+          <div class="wizard-heading" data-room-step-heading="4" hidden>
+            <h2>⚙️ {% translate "Équipements & Services" %}</h2>
+            <p>{% translate "Sélectionnez les équipements disponibles pour chaque catégorie." %}</p>
+          </div>
+          <div class="wizard-heading" data-room-step-heading="5" hidden>
+            <h2>📸 {% translate "Photos" %}</h2>
+            <p>{% translate "Ajoutez des photos pour présenter chaque catégorie." %}</p>
+          </div>
+          <div class="wizard-heading" data-room-step-heading="6" hidden>
+            <h2>🎬 {% translate "Vidéos" %}</h2>
+            <p>{% translate "Ajoutez une vidéo pour faire visiter chaque catégorie." %}</p>
+          </div>
+
+          <div id="room-forms">
+            {% for room_form in type_formset %}
+              {% include 'logement/partials/type_chambre_form.html' with room_form=room_form photo_formset=room_form.photo_formset video_formset=room_form.video_formset account_type=account_type room_number=forloop.counter %}
+            {% endfor %}
+          </div>
+
+          <template id="empty-room-form">
+            {% include 'logement/partials/type_chambre_form.html' with room_form=type_formset.empty_form photo_formset=empty_photo_formset video_formset=empty_video_formset account_type=account_type room_number='__prefix__' %}
+          </template>
+          <button type="button" class="btn btn-outline-primary add-room-button" id="add-room">
+            <span aria-hidden="true">+</span> {% translate "Ajouter un type de chambre" %}
+          </button>
+          <p class="small mt-2 mb-0" id="room-count" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <!-- Étape 7 : vérification -->
+      <section class="card wizard-panel" data-wizard-panel="7" hidden>
+        <div class="card-body">
+          <div class="wizard-heading">
+            <h2>{% translate "Vérifiez votre annonce" %}</h2>
+            <p>{% translate "Relisez ces informations. Vous pouvez revenir en arrière pour corriger un détail." %}</p>
+          </div>
+          <div class="wizard-review-list">
+            <div class="wizard-review-item"><span>{% translate "Nom de l'établissement" %}</span><strong data-review="nom">—</strong></div>
+            <div class="wizard-review-item"><span>{% translate "Ville" %}</span><strong data-review="ville">—</strong></div>
+            <div class="wizard-review-item"><span>{% translate "Commune" %}</span><strong data-review="commune">—</strong></div>
+            <div class="wizard-review-item"><span>{% translate "Quartier" %}</span><strong data-review="quartier">—</strong></div>
+            <div class="wizard-review-item"><span>{% translate "Types renseignés" %}</span><strong data-review="rooms">0</strong></div>
+            <div class="wizard-review-item"><span>{% translate "Photos sélectionnées" %}</span><strong data-review="photos">0</strong></div>
+            <div class="wizard-review-item"><span>{% translate "Vidéos sélectionnées" %}</span><strong data-review="videos">0</strong></div>
+          </div>
+          <div class="wizard-review-note">{% translate "Votre annonce sera enregistrée après validation par le serveur." %}</div>
+        </div>
+      </section>
+
+      <div class="publish-actions" id="publish-wizard-actions" data-current-step="1">
+        <a href="{% url 'logement:home' %}" class="btn btn-secondary" id="cancel-publish">{% translate "Annuler" %}</a>
+        <button type="button" class="btn btn-secondary" id="wizard-back" hidden>{% translate "Retour" %}</button>
+        <span class="wizard-spacer"></span>
+        <button type="button" class="btn btn-primary" id="wizard-next">{% translate "Continuer" %}</button>
+        <button type="submit" class="btn btn-primary" id="wizard-submit" hidden>{% translate "Publier l'établissement" %}</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const root = document.getElementById('publication-wizard');
+  const form = document.getElementById('establishment-publish-form');
+  const container = document.getElementById('room-forms');
+  const addButton = document.getElementById('add-room');
+  const template = document.getElementById('empty-room-form');
+  const totalForms = document.getElementById('id_types-TOTAL_FORMS');
+  const countLabel = document.getElementById('room-count');
+  const nextButton = document.getElementById('wizard-next');
+  const backButton = document.getElementById('wizard-back');
+  const submitButton = document.getElementById('wizard-submit');
+  const cancelButton = document.getElementById('cancel-publish');
+  const validationMessage = document.getElementById('wizard-validation-message');
+  const progressFill = document.getElementById('publish-progress-fill');
+  const progressSteps = root.querySelector('.publish-progress');
+  let currentStep = 1;
+  const reviewStep = 7;
+  const finalProgressStep = 6;
+
+  if (!root || !form || !container || !addButton || !template || !totalForms) return;
+  const roomStepHeadings = root.querySelectorAll('[data-room-step-heading]');
+  const actions = root.querySelector('#publish-wizard-actions');
+
+  function roomCards() {
+    return Array.from(container.querySelectorAll('.room-card')).filter(card => {
+      const del = card.querySelector('input[name$="-DELETE"]');
+      return !(del && del.checked);
+    });
+  }
+
+  function namedRooms() {
+    return roomCards().filter(card => {
+      const title = card.querySelector('input[name$="-titre"]');
+      return title && title.value.trim();
+    }).length;
+  }
+
+  function updateRoomCount() {
+    const completed = namedRooms();
+    const label = completed === 1
+      ? '{% translate "type de chambre renseigné" %}'
+      : '{% translate "types de chambre renseignés" %}';
+    if (countLabel) countLabel.textContent = `${completed} ${label}`;
+  }
+
+  function bindRemoveButton(card) {
+    const removeButton = card.querySelector('[data-remove-room]');
+    if (!removeButton || removeButton.dataset.bound === '1') return;
+    removeButton.dataset.bound = '1';
+    removeButton.addEventListener('click', function () {
+      const deleteInput = card.querySelector('input[name$="-DELETE"]');
+      if (deleteInput) deleteInput.checked = true;
+      card.hidden = true;
+      updateRoomCount();
+      updateReview();
+    });
+  }
+
+  function toggleRoomFieldsForStep(step) {
+    roomCards().forEach(card => {
+      const fieldGroups = [
+        ['.room-details-fields', 2],
+        ['.room-pricing-fields', 3],
+        ['.room-amenities-fields', 4],
+        ['.room-photos-section', 5],
+        ['.room-videos-section', 6]
+      ];
+      fieldGroups.forEach(([selector, fieldStep]) => {
+        const group = card.querySelector(selector);
+        if (group) group.hidden = step !== fieldStep;
+      });
+      const removeButton = card.querySelector('[data-remove-room]');
+      if (removeButton) removeButton.hidden = step > 4;
+      card.hidden = false;
+    });
+    if (addButton) addButton.hidden = (step !== 2);
+    if (countLabel) countLabel.hidden = (step !== 2);
+    roomStepHeadings.forEach(heading => {
+      heading.hidden = Number(heading.getAttribute('data-room-step-heading')) !== step;
+    });
+  }
+
+  function valueOf(name) {
+    const field = form.querySelector(`[name="${name}"]`);
+    if (!field) return '—';
+    const value = (field.value || '').trim();
+    return value || '—';
+  }
+
+  function countFiles(suffix) {
+    return Array.from(form.querySelectorAll(`input[type="file"][name$="-${suffix}"]`))
+      .filter(input => input.files && input.files.length).length;
+  }
+
+  function updateReview() {
+    const setText = (selector, value) => {
+      root.querySelectorAll(selector).forEach(node => { node.textContent = value; });
+    };
+    const rooms = String(namedRooms());
+    const photos = String(countFiles('image'));
+    const videos = String(countFiles('video'));
+
+    setText('[data-review="nom"]', valueOf('nom'));
+    setText('[data-review="ville"]', valueOf('ville'));
+    setText('[data-review="commune"]', valueOf('commune'));
+    setText('[data-review="quartier"]', valueOf('quartier'));
+    setText('[data-review="rooms"]', rooms);
+    setText('[data-review="photos"]', photos);
+    setText('[data-review="videos"]', videos);
+
+  }
+
+  function showStep(step, shouldScroll = true) {
+    currentStep = Math.max(1, Math.min(reviewStep, step));
+    root.querySelectorAll('[data-wizard-panel]').forEach(panel => {
+      const key = panel.getAttribute('data-wizard-panel');
+      if (key === '2-6') panel.hidden = !(currentStep >= 2 && currentStep <= finalProgressStep);
+      else panel.hidden = Number(key) !== currentStep;
+    });
+    toggleRoomFieldsForStep(currentStep);
+
+    const progressStep = Math.min(currentStep, finalProgressStep);
+    root.querySelectorAll('[data-progress-step]').forEach(item => {
+      const n = Number(item.getAttribute('data-progress-step'));
+      item.classList.toggle('is-active', n === progressStep && currentStep !== reviewStep);
+      item.classList.toggle('is-complete', n < progressStep || currentStep === reviewStep);
+      if (n === progressStep && currentStep !== reviewStep) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+    });
+    if (progressFill) progressFill.style.width = `${progressStep / finalProgressStep * 100}%`;
+
+    backButton.hidden = currentStep === 1;
+    nextButton.hidden = currentStep === reviewStep;
+    submitButton.hidden = currentStep !== reviewStep;
+    cancelButton.hidden = currentStep !== 1;
+    if (actions) actions.dataset.currentStep = String(currentStep);
+    nextButton.textContent = currentStep === finalProgressStep
+      ? '{% translate "Vérifier l’annonce" %}'
+      : '{% translate "Continuer" %}';
+    if (currentStep === reviewStep) updateReview();
+    if (validationMessage) validationMessage.classList.remove('is-visible');
+    if (shouldScroll) root.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+
+  function stepHasErrors(step) {
+    const panel = root.querySelector(`[data-wizard-panel="${step}"]`);
+    if (panel && panel.querySelector('.text-danger, .errorlist, .is-invalid, .alert-danger')) return true;
+    if (step >= 2 && step <= finalProgressStep) {
+      const shared = root.querySelector('[data-wizard-panel="2-6"]');
+      if (!shared) return false;
+      const errors = Array.from(shared.querySelectorAll('.text-danger, .errorlist, .is-invalid, .alert-danger'));
+      return errors.some(error => {
+        const group = error.closest('.room-details-fields, .room-pricing-fields, .room-amenities-fields, .room-photos-section, .room-videos-section');
+        if (!group) return step === 2;
+        return group.matches([
+          '.room-details-fields',
+          '.room-pricing-fields',
+          '.room-amenities-fields',
+          '.room-photos-section',
+          '.room-videos-section'
+        ][step - 2]);
+      });
+    }
+    return false;
+  }
+
+  function validateVisibleStep() {
+    const active = currentStep === 1
+      ? root.querySelector('[data-wizard-panel="1"]')
+      : root.querySelector('[data-wizard-panel="2-6"]');
+    if (currentStep === reviewStep || !active) return true;
+    const fields = Array.from(active.querySelectorAll('input, select, textarea')).filter(field => {
+      if (field.type === 'hidden' || field.disabled) return false;
+      if (field.name && field.name.endsWith('-DELETE')) return false;
+      if (field.closest('[hidden]')) return false;
+      return true;
+    });
+    for (const field of fields) {
+      if (typeof field.checkValidity === 'function' && !field.checkValidity()) {
+        field.reportValidity();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function goNext() {
+    if (!validateVisibleStep()) {
+      if (validationMessage) validationMessage.classList.add('is-visible');
+      return;
+    }
+    if (currentStep === 2 && namedRooms() === 0) {
+      if (validationMessage) {
+        validationMessage.textContent = '{% translate "Ajoutez au moins un type de chambre et renseignez son titre avant de continuer." %}';
+        validationMessage.classList.add('is-visible');
+      }
+      return;
+    }
+    showStep(currentStep + 1);
+  }
+
+  container.querySelectorAll('.room-card').forEach(card => {
+    bindRemoveButton(card);
+    const deleteInput = card.querySelector('input[name$="-DELETE"]');
+    if (deleteInput && deleteInput.checked) card.hidden = true;
+  });
+  container.addEventListener('input', function () { updateRoomCount(); updateReview(); });
+  container.addEventListener('change', updateReview);
+  form.addEventListener('input', updateReview);
+  form.addEventListener('change', updateReview);
+
+  addButton.addEventListener('click', function () {
+    const formIndex = Number.parseInt(totalForms.value, 10);
+    const markup = template.innerHTML.split('__prefix__').join(String(formIndex));
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = markup.trim();
+    const card = wrapper.firstElementChild;
+    if (!card) return;
+    const number = card.querySelector('[data-room-number]');
+    if (number) number.textContent = String(formIndex + 1);
+    container.appendChild(card);
+    totalForms.value = String(formIndex + 1);
+    bindRemoveButton(card);
+    const titleField = card.querySelector(`[name="types-${formIndex}-titre"]`);
+    if (titleField) titleField.focus();
+    toggleRoomFieldsForStep(currentStep);
+    updateRoomCount();
+    updateReview();
+  });
+
+  nextButton.addEventListener('click', goNext);
+  backButton.addEventListener('click', function () { showStep(currentStep - 1); });
+  progressSteps.addEventListener('click', function (event) {
+    const button = event.target.closest('.publish-progress-button');
+    const item = button && button.closest('[data-progress-step]');
+    if (item) showStep(Number(item.getAttribute('data-progress-step')));
+  });
+
+  // Après une réponse invalide du serveur, afficher l'étape qui contient les erreurs.
+  let initialStep = 1;
+  for (let step = 2; step <= finalProgressStep; step += 1) {
+    if (stepHasErrors(step)) {
+      initialStep = step;
+      break;
+    }
+  }
+  updateRoomCount();
+  updateReview();
+  showStep(initialStep, false);
+});
+</script>
+{% endblock %}

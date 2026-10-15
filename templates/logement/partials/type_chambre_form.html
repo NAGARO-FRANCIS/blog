@@ -1,0 +1,171 @@
+{% load i18n %}
+<div class="room-card border rounded-4 p-4 mb-4">
+  <div class="room-card-heading">
+    <h3 class="h5 mb-0"><span class="room-number" data-room-number>{{ room_number }}</span>{% translate "Type de chambre" %}</h3>
+    <button type="button" class="btn btn-sm btn-outline-danger" data-remove-room>
+      {% translate "Retirer" %}
+    </button>
+  </div>
+
+  {{ room_form.id }}
+  <div class="d-none">{{ room_form.DELETE }}</div>
+  {% if room_form.non_field_errors %}
+    <div class="alert alert-danger small">{{ room_form.non_field_errors }}</div>
+  {% endif %}
+
+  <div class="row g-3 room-details-fields">
+    <div class="col-md-6">
+      {{ room_form.titre.label_tag }}
+      {{ room_form.titre }}
+      {% if room_form.titre.errors %}<div class="text-danger small mt-1">{{ room_form.titre.errors }}</div>{% endif %}
+    </div>
+    <div class="col-md-6">
+      {{ room_form.type_logement.label_tag }}
+      {{ room_form.type_logement }}
+      {% if room_form.type_logement.errors %}<div class="text-danger small mt-1">{{ room_form.type_logement.errors }}</div>{% endif %}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.surface.label_tag }}
+      {{ room_form.surface }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.nombre_chambres.label_tag }}
+      {{ room_form.nombre_chambres }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.nombre_lits.label_tag }}
+      {{ room_form.nombre_lits }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.capacite.label_tag }}
+      {{ room_form.capacite }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.unites_totales.label_tag }}
+      {{ room_form.unites_totales }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.nombre_salles_bain.label_tag }}
+      {{ room_form.nombre_salles_bain }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.etage.label_tag }}
+      {{ room_form.etage }}
+    </div>
+    <div class="col-md-3">
+      {{ room_form.nombre_pieces.label_tag }}
+      {{ room_form.nombre_pieces }}
+    </div>
+
+  </div>
+
+  <div class="row g-3 room-pricing-fields">
+    {% if account_type == 'hotel' %}
+      <div class="col-md-4">
+        {{ room_form.prix_par_nuit.label_tag }}
+        {{ room_form.prix_par_nuit }}
+      </div>
+      <div class="col-md-4">
+        {{ room_form.frais_nettoyage.label_tag }}
+        {{ room_form.frais_nettoyage }}
+      </div>
+      <div class="col-md-4">
+        {{ room_form.min_sejour.label_tag }}
+        {{ room_form.min_sejour }}
+      </div>
+    {% else %}
+      <div class="col-md-4">
+        {{ room_form.prix_par_mois.label_tag }}
+        {{ room_form.prix_par_mois }}
+      </div>
+      <div class="col-md-4">
+        {{ room_form.caution_mois.label_tag }}
+        {{ room_form.caution_mois }}
+      </div>
+      <div class="col-md-4">
+        {{ room_form.frais_agence.label_tag }}
+        {{ room_form.frais_agence }}
+      </div>
+      <div class="col-md-6">
+        {{ room_form.duree_min_bail.label_tag }}
+        {{ room_form.duree_min_bail }}
+      </div>
+      <div class="col-md-6">
+        {{ room_form.type_charge.label_tag }}
+        {{ room_form.type_charge }}
+      </div>
+    {% endif %}
+
+    <div class="col-md-12">
+      {{ room_form.conditions_speciales.label_tag }}
+      {{ room_form.conditions_speciales }}
+    </div>
+
+  </div>
+
+  <div class="row g-2 room-amenities-fields">
+    {% for checkbox in room_form %}
+      {% if checkbox.name in 'climatisation wifi garage jardin piscine cuisine_equipee minibar television coffre_fort reception_24h restaurant ascenseur gardien securite buanderie meuble' %}
+        <div class="col-md-3 col-sm-6">
+          <div class="form-check border rounded p-2 h-100">
+            {{ checkbox }}
+            <label class="form-check-label ms-2" for="{{ checkbox.id_for_label }}">{{ checkbox.label }}</label>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <section class="room-media-section room-photos-section" aria-label="{% translate 'Photos du type de chambre' %}">
+    <h4 class="room-media-heading">📸 {% translate "Photos de ce type" %}</h4>
+    <p class="room-media-help">{% translate "Ajoutez jusqu'à 3 photos pour illustrer cette catégorie." %}</p>
+    {{ photo_formset.management_form }}
+    {% if photo_formset.non_form_errors %}
+      <div class="alert alert-danger small">{{ photo_formset.non_form_errors }}</div>
+    {% endif %}
+    <div class="media-form-grid">
+      {% for photo_form in photo_formset %}
+        <div class="media-form-card">
+          {{ photo_form.id }}
+          <div>{{ photo_form.image.label_tag }}{{ photo_form.image }}</div>
+          {% if photo_form.image.errors %}<div class="text-danger small mt-1">{{ photo_form.image.errors }}</div>{% endif %}
+          <div class="media-detail-fields">
+            {{ photo_form.alt_text.label_tag }}
+            {{ photo_form.alt_text }}
+            {% if photo_form.alt_text.errors %}<div class="text-danger small mt-1">{{ photo_form.alt_text.errors }}</div>{% endif %}
+          </div>
+          <div class="d-none">{{ photo_form.order }}{{ photo_form.DELETE }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="room-media-section room-videos-section" aria-label="{% translate 'Vidéos du type de chambre' %}">
+    <h4 class="room-media-heading">🎬 {% translate "Vidéo de présentation" %}</h4>
+    <p class="room-media-help">{% translate "Ajoutez jusqu'à 3 vidéos (MP4, WebM ou Ogg) pour faire visiter cette catégorie." %}</p>
+    {{ video_formset.management_form }}
+    {% if video_formset.non_form_errors %}
+      <div class="alert alert-danger small">{{ video_formset.non_form_errors }}</div>
+    {% endif %}
+    <div class="media-form-grid">
+      {% for video_form in video_formset %}
+        <div class="media-form-card">
+          {{ video_form.id }}
+          <div>{{ video_form.video.label_tag }}{{ video_form.video }}</div>
+          {% if video_form.video.errors %}<div class="text-danger small mt-1">{{ video_form.video.errors }}</div>{% endif %}
+          <div class="media-detail-fields">
+            {{ video_form.titre.label_tag }}
+            {{ video_form.titre }}
+            {% if video_form.titre.errors %}<div class="text-danger small mt-1">{{ video_form.titre.errors }}</div>{% endif %}
+          </div>
+          <div class="media-detail-fields">
+            {{ video_form.description.label_tag }}
+            {{ video_form.description }}
+            {% if video_form.description.errors %}<div class="text-danger small mt-1">{{ video_form.description.errors }}</div>{% endif %}
+          </div>
+          <div class="d-none">{{ video_form.order }}{{ video_form.DELETE }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>

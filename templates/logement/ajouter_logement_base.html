@@ -4,7 +4,7 @@
 {% block title %}{% translate "Publier une Annonce - Ivoire Connect" %}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 individual-publication-wizard" id="individual-publication-wizard">
     <div class="row">
         <div class="col-lg-12">
             <!-- Breadcrumb -->
@@ -40,6 +40,27 @@
             <form method="post" enctype="multipart/form-data" class="publication-form">
                 {% csrf_token %}
 
+                <div class="individual-progress" aria-hidden="true">
+                    <div class="individual-progress-bar" id="individual-progress-bar"></div>
+                </div>
+                <nav class="individual-steps" aria-label="{% translate 'Étapes de publication' %}">
+                    <button type="button" class="individual-step active" data-individual-step="0" aria-current="step">
+                        <span aria-hidden="true">📍</span>{% translate "Infos" %}
+                    </button>
+                    <button type="button" class="individual-step" data-individual-step="1">
+                        <span aria-hidden="true">🏠</span>{% translate "Détails" %}
+                    </button>
+                    <button type="button" class="individual-step" data-individual-step="2">
+                        <span aria-hidden="true">⚙️</span>{% translate "Équipements" %}
+                    </button>
+                    <button type="button" class="individual-step" data-individual-step="3">
+                        <span aria-hidden="true">📸</span>{% translate "Photos" %}
+                    </button>
+                    <button type="button" class="individual-step" data-individual-step="4">
+                        <span aria-hidden="true">🎬</span>{% translate "Vidéos" %}
+                    </button>
+                </nav>
+
                 <!-- Messages d'erreur généraux -->
                 {% if form.non_field_errors %}
                     <div class="alert alert-danger">
@@ -48,7 +69,7 @@
                 {% endif %}
 
                 <!-- Section: Informations de Base -->
-                <fieldset class="form-section">
+                <fieldset class="form-section individual-step-panel" data-individual-panel="0">
                     <legend>📍 {% translate "Informations de Base" %}</legend>
                     
                     <div class="form-group">
@@ -111,7 +132,7 @@
                 </fieldset>
 
                 <!-- Section: Caractéristiques -->
-                <fieldset class="form-section">
+                <fieldset class="form-section individual-step-panel" data-individual-panel="1" hidden>
                     <legend>🏠 {% translate "Caractéristiques du Logement" %}</legend>
                     
                     <div class="row">
@@ -164,7 +185,7 @@
                 </fieldset>
 
                 <!-- Section: Équipements -->
-                <fieldset class="form-section">
+                <fieldset class="form-section individual-step-panel" data-individual-panel="2" hidden>
                     <legend>✨ {% translate "Équipements" %}</legend>
                     
                     <div class="equipements-grid">
@@ -208,7 +229,7 @@
                 </fieldset>
 
                 <!-- Section: Photos (formset) -->
-                <fieldset class="form-section">
+                <fieldset class="form-section individual-step-panel" data-individual-panel="3" hidden>
                     <legend>📷 {% translate "Photos (jusqu'à 20)" %}</legend>
                     
                     <div id="formset-container">
@@ -218,14 +239,21 @@
                             <div class="photo-form mb-3 p-3 border rounded">
                                 {% if form_photo.image.value %}
                                     <div class="mb-2">
-                                        <img src="{{ form_photo.image.value.url }}" style="max-width: 100px; max-height: 100px;">
+                                        <img src="{{ form_photo.image.value.url }}" alt="{% translate 'Aperçu de la photo' %}">
                                     </div>
                                 {% endif %}
-                                
-                                {{ form_photo.image }}
-                                {{ form_photo.alt_text }}
+
+                                <div class="form-group">
+                                    <label for="{{ form_photo.image.id_for_label }}">{{ form_photo.image.label }}</label>
+                                    {{ form_photo.image }}
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{ form_photo.alt_text.id_for_label }}">{{ form_photo.alt_text.label }}</label>
+                                    {{ form_photo.alt_text }}
+                                </div>
+                                {{ form_photo.order }}
                                 {{ form_photo.DELETE }}
-                                
+
                                 {% if form_photo.errors %}
                                     <div class="alert alert-danger small mt-2">{{ form_photo.errors }}</div>
                                 {% endif %}
@@ -234,25 +262,462 @@
                     </div>
                 </fieldset>
 
-                <!-- Boutons -->
-                <div class="form-actions mt-5">
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        ✅ {% translate "Publier mon annonce" %}
-                    </button>
-                    <a href="{% url 'logement:home' %}" class="btn btn-secondary btn-lg w-100 mt-2">
-                        ← {% translate "Annuler" %}
-                    </a>
+                <fieldset class="form-section individual-step-panel" data-individual-panel="4" hidden>
+                    <legend>🎬 {% translate "Vidéos" %}</legend>
+                    <p>{% translate "Ajoutez des vidéos de visite pour présenter votre logement." %}</p>
+                    {% if video_formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            <strong>{% translate "Erreur dans les vidéos:" %}</strong>
+                            {{ video_formset.non_form_errors }}
+                        </div>
+                    {% endif %}
+                    {{ video_formset.management_form }}
+                    {% for form_video in video_formset %}
+                        <div class="video-form mb-3 p-3 border rounded">
+                            <h3>{% blocktrans with number=forloop.counter %}Vidéo {{ number }}{% endblocktrans %}</h3>
+                            {% if form_video.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form_video.errors }}</div>
+                            {% endif %}
+                            <div class="form-group">
+                                <label for="{{ form_video.video.id_for_label }}">{{ form_video.video.label }}</label>
+                                {{ form_video.video }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form_video.titre.id_for_label }}">{{ form_video.titre.label }}</label>
+                                {{ form_video.titre }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form_video.description.id_for_label }}">{{ form_video.description.label }}</label>
+                                {{ form_video.description }}
+                            </div>
+                            {{ form_video.order }}
+                            {{ form_video.DELETE }}
+                        </div>
+                    {% endfor %}
+                </fieldset>
+
+                <div class="individual-step-actions" id="individual-step-actions" data-current-step="0">
+                    <button type="button" class="btn btn-secondary" id="individual-step-previous" hidden>← {% translate "Précédent" %}</button>
+                    <button type="button" class="btn btn-primary" id="individual-step-next">{% translate "Suivant" %} →</button>
+                    <button type="submit" class="btn btn-primary" id="individual-step-submit" hidden>✅ {% translate "Publier mon annonce" %}</button>
                 </div>
+                <a href="{% url 'logement:home' %}" class="btn btn-secondary individual-cancel-link">← {% translate "Annuler" %}</a>
             </form>
         </div>
     </div>
 </div>
 
 <style>
+    .individual-publication-wizard {
+        width: min(1100px, calc(100% - 32px));
+        max-width: none;
+        margin: 0 auto;
+        padding: 28px 0 64px;
+        color: #1a2332;
+    }
+
+    .individual-publication-wizard > .row {
+        display: block;
+        margin: 0;
+    }
+
+    .individual-publication-wizard > .row > .col-lg-12 {
+        width: 100%;
+        min-width: 0;
+        padding: 0;
+    }
+
+    .individual-publication-wizard .breadcrumb-nav {
+        display: inline-flex;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: #fff;
+        color: #6b7280;
+        font-size: .85rem;
+    }
+
+    .container.individual-publication-wizard {
+        width: calc(100% - 24px);
+        padding: 18px 0 40px;
+    }
+
+    .individual-publication-wizard .page-header {
+        margin-bottom: 28px;
+        padding: 30px 28px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 16px 36px rgba(5, 150, 105, .18);
+        color: #fff;
+        text-align: center;
+    }
+
+    .individual-publication-wizard .page-header h1 {
+        margin: 0 0 8px;
+        color: #fff;
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -.02em;
+    }
+
+    .individual-publication-wizard .page-header > p {
+        margin: 0;
+        color: #fff;
+        opacity: .95;
+    }
+
+    .individual-publication-wizard .role-publication-info {
+        max-width: 620px;
+        margin: 18px auto 0;
+        text-align: left;
+    }
+
+    .individual-publication-wizard .role-publication-info .alert {
+        margin: 0;
+        border: 1px solid rgba(255,255,255,.35);
+        border-radius: 10px;
+        background: rgba(255,255,255,.16);
+        color: #fff;
+    }
+
+    .individual-publication-wizard .publication-form {
+        width: 100%;
+        min-width: 0;
+        padding: clamp(18px, 4vw, 32px);
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 3px 14px rgba(15, 23, 42, .07);
+    }
+
+    .individual-publication-wizard .form-section {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .individual-publication-wizard .form-section[hidden] {
+        display: none !important;
+    }
+
+    .individual-publication-wizard .form-section legend {
+        float: none;
+        width: 100%;
+        margin: 0 0 20px;
+        padding: 0 0 14px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #1a2332;
+        font-size: 1.35rem;
+        font-weight: 700;
+    }
+
+    .individual-publication-wizard .form-group {
+        margin-bottom: 16px;
+    }
+
+    .individual-publication-wizard .form-group label {
+        margin-bottom: 6px;
+        color: #374151;
+        font-size: .9rem;
+        font-weight: 600;
+    }
+
+    .individual-publication-wizard .form-group input:not([type="checkbox"]):not([type="file"]),
+    .individual-publication-wizard .form-group select,
+    .individual-publication-wizard .form-group textarea {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #fff;
+        color: #1a2332;
+        font: inherit;
+    }
+
+    .individual-publication-wizard .form-group textarea {
+        min-height: 112px;
+    }
+
+    .individual-publication-wizard .form-group input:focus,
+    .individual-publication-wizard .form-group select:focus,
+    .individual-publication-wizard .form-group textarea:focus {
+        border-color: #059669;
+        outline: 3px solid #d1fae5;
+    }
+
+    .individual-publication-wizard .row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin: 0;
+    }
+
+    .individual-publication-wizard .row > [class*="col-"] {
+        min-width: 0;
+        padding: 0;
+    }
+
+    .individual-publication-wizard .equipements-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
+    .individual-publication-wizard .form-check {
+        min-width: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 9px;
+        background: #fff;
+        gap: 10px;
+    }
+
+    .individual-publication-wizard .form-check:has(input:checked) {
+        border-color: #059669;
+        background: #e6f8f1;
+    }
+
+    .individual-publication-wizard .photo-form,
+    .individual-publication-wizard .video-form {
+        margin-bottom: 14px;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #f8fafc;
+    }
+
+    .individual-publication-wizard .photo-form img {
+        display: block;
+        width: 120px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .individual-publication-wizard .photo-form .form-group,
+    .individual-publication-wizard .video-form .form-group {
+        margin-bottom: 14px;
+    }
+
+    .individual-publication-wizard .video-form h3 {
+        margin: 0 0 14px;
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .individual-publication-wizard .photo-form input[type="file"],
+    .individual-publication-wizard .video-form input[type="file"] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    .individual-publication-wizard .video-form input:not([type="file"]):not([type="checkbox"]),
+    .individual-publication-wizard .video-form textarea {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #fff;
+        font: inherit;
+    }
+
+    .individual-publication-wizard .video-form textarea {
+        min-height: 90px;
+    }
+
+    .individual-publication-wizard .photo-form input:not([type="file"]):not([type="checkbox"]) {
+        width: 100%;
+        min-height: 42px;
+        padding: 9px 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #fff;
+        font: inherit;
+    }
+
+    .individual-publication-wizard .video-form input[name$="-order"],
+    .individual-publication-wizard .video-form input[name$="-DELETE"],
+    .individual-publication-wizard .photo-form input[name$="-order"],
+    .individual-publication-wizard .photo-form input[name$="-DELETE"] {
+        display: none;
+    }
+
+    .individual-publication-wizard .individual-steps {
+        width: 100%;
+    }
+
+    .individual-publication-wizard .individual-step-actions .btn {
+        width: 100%;
+        min-height: 48px;
+        border-radius: 9px;
+        font-weight: 700;
+    }
+
+    .individual-publication-wizard .individual-step-actions .btn-primary {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, .24);
+    }
+
+    .individual-publication-wizard .individual-step-actions .btn-secondary,
+    .individual-publication-wizard .individual-cancel-link {
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+    }
+
+    .individual-publication-wizard .alert-danger {
+        padding: 10px 12px;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        background: #fef2f2;
+        color: #b91c1c;
+    }
+
+    @media (max-width: 767px) {
+        .individual-publication-wizard {
+            width: calc(100% - 24px);
+            padding: 18px 0 40px;
+        }
+
+        .individual-publication-wizard .page-header {
+            padding: 26px 18px;
+        }
+
+        .individual-publication-wizard .publication-form {
+            padding: 18px;
+        }
+
+        .individual-publication-wizard .row {
+            grid-template-columns: 1fr;
+        }
+
+        .individual-publication-wizard .equipements-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .individual-publication-wizard .individual-step-actions {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .individual-progress {
+        height: 4px;
+        margin-bottom: 14px;
+        overflow: hidden;
+        border-radius: 99px;
+        background: #e5e7eb;
+    }
+
+    .individual-progress-bar {
+        width: 20%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #10b981, #059669);
+        transition: width 0.3s ease;
+    }
+
+    .individual-steps {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 24px;
+    }
+
+    .individual-step {
+        display: flex;
+        min-width: 0;
+        min-height: 86px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 10px 8px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        color: #374151;
+        font-family: inherit;
+        font-size: .85rem;
+        font-weight: 600;
+        line-height: 1.3;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .individual-step > span { font-size: 1.65rem; line-height: 1; }
+    .individual-step:hover { border-color: #10b981; transform: translateY(-1px); }
+    .individual-step.active { border-color: #10b981; background: #e6f8f1; color: #14211b; }
+    .individual-step.completed { border-color: #a7f3d0; color: #047857; }
+    .individual-step:focus-visible { outline: 3px solid #a7f3d0; outline-offset: 2px; }
+    .individual-step-panel[hidden] { display: none !important; }
+
+    .individual-step-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+    }
+
+    .individual-step-actions[data-current-step="0"] {
+        grid-template-columns: 1fr;
+    }
+
+    .individual-step-actions [hidden] { display: none !important; }
+    .individual-step-actions button { min-height: 48px; font-weight: 700; }
+    .individual-step-actions .btn-primary {
+        border: 0;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, .24);
+    }
+    .individual-step-actions .btn-primary:hover { filter: brightness(.96); }
+    .individual-step-actions .btn-secondary {
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+    }
+    .individual-cancel-link {
+        display: block;
+        width: fit-content;
+        margin: 14px auto 0;
+        padding: 8px 14px;
+        border: 0;
+        background: transparent;
+        color: #6b7280;
+        font-size: .9rem;
+        text-align: center;
+    }
+    .individual-cancel-link:hover { color: #1f2937; }
+
+    @media (max-width: 767px) {
+        .individual-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .individual-step-actions { grid-template-columns: 1fr; }
+    }
+
     .container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 0 var(--spacing-lg);
+    }
+
+    .container.individual-publication-wizard {
+        box-sizing: border-box;
+        width: min(1100px, calc(100% - 32px));
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 28px 0 64px;
     }
 
     .mt-5 {
@@ -446,6 +911,13 @@
         margin-top: var(--spacing-sm);
     }
 
+    .video-form {
+        background: #f8fafc;
+        border: 1px solid var(--color-light);
+        border-radius: 8px;
+        padding: var(--spacing-md);
+    }
+
     /* Alerts */
     .alert {
         padding: var(--spacing-md) var(--spacing-lg);
@@ -560,4 +1032,54 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const wizard = document.getElementById('individual-publication-wizard');
+        if (!wizard) return;
+
+        const panels = Array.from(wizard.querySelectorAll('[data-individual-panel]'));
+        const steps = Array.from(wizard.querySelectorAll('[data-individual-step]'));
+        const progressBar = wizard.querySelector('#individual-progress-bar');
+        const previousButton = wizard.querySelector('#individual-step-previous');
+        const nextButton = wizard.querySelector('#individual-step-next');
+        const submitButton = wizard.querySelector('#individual-step-submit');
+        const actions = wizard.querySelector('#individual-step-actions');
+        let currentStep = 0;
+
+        function showStep(step) {
+            if (step < 0 || step >= panels.length) return;
+            currentStep = step;
+
+            panels.forEach((panel, index) => {
+                panel.hidden = index !== currentStep;
+            });
+            steps.forEach((button, index) => {
+                button.classList.toggle('active', index === currentStep);
+                button.classList.toggle('completed', index < currentStep);
+                if (index === currentStep) button.setAttribute('aria-current', 'step');
+                else button.removeAttribute('aria-current');
+            });
+
+            progressBar.style.width = `${((currentStep + 1) / panels.length) * 100}%`;
+            previousButton.hidden = currentStep === 0;
+            nextButton.hidden = currentStep === panels.length - 1;
+            submitButton.hidden = currentStep !== panels.length - 1;
+            actions.dataset.currentStep = String(currentStep);
+        }
+
+        steps.forEach(button => {
+            button.addEventListener('click', function () {
+                showStep(Number(button.dataset.individualStep));
+            });
+        });
+        previousButton.addEventListener('click', function () { showStep(currentStep - 1); });
+        nextButton.addEventListener('click', function () { showStep(currentStep + 1); });
+
+        const firstPanelWithErrors = panels.findIndex(panel =>
+            panel.querySelector('.alert-danger, .errorlist, .is-invalid, [aria-invalid="true"]')
+        );
+        showStep(firstPanelWithErrors >= 0 ? firstPanelWithErrors : 0);
+    });
+</script>
 {% endblock %}

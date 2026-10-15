@@ -10,8 +10,9 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from .forms import (
-    LogementProprietaireForm, LogementTouristeForm, LogementHotelForm, LogementResidenceForm,
-    BlocageCalendrierForm, RechercheLogementForm, PhotoLogementFormSet, VideoLogementFormSet,
+    EtablissementForm, LogementProprietaireForm, LogementTouristeForm, LogementHotelForm,
+    LogementResidenceForm, BlocageCalendrierForm, RechercheLogementForm, PhotoLogementFormSet,
+    VideoLogementFormSet, LogementTypeFormSet,
 )
 from .models import (
     BlocageCalendrier, Etablissement, FavoriLogement, Logement, PhotoLogement, Reservation,
@@ -629,14 +630,13 @@ def confirmation_reservation(request, reservation_id):
 @login_required
 @require_http_methods(["GET", "POST"])
 def ajouter_logement(request):
-    """Ajouter un logement — formulaire différencié selon le type de compte"""
+    """Ajouter un logement — formulaire différencié selon le type de compte."""
 
     try:
-        profile      = request.user.profile
+        profile = request.user.profile
         account_type = profile.account_type
-        role         = profile.role
+        role = profile.role
 
-        # Sécurisation pour les comptes résidence/hôtel déjà créés avec un type incohérent
         professional_profile = getattr(profile, 'professional_profile', None)
         if professional_profile and account_type not in ['hotel', 'residence']:
             account_type = professional_profile.establishment_type or account_type
@@ -646,38 +646,183 @@ def ajouter_logement(request):
 
     except Exception:
         account_type = 'individu'
-        role         = None
+        role = None
 
-    # Les colocataires ne peuvent pas publier
     if account_type == 'individu' and role == 'colocataire':
-        from django.contrib import messages
         messages.error(request, _('En tant que colocataire, vous ne pouvez pas publier d\'annonces.'))
         return redirect('logement:home')
 
-    # Sélectionner le bon formulaire et template
+    if account_type in ['hotel', 'residence']:
+        etablissement = Etablissement.objects.filter(proprietaire=request.user).first()
+        if request.method == 'POST':
+            etablissement_form = EtablissementForm(request.POST, request.FILES, instance=etablissement)
+            type_formset = LogementTypeFormSet(request.POST, request.FILES, prefix='types', queryset=Logement.objects.none())
+            etablissement_valid = etablissement_form.is_valid()
+            type_formset_valid = type_formset.is_valid()
+            media_formsets_valid = True
+            media_without_title = False
+            room_media_formsets = []
+
+            for index, room_form in enumerate(type_formset.forms):
+                prefix = f'types-{index}'
+                photo_formset = PhotoLogementFormSet(
+                    request.POST,
+                    request.FILES,
+                    instance=Logement(),
+                    prefix=f'{prefix}-photos',
+                )
+                video_formset = VideoLogementFormSet(
+                    request.POST,
+                    request.FILES,
+                    instance=Logement(),
+                    prefix=f'{prefix}-videos',
+                )
+                room_media_formsets.append((photo_formset, video_formset))
+                room_form.photo_formset = photo_formset
+                room_form.video_formset = video_formset
+                if room_form.cleaned_data.get('DELETE'):
+                    continue
+
+                photo_valid = photo_formset.is_valid()
+                video_valid = video_formset.is_valid()
+                media_formsets_valid = media_formsets_valid and photo_valid and video_valid
+
+                has_media = any(
+                    form.cleaned_data.get('image')
+                    for form in photo_formset
+                    if form.cleaned_data
+                ) or any(
+                    form.cleaned_data.get('video')
+                    for form in video_formset
+                    if form.cleaned_data
+                )
+                if has_media and not room_form.cleaned_data.get('titre'):
+                    room_form.add_error('titre', _('Ajoutez un titre à ce type pour lui associer des médias.'))
+                    media_without_title = True
+
+            empty_photo_formset = PhotoLogementFormSet(
+                instance=Logement(),
+                prefix='types-__prefix__-photos',
+            )
+            empty_video_formset = VideoLogementFormSet(
+                instance=Logement(),
+                prefix='types-__prefix__-videos',
+            )
+
+            if (
+                etablissement_valid
+                and type_formset_valid
+                and media_formsets_valid
+                and not media_without_title
+            ):
+                try:
+                    with transaction.atomic():
+                        etablissement_obj = etablissement_form.save(commit=False)
+                        etablissement_obj.proprietaire = request.user
+                        etablissement_obj.type_etablissement = account_type
+                        etablissement_obj.save()
+
+                        created_types = []
+                        for index, room_form in enumerate(type_formset):
+                            if room_form.cleaned_data.get('DELETE'):
+                                continue
+                            title = (room_form.cleaned_data.get('titre') or '').strip()
+                            if not title:
+                                continue
+
+                            logement = room_form.save(commit=False)
+                            logement.proprietaire = request.user
+                            logement.account_type = account_type
+                            logement.etablissement = etablissement_obj
+                            logement.ville = etablissement_obj.ville
+                            logement.quartier = etablissement_obj.quartier
+                            logement.description = logement.description or etablissement_obj.description or title
+                            if account_type == 'hotel':
+                                logement.prix = logement.prix_par_nuit or 0
+                            else:
+                                logement.prix = logement.prix_par_mois or 0
+                            logement.save()
+
+                            photo_formset, video_formset = room_media_formsets[index]
+                            photo_formset.instance = logement
+                            photo_formset.save()
+                            video_formset.instance = logement
+                            video_formset.save()
+                            created_types.append(logement)
+
+                        if not created_types:
+                            raise ValueError(_('Ajoutez au moins un type de chambre avant de publier.'))
+
+                        messages.success(request, _('%(count)s type(s) de chambre enregistré(s) avec succès.') % {'count': len(created_types)})
+                        return redirect('logement:mes_logements')
+                except ValueError as exc:
+                    messages.error(request, str(exc))
+            else:
+                for field, errors in etablissement_form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
+                for form in type_formset:
+                    for field, errors in form.errors.items():
+                        if field == '__all__':
+                            for error in errors:
+                                messages.error(request, _('Type de chambre: %(error)s') % {'error': error})
+                        else:
+                            for error in errors:
+                                messages.error(request, _('Type de chambre - %(field)s: %(error)s') % {'field': field, 'error': error})
+        else:
+            etablissement_form = EtablissementForm(instance=etablissement)
+            type_formset = LogementTypeFormSet(prefix='types', queryset=Logement.objects.none())
+            for index, room_form in enumerate(type_formset.forms):
+                room_form.photo_formset = PhotoLogementFormSet(
+                    instance=Logement(),
+                    prefix=f'types-{index}-photos',
+                )
+                room_form.video_formset = VideoLogementFormSet(
+                    instance=Logement(),
+                    prefix=f'types-{index}-videos',
+                )
+            empty_photo_formset = PhotoLogementFormSet(
+                instance=Logement(),
+                prefix='types-__prefix__-photos',
+            )
+            empty_video_formset = VideoLogementFormSet(
+                instance=Logement(),
+                prefix='types-__prefix__-videos',
+            )
+
+        return render(request, 'logement/ajouter_logement_professionnel.html', {
+            'etablissement_form': etablissement_form,
+            'type_formset': type_formset,
+            'empty_photo_formset': empty_photo_formset,
+            'empty_video_formset': empty_video_formset,
+            'account_type': account_type,
+            'role': role,
+            'etablissement': etablissement,
+        })
+
     if account_type == 'hotel':
         FormClass = LogementHotelForm
-        template  = 'logement/ajouter_logement_hotel.html'
+        template = 'logement/ajouter_logement_hotel.html'
     elif account_type == 'residence':
         FormClass = LogementResidenceForm
-        template  = 'logement/ajouter_logement_residence.html'
+        template = 'logement/ajouter_logement_residence.html'
     elif account_type == 'individu' and role == 'proprietaire':
         FormClass = LogementProprietaireForm
-        template  = 'ajouter_logement_proprietaire.html'
+        template = 'logement/ajouter_logement_base.html'
     elif account_type == 'individu' and role == 'locataire':
         FormClass = LogementTouristeForm
-        template  = 'ajouter_logement_colocation.html'
+        template = 'logement/ajouter_logement_base.html'
     else:
         FormClass = LogementProprietaireForm
-        template  = 'ajouter_logement_proprietaire.html'
+        template = 'logement/ajouter_logement_base.html'
 
     if request.method == 'POST':
-        form    = FormClass(request.POST)
+        form = FormClass(request.POST)
         formset = PhotoLogementFormSet(request.POST, request.FILES, prefix='photos')
         video_formset = VideoLogementFormSet(request.POST, request.FILES, prefix='videos')
 
         if form.is_valid() and formset.is_valid() and video_formset.is_valid():
-            logement              = form.save(commit=False)
+            logement = form.save(commit=False)
             logement.proprietaire = request.user
             logement.account_type = account_type
 
@@ -688,7 +833,7 @@ def ajouter_logement(request):
                     if professional_profile and professional_profile.establishment_name
                     else request.user.get_full_name() or request.user.username
                 )
-                establishment, _ = Etablissement.objects.get_or_create(
+                establishment = Etablissement.objects.get_or_create(
                     proprietaire=request.user,
                     defaults={
                         'nom': establishment_name,
@@ -696,7 +841,7 @@ def ajouter_logement(request):
                         'ville': logement.ville,
                         'quartier': logement.quartier,
                     },
-                )
+                )[0]
                 logement.etablissement = establishment
 
             if account_type == 'hotel' and logement.prix_par_nuit:
@@ -706,26 +851,22 @@ def ajouter_logement(request):
 
             logement.save()
 
-            # Sauvegarder les photos
             formset.instance = logement
             for form_photo in formset:
                 if form_photo.cleaned_data and form_photo.cleaned_data.get('image'):
-                    photo          = form_photo.save(commit=False)
+                    photo = form_photo.save(commit=False)
                     photo.logement = logement
                     photo.save()
 
-            # Sauvegarder les vidéos
             video_formset.instance = logement
             for form_video in video_formset:
                 if form_video.cleaned_data and form_video.cleaned_data.get('video'):
-                    video          = form_video.save(commit=False)
+                    video = form_video.save(commit=False)
                     video.logement = logement
                     video.save()
 
             return redirect('logement:home')
         else:
-            # Erreur : afficher les erreurs
-            from django.contrib import messages
             if not form.is_valid():
                 for field, errors in form.errors.items():
                     for error in errors:
@@ -734,10 +875,7 @@ def ajouter_logement(request):
                 for form_photo in formset:
                     for field, errors in form_photo.errors.items():
                         for error in errors:
-                            messages.error(request, _("Photo - %(field)s: %(error)s") % {
-                                'field': field,
-                                'error': error,
-                            })
+                            messages.error(request, _("Photo - %(field)s: %(error)s") % {'field': field, 'error': error})
                 if formset.non_form_errors():
                     for error in formset.non_form_errors():
                         messages.error(request, _("Erreur photos: %(error)s") % {'error': error})
@@ -745,15 +883,12 @@ def ajouter_logement(request):
                 for form_video in video_formset:
                     for field, errors in form_video.errors.items():
                         for error in errors:
-                            messages.error(request, _("Vidéo - %(field)s: %(error)s") % {
-                                'field': field,
-                                'error': error,
-                            })
+                            messages.error(request, _("Vidéo - %(field)s: %(error)s") % {'field': field, 'error': error})
                 if video_formset.non_form_errors():
                     for error in video_formset.non_form_errors():
                         messages.error(request, _("Erreur vidéos: %(error)s") % {'error': error})
     else:
-        form    = FormClass()
+        form = FormClass()
         formset = PhotoLogementFormSet(queryset=PhotoLogement.objects.none(), prefix='photos')
         video_formset = VideoLogementFormSet(queryset=VideoLogement.objects.none(), prefix='videos')
 
@@ -765,10 +900,11 @@ def ajouter_logement(request):
             etablissement_categories = etablissement.categories.order_by('type_logement', 'titre')
 
     return render(request, template, {
-        'form':          form,
-        'formset':       formset,
+        'form': form,
+        'formset': formset,
         'video_formset': video_formset,
-        'account_type':  account_type,
+        'account_type': account_type,
+        'role': role,
         'etablissement': etablissement,
         'etablissement_categories': etablissement_categories,
     })
