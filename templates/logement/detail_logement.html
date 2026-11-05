@@ -73,11 +73,27 @@
                     <h2 class="dl-section__title">{{ etablissement.nom }}</h2>
                     <p class="dl-desc">{% translate "Cette fiche présente une catégorie de chambre de cet établissement." %}</p>
                     {% if etablissement_categories %}
-                        <div class="dl-related-categories">
-                            <strong>{% translate "Autres catégories disponibles" %}</strong>
+                        <div class="dl-related-categories" aria-label="{% translate 'Autres catégories de chambres de cet établissement' %}">
+                            <div class="dl-related-categories__heading">
+                                <span class="dl-related-categories__icon" aria-hidden="true">🛏️</span>
+                                <div>
+                                    <h3>{% translate "Découvrez les autres chambres" %}</h3>
+                                    <p>{% translate "D'autres options vous attendent dans le même établissement." %}</p>
+                                </div>
+                                <span class="dl-related-categories__count">{{ etablissement_categories|length }}</span>
+                            </div>
                             {% for category in etablissement_categories %}
-                                <a href="{% url 'logement:detail_logement' category.id %}">
-                                    {{ category.get_type_logement_display }}{% if category.prix_journalier %} · {{ category.prix_journalier|floatformat:0 }} FCFA/jour{% else %} · {% translate "Tarif journalier non renseigné" %}{% endif %}
+                                <a class="dl-related-category" href="{% url 'logement:detail_logement' category.id %}">
+                                    <span class="dl-related-category__type">{{ category.get_type_logement_display }}</span>
+                                    <span class="dl-related-category__title">{{ category.titre|default:category.get_type_logement_display }}</span>
+                                    <span class="dl-related-category__price">
+                                        {% if category.account_type == 'residence' %}
+                                            {% if category.prix_par_mois %}{{ category.prix_par_mois|floatformat:0 }} FCFA/{% translate "mois" %}{% else %}{% translate "Tarif mensuel non renseigné" %}{% endif %}
+                                        {% else %}
+                                            {% if category.prix_journalier %}{{ category.prix_journalier|floatformat:0 }} FCFA/{% translate "nuit" %}{% else %}{% translate "Tarif par nuit non renseigné" %}{% endif %}
+                                        {% endif %}
+                                    </span>
+                                    <span class="dl-related-category__action">{% translate "Voir cette chambre" %}<span aria-hidden="true">→</span></span>
                                 </a>
                             {% endfor %}
                         </div>
@@ -180,12 +196,18 @@
 
                 <!-- Prix -->
                 <div class="dl-card__price">
-                    {% if logement.prix_journalier %}
-                        <span class="dl-price">{{ logement.prix_journalier|floatformat:0 }} <small>FCFA / jour</small></span>
+                    {% if logement.account_type == 'residence' %}
+                        {% if logement.prix_par_mois %}
+                            <span class="dl-price">{{ logement.prix_par_mois|floatformat:0 }} <small>FCFA / {% translate "mois" %}</small></span>
+                        {% else %}
+                            <span class="dl-price">{% translate "Tarif mensuel non renseigné" %}</span>
+                        {% endif %}
+                    {% elif logement.prix_journalier %}
+                        <span class="dl-price">{{ logement.prix_journalier|floatformat:0 }} <small>FCFA / {% translate "nuit" %}</small></span>
                     {% elif logement.account_type == 'individu' and logement.prix %}
                         <span class="dl-price">{{ logement.prix|floatformat:0 }} <small>FCFA</small></span>
-                    {% elif logement.account_type == 'hotel' or logement.account_type == 'residence' %}
-                        <span class="dl-price">{% translate "Tarif journalier non renseigné" %}</span>
+                    {% elif logement.account_type == 'hotel' %}
+                        <span class="dl-price">{% translate "Tarif par nuit non renseigné" %}</span>
                     {% endif %}
                 </div>
 
@@ -193,8 +215,8 @@
                 {% if logement.account_type == 'hotel' or logement.account_type == 'residence' %}
                     <div class="dl-card__pricing">
                         <h4 class="dl-pricing__title">{% translate "Tarification" %}</h4>
-                        {% if logement.prix_journalier %}<p>💰 {% translate "Par jour" %}: <strong>{{ logement.prix_journalier|floatformat:0 }} FCFA</strong></p>{% endif %}
-                        {% if logement.prix_par_mois %}<p>💰 {% translate "Par mois" %}: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.account_type == 'hotel' and logement.prix_journalier %}<p>💰 {% translate "Par nuit" %}: <strong>{{ logement.prix_journalier|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.account_type == 'residence' and logement.prix_par_mois %}<p>💰 {% translate "Par mois" %}: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
                         {% if logement.frais_nettoyage %}<p>🧹 {% translate "Nettoyage" %}: <strong>{{ logement.frais_nettoyage|floatformat:0 }} FCFA</strong></p>{% endif %}
                         {% if logement.frais_agence %}<p>📋 {% translate "Agence" %}: <strong>{{ logement.frais_agence|floatformat:0 }} FCFA</strong></p>{% endif %}
                     </div>
@@ -527,22 +549,130 @@
 
 .dl-related-categories {
     display: grid;
-    gap: 8px;
-    margin-top: 18px;
-    padding: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    background: #fafafa;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
+    gap: 12px;
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid #fde2bd;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fffaf3 0%, #fff 70%);
 }
 
-.dl-related-categories a {
+.dl-related-categories__heading {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2px;
+}
+
+.dl-related-categories__icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    border-radius: 12px;
+    background: #fff0d9;
+    font-size: 1.25rem;
+}
+
+.dl-related-categories__heading h3 {
+    margin: 0;
+    color: #243247;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.dl-related-categories__heading p {
+    margin: 3px 0 0;
+    color: #697586;
+    font-size: .82rem;
+}
+
+.dl-related-categories__count {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    place-items: center;
+    margin-left: auto;
+    border-radius: 50%;
+    background: #ffedd5;
     color: #b45309;
-    font-weight: 600;
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+.dl-related-category {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 15px;
+    border: 1px solid #f0e7dc;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(67, 45, 20, .04);
+    color: inherit;
+    text-decoration: none;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.dl-related-category:hover {
+    transform: translateY(-2px);
+    border-color: #f6b968;
+    box-shadow: 0 8px 18px rgba(67, 45, 20, .1);
     text-decoration: none;
 }
 
-.dl-related-categories a:hover {
-    text-decoration: underline;
+.dl-related-category:focus-visible {
+    outline: 3px solid #f6b968;
+    outline-offset: 2px;
+}
+
+.dl-related-category__type {
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: #fff1dc;
+    color: #a45108;
+    font-size: .68rem;
+    font-weight: 700;
+}
+
+.dl-related-category__title {
+    color: #243247;
+    font-size: .95rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.dl-related-category__price {
+    color: #596579;
+    font-size: .8rem;
+}
+
+.dl-related-category__action {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    padding-top: 9px;
+    border-top: 1px solid #f1eee9;
+    color: #b45309;
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.dl-related-category__action span {
+    font-size: 1rem;
+    transition: transform .18s ease;
+}
+
+.dl-related-category:hover .dl-related-category__action span {
+    transform: translateX(3px);
 }
 
 /* Équipements */

@@ -1,0 +1,1797 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block title %}{% translate "Publier un établissement" %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'form_fields.css' %}">
+<style>
+/* ==========================================================
+   IVOIRE CONNECT — FORMULAIRE DE PUBLICATION
+   Design professionnel, moderne et responsive
+========================================================== */
+
+.professional-publish-page {
+    --publish-accent: #ea8508;
+    --publish-accent-dark: #c96b00;
+    --publish-accent-light: #fff1d9;
+    --publish-tint: #fff8ed;
+    --publish-rgb: 234, 133, 8;
+
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 35px 24px 60px;
+
+    color: #182230;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.professional-publish-page *,
+.professional-publish-page *::before,
+.professional-publish-page *::after {
+    box-sizing: border-box;
+}
+
+/* Couleurs des résidences */
+.professional-publish-page.residence {
+    --publish-accent: #059669;
+    --publish-accent-dark: #047857;
+    --publish-accent-light: #d1fae5;
+    --publish-tint: #ecfdf5;
+    --publish-rgb: 5, 150, 105;
+}
+
+/* ==========================================================
+   EN-TÊTE
+========================================================== */
+
+.professional-publish-header {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    padding: clamp(28px, 5vw, 55px);
+    margin-bottom: 30px;
+
+    color: #fff;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(255, 255, 255, .17),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            var(--publish-accent),
+            var(--publish-accent-dark)
+        );
+
+    border-radius: 24px;
+
+    box-shadow: 0 15px 35px rgba(var(--publish-rgb), .20);
+}
+
+.professional-publish-header::before {
+    content: "";
+
+    position: absolute;
+    z-index: -1;
+
+    width: 250px;
+    height: 250px;
+
+    top: -120px;
+    right: -80px;
+
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 25px rgba(255, 255, 255, .04),
+        0 0 0 55px rgba(255, 255, 255, .035),
+        0 0 0 85px rgba(255, 255, 255, .025);
+
+    pointer-events: none;
+}
+
+.professional-publish-header h1 {
+    position: relative;
+    z-index: 1;
+
+    margin: 12px 0;
+
+    color: #fff;
+
+    font-size: clamp(1.8rem, 4vw, 2.65rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.04em;
+}
+
+.professional-publish-header p {
+    position: relative;
+    z-index: 1;
+
+    max-width: 680px;
+    margin: 0;
+
+    color: rgba(255, 255, 255, .93);
+
+    font-size: 1rem;
+    line-height: 1.8;
+}
+
+.publish-eyebrow {
+    position: relative;
+    z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 7px 13px;
+
+    border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, .14);
+
+    color: #fff;
+
+    font-size: .78rem;
+    font-weight: 750;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.publication-steps {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 27px;
+}
+
+.publication-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 9px 15px;
+
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, .13);
+
+    color: #fff;
+
+    font-size: .87rem;
+    font-weight: 600;
+}
+
+.publication-step strong {
+    display: inline-grid;
+
+    width: 25px;
+    height: 25px;
+
+    place-items: center;
+
+    border-radius: 50%;
+
+    background: #fff;
+    color: var(--publish-accent-dark);
+
+    font-size: .82rem;
+    font-weight: 800;
+}
+
+/* ==========================================================
+   CARTES PRINCIPALES
+========================================================== */
+
+.professional-publish-page .card {
+    margin-bottom: 26px !important;
+
+    overflow: hidden;
+
+    border: 1px solid #e6eaf0 !important;
+    border-radius: 20px !important;
+
+    background: #fff;
+
+    box-shadow:
+        0 5px 12px rgba(16, 24, 40, .025),
+        0 15px 35px rgba(16, 24, 40, .045) !important;
+
+    transition:
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+.professional-publish-page .card:hover {
+    border-color: #d8dee8 !important;
+
+    box-shadow:
+        0 8px 18px rgba(16, 24, 40, .04),
+        0 18px 40px rgba(16, 24, 40, .06) !important;
+}
+
+.professional-publish-page .card-body {
+    padding: clamp(22px, 4vw, 35px) !important;
+}
+
+.professional-publish-page .card-body > h2 {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    margin: 0 0 10px !important;
+
+    color: #182230;
+
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.4;
+    letter-spacing: -.02em;
+}
+
+.professional-publish-page .card-body > h2 + p {
+    margin: 0 0 25px !important;
+
+    color: #667085;
+
+    font-size: .93rem;
+    line-height: 1.75;
+}
+
+.professional-publish-page .row {
+    --bs-gutter-x: 20px;
+    --bs-gutter-y: 20px;
+}
+
+/* ==========================================================
+   LABELS ET CHAMPS
+========================================================== */
+
+.professional-publish-page label {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    color: #344054;
+
+    font-size: .9rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.professional-publish-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.professional-publish-page select,
+.professional-publish-page textarea {
+    display: block;
+
+    width: 100%;
+    max-width: 100%;
+    min-height: 48px;
+
+    padding: 12px 14px;
+
+    border: 1px solid #d6dce5;
+    border-radius: 11px;
+
+    outline: none;
+
+    background: #fff;
+    color: #182230;
+
+    font-family: inherit;
+    font-size: .94rem;
+    line-height: 1.5;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        background-color .2s ease;
+}
+
+.professional-publish-page textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.professional-publish-page input:hover,
+.professional-publish-page select:hover,
+.professional-publish-page textarea:hover {
+    border-color: #aeb8c6;
+}
+
+.professional-publish-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.professional-publish-page select:focus,
+.professional-publish-page textarea:focus {
+    border-color: var(--publish-accent);
+
+    background: #fff;
+
+    box-shadow: 0 0 0 4px rgba(var(--publish-rgb), .12);
+
+    outline: none;
+}
+
+.professional-publish-page input::placeholder,
+.professional-publish-page textarea::placeholder {
+    color: #98a2b3;
+    opacity: 1;
+}
+
+.professional-publish-page input:disabled,
+.professional-publish-page select:disabled,
+.professional-publish-page textarea:disabled {
+    background: #f2f4f7;
+    color: #98a2b3;
+    cursor: not-allowed;
+}
+
+/* Erreurs de validation */
+
+.professional-publish-page .is-invalid,
+.professional-publish-page input[aria-invalid="true"],
+.professional-publish-page select[aria-invalid="true"],
+.professional-publish-page textarea[aria-invalid="true"] {
+    border-color: #dc2626;
+}
+
+.professional-publish-page .text-danger {
+    display: block;
+
+    margin-top: 6px;
+
+    color: #dc2626 !important;
+
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+.professional-publish-page .errorlist {
+    margin: 7px 0 0;
+    padding-left: 18px;
+
+    color: #dc2626;
+
+    font-size: .83rem;
+}
+
+/* ==========================================================
+   CASES À COCHER
+========================================================== */
+
+.professional-publish-page .form-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    min-height: 48px;
+
+    padding: 12px 14px !important;
+
+    border: 1px solid #e1e6ee !important;
+    border-radius: 11px !important;
+
+    background: #fff;
+
+    transition:
+        background-color .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.professional-publish-page .form-check:hover {
+    border-color: rgba(var(--publish-rgb), .55) !important;
+    background: var(--publish-tint);
+}
+
+.professional-publish-page .form-check:focus-within {
+    border-color: var(--publish-accent) !important;
+
+    box-shadow: 0 0 0 3px rgba(var(--publish-rgb), .09);
+}
+
+.professional-publish-page .form-check input[type="checkbox"],
+.professional-publish-page .form-check input[type="radio"] {
+    width: 18px;
+    height: 18px;
+
+    flex: 0 0 18px;
+
+    margin: 0;
+
+    accent-color: var(--publish-accent);
+
+    cursor: pointer;
+}
+
+.professional-publish-page .form-check label {
+    margin: 0;
+
+    color: #344054;
+
+    font-size: .88rem;
+    font-weight: 550;
+
+    cursor: pointer;
+}
+
+/* ==========================================================
+   CARTES DES TYPES DE CHAMBRES
+========================================================== */
+
+.room-card {
+    position: relative;
+
+    padding: clamp(20px, 3.5vw, 32px) !important;
+    margin-bottom: 25px !important;
+
+    border: 1px solid #e0e6ee !important;
+    border-radius: 18px !important;
+
+    background: linear-gradient(180deg, #fff, #fcfdff);
+
+    box-shadow: 0 4px 12px rgba(16, 24, 40, .025);
+
+    transition:
+        border-color .25s ease,
+        box-shadow .25s ease;
+}
+
+.room-card:hover {
+    border-color: #cfd7e3 !important;
+
+    box-shadow: 0 10px 25px rgba(16, 24, 40, .055);
+}
+
+.room-card:focus-within {
+    border-color: rgba(var(--publish-rgb), .65) !important;
+
+    box-shadow:
+        0 0 0 3px rgba(var(--publish-rgb), .07),
+        0 10px 25px rgba(16, 24, 40, .04);
+}
+
+.room-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding-bottom: 19px;
+    margin-bottom: 24px;
+
+    border-bottom: 1px solid #e9edf3;
+}
+
+.room-card-heading h3 {
+    display: flex;
+    align-items: center;
+
+    margin: 0;
+
+    color: #182230;
+
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+.room-number {
+    display: inline-grid;
+
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    margin-right: 12px;
+
+    place-items: center;
+
+    border: 1px solid rgba(var(--publish-rgb), .15);
+    border-radius: 12px;
+
+    background: var(--publish-tint);
+    color: var(--publish-accent-dark);
+
+    font-size: .98rem;
+    font-weight: 850;
+}
+
+/* Bouton Retirer */
+
+.room-card-heading [data-remove-room] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 38px;
+
+    padding: 8px 13px;
+
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+
+    background: #fff7f7;
+    color: #b91c1c;
+
+    font-size: .83rem;
+    font-weight: 700;
+
+    transition:
+        background-color .2s ease,
+        color .2s ease,
+        border-color .2s ease;
+}
+
+.room-card-heading [data-remove-room]:hover {
+    border-color: #b91c1c;
+    background: #b91c1c;
+    color: #fff;
+}
+
+.room-card-heading [data-remove-room]:focus-visible {
+    outline: 3px solid rgba(185, 28, 28, .2);
+    outline-offset: 2px;
+}
+
+.room-card .row {
+    --bs-gutter-x: 18px;
+    --bs-gutter-y: 20px;
+}
+
+.room-card label {
+    color: #344054;
+    font-size: .86rem;
+    font-weight: 700;
+}
+
+.room-card input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.room-card select,
+.room-card textarea {
+    min-height: 46px;
+    border-radius: 10px;
+    font-size: .91rem;
+}
+
+.room-card textarea {
+    min-height: 100px;
+}
+
+/* ==========================================================
+   ÉQUIPEMENTS DES CHAMBRES
+========================================================== */
+
+.room-card .form-check.border {
+    display: flex;
+    align-items: center;
+
+    min-height: 48px;
+
+    padding: 11px 13px !important;
+
+    border: 1px solid #e1e6ee !important;
+    border-radius: 10px !important;
+
+    background: #fff;
+
+    transition:
+        border-color .2s ease,
+        background-color .2s ease,
+        transform .2s ease;
+}
+
+.room-card .form-check.border:hover {
+    border-color: rgba(var(--publish-rgb), .5) !important;
+
+    background: var(--publish-tint);
+
+    transform: translateY(-1px);
+}
+
+.room-card .form-check.border:has(input:checked) {
+    border-color: rgba(var(--publish-rgb), .65) !important;
+    background: var(--publish-tint);
+}
+
+.room-card .form-check.border input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+
+    flex: 0 0 17px;
+
+    margin: 0;
+
+    accent-color: var(--publish-accent);
+
+    cursor: pointer;
+}
+
+.room-card .form-check.border label {
+    margin: 0;
+
+    color: #344054;
+
+    font-size: .83rem;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+/* ==========================================================
+   SECTIONS PHOTOS ET VIDÉOS
+========================================================== */
+
+.room-media-section {
+    padding-top: 27px;
+    margin-top: 30px;
+
+    border-top: 1px solid #e8edf3;
+}
+
+.room-media-heading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    margin: 0 0 7px;
+
+    color: #182230;
+
+    font-size: 1.03rem;
+    font-weight: 800;
+}
+
+.room-media-help {
+    margin: 0 0 18px;
+
+    color: #667085;
+
+    font-size: .87rem;
+    line-height: 1.7;
+}
+
+.media-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.media-form-card {
+    min-width: 0;
+
+    padding: 17px;
+
+    border: 1px dashed #c8d2df;
+    border-radius: 14px;
+
+    background: #f8fafc;
+
+    transition:
+        border-color .2s ease,
+        background-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.media-form-card:hover {
+    border-color: var(--publish-accent);
+    background: var(--publish-tint);
+}
+
+.media-form-card:focus-within {
+    border-color: var(--publish-accent);
+
+    box-shadow: 0 0 0 3px rgba(var(--publish-rgb), .08);
+}
+
+.media-form-card label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #344054;
+
+    font-size: .83rem;
+    font-weight: 700;
+}
+
+.media-form-card input[type="file"] {
+    display: block;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 8px;
+
+    border: 1px solid #d8dee8;
+    border-radius: 9px;
+
+    background: #fff;
+    color: #475467;
+
+    font-family: inherit;
+    font-size: .78rem;
+}
+
+.media-form-card input[type="file"]::file-selector-button {
+    margin-right: 9px;
+    padding: 8px 10px;
+
+    border: 0;
+    border-radius: 7px;
+
+    background: var(--publish-accent-light);
+    color: var(--publish-accent-dark);
+
+    font-size: .78rem;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        background-color .2s ease,
+        color .2s ease;
+}
+
+.media-form-card input[type="file"]::file-selector-button:hover {
+    background: var(--publish-accent);
+    color: #fff;
+}
+
+.media-form-card .media-detail-fields {
+    margin-top: 14px;
+}
+
+.media-form-card .media-detail-fields input,
+.media-form-card .media-detail-fields textarea {
+    min-height: 42px;
+
+    padding: 10px 11px;
+
+    border-radius: 9px;
+
+    font-size: .85rem;
+}
+
+.media-form-card .media-detail-fields textarea {
+    min-height: 85px;
+}
+
+.media-form-card .text-danger {
+    overflow-wrap: anywhere;
+    font-size: .78rem;
+}
+
+/* ==========================================================
+   BOUTON AJOUTER UNE CHAMBRE
+========================================================== */
+
+.professional-publish-page .add-room-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    width: 100%;
+    min-height: 55px;
+
+    padding: 14px 18px;
+    margin-top: 24px;
+
+    border: 2px dashed rgba(var(--publish-rgb), .55) !important;
+    border-radius: 13px !important;
+
+    background: var(--publish-tint) !important;
+    color: var(--publish-accent-dark) !important;
+
+    font-size: .94rem;
+    font-weight: 800;
+
+    transition:
+        border-color .2s ease,
+        background-color .2s ease,
+        color .2s ease,
+        transform .2s ease;
+}
+
+.professional-publish-page .add-room-button:hover {
+    border-color: var(--publish-accent) !important;
+
+    background: var(--publish-accent) !important;
+    color: #fff !important;
+
+    transform: translateY(-1px);
+}
+
+.professional-publish-page .add-room-button:active {
+    transform: translateY(0);
+}
+
+/* ==========================================================
+   ALERTES ET MESSAGES
+========================================================== */
+
+.professional-publish-page .alert {
+    padding: 15px 18px;
+
+    border-radius: 12px;
+
+    font-size: .91rem;
+    line-height: 1.6;
+}
+
+.professional-publish-page .alert-danger {
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.professional-publish-page .alert-success {
+    border: 1px solid #a7f3d0;
+    background: #ecfdf5;
+    color: #065f46;
+}
+
+.professional-publish-page .alert-info {
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+/* ==========================================================
+   BOUTONS PRINCIPAUX
+========================================================== */
+
+.publish-actions {
+    position: sticky;
+    z-index: 10;
+    bottom: 14px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 14px;
+
+    border: 1px solid rgba(208, 213, 221, .8);
+    border-radius: 16px;
+
+    background: rgba(255, 255, 255, .95);
+
+    box-shadow: 0 8px 28px rgba(16, 24, 40, .12);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.professional-publish-page .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 49px;
+
+    padding: 12px 20px;
+
+    border-radius: 11px;
+
+    font-family: inherit;
+    font-size: .92rem;
+    font-weight: 750;
+
+    text-decoration: none;
+
+    transition:
+        background-color .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
+}
+
+.professional-publish-page .btn-primary {
+    border: 1px solid var(--publish-accent) !important;
+
+    background: linear-gradient(
+        135deg,
+        var(--publish-accent),
+        var(--publish-accent-dark)
+    ) !important;
+
+    color: #fff !important;
+
+    box-shadow: 0 5px 12px rgba(var(--publish-rgb), .18);
+}
+
+.professional-publish-page .btn-primary:hover {
+    border-color: var(--publish-accent-dark) !important;
+
+    color: #fff !important;
+
+    box-shadow: 0 8px 18px rgba(var(--publish-rgb), .25);
+
+    transform: translateY(-1px);
+}
+
+.professional-publish-page .btn-primary:focus-visible {
+    outline: 3px solid rgba(var(--publish-rgb), .25);
+    outline-offset: 3px;
+}
+
+.professional-publish-page .btn-secondary {
+    border: 1px solid #d0d5dd !important;
+
+    background: #fff !important;
+    color: #344054 !important;
+}
+
+.professional-publish-page .btn-secondary:hover {
+    border-color: #98a2b3 !important;
+
+    background: #f2f4f7 !important;
+    color: #182230 !important;
+}
+
+/* ==========================================================
+   TABLETTES
+========================================================== */
+
+@media (max-width: 991px) {
+    .professional-publish-page {
+        max-width: 100%;
+        padding: 28px 18px 50px;
+    }
+
+    .professional-publish-header {
+        padding: 35px;
+        border-radius: 20px;
+    }
+
+    .professional-publish-page .card-body {
+        padding: 25px !important;
+    }
+
+    .media-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 13px;
+    }
+
+    .room-card .row {
+        --bs-gutter-x: 15px;
+        --bs-gutter-y: 17px;
+    }
+}
+
+/* ==========================================================
+   TÉLÉPHONES
+========================================================== */
+
+@media (max-width: 767px) {
+    .professional-publish-page {
+        padding: 18px 12px 35px;
+        font-size: 14px;
+    }
+
+    .professional-publish-header {
+        padding: 27px 21px;
+        margin-bottom: 20px;
+        border-radius: 17px;
+    }
+
+    .professional-publish-header h1 {
+        margin: 12px 0 10px;
+        font-size: 1.8rem;
+        line-height: 1.25;
+    }
+
+    .professional-publish-header p {
+        font-size: .92rem;
+        line-height: 1.7;
+    }
+
+    .publish-eyebrow {
+        padding: 6px 10px;
+        font-size: .72rem;
+    }
+
+    .publication-steps {
+        gap: 8px;
+        margin-top: 21px;
+    }
+
+    .publication-step {
+        gap: 7px;
+        padding: 8px 10px;
+        font-size: .78rem;
+    }
+
+    .publication-step strong {
+        width: 22px;
+        height: 22px;
+    }
+
+    .professional-publish-page .card {
+        margin-bottom: 19px !important;
+        border-radius: 15px !important;
+    }
+
+    .professional-publish-page .card-body {
+        padding: 20px 16px !important;
+    }
+
+    .professional-publish-page .card-body > h2 {
+        gap: 8px;
+        font-size: 1.08rem;
+    }
+
+    .professional-publish-page .card-body > h2 + p {
+        margin-bottom: 20px !important;
+        font-size: .86rem;
+    }
+
+    .professional-publish-page .row {
+        --bs-gutter-x: 12px;
+        --bs-gutter-y: 16px;
+    }
+
+    .professional-publish-page label {
+        margin-bottom: 7px;
+        font-size: .85rem;
+    }
+
+    .professional-publish-page input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .professional-publish-page select,
+    .professional-publish-page textarea {
+        min-height: 46px;
+        padding: 11px 12px;
+        border-radius: 10px;
+        font-size: .9rem;
+    }
+
+    .professional-publish-page textarea {
+        min-height: 105px;
+    }
+
+    .room-card {
+        padding: 18px 14px !important;
+        margin-bottom: 20px !important;
+        border-radius: 14px !important;
+    }
+
+    .room-card-heading {
+        gap: 8px;
+        padding-bottom: 15px;
+        margin-bottom: 19px;
+    }
+
+    .room-card-heading h3 {
+        font-size: .96rem;
+    }
+
+    .room-number {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+        margin-right: 8px;
+        border-radius: 9px;
+        font-size: .85rem;
+    }
+
+    .room-card-heading [data-remove-room] {
+        min-height: 34px;
+        padding: 6px 9px;
+        font-size: .75rem;
+    }
+
+    .room-card .row {
+        --bs-gutter-x: 11px;
+        --bs-gutter-y: 15px;
+    }
+
+    .room-card label {
+        font-size: .81rem;
+    }
+
+    .room-card input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    .room-card select,
+    .room-card textarea {
+        min-height: 44px;
+        padding: 10px 11px;
+        font-size: .86rem;
+    }
+
+    .room-card .form-check.border {
+        min-height: 45px;
+        padding: 10px !important;
+    }
+
+    .room-card .form-check.border label {
+        font-size: .8rem;
+    }
+
+    .room-media-section {
+        padding-top: 21px;
+        margin-top: 23px;
+    }
+
+    .room-media-heading {
+        font-size: .96rem;
+    }
+
+    .room-media-help {
+        margin-bottom: 14px;
+        font-size: .82rem;
+    }
+
+    .media-form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .media-form-card {
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .media-form-card label {
+        font-size: .82rem;
+    }
+
+    .media-form-card input[type="file"] {
+        font-size: .76rem;
+    }
+
+    .professional-publish-page .add-room-button {
+        min-height: 51px;
+        padding: 12px;
+        font-size: .85rem;
+    }
+
+    .publish-actions {
+        position: static;
+
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        padding: 0;
+        margin-top: 22px !important;
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+        box-shadow: none;
+
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
+    .professional-publish-page .publish-actions .btn {
+        width: 100%;
+        min-height: 49px;
+        flex: auto !important;
+        border-radius: 10px;
+        font-size: .9rem;
+    }
+}
+
+/* ==========================================================
+   PETITS TÉLÉPHONES
+========================================================== */
+
+@media (max-width: 380px) {
+    .professional-publish-page {
+        padding-right: 9px;
+        padding-left: 9px;
+    }
+
+    .professional-publish-header {
+        padding: 23px 16px;
+    }
+
+    .professional-publish-header h1 {
+        font-size: 1.55rem;
+    }
+
+    .publication-step {
+        padding: 7px 9px;
+        font-size: .72rem;
+    }
+
+    .professional-publish-page .card-body {
+        padding: 16px 12px !important;
+    }
+
+    .room-card {
+        padding: 15px 11px !important;
+    }
+
+    .room-card-heading h3 {
+        font-size: .87rem;
+    }
+
+    .room-card-heading [data-remove-room] {
+        padding: 6px 7px;
+        font-size: .7rem;
+    }
+
+    .room-number {
+        width: 29px;
+        height: 29px;
+        flex-basis: 29px;
+    }
+}
+
+/* ==========================================================
+   ACCESSIBILITÉ
+========================================================== */
+
+.professional-publish-page button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .professional-publish-page *,
+    .professional-publish-page *::before,
+    .professional-publish-page *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
+
+
+/* ==========================================================
+   ASSISTANT DE PUBLICATION EN 4 ÉTAPES
+========================================================== */
+.publish-progress {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 28px;
+}
+.publish-progress-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,.24);
+    border-radius: 13px;
+    background: rgba(255,255,255,.10);
+    color: rgba(255,255,255,.78);
+    font-size: .82rem;
+    font-weight: 650;
+    transition: background .2s ease, border-color .2s ease;
+}
+.publish-progress-number {
+    display: inline-grid;
+    place-items: center;
+    width: 29px;
+    height: 29px;
+    flex: 0 0 29px;
+    border: 1px solid rgba(255,255,255,.45);
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 800;
+}
+.publish-progress-item.is-active,
+.publish-progress-item.is-complete {
+    border-color: rgba(255,255,255,.65);
+    background: rgba(255,255,255,.20);
+    color: #fff;
+}
+.publish-progress-item.is-active .publish-progress-number,
+.publish-progress-item.is-complete .publish-progress-number {
+    border-color: #fff;
+    background: #fff;
+    color: var(--publish-accent-dark);
+}
+.wizard-heading {
+    margin-bottom: 22px;
+}
+.wizard-heading .wizard-kicker {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--publish-accent-dark);
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.wizard-heading h2 {
+    margin: 0 0 7px;
+    color: #182230;
+    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+    font-weight: 850;
+}
+.wizard-heading p {
+    margin: 0;
+    color: #667085;
+    line-height: 1.7;
+}
+.wizard-panel[hidden],
+[data-wizard-review][hidden],
+.professional-publish-page .row[hidden],
+.room-media-section[hidden] {
+    display: none !important;
+}
+.publish-actions {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px;
+    margin-top: 20px;
+    border: 1px solid #e3e8ef;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(16,24,40,.07);
+}
+.publish-actions .btn {
+    min-width: 145px;
+}
+.publish-actions .wizard-spacer {
+    flex: 1;
+}
+.wizard-review-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 20px 0 0;
+}
+.wizard-review-item {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #e6eaf0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+.wizard-review-item span {
+    display: block;
+    margin-bottom: 5px;
+    color: #667085;
+    font-size: .79rem;
+    font-weight: 700;
+}
+.wizard-review-item strong {
+    display: block;
+    color: #182230;
+    font-size: .95rem;
+    overflow-wrap: anywhere;
+}
+.wizard-review-note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid rgba(var(--publish-rgb), .22);
+    border-radius: 12px;
+    background: var(--publish-tint);
+    color: #344054;
+    font-size: .9rem;
+    line-height: 1.7;
+}
+.wizard-validation-message {
+    display: none;
+    margin-bottom: 18px;
+    padding: 12px 15px;
+    border: 1px solid #fecaca;
+    border-radius: 11px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: .88rem;
+}
+.wizard-validation-message.is-visible { display: block; }
+
+@media (max-width: 767px) {
+    .publish-progress {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 20px;
+    }
+    .publish-progress-item {
+        padding: 8px 9px;
+        border-radius: 10px;
+        font-size: .76rem;
+    }
+    .publish-progress-number {
+        width: 25px;
+        height: 25px;
+        flex-basis: 25px;
+    }
+    .publish-actions {
+        position: static;
+        flex-wrap: wrap;
+        padding: 10px;
+        gap: 9px;
+    }
+    .publish-actions .btn {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 0;
+    }
+    .publish-actions .wizard-spacer { display: none; }
+    .wizard-review-list { grid-template-columns: 1fr; gap: 9px; }
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="professional-publish-page {% if account_type == 'residence' %}residence{% else %}hotel{% endif %}" id="publication-wizard">
+  <div class="row justify-content-center">
+    <div class="col-12">
+      <div class="professional-publish-header">
+        <span class="publish-eyebrow">{% if account_type == 'hotel' %}🏨 {% translate "Espace hôtelier" %}{% else %}🏢 {% translate "Espace résidence" %}{% endif %}</span>
+        <h1>{% translate "Publier mon établissement" %}</h1>
+        <p class="mb-0">
+          {% if account_type == 'hotel' %}
+            {% translate "Présentez votre établissement, détaillez vos chambres et vérifiez votre annonce avant publication." %}
+          {% else %}
+            {% translate "Présentez votre résidence, détaillez vos logements et vérifiez votre annonce avant publication." %}
+          {% endif %}
+        </p>
+        <div class="publish-progress" aria-label="Progression de la publication">
+          <div class="publish-progress-item is-active" data-progress-step="1" aria-current="step"><span class="publish-progress-number">1</span><span>{% translate "Établissement" %}</span></div>
+          <div class="publish-progress-item" data-progress-step="2"><span class="publish-progress-number">2</span><span>{% translate "Chambres" %}</span></div>
+          <div class="publish-progress-item" data-progress-step="3"><span class="publish-progress-number">3</span><span>{% translate "Photos & vidéos" %}</span></div>
+          <div class="publish-progress-item" data-progress-step="4"><span class="publish-progress-number">4</span><span>{% translate "Vérification" %}</span></div>
+        </div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="establishment-publish-form" novalidate>
+        {% csrf_token %}
+        {{ type_formset.management_form }}
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} mb-4">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="wizard-validation-message" id="wizard-validation-message" role="alert">{% translate "Veuillez vérifier les champs obligatoires avant de continuer." %}</div>
+
+        <!-- ÉTAPE 1 : INFORMATIONS DE L'ÉTABLISSEMENT -->
+        <section class="card shadow-sm mb-4 border-0 wizard-panel" data-wizard-panel="1">
+          <div class="card-body p-4">
+            <div class="wizard-heading">
+              <span class="wizard-kicker">{% translate "Étape 1 sur 4" %}</span>
+              <h2>📍 {% translate "Informations de l'établissement" %}</h2>
+              <p>{% translate "Commencez par présenter votre établissement et sa localisation." %}</p>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                {{ etablissement_form.nom.label_tag }}
+                {{ etablissement_form.nom }}
+                {% if etablissement_form.nom.errors %}<div class="text-danger small mt-1">{{ etablissement_form.nom.errors }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ etablissement_form.ville.label_tag }}
+                {{ etablissement_form.ville }}
+                {% if etablissement_form.ville.errors %}<div class="text-danger small mt-1">{{ etablissement_form.ville.errors }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ etablissement_form.commune.label_tag }}
+                {{ etablissement_form.commune }}
+                {% if etablissement_form.commune.errors %}<div class="text-danger small mt-1">{{ etablissement_form.commune.errors }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ etablissement_form.quartier.label_tag }}
+                {{ etablissement_form.quartier }}
+                {% if etablissement_form.quartier.errors %}<div class="text-danger small mt-1">{{ etablissement_form.quartier.errors }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                {{ etablissement_form.description.label_tag }}
+                {{ etablissement_form.description }}
+                {% if etablissement_form.description.errors %}<div class="text-danger small mt-1">{{ etablissement_form.description.errors }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <div class="form-check mt-2">
+                  {{ etablissement_form.eau }}
+                  <label class="form-check-label ms-2" for="{{ etablissement_form.eau.id_for_label }}">{{ etablissement_form.eau.label }}</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-check mt-2">
+                  {{ etablissement_form.electricite }}
+                  <label class="form-check-label ms-2" for="{{ etablissement_form.electricite.id_for_label }}">{{ etablissement_form.electricite.label }}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ÉTAPES 2 ET 3 : LES CARTES RESTENT DANS LE MÊME FORMULAIRE -->
+        <section class="card shadow-sm mb-4 border-0 wizard-panel" data-wizard-panel="2-3" hidden>
+          <div class="card-body p-4">
+            <div class="wizard-heading" id="rooms-step-heading">
+              <span class="wizard-kicker">{% translate "Étape 2 sur 4" %}</span>
+              <h2>🛏️ {% translate "Types de chambres ou logements" %}</h2>
+              <p>{% translate "Renseignez chaque catégorie proposée, son prix, sa capacité et ses équipements." %}</p>
+            </div>
+            <div class="wizard-heading" id="media-step-heading" hidden>
+              <span class="wizard-kicker">{% translate "Étape 3 sur 4" %}</span>
+              <h2>📸 {% translate "Photos et vidéos" %}</h2>
+              <p>{% translate "Ajoutez des médias pour présenter chaque type de chambre ou de logement." %}</p>
+            </div>
+
+            <div id="room-forms">
+              {% for room_form in type_formset %}
+                {% include 'logement/partials/type_chambre_form.html' with room_form=room_form photo_formset=room_form.photo_formset video_formset=room_form.video_formset account_type=account_type room_number=forloop.counter %}
+              {% endfor %}
+            </div>
+
+            <template id="empty-room-form">
+              {% include 'logement/partials/type_chambre_form.html' with room_form=type_formset.empty_form photo_formset=empty_photo_formset video_formset=empty_video_formset account_type=account_type room_number='__prefix__' %}
+            </template>
+            <button type="button" class="btn btn-outline-primary add-room-button" id="add-room">
+              <span aria-hidden="true">＋</span> {% translate "Ajouter un type de chambre" %}
+            </button>
+            <p class="text-muted small mt-2 mb-0" id="room-count" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <!-- ÉTAPE 4 : RÉCAPITULATIF -->
+        <section class="card shadow-sm mb-4 border-0 wizard-panel" data-wizard-panel="4" hidden>
+          <div class="card-body p-4">
+            <div class="wizard-heading">
+              <span class="wizard-kicker">{% translate "Étape 4 sur 4" %}</span>
+              <h2>✅ {% translate "Vérifiez votre annonce" %}</h2>
+              <p>{% translate "Relisez ces informations avant de publier. Vous pouvez revenir aux étapes précédentes pour corriger un détail." %}</p>
+            </div>
+            <div class="wizard-review-list">
+              <div class="wizard-review-item"><span>{% translate "Nom de l'établissement" %}</span><strong data-review="nom">—</strong></div>
+              <div class="wizard-review-item"><span>{% translate "Ville" %}</span><strong data-review="ville">—</strong></div>
+              <div class="wizard-review-item"><span>{% translate "Commune" %}</span><strong data-review="commune">—</strong></div>
+              <div class="wizard-review-item"><span>{% translate "Quartier" %}</span><strong data-review="quartier">—</strong></div>
+              <div class="wizard-review-item"><span>{% translate "Types renseignés" %}</span><strong data-review="rooms">0</strong></div>
+              <div class="wizard-review-item"><span>{% translate "Photos sélectionnées" %}</span><strong data-review="photos">0</strong></div>
+              <div class="wizard-review-item"><span>{% translate "Vidéos sélectionnées" %}</span><strong data-review="videos">0</strong></div>
+            </div>
+            <div class="wizard-review-note">{% translate "La publication sera enregistrée après validation par le serveur. Assurez-vous que les informations et les médias sont corrects." %}</div>
+          </div>
+        </section>
+
+        <div class="publish-actions" id="publish-wizard-actions">
+          <a href="{% url 'logement:home' %}" class="btn btn-secondary" id="cancel-publish">{% translate "Annuler" %}</a>
+          <button type="button" class="btn btn-secondary" id="wizard-back" hidden>← {% translate "Retour" %}</button>
+          <span class="wizard-spacer"></span>
+          <button type="button" class="btn btn-primary" id="wizard-next">{% translate "Continuer" %} →</button>
+          <button type="submit" class="btn btn-primary" id="wizard-submit" hidden>{% translate "Publier l'établissement" %} ✓</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const root = document.getElementById('publication-wizard');
+  const form = document.getElementById('establishment-publish-form');
+  const container = document.getElementById('room-forms');
+  const addButton = document.getElementById('add-room');
+  const template = document.getElementById('empty-room-form');
+  const totalForms = document.getElementById('id_types-TOTAL_FORMS');
+  const countLabel = document.getElementById('room-count');
+  const nextButton = document.getElementById('wizard-next');
+  const backButton = document.getElementById('wizard-back');
+  const submitButton = document.getElementById('wizard-submit');
+  const cancelButton = document.getElementById('cancel-publish');
+  const validationMessage = document.getElementById('wizard-validation-message');
+  const roomsHeading = document.getElementById('rooms-step-heading');
+  const mediaHeading = document.getElementById('media-step-heading');
+  const reviewPanel = document.querySelector('[data-wizard-panel="4"]');
+  let currentStep = 1;
+
+  if (!root || !form || !container || !addButton || !template || !totalForms) return;
+
+  function roomCards() {
+    return Array.from(container.querySelectorAll('.room-card')).filter(card => {
+      const del = card.querySelector('input[name$="-DELETE"]');
+      return !(del && del.checked);
+    });
+  }
+
+  function updateRoomCount() {
+    const cards = roomCards();
+    const completed = cards.filter(card => {
+      const title = card.querySelector('input[name$="-titre"]');
+      return title && title.value.trim();
+    }).length;
+    const label = completed === 1
+      ? '{% translate "type de chambre renseigné" %}'
+      : '{% translate "types de chambre renseignés" %}';
+    if (countLabel) countLabel.textContent = `${completed} ${label}`;
+  }
+
+  function bindRemoveButton(card) {
+    const removeButton = card.querySelector('[data-remove-room]');
+    if (!removeButton || removeButton.dataset.bound === '1') return;
+    removeButton.dataset.bound = '1';
+    removeButton.addEventListener('click', function () {
+      const deleteInput = card.querySelector('input[name$="-DELETE"]');
+      if (deleteInput) deleteInput.checked = true;
+      card.hidden = true;
+      updateRoomCount();
+      updateReview();
+    });
+  }
+
+  function toggleRoomFieldsForStep(step) {
+    roomCards().forEach(card => {
+      const fields = card.querySelector('.row');
+      const mediaSections = card.querySelectorAll('.room-media-section');
+      const removeButton = card.querySelector('[data-remove-room]');
+      if (fields) fields.hidden = (step === 3);
+      mediaSections.forEach(section => { section.hidden = (step !== 3); });
+      if (removeButton) removeButton.hidden = (step === 3);
+      card.hidden = false;
+    });
+    if (addButton) addButton.hidden = (step !== 2);
+    if (countLabel) countLabel.hidden = (step !== 2);
+    if (roomsHeading) roomsHeading.hidden = (step !== 2);
+    if (mediaHeading) mediaHeading.hidden = (step !== 3);
+  }
+
+  function valueOf(name) {
+    const field = form.querySelector(`[name="${name}"]`);
+    if (!field) return '—';
+    const value = (field.value || '').trim();
+    return value || '—';
+  }
+
+  function updateReview() {
+    const setReview = (key, value) => {
+      const node = root.querySelector(`[data-review="${key}"]`);
+      if (node) node.textContent = value;
+    };
+    setReview('nom', valueOf('nom'));
+    setReview('ville', valueOf('ville'));
+    setReview('commune', valueOf('commune'));
+    setReview('quartier', valueOf('quartier'));
+    setReview('rooms', String(roomCards().filter(card => {
+      const title = card.querySelector('input[name$="-titre"]');
+      return title && title.value.trim();
+    }).length));
+    setReview('photos', String(Array.from(form.querySelectorAll('input[type="file"][name$="-image"]')).filter(input => input.files && input.files.length).length));
+    setReview('videos', String(Array.from(form.querySelectorAll('input[type="file"][name$="-video"]')).filter(input => input.files && input.files.length).length));
+  }
+
+  function showStep(step, shouldScroll = true) {
+    currentStep = Math.max(1, Math.min(4, step));
+    root.querySelectorAll('[data-wizard-panel]').forEach(panel => {
+      const key = panel.getAttribute('data-wizard-panel');
+      if (key === '2-3') panel.hidden = !(currentStep === 2 || currentStep === 3);
+      else panel.hidden = Number(key) !== currentStep;
+    });
+    toggleRoomFieldsForStep(currentStep);
+
+    root.querySelectorAll('[data-progress-step]').forEach(item => {
+      const n = Number(item.getAttribute('data-progress-step'));
+      item.classList.toggle('is-active', n === currentStep);
+      item.classList.toggle('is-complete', n < currentStep);
+      if (n === currentStep) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+      const number = item.querySelector('.publish-progress-number');
+      if (number) number.textContent = n < currentStep ? '✓' : String(n);
+    });
+
+    backButton.hidden = currentStep === 1;
+    nextButton.hidden = currentStep === 4;
+    submitButton.hidden = currentStep !== 4;
+    cancelButton.hidden = currentStep !== 1;
+    if (currentStep === 4) updateReview();
+    if (validationMessage) validationMessage.classList.remove('is-visible');
+    if (shouldScroll) root.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+
+  function stepHasErrors(step) {
+    const panel = root.querySelector(`[data-wizard-panel="${step}"]`);
+    if (panel && panel.querySelector('.text-danger, .errorlist, .is-invalid')) return true;
+    if (step === 2 || step === 3) {
+      const shared = root.querySelector('[data-wizard-panel="2-3"]');
+      if (!shared) return false;
+      const errors = Array.from(shared.querySelectorAll('.text-danger, .errorlist, .is-invalid'));
+      return errors.some(error => {
+        const media = error.closest('.room-media-section');
+        return step === 3 ? Boolean(media) : !media;
+      });
+    }
+    return false;
+  }
+
+  function validateVisibleStep() {
+    const active = currentStep === 1
+      ? root.querySelector('[data-wizard-panel="1"]')
+      : root.querySelector('[data-wizard-panel="2-3"]');
+    if (currentStep === 4 || !active) return true;
+    const fields = Array.from(active.querySelectorAll('input, select, textarea')).filter(field => {
+      if (field.type === 'hidden' || field.disabled) return false;
+      if (field.name && field.name.endsWith('-DELETE')) return false;
+      if (field.closest('[hidden]')) return false;
+      if (currentStep === 2 && field.closest('.room-media-section')) return false;
+      if (currentStep === 3 && !field.closest('.room-media-section') && !field.name.includes('TOTAL_FORMS') && !field.name.includes('INITIAL_FORMS') && !field.name.includes('MIN_NUM_FORMS') && !field.name.includes('MAX_NUM_FORMS')) return false;
+      return true;
+    });
+    for (const field of fields) {
+      if (typeof field.checkValidity === 'function' && !field.checkValidity()) {
+        field.reportValidity();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function goNext() {
+    if (!validateVisibleStep()) {
+      if (validationMessage) validationMessage.classList.add('is-visible');
+      return;
+    }
+    if (currentStep === 2 && roomCards().filter(card => {
+      const title = card.querySelector('input[name$="-titre"]');
+      return title && title.value.trim();
+    }).length === 0) {
+      if (validationMessage) {
+        validationMessage.textContent = '{% translate "Ajoutez au moins un type de chambre et renseignez son titre avant de continuer." %}';
+        validationMessage.classList.add('is-visible');
+      }
+      return;
+    }
+    showStep(currentStep + 1);
+  }
+
+  container.querySelectorAll('.room-card').forEach(card => {
+    bindRemoveButton(card);
+    const deleteInput = card.querySelector('input[name$="-DELETE"]');
+    if (deleteInput && deleteInput.checked) card.hidden = true;
+  });
+  container.addEventListener('input', function () { updateRoomCount(); updateReview(); });
+  container.addEventListener('change', updateReview);
+  form.addEventListener('change', updateReview);
+
+  addButton.addEventListener('click', function () {
+    const formIndex = Number.parseInt(totalForms.value, 10);
+    const markup = template.innerHTML.split('__prefix__').join(String(formIndex));
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = markup.trim();
+    const card = wrapper.firstElementChild;
+    if (!card) return;
+    const number = card.querySelector('[data-room-number]');
+    if (number) number.textContent = String(formIndex + 1);
+    container.appendChild(card);
+    totalForms.value = String(formIndex + 1);
+    bindRemoveButton(card);
+    const titleField = card.querySelector(`[name="types-${formIndex}-titre"]`);
+    if (titleField) titleField.focus();
+    toggleRoomFieldsForStep(currentStep);
+    updateRoomCount();
+    updateReview();
+  });
+
+  nextButton.addEventListener('click', goNext);
+  backButton.addEventListener('click', function () { showStep(currentStep - 1); });
+
+  // Après une réponse invalide du serveur, afficher l'étape qui contient les erreurs.
+  let initialStep = 1;
+  if (stepHasErrors(3)) initialStep = 3;
+  else if (stepHasErrors(2)) initialStep = 2;
+  else if (stepHasErrors(1)) initialStep = 1;
+  updateRoomCount();
+  updateReview();
+  showStep(initialStep, false);
+});
+</script>
+{% endblock %}

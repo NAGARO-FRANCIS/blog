@@ -374,6 +374,16 @@
     gap: 8px;
   }
 
+  .rb-payment-note {
+    padding: 0.75rem 1rem;
+    background: #F4F7EF;
+    border: 1px solid #DCE7D2;
+    border-radius: 10px;
+    color: #43533A;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
   .rb-btn-primary {
     width: 100%;
     padding: 0.9rem 1.5rem;
@@ -493,8 +503,8 @@
           {% if logement.account_type == 'hotel' %}
             <div class="rb-price-row">
               <span class="rb-price-label">{% translate "Par jour" %}</span>
-              <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_journalier|default_if_none:'' }}">
-                {% if logement.prix_journalier %}{{ logement.prix_journalier|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA / {% translate "jour" %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
+              <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_reservation_par_nuit|default_if_none:'' }}">
+                {% if logement.prix_reservation_par_nuit %}{{ logement.prix_reservation_par_nuit|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA / {% translate "nuit" %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
               </span>
             </div>
             {% if logement.frais_nettoyage %}
@@ -506,8 +516,8 @@
           {% elif logement.account_type == 'residence' %}
             <div class="rb-price-row">
               <span class="rb-price-label">{% translate "Par jour" %}</span>
-              <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_journalier|default_if_none:'' }}">
-                {% if logement.prix_journalier %}{{ logement.prix_journalier|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA / {% translate "jour" %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
+              <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_reservation_par_nuit|default_if_none:'' }}">
+                {% if logement.prix_reservation_par_nuit %}{{ logement.prix_reservation_par_nuit|floatformat:0 }} <small style="font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;">FCFA / {% translate "nuit" %}{% if logement.reservation_uses_monthly_rate %} ({% translate "tarif mensuel proratisé" %}){% endif %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
               </span>
             </div>
             {% if logement.caution_mois %}
@@ -535,12 +545,16 @@
           <div class="rb-form-header-icon">📋</div>
           <div>
             <h1 class="rb-form-title">{% translate "Formulaire de réservation" %}</h1>
-            <p class="rb-form-subtitle">{% translate "Remplissez les informations ci-dessous pour continuer" %}</p>
+            <p class="rb-form-subtitle">{% translate "Remplissez les informations ci-dessous pour confirmer votre réservation" %}</p>
           </div>
         </div>
 
         <form method="post">
           {% csrf_token %}
+
+          {% if form.category_message %}
+          <div class="rb-error-global">{{ form.category_message }}</div>
+          {% endif %}
 
           {% if form.categorie_logement %}
           <section class="rb-section">
@@ -640,8 +654,11 @@
           {% endif %}
 
           <div class="rb-actions">
+            <div class="rb-payment-note">
+              💵 {% translate "Réservez en ligne et payez directement à l'hôtel ou à la résidence à votre arrivée. Aucun paiement ne vous sera demandé maintenant." %}
+            </div>
             <button type="submit" class="rb-btn-primary">
-              {% translate "Continuer vers le paiement" %}
+              {% translate "Confirmer la réservation" %}
               <span class="arrow">→</span>
             </button>
             <a href="{% url 'logement:detail_logement' logement.id %}" class="rb-btn-secondary">
@@ -650,7 +667,8 @@
           </div>
 
           <div class="rb-trust">
-            <span class="rb-trust-item"><span>🔒</span> {% translate "Paiement sécurisé" %}</span>
+            <span class="rb-trust-item"><span>🔒</span> {% translate "Réservation sécurisée" %}</span>
+            <span class="rb-trust-item"><span>💵</span> {% translate "Paiement à l'arrivée" %}</span>
             <span class="rb-trust-item"><span>✓</span> {% translate "Annulation flexible" %}</span>
             <span class="rb-trust-item"><span>📧</span> {% translate "Confirmation immédiate" %}</span>
           </div>
@@ -680,7 +698,9 @@
 
       priceElement.textContent = Number(category.price).toLocaleString("fr-FR");
       const suffix = document.createElement("small");
-      suffix.textContent = " FCFA / jour";
+      suffix.textContent = category.uses_monthly_rate
+        ? " FCFA / nuit (tarif mensuel proratisé)"
+        : " FCFA / nuit";
       suffix.style.cssText = "font-size:0.75rem;font-family:'DM Sans',sans-serif;color:#A09880;";
       priceElement.append(suffix);
       if (titleElement) titleElement.textContent = category.title;

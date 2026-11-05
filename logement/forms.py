@@ -825,10 +825,17 @@ class RechercheLogementForm(forms.Form):
 
 class CategoryLogementChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, logement):
-        return _('%(category)s — %(title)s — %(price)s FCFA / jour') % {
+        price_label = (
+            _('%(price)s FCFA / nuit (tarif mensuel proratisé)')
+            if logement.reservation_uses_monthly_rate
+            else _('%(price)s FCFA / nuit')
+        )
+        return _('%(category)s — %(title)s — %(price_label)s') % {
             'category': logement.get_type_logement_display(),
             'title': logement.titre,
-            'price': logement.prix_journalier,
+            'price_label': price_label % {
+                'price': logement.prix_reservation_par_nuit,
+            },
         }
 
 
@@ -895,6 +902,7 @@ class ReservationForm(LocalizedModelForm):
         super().__init__(*args, **kwargs)
         self.logement = logement
         self.category_prices = {}
+        self.category_message = ''
 
         if logement and logement.etablissement_id:
             categories = Logement.objects.filter(
@@ -905,23 +913,37 @@ class ReservationForm(LocalizedModelForm):
                 available_categories = categories.filter(
                     Q(prix_par_nuit__gt=0)
                     | (Q(account_type='hotel') & Q(prix__gt=0))
+                    | (Q(account_type='residence') & Q(prix_par_mois__gt=0))
                 )
-                self.fields['categorie_logement'] = CategoryLogementChoiceField(
-                    label=_('Catégorie du logement'),
-                    queryset=available_categories,
-                    empty_label=_('Choisissez une catégorie'),
-                    required=True,
-                    widget=forms.Select(attrs={'class': 'form-select'}),
-                )
-                if available_categories.filter(pk=logement.pk).exists():
-                    self.initial['categorie_logement'] = logement.pk
-                self.category_prices = {
-                    str(category.pk): {
-                        'title': category.titre,
-                        'price': str(category.prix_journalier),
+                available_count = available_categories.count()
+                if available_count:
+                    self.fields['categorie_logement'] = CategoryLogementChoiceField(
+                        label=_('Catégorie du logement'),
+                        queryset=available_categories,
+                        empty_label=_('Choisissez une catégorie'),
+                        required=False,
+                        widget=forms.Select(attrs={'class': 'form-select'}),
+                    )
+                    if available_categories.filter(pk=logement.pk).exists():
+                        self.initial['categorie_logement'] = logement.pk
+                    elif available_count == 1:
+                        self.initial['categorie_logement'] = available_categories.values_list(
+                            'pk',
+                            flat=True,
+                        ).get()
+                    self.category_prices = {
+                        str(category.pk): {
+                            'title': category.titre,
+                            'price': str(category.prix_reservation_par_nuit),
+                            'uses_monthly_rate': category.reservation_uses_monthly_rate,
+                        }
+                        for category in available_categories
                     }
-                    for category in available_categories
-                }
+                elif categories.exists():
+                    self.category_message = _(
+                        "Aucune catégorie de cet établissement n’a de tarif journalier "
+                        "renseigné. Veuillez contacter l’établissement avant de réserver."
+                    )
         
         # Si utilisateur connecté, préremplir les champs
         if self.initial:
@@ -944,8 +966,8 @@ class ReservationForm(LocalizedModelForm):
             )
 
         if logement_reserve and (
-            logement_reserve.prix_journalier is None
-            or logement_reserve.prix_journalier <= 0
+            logement_reserve.prix_reservation_par_nuit is None
+            or logement_reserve.prix_reservation_par_nuit <= 0
         ):
             self.add_error(
                 'categorie_logement' if 'categorie_logement' in self.fields else None,

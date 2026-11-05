@@ -225,18 +225,7 @@ body:has(.professional-publish-page) { background: #f8fafc; }
               {{ etablissement_form.description }}
               {% if etablissement_form.description.errors %}<div class="text-danger small mt-1">{{ etablissement_form.description.errors }}</div>{% endif %}
             </div>
-            <div class="col-md-6">
-              <div class="form-check">
-                {{ etablissement_form.eau }}
-                <label class="form-check-label" for="{{ etablissement_form.eau.id_for_label }}">{{ etablissement_form.eau.label }}</label>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-check">
-                {{ etablissement_form.electricite }}
-                <label class="form-check-label" for="{{ etablissement_form.electricite.id_for_label }}">{{ etablissement_form.electricite.label }}</label>
-              </div>
-            </div>
+            
           </div>
         </div>
       </section>

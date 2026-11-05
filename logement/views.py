@@ -345,7 +345,7 @@ def reserver_logement(request, id):
             logement_reserve = form.cleaned_data.get('categorie_logement') or logement
             reservation.logement = logement_reserve
             
-            reservation.prix_par_nuit = logement_reserve.prix_journalier or 0
+            reservation.prix_par_nuit = logement_reserve.prix_reservation_par_nuit or 0
             if logement_reserve.frais_nettoyage:
                 reservation.frais_nettoyage_reservation = logement_reserve.frais_nettoyage
             
@@ -370,8 +370,16 @@ def reserver_logement(request, id):
                     )
                 else:
                     reservation.logement = locked_logement
+                    reservation.statut = 'confirmed'
                     reservation.save()
                     reservation.unites.set(available_units)
+                    Paiement.objects.create(
+                        reservation=reservation,
+                        montant=reservation.montant_final,
+                        methode='cash',
+                        statut='pending',
+                        description="Paiement à l'arrivée",
+                    )
 
             if reservation.pk is None:
                 return render(request, 'logement/reserver_logement.html', {
@@ -384,7 +392,9 @@ def reserver_logement(request, id):
                 request.session['guest_reservation_ids'] = guest_reservation_ids[-20:]
             from accounts.notification_service import reservation_created
             reservation_created(reservation)
-            return redirect('logement:paiement', reservation_id=reservation.id)
+            from accounts.notification_service import reservation_confirmed
+            reservation_confirmed(reservation)
+            return redirect('logement:confirmation_reservation', reservation_id=reservation.id)
     else:
         from .forms import ReservationForm
         form = ReservationForm(logement=logement)
@@ -422,6 +432,17 @@ def paiement_reservation(request, reservation_id):
                 'message': 'Vous n\'êtes pas autorisé à payer cette réservation.'
             }, status=403)
         return redirect('accounts:login' if not request.user.is_authenticated else 'logement:home')
+
+    if reservation.logement.account_type in ('hotel', 'residence'):
+        if request.method == 'POST':
+            return JsonResponse({
+                'success': False,
+                'message': _('Le paiement de cette réservation se fait sur place, à votre arrivée.'),
+            }, status=400)
+        return redirect(
+            'logement:confirmation_reservation',
+            reservation_id=reservation.id,
+        )
 
     if stripe is not None:
         stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')

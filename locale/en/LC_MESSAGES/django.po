@@ -455,8 +455,17 @@ msgstr "Your browser does not support HTML5 video"
 msgid "Cette fiche présente une catégorie de chambre de cet établissement."
 msgstr "This listing shows a room category at this property."
 
-msgid "Autres catégories disponibles"
-msgstr "Other available categories"
+msgid "Autres catégories de chambres de cet établissement"
+msgstr "Other room categories at this property"
+
+msgid "Découvrez les autres chambres"
+msgstr "Explore the other rooms"
+
+msgid "D'autres options vous attendent dans le même établissement."
+msgstr "More options await you at the same property."
+
+msgid "Voir cette chambre"
+msgstr "View this room"
 
 msgid "Caractéristiques"
 msgstr "Features"

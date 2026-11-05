@@ -1,3 +1,5 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -209,6 +211,25 @@ class Logement(models.Model):
         if self.account_type == 'hotel':
             return self.prix
         return None
+
+    @property
+    def prix_reservation_par_nuit(self):
+        if self.prix_journalier and self.prix_journalier > 0:
+            return self.prix_journalier
+        if self.account_type == 'residence' and self.prix_par_mois and self.prix_par_mois > 0:
+            return (self.prix_par_mois / Decimal('30')).quantize(
+                Decimal('0.01'),
+                rounding=ROUND_HALF_UP,
+            )
+        return None
+
+    @property
+    def reservation_uses_monthly_rate(self):
+        return (
+            self.account_type == 'residence'
+            and not self.prix_par_nuit
+            and bool(self.prix_par_mois)
+        )
 
     def get_nombre_photos(self):
         return self.photos.count()

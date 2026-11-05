@@ -404,7 +404,11 @@
     <div class="rc-badge-row">
       <span class="rc-badge green">🔒 {% translate "Sécurisé" %}</span>
       {% if reservation.paiement.statut == 'pending' %}
-        <span class="rc-badge orange">⏳ {% translate "En attente de paiement" %}</span>
+        {% if reservation.paiement.methode == 'cash' %}
+          <span class="rc-badge orange">💵 {% translate "Paiement à l'arrivée" %}</span>
+        {% else %}
+          <span class="rc-badge orange">⏳ {% translate "En attente de paiement" %}</span>
+        {% endif %}
       {% elif reservation.paiement.statut == 'completed' %}
         <span class="rc-badge green">✓ {% translate "Paiement reçu" %}</span>
       {% endif %}
@@ -484,7 +488,8 @@
           </div>
         </div>
         <span class="rc-status-pill {% if reservation.paiement.statut == 'completed' %}success{% elif reservation.paiement.statut == 'failed' %}danger{% else %}pending{% endif %}">
-          {% if reservation.paiement.statut == 'pending' %}⏳ {% translate "En attente" %}
+          {% if reservation.paiement.statut == 'pending' and reservation.paiement.methode == 'cash' %}💵 {% translate "À régler sur place" %}
+          {% elif reservation.paiement.statut == 'pending' %}⏳ {% translate "En attente" %}
           {% elif reservation.paiement.statut == 'completed' %}✓ {% translate "Complété" %}
           {% elif reservation.paiement.statut == 'failed' %}✗ {% translate "Échoué" %}
           {% endif %}
@@ -515,7 +520,7 @@
         {% elif reservation.paiement.methode == 'cash' %}
         <div class="rc-alert green">
           <span class="rc-alert-icon">🏠</span>
-          <div class="rc-alert-text">{% translate "Vous paierez le propriétaire directement" %} <strong>{% translate "à votre arrivée" %}</strong>.</div>
+          <div class="rc-alert-text">{% translate "Réservation confirmée. Réglez le montant total" %} <strong>{% translate "à votre arrivée à l'hôtel ou à la résidence" %}</strong>.</div>
         </div>
         {% endif %}
       {% endif %}
@@ -560,8 +565,13 @@
         <div class="rc-step">
           <div class="rc-step-dot wait">⏳</div>
           <div>
-            <p class="rc-step-title">{% translate "Paiement en cours" %}</p>
-            <p class="rc-step-desc">{% translate "En attente de confirmation de votre paiement" %}</p>
+            {% if reservation.paiement.methode == 'cash' %}
+              <p class="rc-step-title">{% translate "Paiement à l'arrivée" %}</p>
+              <p class="rc-step-desc">{% translate "Le montant sera réglé sur place, à l'hôtel ou à la résidence." %}</p>
+            {% else %}
+              <p class="rc-step-title">{% translate "Paiement en cours" %}</p>
+              <p class="rc-step-desc">{% translate "En attente de confirmation de votre paiement" %}</p>
+            {% endif %}
           </div>
         </div>
         <div class="rc-step">
