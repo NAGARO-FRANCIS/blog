@@ -4,331 +4,493 @@
 {% block title %}{% translate "Envoyer un message - Coloc.ai" %}{% endblock %}
 
 {% block content %}
-<div class="container form-page">
-    <div class="hero hero-compact">
-        {% if annonce %}
-            <h1>💬 {% translate "Contacter le propriétaire" %}</h1>
-            <p>{% translate "Envoyez un message à propos de cette annonce" %}</p>
-        {% elif conversation %}
-            <h1>💬 {% translate "Continuer la conversation" %}</h1>
-            <p>Répondez à {{ destinataire.get_full_name|default:destinataire.username }}</p>
-        {% else %}
-            <h1>💬 {% translate "Démarrer une conversation" %}</h1>
-            <p>Envoyez un message à {{ destinataire.get_full_name|default:destinataire.username }}</p>
-        {% endif %}
-    </div>
 
-    {% if annonce %}
-        <!-- Afficher les détails de l'annonce -->
-        <div class="annonce-preview">
-            <div class="annonce-header">
-                <h2>Colocation à {{ annonce.ville }}{% if annonce.quartier %} - {{ annonce.quartier }}{% endif %}</h2>
-                <div class="annonce-meta">
-                    <span class="prix">{{ annonce.budget_mensuel|floatformat:0 }} FCFA/mois</span>
-                    <span class="location">📍 {{ annonce.ville }}{% if annonce.quartier %} - {{ annonce.quartier }}{% endif %}</span>
-                </div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="ms-page">
+    <div class="ms-container">
+
+        <!-- En-tête -->
+        <header class="ms-hero">
+            <div class="ms-stripe" aria-hidden="true"></div>
+            <div class="ms-hero-body">
+                <span class="ms-hero-icon" aria-hidden="true">💬</span>
+                {% if annonce %}
+                    <h1>{% translate "Contacter le propriétaire" %}</h1>
+                    <p>{% translate "Envoyez un message à propos de cette annonce" %}</p>
+                {% elif conversation %}
+                    <h1>{% translate "Continuer la conversation" %}</h1>
+                    <p>{% blocktranslate with name=destinataire.get_full_name|default:destinataire.username %}Répondez à {{ name }}{% endblocktranslate %}</p>
+                {% else %}
+                    <h1>{% translate "Démarrer une conversation" %}</h1>
+                    <p>{% blocktranslate with name=destinataire.get_full_name|default:destinataire.username %}Envoyez un message à {{ name }}{% endblocktranslate %}</p>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if annonce %}
+        <!-- Détails de l'annonce -->
+        <section class="ms-card ms-annonce">
+            <h2>{% blocktranslate with ville=annonce.ville %}Colocation à {{ ville }}{% endblocktranslate %}{% if annonce.quartier %} - {{ annonce.quartier }}{% endif %}</h2>
+            <div class="ms-annonce-meta">
+                <span class="ms-prix">{{ annonce.budget_mensuel|floatformat:0 }} FCFA/{% translate "mois" %}</span>
+                <span class="ms-location">📍 {{ annonce.ville }}{% if annonce.quartier %} - {{ annonce.quartier }}{% endif %}</span>
             </div>
             {% if annonce.description %}
-                <p class="annonce-description">{{ annonce.description|truncatechars:200 }}</p>
+                <p class="ms-annonce-desc">{{ annonce.description|truncatechars:200 }}</p>
             {% endif %}
-        </div>
-    {% endif %}
+        </section>
+        {% endif %}
 
-    <!-- Informations du destinataire -->
-    <div class="destinataire-info">
-        <div class="user-card">
-            <div class="user-avatar">
+        <!-- Destinataire -->
+        <section class="ms-card ms-user">
+            <div class="ms-avatar">
                 {% if destinataire.profile.photo_profil %}
                     <img src="{{ destinataire.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ destinataire.get_full_name }}">
                 {% else %}
-                    <div class="avatar-placeholder">{{ destinataire.get_full_name|default:destinataire.username|first|upper }}</div>
+                    <div class="ms-avatar-placeholder">{{ destinataire.get_full_name|default:destinataire.username|first|upper }}</div>
                 {% endif %}
             </div>
-            <div class="user-details">
+            <div class="ms-user-details">
                 <h3>{{ destinataire.get_full_name|default:destinataire.username }}</h3>
-                <p class="user-location">📍 {{ destinataire.profile.ville }}</p>
+                {% if destinataire.profile.ville %}
+                    <p class="ms-user-location">📍 {{ destinataire.profile.ville }}</p>
+                {% endif %}
                 {% if destinataire.profile.verified %}
-                    <span class="verified-badge">✓ {% translate "Profil vérifié" %}</span>
+                    <span class="ms-verified">✓ {% translate "Profil vérifié" %}</span>
                 {% endif %}
             </div>
-        </div>
-    </div>
+        </section>
 
-    <form method="post" class="form-panel message-form" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% if conversation %}
-            <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
-        {% endif %}
+        <!-- Formulaire -->
+        <form method="post" class="ms-card ms-form message-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% if conversation %}
+                <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
+            {% endif %}
 
-        <div class="form-section">
-            <h3 class="section-title">✍️ {% translate "Votre message" %}</h3>
+            <div class="ms-section">
+                <label for="contenu" class="ms-section-title">
+                    <span class="ms-section-icon" aria-hidden="true">✍️</span>
+                    {% translate "Votre message" %}
+                </label>
 
-            <div class="form-group">
                 <textarea name="contenu" id="contenu" placeholder="{% translate 'Bonjour, je suis intéressé par votre annonce...' %}" rows="6"></textarea>
-                <small class="form-help">{% translate "Soyez poli et précis dans votre message pour maximiser vos chances d'obtenir une réponse." %}</small>
+                <small class="ms-help">{% translate "Soyez poli et précis dans votre message pour maximiser vos chances d'obtenir une réponse." %}</small>
+
+                <div class="ms-attachment">
+                    <label for="attachment" class="ms-attachment-label">📎 {% translate "Joindre un fichier (optionnel)" %}</label>
+                    <input type="file" name="attachment" id="attachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
+                </div>
             </div>
 
-            <div class="form-group attachment-group">
-                <label for="attachment" class="attachment-field-label">📎 {% translate "Joindre un fichier (optionnel)" %}</label>
-                <input type="file" name="attachment" id="attachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
+            <div class="ms-actions">
+                <a href="javascript:history.back()" class="ms-btn ms-btn-secondary">{% translate "Annuler" %}</a>
+                <button type="submit" class="ms-btn ms-btn-primary">
+                    {% translate "Envoyer le message" %}
+                    <span class="ms-btn-arrow" aria-hidden="true">→</span>
+                </button>
             </div>
-        </div>
+        </form>
 
-        <div class="form-actions">
-            <a href="javascript:history.back()" class="btn secondary">{% translate "Annuler" %}</a>
-            <button type="submit" class="btn">📤 {% translate "Envoyer le message" %}</button>
-        </div>
-    </form>
+        <!-- Conseils -->
+        <section class="ms-card ms-tips">
+            <h3><span class="ms-section-icon" aria-hidden="true">💡</span> {% translate "Conseils pour une bonne communication" %}</h3>
+            <ul>
+                <li>{% translate "Présentez-vous brièvement" %}</li>
+                <li>{% translate "Mentionnez ce qui vous intéresse dans l'annonce" %}</li>
+                <li>{% translate "Indiquez vos disponibilités" %}</li>
+                <li>{% translate "Soyez respectueux et courtois" %}</li>
+            </ul>
+        </section>
 
-    <!-- Conseils pour bien communiquer -->
-    <div class="communication-tips">
-        <h3>💡 {% translate "Conseils pour une bonne communication" %}</h3>
-        <ul>
-            <li>{% translate "Présentez-vous brièvement" %}</li>
-            <li>{% translate "Mentionnez ce qui vous intéresse dans l'annonce" %}</li>
-            <li>{% translate "Indiquez vos disponibilités" %}</li>
-            <li>{% translate "Soyez respectueux et courtois" %}</li>
-        </ul>
     </div>
 </div>
 
 <style>
-    .form-page {
-        max-width: 700px;
-        margin: 0 auto;
-        padding: 20px;
-        background: #f0f2f5;
+    /* ── Palette Côte d'Ivoire : orange · blanc · vert ── */
+    .ms-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
+        font-family: 'Figtree', system-ui, sans-serif;
+        color: var(--ci-ink);
+        background: var(--ci-bg);
+        min-height: 100vh;
+        padding: 2rem 1.25rem 3.5rem;
     }
 
-    .hero-compact {
-        background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
-        color: white;
-        padding: 40px 20px;
-        margin-bottom: 30px;
-        border-radius: 12px;
+    .ms-container {
+        max-width: 700px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .ms-page :where(h1, h2, h3, p, ul) { margin: 0; }
+
+    /* ── En-tête ── */
+    .ms-hero {
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        border-radius: 16px;
+        overflow: hidden;
         text-align: center;
     }
 
-    .hero-compact h1 {
-        margin: 0 0 8px 0;
-        font-size: 1.8rem;
+    .ms-stripe {
+        height: 6px;
+        background: linear-gradient(
+            90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%
+        );
     }
 
-    .hero-compact p {
-        margin: 0;
-        opacity: 0.95;
-        font-size: 1rem;
-    }
+    .ms-hero-body { padding: 1.75rem 1.5rem 2rem; }
 
-    .annonce-preview {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border-left: 4px solid var(--primary);
-    }
-
-    .annonce-header h2 {
-        margin: 0 0 12px 0;
-        color: #1a1a1a;
-        font-size: 1.2rem;
-        font-weight: 600;
-    }
-
-    .annonce-meta {
+    .ms-hero-icon {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 0.9rem;
+        border-radius: 50%;
+        background: var(--ci-orange);
         display: flex;
-        gap: 16px;
         align-items: center;
-        margin-bottom: 12px;
+        justify-content: center;
+        font-size: 1.4rem;
     }
 
-    .prix {
-        font-size: 1.1rem;
+    .ms-hero h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.9rem;
         font-weight: 700;
-        color: var(--primary);
+        line-height: 1.2;
+        margin-bottom: 6px;
     }
 
-    .location {
-        color: #65676b;
-        font-size: 0.95rem;
+    .ms-hero p {
+        font-size: 15px;
+        color: rgba(255,255,255,0.82);
     }
 
-    .annonce-description {
-        color: #65676b;
-        margin: 0;
-        line-height: 1.5;
-        font-size: 0.95rem;
+    /* ── Cartes ── */
+    .ms-card {
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        padding: 1.25rem 1.4rem;
     }
 
-    .destinataire-info {
-        margin-bottom: 24px;
+    /* Annonce */
+    .ms-annonce { border-left: 4px solid var(--ci-orange); }
+
+    .ms-annonce h2 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
     }
 
-    .user-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    .ms-annonce-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .ms-prix {
+        background: var(--ci-orange-soft);
+        color: #9A4F00;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 3px 12px;
+        border-radius: 999px;
+    }
+
+    .ms-location { color: var(--ci-muted); font-size: 14px; }
+
+    .ms-annonce-desc {
+        color: var(--ci-muted);
+        font-size: 14px;
+        line-height: 1.55;
+    }
+
+    /* Destinataire */
+    .ms-user {
         display: flex;
         align-items: center;
         gap: 16px;
     }
 
-    .user-avatar {
-        flex-shrink: 0;
-    }
+    .ms-avatar { flex-shrink: 0; }
 
-    .user-avatar img,
-    .avatar-placeholder {
+    .ms-avatar img,
+    .ms-avatar-placeholder {
         width: 64px;
         height: 64px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid #e5e7eb;
-    }
-
-    .user-details h3 {
-        margin: 0 0 6px 0;
-        color: #1a1a1a;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    .user-location {
-        margin: 0 0 8px 0;
-        color: #65676b;
-        font-size: 0.9rem;
-    }
-
-    .verified-badge {
-        background: #31a24c;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .message-form {
-        background: white;
-        border-radius: 12px;
-        padding: 28px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        margin-bottom: 24px;
-    }
-
-    .form-section {
-        margin-bottom: 24px;
-    }
-
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 16px;
-    }
-
-    .message-form textarea {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #d0d0d0;
-        border-radius: 8px;
-        font-family: inherit;
-        font-size: 0.95rem;
-        resize: vertical;
-        min-height: 120px;
-        color: #1a1a1a;
-    }
-
-    .message-form textarea::placeholder {
-        color: #bcc0c4;
-    }
-
-    .message-form textarea:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(94, 93, 255, 0.1);
-    }
-
-    .form-help {
+        border: 3px solid var(--ci-green-soft);
         display: block;
-        color: #65676b;
-        font-size: 0.85rem;
+    }
+
+    .ms-avatar-placeholder {
+        background: var(--ci-green);
+        color: var(--ci-white);
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ms-user-details h3 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .ms-user-location {
+        color: var(--ci-muted);
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .ms-verified {
+        display: inline-block;
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        border: 1px solid #BFE0CE;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Formulaire */
+    .ms-form { padding: 1.5rem; }
+
+    .ms-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--ci-green-deep);
+        margin-bottom: 14px;
+    }
+
+    .ms-section-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .ms-form textarea {
+        width: 100%;
+        padding: 0.8rem 0.95rem;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--ci-ink);
+        background: var(--ci-white);
+        resize: vertical;
+        min-height: 130px;
+        box-sizing: border-box;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .ms-form textarea:hover { border-color: #9FB3A7; }
+
+    .ms-form textarea::placeholder { color: #8A9A91; }
+
+    .ms-form textarea:focus {
+        outline: none;
+        border-color: var(--ci-green);
+        box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+    }
+
+    .ms-help {
+        display: block;
+        color: var(--ci-muted);
+        font-size: 13px;
+        line-height: 1.45;
         margin-top: 8px;
     }
 
-    .attachment-group {
-        margin-top: 16px;
+    .ms-attachment {
+        margin-top: 18px;
+        padding: 14px 16px;
+        background: #FAFCFB;
+        border: 1.5px dashed #BFD0C5;
+        border-radius: 12px;
     }
 
-    .attachment-field-label {
+    .ms-attachment-label {
         display: block;
-        color: #1a1a1a;
-        font-size: 0.9rem;
+        font-size: 14px;
         font-weight: 600;
         margin-bottom: 8px;
     }
 
-    .attachment-group input[type="file"] {
-        font-size: 0.9rem;
-        color: #65676b;
+    .ms-attachment input[type="file"] {
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--ci-muted);
+        max-width: 100%;
     }
 
-    .form-actions {
+    .ms-attachment input[type="file"]::file-selector-button {
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        border: 1.5px solid #BFE0CE;
+        border-radius: 8px;
+        padding: 6px 12px;
+        margin-right: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ms-attachment input[type="file"]::file-selector-button:hover {
+        border-color: var(--ci-green);
+    }
+
+    /* Actions */
+    .ms-actions {
         display: flex;
         gap: 12px;
         justify-content: flex-end;
+        margin-top: 22px;
         padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid var(--ci-line);
     }
 
-    .form-actions .btn {
-        padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 600;
-    }
-
-    .communication-tips {
-        background: white;
+    .ms-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0.8rem 1.4rem;
         border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border-left: 4px solid var(--primary);
-    }
-
-    .communication-tips h3 {
-        margin: 0 0 16px 0;
-        color: #1a1a1a;
-        font-size: 1rem;
+        font-family: inherit;
+        font-size: 15px;
         font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background .15s ease, border-color .15s ease, transform .1s ease;
     }
 
-    .communication-tips ul {
-        margin: 0;
-        padding-left: 20px;
+    .ms-btn:focus-visible {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
     }
 
-    .communication-tips li {
-        margin-bottom: 10px;
-        color: #65676b;
-        font-size: 0.95rem;
+    .ms-btn-primary {
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        border: none;
+    }
+
+    .ms-btn-primary:hover { background: var(--ci-orange-hover); transform: translateY(-1px); }
+    .ms-btn-primary:active { transform: translateY(0); }
+
+    .ms-btn-arrow {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .ms-btn-secondary {
+        background: transparent;
+        color: var(--ci-green-deep);
+        border: 1.5px solid #BFE0CE;
+        font-weight: 500;
+    }
+
+    .ms-btn-secondary:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+
+    /* Conseils */
+    .ms-tips { background: var(--ci-green-soft); border-color: #BFE0CE; }
+
+    .ms-tips h3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: var(--ci-green-deep);
+        margin-bottom: 12px;
+    }
+
+    .ms-tips .ms-section-icon { background: var(--ci-white); }
+
+    .ms-tips ul { padding-left: 22px; }
+
+    .ms-tips li {
+        color: var(--ci-ink);
+        font-size: 14px;
         line-height: 1.5;
+        margin-bottom: 8px;
     }
 
+    .ms-tips li:last-child { margin-bottom: 0; }
+
+    .ms-tips li::marker { color: var(--ci-orange); }
+
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .user-card {
+        .ms-page { padding: 1rem 1rem 2.5rem; }
+
+        .ms-user {
             flex-direction: column;
             text-align: center;
         }
 
-        .form-actions {
-            flex-direction: column;
-        }
+        .ms-annonce-meta { flex-direction: column; align-items: flex-start; }
 
-        .form-actions .btn {
-            width: 100%;
-        }
+        .ms-actions { flex-direction: column-reverse; }
+
+        .ms-btn { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ms-page * { transition: none !important; }
+        .ms-btn-primary:hover { transform: none; }
     }
 </style>
 

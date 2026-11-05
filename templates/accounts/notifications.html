@@ -5,54 +5,76 @@
 {% block title %}{% translate "Notifications" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
 <div class="notifications-wrapper">
     <div class="notifications-container">
-        <div class="notifications-header">
-            <h1 class="notifications-title">🔔 {% translate "Notifications" %}</h1>
-            {% if unread_count > 0 %}
-                <button class="notifications-btn" onclick="markAllAsRead()">
-                    {% translate "Marquer tout comme lu" %}
-                </button>
-            {% endif %}
-        </div>
+
+        <header class="notifications-header">
+            <div class="notifications-stripe" aria-hidden="true"></div>
+            <div class="notifications-header-body">
+                <div class="notifications-heading">
+                    <span class="notifications-bell" aria-hidden="true">🔔</span>
+                    <div>
+                        <h1 class="notifications-title">{% translate "Notifications" %}</h1>
+                        {% if unread_count > 0 %}
+                            <p class="notifications-count">
+                                <span class="notifications-count-badge">{{ unread_count }}</span>
+                                {% blocktranslate count counter=unread_count %}non lue{% plural %}non lues{% endblocktranslate %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if unread_count > 0 %}
+                    <button type="button" class="notifications-btn" onclick="markAllAsRead()">
+                        {% translate "Marquer tout comme lu" %}
+                    </button>
+                {% endif %}
+            </div>
+        </header>
 
         {% if notifications %}
             <div class="notifications-list">
                 {% for notification in notifications %}
-                    <div class="notification-item {% if notification.is_read %}notification-item--read{% else %}notification-item--unread{% endif %}" data-notification-id="{{ notification.id }}">
-                        <div class="notification-icon">
+                    <article class="notification-item {% if notification.is_read %}notification-item--read{% else %}notification-item--unread{% endif %}" data-notification-id="{{ notification.id }}">
+                        <div class="notification-icon" aria-hidden="true">
                             {% if notification.notification_type == 'new_listing' %}📢{% elif notification.notification_type == 'subscription' %}👥{% elif notification.notification_type == 'message' %}💬{% elif notification.notification_type == 'reservation' %}📅{% elif notification.notification_type == 'payment' %}💳{% elif notification.notification_type == 'favorite' %}❤️{% elif notification.notification_type == 'approval' %}🏠{% else %}ℹ️{% endif %}
                         </div>
 
                         <div class="notification-content">
                             <div class="notification-header">
                                 <h3 class="notification-title">{{ notification.title }}</h3>
-                                <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
+                                <span class="notification-time">{% blocktranslate with t=notification.created_at|timesince %}il y a {{ t }}{% endblocktranslate %}</span>
                             </div>
                             <p class="notification-message">{{ notification.message }}</p>
                             {% if notification.actor %}
                                 <p class="notification-actor">{% translate "Par" %} <strong>{{ notification.actor_name }}</strong></p>
                             {% endif %}
-                        </div>
 
-                        <div class="notification-actions">
-                            {% if not notification.is_read %}
-                                <button class="notification-action-btn" data-mark-read onclick="markAsRead({{ notification.id }})">
-                                    {% translate "Marquer comme lu" %}
-                                </button>
-                            {% endif %}
-                            {% if notification.related_listing_id %}
-                                <a href="{% url 'logement:detail_logement' notification.related_listing_id %}" class="notification-action-btn notification-action-btn--link">
-                                    {% translate "Voir l'annonce" %}
-                                </a>
+                            {% if not notification.is_read or notification.related_listing_id %}
+                            <div class="notification-actions">
+                                {% if notification.related_listing_id %}
+                                    <a href="{% url 'logement:detail_logement' notification.related_listing_id %}" class="notification-action-btn notification-action-btn--link">
+                                        {% translate "Voir l'annonce" %}
+                                    </a>
+                                {% endif %}
+                                {% if not notification.is_read %}
+                                    <button type="button" class="notification-action-btn" data-mark-read onclick="markAsRead({{ notification.id }})">
+                                        {% translate "Marquer comme lu" %}
+                                    </button>
+                                {% endif %}
+                            </div>
                             {% endif %}
                         </div>
-                    </div>
+                    </article>
                 {% endfor %}
             </div>
         {% else %}
             <div class="notifications-empty">
-                <div class="notifications-empty-icon">🔔</div>
+                <div class="notifications-empty-icon" aria-hidden="true">🔔</div>
                 <h3>{% translate "Aucune notification" %}</h3>
                 <p>{% translate "Vous n'avez pas encore de notifications. Abonnez-vous à des utilisateurs pour être notifié de leurs nouvelles annonces!" %}</p>
             </div>
@@ -61,26 +83,26 @@
 </div>
 
 <style>
-/* ── Design Tokens ── */
-:root {
-    --ci-orange: #F77F00;
-    --ci-orange-dk: #D96B00;
-    --ci-green: #009A44;
-    --ci-text: #1C1C1C;
-    --ci-text-muted: #6B7280;
-    --ci-border: #E5E7EB;
-    --ci-surface: #F9FAFB;
-    --ci-white: #FFFFFF;
-    --ci-radius: 12px;
-    --ci-shadow: 0 2px 8px rgba(0,0,0,.07);
-    --ci-transition: .2s ease;
-}
-
-/* ── Layout ── */
+/* ── Design tokens : orange · blanc · vert (Côte d'Ivoire) ── */
 .notifications-wrapper {
-    background: var(--ci-surface);
+    --ci-orange: #F77F00;
+    --ci-orange-hover: #FF9122;
+    --ci-orange-soft: #FFF1E0;
+    --ci-orange-text: #9A4F00;
+    --ci-green: #009E60;
+    --ci-green-deep: #0B5D3B;
+    --ci-green-soft: #E6F4EC;
+    --ci-ink: #10231A;
+    --ci-muted: #5B6B62;
+    --ci-line: #DCE5DF;
+    --ci-bg: #F3F7F4;
+    --ci-white: #FFFFFF;
+
+    font-family: 'Figtree', system-ui, sans-serif;
+    color: var(--ci-ink);
+    background: var(--ci-bg);
     min-height: 100vh;
-    padding: 32px 24px 56px;
+    padding: 2rem 1.25rem 3.5rem;
 }
 
 .notifications-container {
@@ -88,201 +110,291 @@
     margin: 0 auto;
 }
 
-/* ── Header ── */
+/* ── En-tête ── */
 .notifications-header {
+    background: var(--ci-white);
+    border: 1px solid var(--ci-line);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+}
+
+.notifications-stripe {
+    height: 6px;
+    background: linear-gradient(
+        90deg,
+        var(--ci-orange) 0 33.33%,
+        #E9EFEB 33.33% 66.66%,
+        var(--ci-green) 66.66% 100%
+    );
+}
+
+.notifications-header-body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
     gap: 16px;
+    padding: 1.25rem 1.5rem;
+}
+
+.notifications-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.notifications-bell {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: var(--ci-orange-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
 }
 
 .notifications-title {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--ci-text);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--ci-ink);
     margin: 0;
-    letter-spacing: -.02em;
+}
+
+.notifications-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--ci-muted);
+}
+
+.notifications-count-badge {
+    background: var(--ci-orange);
+    color: var(--ci-ink);
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .notifications-btn {
-    background: var(--ci-orange);
-    color: #fff;
+    background: var(--ci-green-deep);
+    color: var(--ci-white);
     border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    font-size: .85rem;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--ci-transition);
+    white-space: nowrap;
+    transition: background .15s ease, transform .1s ease;
 }
 
 .notifications-btn:hover {
-    background: var(--ci-orange-dk);
+    background: var(--ci-green);
     transform: translateY(-1px);
 }
 
-/* ── Notification Items ── */
+.notifications-btn:focus-visible,
+.notification-action-btn:focus-visible {
+    outline: 3px solid var(--ci-orange);
+    outline-offset: 2px;
+}
+
+/* ── Liste ── */
 .notifications-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .notification-item {
     background: var(--ci-white);
-    border: 1px solid var(--ci-border);
-    border-radius: var(--ci-radius);
-    padding: 16px;
+    border: 1px solid var(--ci-line);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
     display: flex;
-    gap: 12px;
+    gap: 14px;
     align-items: flex-start;
-    transition: all var(--ci-transition);
-    box-shadow: var(--ci-shadow);
+    transition: border-color .15s ease;
 }
 
-.notification-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,.10);
-}
+.notification-item:hover { border-color: #B8CABF; }
 
+/* Non lue : fond orange très clair + filet orange à gauche */
 .notification-item--unread {
-    background: linear-gradient(to right, rgba(247,127,0,.05), transparent);
-    border-left: 4px solid var(--ci-orange);
+    background: #FFFAF3;
+    border-color: #F6D9B0;
+    box-shadow: inset 4px 0 0 var(--ci-orange);
 }
 
-.notification-item--read {
-    opacity: .8;
-}
+.notification-item--read .notification-title { font-weight: 500; }
+.notification-item--read .notification-message { color: var(--ci-muted); }
 
-/* ── Icon ── */
+/* ── Icône ── */
 .notification-icon {
-    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ci-green-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
     flex-shrink: 0;
-    margin-top: 2px;
 }
 
-/* ── Content ── */
-.notification-content {
-    flex: 1;
-}
+.notification-item--unread .notification-icon { background: var(--ci-orange-soft); }
+
+/* ── Contenu ── */
+.notification-content { flex: 1; min-width: 0; }
 
 .notification-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 6px;
-    gap: 8px;
+    align-items: baseline;
+    gap: 10px;
 }
 
 .notification-title {
-    font-size: .95rem;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 1.02rem;
     font-weight: 700;
-    color: var(--ci-text);
+    color: var(--ci-ink);
     margin: 0;
+    line-height: 1.3;
 }
 
 .notification-time {
-    font-size: .75rem;
-    color: var(--ci-text-muted);
+    font-size: 12px;
+    color: var(--ci-muted);
     white-space: nowrap;
 }
 
 .notification-message {
-    font-size: .85rem;
-    color: var(--ci-text);
-    margin: 6px 0 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ci-ink);
+    margin: 6px 0 0;
 }
 
 .notification-actor {
-    font-size: .75rem;
-    color: var(--ci-text-muted);
-    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--ci-muted);
+    margin: 6px 0 0;
 }
+
+.notification-actor strong { color: var(--ci-green-deep); font-weight: 600; }
 
 /* ── Actions ── */
 .notification-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    margin-top: 12px;
 }
 
 .notification-action-btn {
-    background: var(--ci-surface);
-    color: var(--ci-text);
-    border: 1px solid var(--ci-border);
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: .75rem;
+    background: transparent;
+    color: var(--ci-green-deep);
+    border: 1.5px solid #BFE0CE;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--ci-transition);
     text-decoration: none;
     display: inline-block;
+    transition: background .15s ease, border-color .15s ease;
 }
 
 .notification-action-btn:hover {
-    background: var(--ci-orange-dk);
-    color: #fff;
-    border-color: var(--ci-orange-dk);
+    background: var(--ci-green-soft);
+    border-color: var(--ci-green);
 }
 
 .notification-action-btn--link {
     background: var(--ci-orange);
-    color: #fff;
+    color: var(--ci-ink);
     border-color: var(--ci-orange);
 }
 
 .notification-action-btn--link:hover {
-    background: var(--ci-orange-dk);
+    background: var(--ci-orange-hover);
+    border-color: var(--ci-orange-hover);
 }
 
-/* ── Empty State ── */
+/* ── État vide ── */
 .notifications-empty {
     text-align: center;
-    padding: 60px 24px;
+    padding: 3.5rem 1.5rem;
     background: var(--ci-white);
-    border: 2px dashed var(--ci-border);
-    border-radius: var(--ci-radius);
+    border: 2px dashed #BFD0C5;
+    border-radius: 16px;
 }
 
 .notifications-empty-icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: var(--ci-green-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
 }
 
 .notifications-empty h3 {
+    font-family: 'Bricolage Grotesque', sans-serif;
     font-size: 1.3rem;
     font-weight: 700;
-    color: var(--ci-text);
+    color: var(--ci-green-deep);
     margin: 0 0 8px;
 }
 
 .notifications-empty p {
-    font-size: .9rem;
-    color: var(--ci-text-muted);
-    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ci-muted);
+    max-width: 440px;
+    margin: 0 auto;
 }
 
 /* ── Responsive ── */
 @media (max-width: 560px) {
-    .notifications-wrapper { padding: 16px 16px 40px; }
-    
-    .notifications-header {
+    .notifications-wrapper { padding: 1rem 1rem 2.5rem; }
+
+    .notifications-header-body {
         flex-direction: column;
         align-items: stretch;
     }
-    
-    .notifications-btn {
-        width: 100%;
-    }
-    
-    .notification-item {
-        flex-direction: column;
-    }
-    
+
+    .notifications-btn { width: 100%; }
+
+    .notification-item { gap: 12px; }
+
     .notification-header {
         flex-direction: column;
+        gap: 2px;
     }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .notifications-wrapper * { transition: none !important; }
+    .notifications-btn:hover { transform: none; }
 }
 </style>
 

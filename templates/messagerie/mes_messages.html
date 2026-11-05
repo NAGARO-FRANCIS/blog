@@ -4,164 +4,249 @@
 {% block title %}{% translate "Mes Conversations - Coloc.ai" %}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="hero hero-compact">
-        <h1>💬 {% translate "Mes Conversations" %}</h1>
-        <p>{% translate "Gérez vos échanges avec les autres utilisateurs" %}</p>
-    </div>
 
-    {% if conversations %}
-        <div class="conversations-list">
-            {% for conv_info in conversations %}
-                <a href="{% url 'messagerie:conversation_detail' conv_info.conversation.id %}" class="conversation-item {% if conv_info.unread_count > 0 %}unread{% endif %}">
-                    <div class="conversation-avatar">
-                        {% if conv_info.other_participant and conv_info.other_participant.profile and conv_info.other_participant.profile.photo_profil %}
-                            <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}">
-                        {% elif conv_info.other_participant %}
-                            <div class="avatar-placeholder">{{ conv_info.other_participant.first_name|default:conv_info.other_participant.username|first|upper }}</div>
-                        {% else %}
-                            <div class="avatar-placeholder">?</div>
-                        {% endif %}
-                    </div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 
-                    <div class="conversation-content">
-                        <div class="conversation-header">
-                            <h3 class="conversation-partner">
-                                <span class="conversation-name">{% if conv_info.other_participant %}{{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}{% else %}{% translate "Contact indisponible" %}{% endif %}</span>
-                                {% if conv_info.unread_count > 0 %}
-                                    <span class="unread-badge">{{ conv_info.unread_count }}</span>
-                                {% endif %}
-                            </h3>
-                            <span class="conversation-date">
-                                {% if conv_info.last_message %}
-                                    {{ conv_info.last_message.created_at|date:"d/m H:i" }}
-                                {% else %}
-                                    {{ conv_info.conversation.created_at|date:"d/m H:i" }}
-                                {% endif %}
-                            </span>
+<div class="cv-page">
+    <div class="cv-container">
+
+        <!-- En-tête -->
+        <header class="cv-hero">
+            <div class="cv-stripe" aria-hidden="true"></div>
+            <div class="cv-hero-body">
+                <span class="cv-hero-icon" aria-hidden="true">💬</span>
+                <div>
+                    <h1>{% translate "Mes Conversations" %}</h1>
+                    <p>{% translate "Gérez vos échanges avec les autres utilisateurs" %}</p>
+                </div>
+            </div>
+        </header>
+
+        {% if conversations %}
+            <div class="cv-list">
+                {% for conv_info in conversations %}
+                    <a href="{% url 'messagerie:conversation_detail' conv_info.conversation.id %}" class="cv-item {% if conv_info.unread_count > 0 %}cv-item--unread{% endif %}">
+                        <div class="cv-avatar">
+                            {% if conv_info.other_participant and conv_info.other_participant.profile and conv_info.other_participant.profile.photo_profil %}
+                                <img src="{{ conv_info.other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}">
+                            {% elif conv_info.other_participant %}
+                                <div class="cv-avatar-placeholder">{{ conv_info.other_participant.first_name|default:conv_info.other_participant.username|first|upper }}</div>
+                            {% else %}
+                                <div class="cv-avatar-placeholder">?</div>
+                            {% endif %}
                         </div>
 
-                        {% if conv_info.conversation.annonce %}
-                            <div class="conversation-subject">
-                                📄 {{ conv_info.conversation.annonce.titre|truncatechars:50 }}
+                        <div class="cv-content">
+                            <div class="cv-header">
+                                <h3 class="cv-partner">
+                                    <span class="cv-name">{% if conv_info.other_participant %}{{ conv_info.other_participant.get_full_name|default:conv_info.other_participant.username }}{% else %}{% translate "Contact indisponible" %}{% endif %}</span>
+                                    {% if conv_info.unread_count > 0 %}
+                                        <span class="cv-badge">{{ conv_info.unread_count }}</span>
+                                    {% endif %}
+                                </h3>
+                                <span class="cv-date">
+                                    {% if conv_info.last_message %}
+                                        {{ conv_info.last_message.created_at|date:"d/m H:i" }}
+                                    {% else %}
+                                        {{ conv_info.conversation.created_at|date:"d/m H:i" }}
+                                    {% endif %}
+                                </span>
                             </div>
-                        {% endif %}
 
-                        {% if conv_info.last_message %}
-                            <div class="conversation-preview">
-                                {% if conv_info.last_message.expediteur == request.user %}
-                                    <strong>{% translate "Vous:" %}</strong>
-                                {% endif %}
-                                {{ conv_info.last_message.contenu|truncatechars:100 }}
-                            </div>
-                        {% else %}
-                            <div class="conversation-preview text-muted">
-                                {% translate "Nouvelle conversation" %}
-                            </div>
-                        {% endif %}
-                    </div>
+                            {% if conv_info.conversation.annonce %}
+                                <div class="cv-subject">
+                                    📄 {{ conv_info.conversation.annonce.titre|truncatechars:50 }}
+                                </div>
+                            {% endif %}
+
+                            {% if conv_info.last_message %}
+                                <div class="cv-preview">
+                                    {% if conv_info.last_message.expediteur == request.user %}
+                                        <strong>{% translate "Vous:" %}</strong>
+                                    {% endif %}
+                                    {{ conv_info.last_message.contenu|truncatechars:100 }}
+                                </div>
+                            {% else %}
+                                <div class="cv-preview cv-preview--muted">
+                                    {% translate "Nouvelle conversation" %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="cv-empty">
+                <div class="cv-empty-icon" aria-hidden="true">💬</div>
+                <h2>{% translate "Aucune conversation pour le moment" %}</h2>
+                <p>{% translate "Commencez une conversation en répondant à une annonce qui vous intéresse" %}</p>
+                <a href="{% url 'colocation:liste_annonces' %}" class="cv-btn">
+                    {% translate "Voir les annonces" %}
+                    <span class="cv-btn-arrow" aria-hidden="true">→</span>
                 </a>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="text-center section-empty">
-            <div class="empty-icon">💬</div>
-            <h2>{% translate "Aucune conversation pour le moment" %}</h2>
-            <p class="text-muted">{% translate "Commencez une conversation en répondant à une annonce qui vous intéresse" %}</p>
-            <a href="{% url 'colocation:liste_annonces' %}" class="btn btn-primary">{% translate "Voir les annonces" %}</a>
-        </div>
-    {% endif %}
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <style>
-    .conversations-list {
-        max-width: 900px;
+    /* ── Palette Côte d'Ivoire : orange · blanc · vert ── */
+    .cv-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
+        font-family: 'Figtree', system-ui, sans-serif;
+        color: var(--ci-ink);
+        background: var(--ci-bg);
+        min-height: 100vh;
+        padding: 2rem 1.25rem 3.5rem;
+    }
+
+    .cv-container {
+        max-width: 860px;
         margin: 0 auto;
     }
 
-    .conversation-item {
+    .cv-page :where(h1, h2, h3, p) { margin: 0; }
+
+    /* ── En-tête ── */
+    .cv-hero {
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+    }
+
+    .cv-stripe {
+        height: 6px;
+        background: linear-gradient(
+            90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%
+        );
+    }
+
+    .cv-hero-body {
         display: flex;
         align-items: center;
-        gap: 12px;
-        min-height: 76px;
-        padding: 10px 14px;
-        margin-bottom: 6px;
-        background: white;
-        border: 1px solid transparent;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        color: inherit;
-        text-decoration: none;
-        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
     }
 
-    .conversation-item:hover {
-        background: #f5f5f5;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .conversation-item:focus-visible {
-        outline: 3px solid var(--primary);
-        outline-offset: 2px;
-    }
-
-    .conversation-item.unread {
-        background: linear-gradient(135deg, #f0f0ff 0%, #ffffff 100%);
-        border: 1px solid rgba(94, 93, 255, 0.2);
-        font-weight: 500;
-    }
-
-    .conversation-item.unread .conversation-partner {
-        font-weight: 700;
-        color: #1a1a1a;
-    }
-
-    .conversation-item.unread .conversation-preview {
-        color: var(--text);
-        font-weight: 500;
-    }
-
-    .conversation-avatar {
-        flex: 0 0 auto;
-    }
-
-    .conversation-avatar img {
-        display: block;
-        width: 46px;
-        height: 46px;
+    .cv-hero-icon {
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #e0e0e0;
-    }
-
-    .conversation-item.unread .conversation-avatar img {
-        border-color: var(--primary);
-    }
-
-    .avatar-placeholder {
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
-        color: white;
+        background: var(--ci-orange);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        font-size: 1.1rem;
-        border: 2px solid #e0e0e0;
+        font-size: 1.4rem;
+        flex-shrink: 0;
     }
 
-    .conversation-item.unread .avatar-placeholder {
-        border-color: var(--primary);
+    .cv-hero h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 4px;
     }
 
-    .conversation-content {
-        flex: 1;
-        min-width: 0;
+    .cv-hero p {
+        font-size: 15px;
+        color: rgba(255,255,255,0.82);
     }
 
-    .conversation-header {
+    /* ── Liste ── */
+    .cv-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cv-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 78px;
+        padding: 12px 16px;
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 14px;
+        color: inherit;
+        text-decoration: none;
+        transition: border-color .15s ease, background-color .15s ease;
+    }
+
+    .cv-item:hover {
+        background: #FAFCFB;
+        border-color: #9FB3A7;
+    }
+
+    .cv-item:focus-visible {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
+    }
+
+    /* Non lue : fond orange très clair + filet orange à gauche */
+    .cv-item--unread {
+        background: #FFFAF3;
+        border-color: #F6D9B0;
+        box-shadow: inset 4px 0 0 var(--ci-orange);
+    }
+
+    .cv-item--unread:hover {
+        background: #FFF6EA;
+        border-color: #EFC688;
+    }
+
+    /* ── Avatar ── */
+    .cv-avatar { flex: 0 0 auto; }
+
+    .cv-avatar img,
+    .cv-avatar-placeholder {
+        display: block;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--ci-green-soft);
+    }
+
+    .cv-avatar-placeholder {
+        background: var(--ci-green);
+        color: var(--ci-white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-weight: 700;
+        font-size: 1.15rem;
+    }
+
+    .cv-item--unread .cv-avatar img,
+    .cv-item--unread .cv-avatar-placeholder {
+        border-color: var(--ci-orange);
+    }
+
+    /* ── Contenu ── */
+    .cv-content { flex: 1; min-width: 0; }
+
+    .cv-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -169,116 +254,168 @@
         margin-bottom: 2px;
     }
 
-    .conversation-partner {
+    .cv-partner {
         min-width: 0;
-        font-size: 0.98rem;
-        font-weight: 600;
-        color: var(--text);
-        margin: 0;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.02rem;
+        font-weight: 500;
+        color: var(--ci-ink);
     }
 
-    .conversation-name {
+    .cv-item--unread .cv-partner { font-weight: 700; }
+
+    .cv-name {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .unread-badge {
+    .cv-badge {
         flex: 0 0 auto;
-        background: var(--primary);
-        color: white;
-        padding: 2px 7px;
-        border-radius: 20px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        margin-left: 0;
-        min-width: 20px;
-        text-align: center;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        min-width: 22px;
+        height: 22px;
+        padding: 0 7px;
+        border-radius: 999px;
+        font-family: 'Figtree', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .conversation-date {
-        color: var(--text-muted);
-        font-size: 0.75rem;
+    .cv-date {
+        flex: 0 0 auto;
+        color: var(--ci-muted);
+        font-size: 12px;
         white-space: nowrap;
-        flex: 0 0 auto;
     }
 
-    .conversation-subject {
-        color: var(--primary);
+    .cv-item--unread .cv-date { color: #9A4F00; font-weight: 600; }
+
+    .cv-subject {
+        color: var(--ci-green-deep);
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 2px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 0.78rem;
-        margin-bottom: 2px;
-        font-weight: 500;
     }
 
-    .conversation-preview {
-        color: #666;
-        font-size: 0.84rem;
+    .cv-preview {
+        color: var(--ci-muted);
+        font-size: 14px;
         line-height: 1.4;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    .text-muted {
-        color: #999 !important;
-    }
+    .cv-preview strong { color: var(--ci-green-deep); font-weight: 600; }
 
-    .section-empty {
+    .cv-item--unread .cv-preview { color: var(--ci-ink); font-weight: 500; }
+
+    .cv-preview--muted { font-style: italic; }
+
+    /* ── État vide ── */
+    .cv-empty {
         text-align: center;
-        padding: 60px 20px;
+        padding: 3.5rem 1.5rem;
+        background: var(--ci-white);
+        border: 2px dashed #BFD0C5;
+        border-radius: 16px;
     }
 
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.5;
+    .cv-empty-icon {
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 1.1rem;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.1rem;
     }
 
-    .section-empty h2 {
-        color: var(--text);
-        margin-bottom: 10px;
+    .cv-empty h2 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ci-green-deep);
+        margin-bottom: 8px;
     }
 
-    .section-empty p {
-        color: var(--text-muted);
-        margin-bottom: 30px;
+    .cv-empty p {
+        max-width: 420px;
+        margin: 0 auto 1.5rem;
+        color: var(--ci-muted);
+        font-size: 15px;
+        line-height: 1.55;
     }
 
+    .cv-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0.8rem 1.4rem;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .15s ease, transform .1s ease;
+    }
+
+    .cv-btn:hover { background: var(--ci-orange-hover); transform: translateY(-1px); }
+
+    .cv-btn:focus-visible {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
+    }
+
+    .cv-btn-arrow {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    /* ── Responsive ── */
     @media (max-width: 480px) {
-        .conversation-item {
-            gap: 10px;
-            min-height: 68px;
-            padding: 9px 10px;
-        }
+        .cv-page { padding: 1rem 0.75rem 2.5rem; }
 
-        .conversation-avatar img,
-        .avatar-placeholder {
-            width: 42px;
-            height: 42px;
-        }
+        .cv-hero-body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
+        .cv-hero h1 { font-size: 1.4rem; }
+        .cv-hero p { font-size: 14px; }
 
-        .conversation-partner {
-            font-size: 0.9rem;
-        }
+        .cv-item { gap: 10px; min-height: 70px; padding: 10px 12px; }
 
-        .conversation-date {
-            font-size: 0.68rem;
-        }
+        .cv-avatar img,
+        .cv-avatar-placeholder { width: 42px; height: 42px; }
 
-        .conversation-subject {
-            font-size: 0.72rem;
-        }
+        .cv-partner { font-size: 0.95rem; }
+        .cv-date { font-size: 11px; }
+        .cv-subject { font-size: 12px; }
+        .cv-preview { font-size: 13px; }
+    }
 
-        .conversation-preview {
-            font-size: 0.78rem;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .cv-page * { transition: none !important; }
+        .cv-btn:hover { transform: none; }
     }
 </style>
 {% endblock %}

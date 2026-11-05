@@ -385,10 +385,155 @@
     line-height: 1.7;
   }
 
+  .rc-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1.5rem;
+  }
+
+  .rc-detail-label {
+    margin: 0 0 3px;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .rc-detail-value {
+    margin: 0;
+    color: #111827;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  .rc-print-note {
+    grid-column: 1 / -1;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
   @media (max-width: 480px) {
     .rc-title { font-size: 22px; }
     .rc-amount-value { font-size: 18px; }
     .rc-date-value { font-size: 15px; }
+    .rc-details-grid { grid-template-columns: 1fr; }
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  @media print {
+    html,
+    body {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      background: #fff !important;
+      color: #111827;
+      font-size: 10pt;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body > header,
+    .navbar,
+    .tabbar,
+    main > .container,
+    .rc-actions,
+    .rc-copy-btn,
+    .rc-card--steps {
+      display: none !important;
+    }
+
+    main,
+    main.animate-slide-up {
+      display: block;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+      animation: none;
+      transform: none;
+    }
+
+    .rc-wrap {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .rc-header {
+      margin: 0 0 10mm;
+      padding-bottom: 5mm;
+      border-bottom: 2px solid #3B6D11;
+      text-align: left;
+    }
+
+    .rc-check,
+    .rc-badge-row {
+      display: none;
+    }
+
+    .rc-title {
+      margin-bottom: 2mm;
+      font-family: Arial, sans-serif;
+      font-size: 22pt;
+      font-weight: 700;
+    }
+
+    .rc-subtitle {
+      font-size: 10pt;
+    }
+
+    .rc-card {
+      margin: 0 0 5mm;
+      overflow: visible;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      box-shadow: none;
+    }
+
+    .rc-card-header {
+      padding: 2.5mm 4mm;
+      background: #f3f4f6 !important;
+    }
+
+    .rc-card-body {
+      padding: 4mm;
+    }
+
+    .rc-property-row {
+      margin-bottom: 4mm;
+    }
+
+    .rc-property-thumb,
+    .rc-method-icon {
+      display: none;
+    }
+
+    .rc-date-grid,
+    .rc-amount-row,
+    .rc-ref-block,
+    .rc-alert {
+      border-radius: 3px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .rc-footer {
+      margin-top: 5mm;
+      color: #4b5563;
+    }
   }
 </style>
 
@@ -426,7 +571,9 @@
         <div class="rc-property-thumb">🏡</div>
         <div>
           <p class="rc-property-name">{{ reservation.logement.titre }}</p>
-          <p class="rc-property-loc">📍 {% translate "Côte d'Ivoire" %}</p>
+          <p class="rc-property-loc">
+            📍 {{ reservation.logement.ville }}{% if reservation.logement.quartier %}, {{ reservation.logement.quartier }}{% endif %}
+          </p>
         </div>
       </div>
 
@@ -453,6 +600,39 @@
           {{ reservation.montant_final|floatformat:0 }}
           <span class="rc-amount-currency">FCFA</span>
         </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rc-card">
+    <div class="rc-card-header">
+      <span class="rc-card-header-icon">👤</span>
+      <span>{% translate "Informations du voyageur" %}</span>
+    </div>
+    <div class="rc-card-body">
+      <div class="rc-details-grid">
+        <div>
+          <p class="rc-detail-label">{% translate "Nom" %}</p>
+          <p class="rc-detail-value">{{ reservation.client_nom }}</p>
+        </div>
+        <div>
+          <p class="rc-detail-label">{% translate "Téléphone" %}</p>
+          <p class="rc-detail-value">{{ reservation.client_telephone }}</p>
+        </div>
+        <div>
+          <p class="rc-detail-label">{% translate "Adresse e-mail" %}</p>
+          <p class="rc-detail-value">{{ reservation.client_email }}</p>
+        </div>
+        <div>
+          <p class="rc-detail-label">{% translate "Voyageurs / chambres" %}</p>
+          <p class="rc-detail-value">{{ reservation.nombre_personnes }} / {{ reservation.nombre_chambres }}</p>
+        </div>
+        {% if reservation.remarques %}
+          <div class="rc-print-note">
+            <p class="rc-detail-label">{% translate "Remarques" %}</p>
+            <p class="rc-detail-value">{{ reservation.remarques|linebreaksbr }}</p>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -548,7 +728,7 @@
   </div>
 
   <!-- Carte : Étapes suivantes -->
-  <div class="rc-card">
+  <div class="rc-card rc-card--steps">
     <div class="rc-card-header">
       <span class="rc-card-header-icon">✓</span>
       <span>{% translate "Prochaines étapes" %}</span>
@@ -601,7 +781,7 @@
       🏠 {% translate "Accueil" %}
     </a>
     <a href="#" class="rc-btn secondary" onclick="window.print(); return false;">
-      🖨️ Imprimer / Télécharger
+      🖨️ {% translate "Imprimer la fiche" %}
     </a>
   </div>
 

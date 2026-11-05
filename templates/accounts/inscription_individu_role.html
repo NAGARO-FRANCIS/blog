@@ -5,25 +5,31 @@
 {% block title %}{% translate "Choisissez votre rôle" %} - {% translate "Inscription" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
 <div class="role-page">
     <div class="role-shell">
 
         <!-- Indicateur d'étape -->
-        <div class="role-progress" aria-label="{% translate 'Étape 2 sur 2' %}">
+        <div class="role-progress" role="group" aria-label="{% translate 'Étape 2 sur 2' %}">
             <div class="role-progress-step is-done">
                 <span class="role-progress-dot">
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 10.5l3 3 7-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </span>
                 <span class="role-progress-label">{% translate "Compte créé" %}</span>
             </div>
-            <div class="role-progress-line"></div>
-            <div class="role-progress-step is-active">
+            <div class="role-progress-line" aria-hidden="true"></div>
+            <div class="role-progress-step is-active" aria-current="step">
                 <span class="role-progress-dot">2</span>
                 <span class="role-progress-label">{% translate "Choisissez votre rôle" %}</span>
             </div>
         </div>
 
         <header class="role-header">
+            <div class="role-flag" aria-hidden="true"><span></span><span></span><span></span></div>
             <h1>{% translate "Quel chemin vous ressemble?" %}</h1>
             <p>{% translate "Votre réponse ajuste tout: ce que vous voyez en premier, et ce que vous pouvez faire sur Ivoire Connect." %}</p>
         </header>
@@ -111,7 +117,7 @@
             </div>
 
             {% if form.non_field_errors %}
-                <div class="role-alert">{{ form.non_field_errors }}</div>
+                <div class="role-alert" role="alert">{{ form.non_field_errors }}</div>
             {% endif %}
 
             <div class="role-actions">
@@ -129,26 +135,34 @@
 </div>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
-
+    /* ── Palette Côte d'Ivoire : orange · blanc · vert ── */
     .role-page {
-        --bg: #F5F8F4;
+        --bg: #F3F7F4;
         --surface: #FFFFFF;
-        --ink: #14231D;
+        --ink: #10231A;
         --ink-muted: #5B6B62;
-        --border: #DDE7DF;
-        --owner: #0B6E4F;
-        --tenant: #E86A1C;
-        --tourist: #1C7C8C;
+        --border: #DCE5DF;
+
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+
+        /* Un accent par rôle */
+        --owner: #0B5D3B;      /* vert profond */
+        --tenant: #F77F00;     /* orange */
+        --tourist: #009E60;    /* vert vif */
 
         background: var(--bg);
         min-height: 100vh;
         padding: 56px 20px 72px;
         display: flex;
         justify-content: center;
-        font-family: 'Inter', -apple-system, sans-serif;
+        font-family: 'Figtree', system-ui, sans-serif;
         color: var(--ink);
     }
+
+    .role-page :where(h1, h3, p, ul) { margin: 0; }
 
     .role-shell {
         width: 100%;
@@ -172,48 +186,44 @@
     }
 
     .role-progress-dot {
-        width: 24px;
-        height: 24px;
+        width: 26px;
+        height: 26px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         font-weight: 600;
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: 'Bricolage Grotesque', sans-serif;
         flex-shrink: 0;
     }
 
     .role-progress-step.is-done .role-progress-dot {
-        background: var(--owner);
+        background: var(--ci-green);
         color: white;
     }
 
-    .role-progress-step.is-done .role-progress-dot svg { width: 12px; height: 12px; }
+    .role-progress-step.is-done .role-progress-dot svg { width: 13px; height: 13px; }
 
     .role-progress-step.is-active .role-progress-dot {
-        background: transparent;
-        border: 2px solid var(--owner);
-        color: var(--owner);
+        background: var(--ci-orange);
+        color: var(--ink);
     }
 
-    .role-progress-step.is-done .role-progress-label {
-        color: var(--ink-muted);
-    }
+    .role-progress-step.is-done .role-progress-label { color: var(--ink-muted); }
 
     .role-progress-step.is-active .role-progress-label {
         color: var(--ink);
         font-weight: 600;
     }
 
-    .role-progress-label {
-        font-size: 0.85rem;
-    }
+    .role-progress-label { font-size: 0.9rem; }
 
     .role-progress-line {
-        width: 32px;
-        height: 1px;
-        background: var(--border);
+        width: 36px;
+        height: 2px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--ci-green), var(--ci-orange));
     }
 
     /* ---- Header ---- */
@@ -223,12 +233,28 @@
         margin: 0 auto 48px;
     }
 
+    /* Petite bande tricolore : orange / blanc / vert */
+    .role-flag {
+        display: flex;
+        width: 72px;
+        height: 6px;
+        margin: 0 auto 20px;
+        border-radius: 3px;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px var(--border);
+    }
+
+    .role-flag span { flex: 1; }
+    .role-flag span:nth-child(1) { background: var(--ci-orange); }
+    .role-flag span:nth-child(2) { background: #FFFFFF; }
+    .role-flag span:nth-child(3) { background: var(--ci-green); }
+
     .role-header h1 {
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: 'Bricolage Grotesque', sans-serif;
         font-size: clamp(1.75rem, 3.4vw, 2.5rem);
         font-weight: 700;
         letter-spacing: -0.02em;
-        margin: 0 0 12px;
+        margin-bottom: 12px;
         color: var(--ink);
     }
 
@@ -236,7 +262,6 @@
         color: var(--ink-muted);
         font-size: 1.05rem;
         line-height: 1.5;
-        margin: 0;
     }
 
     /* ---- Grid ---- */
@@ -248,9 +273,7 @@
     }
 
     @media (min-width: 860px) {
-        .role-options-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
+        .role-options-grid { grid-template-columns: repeat(3, 1fr); }
     }
 
     /* ---- Card ---- */
@@ -258,6 +281,21 @@
         position: relative;
         opacity: 0;
         animation: role-card-in 0.5s ease forwards;
+        --accent: var(--owner);
+        --on-accent: #FFFFFF;
+        --accent-text: var(--owner);
+    }
+
+    .role-card[data-accent="tenant"] {
+        --accent: var(--tenant);
+        --on-accent: var(--ink);
+        --accent-text: #B35C00;
+    }
+
+    .role-card[data-accent="tourist"] {
+        --accent: var(--tourist);
+        --on-accent: #FFFFFF;
+        --accent-text: #007A4A;
     }
 
     .role-card:nth-child(1) { animation-delay: 0.05s; }
@@ -271,6 +309,9 @@
 
     @media (prefers-reduced-motion: reduce) {
         .role-card { animation: none; opacity: 1; }
+        .role-page * { transition: none !important; }
+        .role-label-card:hover,
+        .role-btn-primary:hover { transform: none; }
     }
 
     .role-input {
@@ -304,51 +345,43 @@
         left: 20px;
         right: 20px;
         bottom: 0;
-        height: 3px;
+        height: 4px;
         border-radius: 2px 2px 0 0;
-        background: var(--accent, transparent);
+        background: var(--accent);
         transform: scaleX(0);
         transform-origin: center;
         transition: transform 0.3s ease;
     }
 
-    .role-card[data-accent="owner"] .role-label-card { --accent: var(--owner); }
-    .role-card[data-accent="tenant"] .role-label-card { --accent: var(--tenant); }
-    .role-card[data-accent="tourist"] .role-label-card { --accent: var(--tourist); }
-
     .role-label-card:hover {
         transform: translateY(-6px);
-        box-shadow: 0 16px 32px rgba(20, 35, 29, 0.08);
+        box-shadow: 0 16px 32px rgba(11, 93, 59, 0.10);
         border-color: var(--accent);
     }
 
-    .role-label-card:hover::after {
-        transform: scaleX(1);
-    }
+    .role-label-card:hover::after { transform: scaleX(1); }
 
     .role-input:focus-visible + .role-label-card {
-        outline: 2px solid var(--accent);
+        outline: 3px solid var(--accent);
         outline-offset: 3px;
     }
 
     .role-input:checked + .role-label-card {
         border-color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 5%, var(--surface));
-        box-shadow: 0 16px 32px rgba(20, 35, 29, 0.1);
+        background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+        box-shadow: 0 16px 32px rgba(11, 93, 59, 0.12);
     }
 
-    .role-input:checked + .role-label-card::after {
-        transform: scaleX(1);
-    }
+    .role-input:checked + .role-label-card::after { transform: scaleX(1); }
 
     .role-check {
         position: absolute;
         top: 18px;
         right: 18px;
-        width: 24px;
-        height: 24px;
+        width: 26px;
+        height: 26px;
         border-radius: 50%;
-        background: var(--accent, var(--owner));
+        background: var(--accent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -357,7 +390,8 @@
         transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
-    .role-check svg { width: 13px; height: 13px; }
+    .role-check svg { width: 14px; height: 14px; }
+    .role-check svg path { stroke: var(--on-accent); }
 
     .role-input:checked + .role-label-card .role-check {
         opacity: 1;
@@ -368,8 +402,8 @@
         width: 64px;
         height: 64px;
         border-radius: 50%;
-        background: color-mix(in srgb, var(--accent, var(--owner)) 10%, var(--surface));
-        color: var(--accent, var(--owner));
+        background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+        color: var(--accent-text);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -381,29 +415,28 @@
 
     .role-input:checked + .role-label-card .role-icon {
         background: var(--accent);
-        color: white;
+        color: var(--on-accent);
     }
 
     .role-label-card h3 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
         text-align: center;
-        margin: 0 0 8px;
+        margin-bottom: 8px;
         color: var(--ink);
     }
 
     .role-description {
         text-align: center;
         color: var(--ink-muted);
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         line-height: 1.45;
-        margin: 0 0 22px;
+        margin-bottom: 22px;
     }
 
     .role-benefits {
         list-style: none;
-        margin: 0;
         padding: 18px 0 0;
         border-top: 1px solid var(--border);
         display: flex;
@@ -412,9 +445,9 @@
     }
 
     .role-benefits li {
-        font-size: 0.85rem;
-        color: var(--ink-muted);
-        padding-left: 20px;
+        font-size: 0.9rem;
+        color: var(--ink);
+        padding-left: 22px;
         position: relative;
     }
 
@@ -423,11 +456,10 @@
         position: absolute;
         left: 0;
         top: 6px;
-        width: 8px;
-        height: 8px;
+        width: 9px;
+        height: 9px;
         border-radius: 50%;
-        background: var(--accent, var(--owner));
-        opacity: 0.55;
+        background: var(--accent);
     }
 
     /* ---- Alert ---- */
@@ -436,12 +468,14 @@
         margin: 0 auto 24px;
         padding: 14px 18px;
         border-radius: 12px;
-        background: #FDF1EC;
-        border: 1px solid #F3C9B4;
-        color: #9A3B12;
-        font-size: 0.9rem;
+        background: #FDF1F1;
+        border: 1px solid #F0CACA;
+        color: #7E1F1F;
+        font-size: 0.95rem;
         text-align: center;
     }
+
+    .role-alert ul { list-style: none; padding: 0; }
 
     /* ---- Actions ---- */
     .role-actions {
@@ -455,44 +489,47 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 14px 26px;
+        padding: 14px 28px;
         border-radius: 999px;
-        font-family: 'Inter', sans-serif;
+        font-family: inherit;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 1rem;
         text-decoration: none;
         border: none;
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .role-btn:focus-visible {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
     }
 
     .role-btn svg { width: 16px; height: 16px; }
 
     .role-btn-ghost {
         background: transparent;
-        color: var(--ink-muted);
-        border: 1.5px solid var(--border);
+        color: var(--ci-green-deep);
+        border: 1.5px solid #BFE0CE;
     }
 
     .role-btn-ghost:hover {
-        border-color: var(--ink-muted);
-        color: var(--ink);
+        background: #E6F4EC;
+        border-color: var(--ci-green);
     }
 
     .role-btn-primary {
-        background: var(--owner);
-        color: white;
+        background: var(--ci-orange);
+        color: var(--ink);
         flex-direction: row-reverse;
     }
 
     .role-btn-primary:hover {
+        background: var(--ci-orange-hover);
         transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(11, 110, 79, 0.3);
     }
 
-    .role-btn-primary:active {
-        transform: translateY(0);
-    }
+    .role-btn-primary:active { transform: translateY(0); }
 
     @media (max-width: 480px) {
         .role-page { padding: 36px 14px 56px; }

@@ -4,1032 +4,849 @@
 {% block title %}{% translate "Publier une Annonce - Ivoire Connect" %}{% endblock %}
 
 {% block content %}
-<div class="container mt-5 individual-publication-wizard" id="individual-publication-wizard">
-    <div class="row">
-        <div class="col-lg-12">
-            <!-- Breadcrumb -->
-            <nav class="breadcrumb-nav mb-4">
-                <a href="{% url 'logement:home' %}">{% translate "Accueil" %}</a> >
-                <span>{% translate "Publier une annonce" %}</span>
-            </nav>
 
-            <!-- Titre et description -->
-            <div class="page-header mb-5">
-                <h1>📝 {% translate "Publier une Annonce" %}</h1>
-                <p class="text-muted">{% translate "Remplissez les informations de votre logement" %}</p>
-                
-                <!-- Info sur le type de publication -->
-                <div class="role-publication-info mt-4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="individual-publication-wizard" id="individual-publication-wizard">
+    <div class="iw-shell">
+
+        <!-- Fil d'Ariane -->
+        <nav class="iw-breadcrumb" aria-label="{% translate 'Fil d’Ariane' %}">
+            <a href="{% url 'logement:home' %}">{% translate "Accueil" %}</a>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">{% translate "Publier une annonce" %}</span>
+        </nav>
+
+        <!-- En-tête -->
+        <header class="iw-hero">
+            <div class="iw-stripe" aria-hidden="true"></div>
+            <div class="iw-hero-body">
+                <span class="iw-hero-icon" aria-hidden="true">📝</span>
+                <h1>{% translate "Publier une Annonce" %}</h1>
+                <p>{% translate "Remplissez les informations de votre logement" %}</p>
+
+                <div class="iw-role">
                     {% if role == 'proprietaire' %}
-                        <div class="alert alert-info">
-                            🏠 <strong>{% translate "Mode Propriétaire" %}</strong> - {% translate "Vous publiez votre maison/chambres à louer" %}
-                        </div>
+                        <span aria-hidden="true">🏠</span>
+                        <span><strong>{% translate "Mode Propriétaire" %}</strong> - {% translate "Vous publiez votre maison/chambres à louer" %}</span>
                     {% elif role == 'locataire' %}
-                        <div class="alert alert-info">
-                            🔑 <strong>{% translate "Mode Locataire" %}</strong> - {% translate "Vous cherchez un touriste pour partager votre maison" %}
-                        </div>
+                        <span aria-hidden="true">🔑</span>
+                        <span><strong>{% translate "Mode Locataire" %}</strong> - {% translate "Vous cherchez un touriste pour partager votre maison" %}</span>
                     {% else %}
-                        <div class="alert alert-info">
-                            👥 <strong>{% translate "Mode Individu" %}</strong> - {% translate "Publiez votre annonce" %}
-                        </div>
+                        <span aria-hidden="true">👥</span>
+                        <span><strong>{% translate "Mode Individu" %}</strong> - {% translate "Publiez votre annonce" %}</span>
                     {% endif %}
                 </div>
             </div>
+        </header>
 
-            <!-- Formulaire -->
-            <form method="post" enctype="multipart/form-data" class="publication-form">
-                {% csrf_token %}
+        <!-- Formulaire -->
+        <form method="post" enctype="multipart/form-data" class="publication-form iw-form">
+            {% csrf_token %}
 
-                <div class="individual-progress" aria-hidden="true">
-                    <div class="individual-progress-bar" id="individual-progress-bar"></div>
+            <div class="individual-progress" aria-hidden="true">
+                <div class="individual-progress-bar" id="individual-progress-bar"></div>
+            </div>
+
+            <nav class="individual-steps" aria-label="{% translate 'Étapes de publication' %}">
+                <button type="button" class="individual-step active" data-individual-step="0" aria-current="step">
+                    <span class="iw-step-icon" aria-hidden="true">📍</span>{% translate "Infos" %}
+                </button>
+                <button type="button" class="individual-step" data-individual-step="1">
+                    <span class="iw-step-icon" aria-hidden="true">🏠</span>{% translate "Détails" %}
+                </button>
+                <button type="button" class="individual-step" data-individual-step="2">
+                    <span class="iw-step-icon" aria-hidden="true">⚙️</span>{% translate "Équipements" %}
+                </button>
+                <button type="button" class="individual-step" data-individual-step="3">
+                    <span class="iw-step-icon" aria-hidden="true">📸</span>{% translate "Photos" %}
+                </button>
+                <button type="button" class="individual-step" data-individual-step="4">
+                    <span class="iw-step-icon" aria-hidden="true">🎬</span>{% translate "Vidéos" %}
+                </button>
+            </nav>
+
+            <!-- Erreurs générales -->
+            {% if form.non_field_errors %}
+                <div class="iw-alert" role="alert">
+                    {{ form.non_field_errors }}
                 </div>
-                <nav class="individual-steps" aria-label="{% translate 'Étapes de publication' %}">
-                    <button type="button" class="individual-step active" data-individual-step="0" aria-current="step">
-                        <span aria-hidden="true">📍</span>{% translate "Infos" %}
-                    </button>
-                    <button type="button" class="individual-step" data-individual-step="1">
-                        <span aria-hidden="true">🏠</span>{% translate "Détails" %}
-                    </button>
-                    <button type="button" class="individual-step" data-individual-step="2">
-                        <span aria-hidden="true">⚙️</span>{% translate "Équipements" %}
-                    </button>
-                    <button type="button" class="individual-step" data-individual-step="3">
-                        <span aria-hidden="true">📸</span>{% translate "Photos" %}
-                    </button>
-                    <button type="button" class="individual-step" data-individual-step="4">
-                        <span aria-hidden="true">🎬</span>{% translate "Vidéos" %}
-                    </button>
-                </nav>
+            {% endif %}
 
-                <!-- Messages d'erreur généraux -->
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
+            <!-- Étape 1 : Informations de base -->
+            <fieldset class="iw-panel individual-step-panel" data-individual-panel="0">
+                <legend><span class="iw-legend-icon" aria-hidden="true">📍</span>{% translate "Informations de Base" %}</legend>
 
-                <!-- Section: Informations de Base -->
-                <fieldset class="form-section individual-step-panel" data-individual-panel="0">
-                    <legend>📍 {% translate "Informations de Base" %}</legend>
-                    
-                    <div class="form-group">
-                        <label for="{{ form.titre.id_for_label }}">{{ form.titre.label }}</label>
-                        {{ form.titre }}
-                        {% if form.titre.errors %}
-                            <div class="alert alert-danger small mt-2">{{ form.titre.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
-                        {{ form.description }}
-                        {% if form.description.errors %}
-                            <div class="alert alert-danger small mt-2">{{ form.description.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.type_logement.id_for_label }}">{{ form.type_logement.label }}</label>
-                                {{ form.type_logement }}
-                                {% if form.type_logement.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form.type_logement.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.prix.id_for_label }}">{{ form.prix.label }}</label>
-                                {{ form.prix }}
-                                {% if form.prix.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form.prix.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
-                                {{ form.ville }}
-                                {% if form.ville.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form.ville.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.quartier.id_for_label }}">{{ form.quartier.label }}</label>
-                                {{ form.quartier }}
-                                {% if form.quartier.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form.quartier.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Section: Caractéristiques -->
-                <fieldset class="form-section individual-step-panel" data-individual-panel="1" hidden>
-                    <legend>🏠 {% translate "Caractéristiques du Logement" %}</legend>
-                    
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="{{ form.surface.id_for_label }}">{{ form.surface.label }}</label>
-                                {{ form.surface }}
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="{{ form.nombre_pieces.id_for_label }}">{{ form.nombre_pieces.label }}</label>
-                                {{ form.nombre_pieces }}
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="{{ form.nombre_chambres.id_for_label }}">{{ form.nombre_chambres.label }}</label>
-                                {{ form.nombre_chambres }}
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="{{ form.nombre_lits.id_for_label }}">{{ form.nombre_lits.label }}</label>
-                                {{ form.nombre_lits }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="{{ form.nombre_salles_bain.id_for_label }}">{{ form.nombre_salles_bain.label }}</label>
-                                {{ form.nombre_salles_bain }}
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="{{ form.etage.id_for_label }}">{{ form.etage.label }}</label>
-                                {{ form.etage }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="{{ form.meuble.id_for_label }}">{{ form.meuble.label }}</label>
-                                {{ form.meuble }}
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Section: Équipements -->
-                <fieldset class="form-section individual-step-panel" data-individual-panel="2" hidden>
-                    <legend>✨ {% translate "Équipements" %}</legend>
-                    
-                    <div class="equipements-grid">
-                        <div class="form-check">
-                            {{ form.climatisation }}
-                            <label class="form-check-label" for="{{ form.climatisation.id_for_label }}">
-                                {{ form.climatisation.label }}
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            {{ form.wifi }}
-                            <label class="form-check-label" for="{{ form.wifi.id_for_label }}">
-                                {{ form.wifi.label }}
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            {{ form.garage }}
-                            <label class="form-check-label" for="{{ form.garage.id_for_label }}">
-                                {{ form.garage.label }}
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            {{ form.jardin }}
-                            <label class="form-check-label" for="{{ form.jardin.id_for_label }}">
-                                {{ form.jardin.label }}
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            {{ form.piscine }}
-                            <label class="form-check-label" for="{{ form.piscine.id_for_label }}">
-                                {{ form.piscine.label }}
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            {{ form.cuisine_equipee }}
-                            <label class="form-check-label" for="{{ form.cuisine_equipee.id_for_label }}">
-                                {{ form.cuisine_equipee.label }}
-                            </label>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Section: Photos (formset) -->
-                <fieldset class="form-section individual-step-panel" data-individual-panel="3" hidden>
-                    <legend>📷 {% translate "Photos (jusqu'à 20)" %}</legend>
-                    
-                    <div id="formset-container">
-                        {{ formset.management_form }}
-                        
-                        {% for form_photo in formset %}
-                            <div class="photo-form mb-3 p-3 border rounded">
-                                {% if form_photo.image.value %}
-                                    <div class="mb-2">
-                                        <img src="{{ form_photo.image.value.url }}" alt="{% translate 'Aperçu de la photo' %}">
-                                    </div>
-                                {% endif %}
-
-                                <div class="form-group">
-                                    <label for="{{ form_photo.image.id_for_label }}">{{ form_photo.image.label }}</label>
-                                    {{ form_photo.image }}
-                                </div>
-                                <div class="form-group">
-                                    <label for="{{ form_photo.alt_text.id_for_label }}">{{ form_photo.alt_text.label }}</label>
-                                    {{ form_photo.alt_text }}
-                                </div>
-                                {{ form_photo.order }}
-                                {{ form_photo.DELETE }}
-
-                                {% if form_photo.errors %}
-                                    <div class="alert alert-danger small mt-2">{{ form_photo.errors }}</div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                </fieldset>
-
-                <fieldset class="form-section individual-step-panel" data-individual-panel="4" hidden>
-                    <legend>🎬 {% translate "Vidéos" %}</legend>
-                    <p>{% translate "Ajoutez des vidéos de visite pour présenter votre logement." %}</p>
-                    {% if video_formset.non_form_errors %}
-                        <div class="alert alert-danger">
-                            <strong>{% translate "Erreur dans les vidéos:" %}</strong>
-                            {{ video_formset.non_form_errors }}
-                        </div>
+                <div class="iw-field">
+                    <label for="{{ form.titre.id_for_label }}">{{ form.titre.label }}</label>
+                    {{ form.titre }}
+                    {% if form.titre.errors %}
+                        <div class="iw-error">{{ form.titre.errors }}</div>
                     {% endif %}
-                    {{ video_formset.management_form }}
-                    {% for form_video in video_formset %}
-                        <div class="video-form mb-3 p-3 border rounded">
-                            <h3>{% blocktrans with number=forloop.counter %}Vidéo {{ number }}{% endblocktrans %}</h3>
-                            {% if form_video.errors %}
-                                <div class="alert alert-danger small mt-2">{{ form_video.errors }}</div>
+                </div>
+
+                <div class="iw-field">
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="iw-error">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="iw-grid">
+                    <div class="iw-field">
+                        <label for="{{ form.type_logement.id_for_label }}">{{ form.type_logement.label }}</label>
+                        {{ form.type_logement }}
+                        {% if form.type_logement.errors %}
+                            <div class="iw-error">{{ form.type_logement.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="iw-field">
+                        <label for="{{ form.prix.id_for_label }}">{{ form.prix.label }}</label>
+                        {{ form.prix }}
+                        {% if form.prix.errors %}
+                            <div class="iw-error">{{ form.prix.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="iw-grid">
+                    <div class="iw-field">
+                        <label for="{{ form.ville.id_for_label }}">{{ form.ville.label }}</label>
+                        {{ form.ville }}
+                        {% if form.ville.errors %}
+                            <div class="iw-error">{{ form.ville.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="iw-field">
+                        <label for="{{ form.quartier.id_for_label }}">{{ form.quartier.label }}</label>
+                        {{ form.quartier }}
+                        {% if form.quartier.errors %}
+                            <div class="iw-error">{{ form.quartier.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Étape 2 : Caractéristiques -->
+            <fieldset class="iw-panel individual-step-panel" data-individual-panel="1" hidden>
+                <legend><span class="iw-legend-icon" aria-hidden="true">🏠</span>{% translate "Caractéristiques du Logement" %}</legend>
+
+                <div class="iw-grid iw-grid--4">
+                    <div class="iw-field">
+                        <label for="{{ form.surface.id_for_label }}">{{ form.surface.label }}</label>
+                        {{ form.surface }}
+                    </div>
+                    <div class="iw-field">
+                        <label for="{{ form.nombre_pieces.id_for_label }}">{{ form.nombre_pieces.label }}</label>
+                        {{ form.nombre_pieces }}
+                    </div>
+                    <div class="iw-field">
+                        <label for="{{ form.nombre_chambres.id_for_label }}">{{ form.nombre_chambres.label }}</label>
+                        {{ form.nombre_chambres }}
+                    </div>
+                    <div class="iw-field">
+                        <label for="{{ form.nombre_lits.id_for_label }}">{{ form.nombre_lits.label }}</label>
+                        {{ form.nombre_lits }}
+                    </div>
+                </div>
+
+                <div class="iw-grid iw-grid--4">
+                    <div class="iw-field">
+                        <label for="{{ form.nombre_salles_bain.id_for_label }}">{{ form.nombre_salles_bain.label }}</label>
+                        {{ form.nombre_salles_bain }}
+                    </div>
+                    <div class="iw-field">
+                        <label for="{{ form.etage.id_for_label }}">{{ form.etage.label }}</label>
+                        {{ form.etage }}
+                    </div>
+                    <div class="iw-field iw-span-2">
+                        <label for="{{ form.meuble.id_for_label }}">{{ form.meuble.label }}</label>
+                        {{ form.meuble }}
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Étape 3 : Équipements -->
+            <fieldset class="iw-panel individual-step-panel" data-individual-panel="2" hidden>
+                <legend><span class="iw-legend-icon" aria-hidden="true">✨</span>{% translate "Équipements" %}</legend>
+
+                <div class="iw-checks">
+                    <div class="iw-check">
+                        {{ form.climatisation }}
+                        <label for="{{ form.climatisation.id_for_label }}">{{ form.climatisation.label }}</label>
+                    </div>
+                    <div class="iw-check">
+                        {{ form.wifi }}
+                        <label for="{{ form.wifi.id_for_label }}">{{ form.wifi.label }}</label>
+                    </div>
+                    <div class="iw-check">
+                        {{ form.garage }}
+                        <label for="{{ form.garage.id_for_label }}">{{ form.garage.label }}</label>
+                    </div>
+                    <div class="iw-check">
+                        {{ form.jardin }}
+                        <label for="{{ form.jardin.id_for_label }}">{{ form.jardin.label }}</label>
+                    </div>
+                    <div class="iw-check">
+                        {{ form.piscine }}
+                        <label for="{{ form.piscine.id_for_label }}">{{ form.piscine.label }}</label>
+                    </div>
+                    <div class="iw-check">
+                        {{ form.cuisine_equipee }}
+                        <label for="{{ form.cuisine_equipee.id_for_label }}">{{ form.cuisine_equipee.label }}</label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Étape 4 : Photos (formset) -->
+            <fieldset class="iw-panel individual-step-panel" data-individual-panel="3" hidden>
+                <legend><span class="iw-legend-icon" aria-hidden="true">📷</span>{% translate "Photos (jusqu'à 20)" %}</legend>
+
+                <div id="formset-container">
+                    {{ formset.management_form }}
+
+                    {% for form_photo in formset %}
+                        <div class="photo-form iw-item">
+                            {% if form_photo.image.value %}
+                                <div class="iw-preview">
+                                    <img src="{{ form_photo.image.value.url }}" alt="{% translate 'Aperçu de la photo' %}">
+                                </div>
                             {% endif %}
-                            <div class="form-group">
-                                <label for="{{ form_video.video.id_for_label }}">{{ form_video.video.label }}</label>
-                                {{ form_video.video }}
+
+                            <div class="iw-field">
+                                <label for="{{ form_photo.image.id_for_label }}">{{ form_photo.image.label }}</label>
+                                {{ form_photo.image }}
                             </div>
-                            <div class="form-group">
-                                <label for="{{ form_video.titre.id_for_label }}">{{ form_video.titre.label }}</label>
-                                {{ form_video.titre }}
+                            <div class="iw-field">
+                                <label for="{{ form_photo.alt_text.id_for_label }}">{{ form_photo.alt_text.label }}</label>
+                                {{ form_photo.alt_text }}
                             </div>
-                            <div class="form-group">
-                                <label for="{{ form_video.description.id_for_label }}">{{ form_video.description.label }}</label>
-                                {{ form_video.description }}
-                            </div>
-                            {{ form_video.order }}
-                            {{ form_video.DELETE }}
+                            {{ form_photo.order }}
+                            {{ form_photo.DELETE }}
+
+                            {% if form_photo.errors %}
+                                <div class="iw-error">{{ form_photo.errors }}</div>
+                            {% endif %}
                         </div>
                     {% endfor %}
-                </fieldset>
-
-                <div class="individual-step-actions" id="individual-step-actions" data-current-step="0">
-                    <button type="button" class="btn btn-secondary" id="individual-step-previous" hidden>← {% translate "Précédent" %}</button>
-                    <button type="button" class="btn btn-primary" id="individual-step-next">{% translate "Suivant" %} →</button>
-                    <button type="submit" class="btn btn-primary" id="individual-step-submit" hidden>✅ {% translate "Publier mon annonce" %}</button>
                 </div>
-                <a href="{% url 'logement:home' %}" class="btn btn-secondary individual-cancel-link">← {% translate "Annuler" %}</a>
-            </form>
-        </div>
+            </fieldset>
+
+            <!-- Étape 5 : Vidéos -->
+            <fieldset class="iw-panel individual-step-panel" data-individual-panel="4" hidden>
+                <legend><span class="iw-legend-icon" aria-hidden="true">🎬</span>{% translate "Vidéos" %}</legend>
+                <p class="iw-intro">{% translate "Ajoutez des vidéos de visite pour présenter votre logement." %}</p>
+                {% if video_formset.non_form_errors %}
+                    <div class="iw-alert" role="alert">
+                        <strong>{% translate "Erreur dans les vidéos:" %}</strong>
+                        {{ video_formset.non_form_errors }}
+                    </div>
+                {% endif %}
+                {{ video_formset.management_form }}
+                {% for form_video in video_formset %}
+                    <div class="video-form iw-item">
+                        <h3>{% blocktrans with number=forloop.counter %}Vidéo {{ number }}{% endblocktrans %}</h3>
+                        {% if form_video.errors %}
+                            <div class="iw-error">{{ form_video.errors }}</div>
+                        {% endif %}
+                        <div class="iw-field">
+                            <label for="{{ form_video.video.id_for_label }}">{{ form_video.video.label }}</label>
+                            {{ form_video.video }}
+                        </div>
+                        <div class="iw-field">
+                            <label for="{{ form_video.titre.id_for_label }}">{{ form_video.titre.label }}</label>
+                            {{ form_video.titre }}
+                        </div>
+                        <div class="iw-field">
+                            <label for="{{ form_video.description.id_for_label }}">{{ form_video.description.label }}</label>
+                            {{ form_video.description }}
+                        </div>
+                        {{ form_video.order }}
+                        {{ form_video.DELETE }}
+                    </div>
+                {% endfor %}
+            </fieldset>
+
+            <!-- Navigation entre étapes -->
+            <div class="individual-step-actions" id="individual-step-actions" data-current-step="0">
+                <button type="button" class="iw-btn iw-btn-ghost" id="individual-step-previous" hidden>
+                    <span aria-hidden="true">←</span> {% translate "Précédent" %}
+                </button>
+                <button type="button" class="iw-btn iw-btn-primary" id="individual-step-next">
+                    {% translate "Suivant" %} <span class="iw-btn-arrow" aria-hidden="true">→</span>
+                </button>
+                <button type="submit" class="iw-btn iw-btn-primary" id="individual-step-submit" hidden>
+                    <span aria-hidden="true">✅</span> {% translate "Publier mon annonce" %}
+                </button>
+            </div>
+            <a href="{% url 'logement:home' %}" class="iw-cancel">← {% translate "Annuler" %}</a>
+        </form>
     </div>
 </div>
 
 <style>
+    /* ── Palette Côte d'Ivoire : orange · blanc · vert ── */
     .individual-publication-wizard {
-        width: min(1100px, calc(100% - 32px));
-        max-width: none;
-        margin: 0 auto;
-        padding: 28px 0 64px;
-        color: #1a2332;
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
+        font-family: 'Figtree', system-ui, sans-serif;
+        color: var(--ci-ink);
+        background: var(--ci-bg);
+        min-height: 100vh;
+        padding: 1.75rem 1rem 4rem;
     }
 
-    .individual-publication-wizard > .row {
-        display: block;
-        margin: 0;
-    }
+    .individual-publication-wizard :where(h1, h3, p, legend, fieldset) { margin: 0; padding: 0; }
+    .individual-publication-wizard :where(*, *::before, *::after) { box-sizing: border-box; }
+    .individual-publication-wizard [hidden] { display: none !important; }
 
-    .individual-publication-wizard > .row > .col-lg-12 {
+    .iw-shell {
         width: 100%;
-        min-width: 0;
-        padding: 0;
+        max-width: 1000px;
+        margin: 0 auto;
     }
 
-    .individual-publication-wizard .breadcrumb-nav {
-        display: inline-flex;
+    /* ── Fil d'Ariane ── */
+    .iw-breadcrumb {
+        display: flex;
+        flex-wrap: wrap;
         gap: 8px;
-        padding: 10px 14px;
-        border-radius: 8px;
-        background: #fff;
-        color: #6b7280;
-        font-size: .85rem;
+        margin-bottom: 1rem;
+        font-size: 14px;
+        color: var(--ci-muted);
     }
 
-    .container.individual-publication-wizard {
-        width: calc(100% - 24px);
-        padding: 18px 0 40px;
+    .iw-breadcrumb a {
+        color: var(--ci-green-deep);
+        font-weight: 600;
+        text-decoration: none;
     }
 
-    .individual-publication-wizard .page-header {
-        margin-bottom: 28px;
-        padding: 30px 28px;
-        border: 0;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        box-shadow: 0 16px 36px rgba(5, 150, 105, .18);
-        color: #fff;
+    .iw-breadcrumb a:hover { text-decoration: underline; }
+
+    /* ── En-tête ── */
+    .iw-hero {
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        border-radius: 18px;
+        overflow: hidden;
+        margin-bottom: 1.25rem;
         text-align: center;
     }
 
-    .individual-publication-wizard .page-header h1 {
-        margin: 0 0 8px;
-        color: #fff;
-        font-size: clamp(1.8rem, 4vw, 2.5rem);
-        font-weight: 800;
-        letter-spacing: -.02em;
+    .iw-stripe {
+        height: 8px;
+        background: linear-gradient(
+            90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%
+        );
     }
 
-    .individual-publication-wizard .page-header > p {
-        margin: 0;
-        color: #fff;
-        opacity: .95;
+    .iw-hero-body { padding: 1.75rem 1.5rem 1.9rem; }
+
+    .iw-hero-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 0.9rem;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
     }
 
-    .individual-publication-wizard .role-publication-info {
+    .iw-hero h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: clamp(1.7rem, 4vw, 2.3rem);
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 6px;
+        color: var(--ci-white);
+    }
+
+    .iw-hero-body > p { color: rgba(255,255,255,0.85); font-size: 1rem; }
+
+    .iw-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
         max-width: 620px;
-        margin: 18px auto 0;
+        margin-top: 1.1rem;
+        padding: 0.6rem 1rem;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 12px;
+        background: rgba(255,255,255,0.12);
+        font-size: 14px;
+        line-height: 1.4;
         text-align: left;
     }
 
-    .individual-publication-wizard .role-publication-info .alert {
-        margin: 0;
-        border: 1px solid rgba(255,255,255,.35);
-        border-radius: 10px;
-        background: rgba(255,255,255,.16);
-        color: #fff;
+    /* ── Carte formulaire ── */
+    .iw-form {
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 18px;
+        padding: clamp(1.1rem, 3.5vw, 2rem);
     }
 
-    .individual-publication-wizard .publication-form {
-        width: 100%;
-        min-width: 0;
-        padding: clamp(18px, 4vw, 32px);
-        border-radius: 16px;
-        background: #fff;
-        box-shadow: 0 3px 14px rgba(15, 23, 42, .07);
-    }
-
-    .individual-publication-wizard .form-section {
-        width: 100%;
-        min-width: 0;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
-    }
-
-    .individual-publication-wizard .form-section[hidden] {
-        display: none !important;
-    }
-
-    .individual-publication-wizard .form-section legend {
-        float: none;
-        width: 100%;
-        margin: 0 0 20px;
-        padding: 0 0 14px;
-        border-bottom: 1px solid #e5e7eb;
-        color: #1a2332;
-        font-size: 1.35rem;
-        font-weight: 700;
-    }
-
-    .individual-publication-wizard .form-group {
-        margin-bottom: 16px;
-    }
-
-    .individual-publication-wizard .form-group label {
-        margin-bottom: 6px;
-        color: #374151;
-        font-size: .9rem;
-        font-weight: 600;
-    }
-
-    .individual-publication-wizard .form-group input:not([type="checkbox"]):not([type="file"]),
-    .individual-publication-wizard .form-group select,
-    .individual-publication-wizard .form-group textarea {
-        width: 100%;
-        min-height: 44px;
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        background: #fff;
-        color: #1a2332;
-        font: inherit;
-    }
-
-    .individual-publication-wizard .form-group textarea {
-        min-height: 112px;
-    }
-
-    .individual-publication-wizard .form-group input:focus,
-    .individual-publication-wizard .form-group select:focus,
-    .individual-publication-wizard .form-group textarea:focus {
-        border-color: #059669;
-        outline: 3px solid #d1fae5;
-    }
-
-    .individual-publication-wizard .row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-        margin: 0;
-    }
-
-    .individual-publication-wizard .row > [class*="col-"] {
-        min-width: 0;
-        padding: 0;
-    }
-
-    .individual-publication-wizard .equipements-grid {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
-    }
-
-    .individual-publication-wizard .form-check {
-        min-width: 0;
-        border: 1px solid #e5e7eb;
-        border-radius: 9px;
-        background: #fff;
-        gap: 10px;
-    }
-
-    .individual-publication-wizard .form-check:has(input:checked) {
-        border-color: #059669;
-        background: #e6f8f1;
-    }
-
-    .individual-publication-wizard .photo-form,
-    .individual-publication-wizard .video-form {
-        margin-bottom: 14px;
-        padding: 18px;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        background: #f8fafc;
-    }
-
-    .individual-publication-wizard .photo-form img {
-        display: block;
-        width: 120px;
-        height: 90px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-
-    .individual-publication-wizard .photo-form .form-group,
-    .individual-publication-wizard .video-form .form-group {
-        margin-bottom: 14px;
-    }
-
-    .individual-publication-wizard .video-form h3 {
-        margin: 0 0 14px;
-        color: #374151;
-        font-size: 1rem;
-        font-weight: 700;
-    }
-
-    .individual-publication-wizard .photo-form input[type="file"],
-    .individual-publication-wizard .video-form input[type="file"] {
-        display: block;
-        width: 100%;
-        max-width: 100%;
-        padding: 8px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        background: #fff;
-    }
-
-    .individual-publication-wizard .video-form input:not([type="file"]):not([type="checkbox"]),
-    .individual-publication-wizard .video-form textarea {
-        width: 100%;
-        min-height: 42px;
-        padding: 9px 11px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        background: #fff;
-        font: inherit;
-    }
-
-    .individual-publication-wizard .video-form textarea {
-        min-height: 90px;
-    }
-
-    .individual-publication-wizard .photo-form input:not([type="file"]):not([type="checkbox"]) {
-        width: 100%;
-        min-height: 42px;
-        padding: 9px 11px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        background: #fff;
-        font: inherit;
-    }
-
-    .individual-publication-wizard .video-form input[name$="-order"],
-    .individual-publication-wizard .video-form input[name$="-DELETE"],
-    .individual-publication-wizard .photo-form input[name$="-order"],
-    .individual-publication-wizard .photo-form input[name$="-DELETE"] {
-        display: none;
-    }
-
-    .individual-publication-wizard .individual-steps {
-        width: 100%;
-    }
-
-    .individual-publication-wizard .individual-step-actions .btn {
-        width: 100%;
-        min-height: 48px;
-        border-radius: 9px;
-        font-weight: 700;
-    }
-
-    .individual-publication-wizard .individual-step-actions .btn-primary {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: #fff;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, .24);
-    }
-
-    .individual-publication-wizard .individual-step-actions .btn-secondary,
-    .individual-publication-wizard .individual-cancel-link {
-        border: 1px solid #d1d5db;
-        background: #fff;
-        color: #374151;
-    }
-
-    .individual-publication-wizard .alert-danger {
-        padding: 10px 12px;
-        border: 1px solid #fecaca;
-        border-radius: 8px;
-        background: #fef2f2;
-        color: #b91c1c;
-    }
-
-    @media (max-width: 767px) {
-        .individual-publication-wizard {
-            width: calc(100% - 24px);
-            padding: 18px 0 40px;
-        }
-
-        .individual-publication-wizard .page-header {
-            padding: 26px 18px;
-        }
-
-        .individual-publication-wizard .publication-form {
-            padding: 18px;
-        }
-
-        .individual-publication-wizard .row {
-            grid-template-columns: 1fr;
-        }
-
-        .individual-publication-wizard .equipements-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .individual-publication-wizard .individual-step-actions {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-
+    /* ── Progression ── */
     .individual-progress {
-        height: 4px;
-        margin-bottom: 14px;
+        height: 6px;
+        margin-bottom: 1rem;
         overflow: hidden;
         border-radius: 99px;
-        background: #e5e7eb;
+        background: var(--ci-green-soft);
     }
 
     .individual-progress-bar {
         width: 20%;
         height: 100%;
         border-radius: inherit;
-        background: linear-gradient(90deg, #10b981, #059669);
-        transition: width 0.3s ease;
+        background: linear-gradient(90deg, var(--ci-green), var(--ci-orange));
+        transition: width .3s ease;
     }
 
+    /* ── Étapes ── */
     .individual-steps {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 10px;
-        margin-bottom: 24px;
+        margin-bottom: 1.75rem;
     }
 
     .individual-step {
+        position: relative;
         display: flex;
         min-width: 0;
-        min-height: 86px;
+        min-height: 88px;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 7px;
+        gap: 8px;
         padding: 10px 8px;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 10px;
-        background: #fff;
-        color: #374151;
+        border: 1.5px solid var(--ci-line);
+        border-radius: 14px;
+        background: var(--ci-white);
+        color: var(--ci-ink);
         font-family: inherit;
-        font-size: .85rem;
+        font-size: 14px;
         font-weight: 600;
-        line-height: 1.3;
+        line-height: 1.25;
         text-align: center;
         cursor: pointer;
-        transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        transition: border-color .15s ease, background-color .15s ease;
     }
 
-    .individual-step > span { font-size: 1.65rem; line-height: 1; }
-    .individual-step:hover { border-color: #10b981; transform: translateY(-1px); }
-    .individual-step.active { border-color: #10b981; background: #e6f8f1; color: #14211b; }
-    .individual-step.completed { border-color: #a7f3d0; color: #047857; }
-    .individual-step:focus-visible { outline: 3px solid #a7f3d0; outline-offset: 2px; }
-    .individual-step-panel[hidden] { display: none !important; }
+    .iw-step-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        line-height: 1;
+    }
 
+    .individual-step:hover { border-color: #9FB3A7; }
+
+    .individual-step.active {
+        border-color: var(--ci-green);
+        background: var(--ci-green-soft);
+    }
+
+    .individual-step.active .iw-step-icon { background: var(--ci-white); }
+
+    .individual-step.active::after {
+        content: '';
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: -1.5px;
+        height: 4px;
+        border-radius: 2px 2px 0 0;
+        background: var(--ci-orange);
+    }
+
+    .individual-step.completed { color: var(--ci-green-deep); border-color: #BFE0CE; }
+
+    .individual-step.completed::before {
+        content: '✓';
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--ci-green);
+        color: var(--ci-white);
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .individual-step:focus-visible {
+        outline: 3px solid var(--ci-orange);
+        outline-offset: 2px;
+    }
+
+    /* ── Panneaux ── */
+    .iw-panel { border: none; min-width: 0; }
+
+    .iw-panel legend {
+        float: none;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--ci-line);
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ci-green-deep);
+    }
+
+    .iw-legend-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--ci-orange-soft);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .iw-intro {
+        margin-bottom: 1rem;
+        color: var(--ci-muted);
+        font-size: 15px;
+        line-height: 1.5;
+    }
+
+    /* ── Champs ── */
+    .iw-field { margin-bottom: 1rem; min-width: 0; }
+
+    .iw-field label {
+        display: block;
+        margin-bottom: 6px;
+        padding-left: 2px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ci-ink);
+    }
+
+    .iw-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 16px;
+    }
+
+    .iw-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .iw-span-2 { grid-column: span 2; }
+
+    .iw-panel input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+    .iw-panel select,
+    .iw-panel textarea {
+        width: 100%;
+        min-height: 46px;
+        padding: 0.65rem 0.85rem;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 10px;
+        background: var(--ci-white);
+        color: var(--ci-ink);
+        font-family: inherit;
+        font-size: 15px;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .iw-panel textarea {
+        min-height: 120px;
+        line-height: 1.5;
+        resize: vertical;
+    }
+
+    .iw-panel select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%230B5D3B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        padding-right: 2.2rem;
+        cursor: pointer;
+    }
+
+    .iw-panel input:hover,
+    .iw-panel select:hover,
+    .iw-panel textarea:hover { border-color: #9FB3A7; }
+
+    .iw-panel input:focus,
+    .iw-panel select:focus,
+    .iw-panel textarea:focus {
+        outline: none;
+        border-color: var(--ci-green);
+        box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+    }
+
+    /* ── Erreurs ── */
+    .iw-error,
+    .iw-alert {
+        padding: 0.5rem 0.75rem;
+        background: #FDF1F1;
+        border: 1px solid #F0CACA;
+        border-radius: 8px;
+        color: #A12B2B;
+        font-size: 14px;
+    }
+
+    .iw-error { margin-top: 6px; }
+    .iw-alert { margin-bottom: 1.25rem; padding: 0.8rem 1rem; color: #7E1F1F; }
+    .iw-error ul, .iw-alert ul { list-style: none; margin: 0; padding: 0; }
+
+    /* ── Équipements ── */
+    .iw-checks {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 12px;
+    }
+
+    .iw-check {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        padding: 0.9rem 1rem;
+        border: 1.5px solid var(--ci-line);
+        border-radius: 12px;
+        background: var(--ci-white);
+        transition: border-color .15s ease, background-color .15s ease;
+    }
+
+    .iw-check:hover { border-color: #9FB3A7; }
+
+    .iw-check:has(input:checked) {
+        border-color: var(--ci-green);
+        background: var(--ci-green-soft);
+    }
+
+    .iw-check:has(input:focus-visible) {
+        outline: 3px solid var(--ci-orange);
+        outline-offset: 2px;
+    }
+
+    .iw-check input[type="checkbox"] {
+        position: relative;
+        z-index: 1;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        flex-shrink: 0;
+        cursor: pointer;
+        accent-color: var(--ci-green);
+    }
+
+    .iw-check label {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    /* La zone cliquable couvre toute la carte */
+    .iw-check label::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+    }
+
+    /* ── Photos et vidéos ── */
+    .iw-item {
+        margin-bottom: 14px;
+        padding: 1.1rem;
+        border: 1.5px dashed #BFD0C5;
+        border-radius: 14px;
+        background: #FAFCFB;
+    }
+
+    .iw-item h3 {
+        margin-bottom: 12px;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ci-green-deep);
+    }
+
+    .iw-preview { margin-bottom: 12px; }
+
+    .iw-preview img {
+        display: block;
+        width: 120px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid var(--ci-green-soft);
+    }
+
+    .iw-item input[type="file"] {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        padding: 8px;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 10px;
+        background: var(--ci-white);
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--ci-muted);
+    }
+
+    .iw-item input[type="file"]::file-selector-button {
+        margin-right: 10px;
+        padding: 6px 12px;
+        border: 1.5px solid #BFE0CE;
+        border-radius: 8px;
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .iw-item input[type="file"]::file-selector-button:hover { border-color: var(--ci-green); }
+
+    .iw-item input[name$="-order"],
+    .iw-item input[name$="-DELETE"] { display: none; }
+
+    /* ── Boutons ── */
     .individual-step-actions {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
-        margin-top: 24px;
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--ci-line);
     }
 
-    .individual-step-actions[data-current-step="0"] {
-        grid-template-columns: 1fr;
+    .individual-step-actions[data-current-step="0"] { grid-template-columns: 1fr; }
+
+    .iw-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 50px;
+        padding: 0.8rem 1.4rem;
+        border: 1.5px solid transparent;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
     }
 
-    .individual-step-actions [hidden] { display: none !important; }
-    .individual-step-actions button { min-height: 48px; font-weight: 700; }
-    .individual-step-actions .btn-primary {
-        border: 0;
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: #fff;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, .24);
+    .iw-btn:focus-visible,
+    .iw-cancel:focus-visible {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
     }
-    .individual-step-actions .btn-primary:hover { filter: brightness(.96); }
-    .individual-step-actions .btn-secondary {
-        border: 1px solid #d1d5db;
-        background: #fff;
-        color: #374151;
+
+    .iw-btn-primary { background: var(--ci-orange); color: var(--ci-ink); }
+    .iw-btn-primary:hover { background: var(--ci-orange-hover); transform: translateY(-1px); }
+    .iw-btn-primary:active { transform: translateY(0); }
+
+    .iw-btn-arrow {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
     }
-    .individual-cancel-link {
+
+    .iw-btn-ghost {
+        background: transparent;
+        color: var(--ci-green-deep);
+        border-color: #BFE0CE;
+    }
+
+    .iw-btn-ghost:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+
+    .iw-cancel {
         display: block;
         width: fit-content;
         margin: 14px auto 0;
         padding: 8px 14px;
-        border: 0;
-        background: transparent;
-        color: #6b7280;
-        font-size: .9rem;
-        text-align: center;
+        color: var(--ci-muted);
+        font-size: 14px;
+        text-decoration: none;
     }
-    .individual-cancel-link:hover { color: #1f2937; }
 
+    .iw-cancel:hover { color: var(--ci-ink); text-decoration: underline; }
+
+    /* ── Responsive ── */
     @media (max-width: 767px) {
-        .individual-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .individual-publication-wizard { padding: 1rem 0.75rem 3rem; }
+        .iw-hero-body { padding: 1.4rem 1.1rem 1.5rem; }
+        .iw-role { text-align: left; }
+
+        /* Étapes : défilement horizontal, l'étape active est recentrée par le script */
+        .individual-steps {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 2px 2px 8px;
+            margin-left: -2px;
+            margin-right: -2px;
+            scroll-snap-type: x proximity;
+            scrollbar-width: thin;
+        }
+
+        .individual-step { flex: 0 0 96px; min-height: 80px; scroll-snap-align: center; }
+
+        .iw-grid,
+        .iw-grid--4 { grid-template-columns: 1fr; }
+        .iw-span-2 { grid-column: auto; }
+        .iw-checks { grid-template-columns: 1fr; }
+
         .individual-step-actions { grid-template-columns: 1fr; }
+        .individual-step-actions .iw-btn-ghost { order: 2; }
     }
 
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 var(--spacing-lg);
+    @media (min-width: 768px) and (max-width: 991px) {
+        .iw-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    .container.individual-publication-wizard {
-        box-sizing: border-box;
-        width: min(1100px, calc(100% - 32px));
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 28px 0 64px;
-    }
-
-    .mt-5 {
-        margin-top: var(--spacing-2xl);
-    }
-
-    .mb-4 {
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .mb-5 {
-        margin-bottom: var(--spacing-2xl);
-    }
-
-    .row {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    .col-lg-12 {
-        width: 100%;
-    }
-
-    h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--color-dark);
-        margin-bottom: var(--spacing-lg);
-    }
-
-    /* Breadcrumb */
-    .breadcrumb-nav {
-        font-size: 0.9rem;
-        color: var(--color-secondary);
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .breadcrumb-nav a {
-        color: var(--color-primary);
-        text-decoration: none;
-    }
-
-    .breadcrumb-nav a:hover {
-        text-decoration: underline;
-    }
-
-    /* Page header */
-    .page-header {
-        border-bottom: 2px solid var(--color-light);
-        padding-bottom: var(--spacing-lg);
-        margin-bottom: var(--spacing-2xl);
-    }
-
-    .page-header p {
-        color: var(--color-secondary);
-        margin: 0;
-    }
-
-    .text-muted {
-        color: var(--color-secondary);
-    }
-
-    /* Form sections */
-    .form-section {
-        background: white;
-        border-radius: 12px;
-        padding: var(--spacing-xl);
-        margin-bottom: var(--spacing-xl);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-section legend {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-lg);
-        color: var(--color-dark);
-        display: block;
-    }
-
-    .form-group {
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .form-group label {
-        font-weight: 600;
-        margin-bottom: var(--spacing-sm);
-        display: block;
-        color: var(--color-dark);
-    }
-
-    .form-input,
-    .form-textarea,
-    .form-select {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 2px solid var(--color-light);
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all var(--transition-base);
-        background: white;
-    }
-
-    .form-input:focus,
-    .form-textarea:focus,
-    .form-select:focus {
-        outline: none;
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-
-    .form-textarea {
-        resize: vertical;
-        font-family: inherit;
-        min-height: 120px;
-    }
-
-    .row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--spacing-lg);
-    }
-
-    @media (min-width: 768px) {
-        .row {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (min-width: 992px) {
-        .row {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    .col-md-6,
-    .col-md-3 {
-        width: 100%;
-    }
-
-    /* Équipements grid */
-    .equipements-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: var(--spacing-md);
-    }
-
-    .form-check {
-        display: flex;
-        align-items: center;
-        padding: var(--spacing-md);
-        border: 2px solid var(--color-light);
-        border-radius: 8px;
-        transition: all var(--transition-base);
-    }
-
-    .form-check:hover {
-        border-color: var(--color-primary);
-        background-color: var(--color-light);
-    }
-
-    .form-check input[type="checkbox"] {
-        margin-right: var(--spacing-sm);
-        cursor: pointer;
-        width: 18px;
-        height: 18px;
-        accent-color: var(--color-primary);
-    }
-
-    .form-check-label {
-        cursor: pointer;
-        margin-bottom: 0;
-        font-weight: 500;
-    }
-
-    /* Photos form */
-    .photo-form {
-        background: var(--color-light);
-        border: 2px dashed var(--color-light);
-        border-radius: 8px;
-        padding: var(--spacing-md);
-    }
-
-    .photo-form img {
-        max-width: 100px;
-        max-height: 100px;
-        border-radius: 4px;
-    }
-
-    .photo-form input[type="file"] {
-        width: 100%;
-        margin-top: var(--spacing-sm);
-    }
-
-    .video-form {
-        background: #f8fafc;
-        border: 1px solid var(--color-light);
-        border-radius: 8px;
-        padding: var(--spacing-md);
-    }
-
-    /* Alerts */
-    .alert {
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: 8px;
-        margin-bottom: var(--spacing-md);
-        border: 1px solid transparent;
-    }
-
-    .alert-danger {
-        background-color: #f8d7da;
-        border-color: #f5c6cb;
-        color: #721c24;
-    }
-
-    .alert-info {
-        background-color: #d1ecf1;
-        border-color: #bee5eb;
-        color: #0c5460;
-    }
-
-    .small {
-        font-size: 0.875rem;
-    }
-
-    .mt-2 {
-        margin-top: var(--spacing-sm);
-    }
-
-    /* Boutons */
-    .btn {
-        display: inline-block;
-        padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all var(--transition-base);
-        border: none;
-        cursor: pointer;
-        width: 100%;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background-color: var(--color-primary);
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
-    }
-
-    .btn-secondary {
-        background-color: var(--color-secondary);
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background-color: #5a6268;
-    }
-
-    .btn-lg {
-        padding: var(--spacing-lg) var(--spacing-xl);
-        font-size: 1rem;
-    }
-
-    .w-100 {
-        width: 100%;
-    }
-
-    .form-actions {
-        margin-top: var(--spacing-2xl);
-        padding-top: var(--spacing-lg);
-        border-top: 1px solid var(--color-light);
-    }
-
-    .p-3 {
-        padding: var(--spacing-md);
-    }
-
-    .border {
-        border: 1px solid var(--color-light);
-    }
-
-    .rounded {
-        border-radius: 8px;
-    }
-
-    .mb-2 {
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .role-publication-info {
-        margin: var(--spacing-lg) 0;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        h1 {
-            font-size: 2rem;
-        }
-
-        .equipements-grid {
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        }
-
-        @media (min-width: 768px) and (max-width: 992px) {
-            .row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .individual-publication-wizard * { transition: none !important; }
+        .iw-btn-primary:hover { transform: none; }
     }
 </style>
 
@@ -1047,7 +864,7 @@
         const actions = wizard.querySelector('#individual-step-actions');
         let currentStep = 0;
 
-        function showStep(step) {
+        function showStep(step, userTriggered) {
             if (step < 0 || step >= panels.length) return;
             currentStep = step;
 
@@ -1066,20 +883,25 @@
             nextButton.hidden = currentStep === panels.length - 1;
             submitButton.hidden = currentStep !== panels.length - 1;
             actions.dataset.currentStep = String(currentStep);
+
+            // Sur mobile, la liste des étapes défile : on garde l'étape active visible
+            if (userTriggered && steps[currentStep].scrollIntoView) {
+                steps[currentStep].scrollIntoView({block: 'nearest', inline: 'center'});
+            }
         }
 
         steps.forEach(button => {
             button.addEventListener('click', function () {
-                showStep(Number(button.dataset.individualStep));
+                showStep(Number(button.dataset.individualStep), true);
             });
         });
-        previousButton.addEventListener('click', function () { showStep(currentStep - 1); });
-        nextButton.addEventListener('click', function () { showStep(currentStep + 1); });
+        previousButton.addEventListener('click', function () { showStep(currentStep - 1, true); });
+        nextButton.addEventListener('click', function () { showStep(currentStep + 1, true); });
 
         const firstPanelWithErrors = panels.findIndex(panel =>
-            panel.querySelector('.alert-danger, .errorlist, .is-invalid, [aria-invalid="true"]')
+            panel.querySelector('.iw-error, .iw-alert, .errorlist, .is-invalid, [aria-invalid="true"]')
         );
-        showStep(firstPanelWithErrors >= 0 ? firstPanelWithErrors : 0);
+        showStep(firstPanelWithErrors >= 0 ? firstPanelWithErrors : 0, false);
     });
 </script>
 {% endblock %}

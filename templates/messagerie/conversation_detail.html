@@ -4,296 +4,389 @@
 {% block title %}{% blocktranslate with participant=other_participant.get_full_name|default:other_participant.username %}Conversation avec {{ participant }} - Coloc.ai{% endblocktranslate %}{% endblock %}
 
 {% block content %}
-<div class="container conversation-page">
-    <div class="conversation-header">
-        <div class="participant-info">
-            <div class="participant-avatar">
-                {% if other_participant.profile.photo_profil %}
-                    <img src="{{ other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ other_participant.get_full_name }}">
-                {% else %}
-                    <div class="avatar-placeholder">{{ other_participant.get_full_name|default:other_participant.username|first|upper }}</div>
-                {% endif %}
-            </div>
-            <div class="participant-details">
-                <h1>{{ other_participant.get_full_name|default:other_participant.username }}</h1>
-                {% if conversation.annonce %}
-                    <p class="conversation-subject">📄 {% translate "À propos de:" %} {{ conversation.annonce.titre }}</p>
-                {% endif %}
-                <p class="conversation-status">
-                    {% if other_participant.profile.verified %}
-                        <span class="verified-badge">✓ {% translate "Profil vérifié" %}</span>
-                    {% endif %}
-                    <span class="location">📍 {{ other_participant.profile.ville }}</span>
-                </p>
-            </div>
-        </div>
 
-        <div class="conversation-actions">
-            <a href="{% url 'messagerie:mes_conversations' %}" class="btn secondary" aria-label="{% translate 'Retour aux conversations' %}" title="{% translate 'Retour aux conversations' %}">
-                <span aria-hidden="true">←</span><span class="action-label"> {% translate "Retour aux conversations" %}</span>
-            </a>
-            <button type="button" class="btn call-btn" id="videoCallBtn" aria-label="{% translate 'Appel vidéo' %}" title="{% translate 'Appel vidéo' %}">📹<span class="action-label"> {% translate "Appel vidéo" %}</span></button>
-            <button type="button" class="btn call-btn" id="audioCallBtn" aria-label="{% translate 'Appel vocal' %}" title="{% translate 'Appel vocal' %}">📞<span class="action-label"> {% translate "Appel vocal" %}</span></button>
-            <button type="button" class="btn danger" onclick="confirmerSuppression()" aria-label="{% translate 'Supprimer la conversation' %}" title="{% translate 'Supprimer la conversation' %}">
-                🗑️<span class="action-label"> {% translate "Supprimer" %}</span>
-            </button>
-        </div>
-    </div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <div class="messages-container" id="messagesContainer">
-        {% for message in conversation_messages %}
-            <div class="message-row {% if message.expediteur == request.user %}sent{% else %}received{% endif %}">
-                <div class="message-bubble-item">
-                    <div class="message-bubble">
-                        {% if message.contenu %}
-                            <p>{{ message.contenu|linebreaks }}</p>
-                        {% endif %}
-                        {% if message.attachment %}
-                            {% if message.is_audio %}
-                                <div class="message-attachment audio-attachment">
-                                    <span class="attachment-label-inline">🎤 {% translate "Message vocal" %}</span>
-                                    <audio controls preload="metadata" src="{{ message.attachment.url }}"></audio>
-                                </div>
-                            {% elif message.is_video %}
-                                <div class="message-attachment video-attachment">
-                                    <span class="attachment-label-inline">🎥 {% translate "Message vidéo" %}</span>
-                                    <video controls preload="metadata" src="{{ message.attachment.url }}"></video>
-                                </div>
-                            {% else %}
-                                <div class="message-attachment">
-                                    📎 <a href="{{ message.attachment.url }}" target="_blank" rel="noopener">{{ message.attachment_filename }}</a>
-                                </div>
-                            {% endif %}
+<div class="cd-page">
+    <div class="cd-container">
+
+        <!-- En-tête de la conversation -->
+        <header class="cd-header">
+            <div class="cd-stripe" aria-hidden="true"></div>
+            <div class="cd-header-body">
+                <div class="cd-participant">
+                    <div class="cd-avatar">
+                        {% if other_participant.profile.photo_profil %}
+                            <img src="{{ other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ other_participant.get_full_name }}">
+                        {% else %}
+                            <div class="cd-avatar-placeholder">{{ other_participant.get_full_name|default:other_participant.username|first|upper }}</div>
                         {% endif %}
                     </div>
-                    <div class="message-meta">
-                        <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
-                        {% if message.expediteur == request.user %}
-                            {% if message.lu %}
-                                <span class="read-status" title="{% translate 'Lu' %}">✓✓</span>
-                            {% else %}
-                                <span class="read-status" title="{% translate 'Envoyé' %}">✓</span>
-                            {% endif %}
+                    <div class="cd-participant-details">
+                        <h1>{{ other_participant.get_full_name|default:other_participant.username }}</h1>
+                        {% if conversation.annonce %}
+                            <p class="cd-subject">📄 {% translate "À propos de:" %} {{ conversation.annonce.titre }}</p>
                         {% endif %}
+                        <p class="cd-status">
+                            {% if other_participant.profile.verified %}
+                                <span class="cd-verified">✓ {% translate "Profil vérifié" %}</span>
+                            {% endif %}
+                            {% if other_participant.profile.ville %}
+                                <span class="cd-location">📍 {{ other_participant.profile.ville }}</span>
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
-            </div>
-        {% empty %}
-            <div class="empty-chat">{% translate "Aucun message pour le moment. Démarrez la conversation." %}</div>
-        {% endfor %}
-    </div>
 
-    <div class="message-form-container">
-        <form method="post" action="{% url 'messagerie:envoyer_message' %}" class="message-form" id="messageForm" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
-            <div class="form-group">
-                <textarea name="contenu" id="messageContent" placeholder="{% translate 'Tapez votre message...' %}" rows="1"></textarea>
-                <label for="messageAttachment" class="attachment-label" title="{% translate 'Joindre un fichier' %}">
-                    📎
-                    <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
-                </label>
+                <div class="cd-actions">
+                    <a href="{% url 'messagerie:mes_conversations' %}" class="cd-btn cd-btn-ghost" aria-label="{% translate 'Retour aux conversations' %}" title="{% translate 'Retour aux conversations' %}">
+                        <span aria-hidden="true">←</span><span class="cd-action-label">{% translate "Retour aux conversations" %}</span>
+                    </a>
+                    <button type="button" class="cd-btn cd-btn-call" id="videoCallBtn" aria-label="{% translate 'Appel vidéo' %}" title="{% translate 'Appel vidéo' %}"><span aria-hidden="true">📹</span><span class="cd-action-label">{% translate "Appel vidéo" %}</span></button>
+                    <button type="button" class="cd-btn cd-btn-call" id="audioCallBtn" aria-label="{% translate 'Appel vocal' %}" title="{% translate 'Appel vocal' %}"><span aria-hidden="true">📞</span><span class="cd-action-label">{% translate "Appel vocal" %}</span></button>
+                    <button type="button" class="cd-btn cd-btn-danger-outline" onclick="confirmerSuppression()" aria-label="{% translate 'Supprimer la conversation' %}" title="{% translate 'Supprimer la conversation' %}">
+                        <span aria-hidden="true">🗑️</span><span class="cd-action-label">{% translate "Supprimer" %}</span>
+                    </button>
+                </div>
             </div>
-            <div class="message-tools">
-                <button type="button" id="voiceRecorderBtn" class="voice-btn" title="{% translate 'Envoyer un message vocal' %}" aria-label="{% translate 'Enregistrer un message vocal' %}">🎤</button>
-                    <span id="voiceStatus" class="voice-status">{% translate "Enregistrer un vocal" %}</span>
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="btn">📤 {% translate "Envoyer" %}</button>
-            </div>
-        </form>
-    </div>
+        </header>
 
-    <div class="call-panel" id="callPanel" hidden>
-        <div class="call-panel-header">
-            <strong id="callStatus">{% translate "Appel en cours" %}</strong>
-            <button type="button" class="btn hold-btn" id="holdCallBtn">⏸ {% translate "Mettre en attente" %}</button>
-            <button type="button" class="btn danger" id="endCallBtn">{% translate "Raccrocher" %}</button>
+        <!-- Messages -->
+        <div class="cd-messages" id="messagesContainer">
+            {% for message in conversation_messages %}
+                <div class="cd-row {% if message.expediteur == request.user %}cd-row--sent{% else %}cd-row--received{% endif %}">
+                    <div class="cd-bubble-item">
+                        <div class="cd-bubble">
+                            {% if message.contenu %}
+                                <div class="cd-text">{{ message.contenu|linebreaks }}</div>
+                            {% endif %}
+                            {% if message.attachment %}
+                                {% if message.is_audio %}
+                                    <div class="cd-attachment">
+                                        <span class="cd-attachment-label">🎤 {% translate "Message vocal" %}</span>
+                                        <audio controls preload="metadata" src="{{ message.attachment.url }}"></audio>
+                                    </div>
+                                {% elif message.is_video %}
+                                    <div class="cd-attachment">
+                                        <span class="cd-attachment-label">🎥 {% translate "Message vidéo" %}</span>
+                                        <video controls preload="metadata" src="{{ message.attachment.url }}"></video>
+                                    </div>
+                                {% else %}
+                                    <div class="cd-attachment">
+                                        📎 <a href="{{ message.attachment.url }}" target="_blank" rel="noopener">{{ message.attachment_filename }}</a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="cd-meta">
+                            <span class="cd-time">{{ message.created_at|date:"H:i" }}</span>
+                            {% if message.expediteur == request.user %}
+                                {% if message.lu %}
+                                    <span class="cd-read cd-read--seen" title="{% translate 'Lu' %}">✓✓</span>
+                                {% else %}
+                                    <span class="cd-read" title="{% translate 'Envoyé' %}">✓</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="cd-empty-chat">
+                    <span class="cd-empty-chat-icon" aria-hidden="true">💬</span>
+                    {% translate "Aucun message pour le moment. Démarrez la conversation." %}
+                </div>
+            {% endfor %}
         </div>
-        <div class="call-videos">
-            <video id="remoteVideo" autoplay playsinline></video>
-            <video id="localVideo" autoplay muted playsinline></video>
-        </div>
-    </div>
 
-    <div class="incoming-call" id="incomingCall" hidden>
-        <span id="incomingCallText" data-call-template="{% blocktranslate with caller='__CALLER__' %}{{ caller }} vous appelle{% endblocktranslate %}">{% translate "Appel entrant" %}</span>
-        <button type="button" class="btn" id="acceptCallBtn">📞 {% translate "Décrocher" %}</button>
-        <button type="button" class="btn secondary" id="rejectCallBtn">☎️ {% translate "Raccrocher" %}</button>
+        <!-- Zone de saisie -->
+        <div class="cd-composer">
+            <form method="post" action="{% url 'messagerie:envoyer_message' %}" class="cd-form" id="messageForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
+                <div class="cd-field">
+                    <textarea name="contenu" id="messageContent" placeholder="{% translate 'Tapez votre message...' %}" rows="1" aria-label="{% translate 'Tapez votre message...' %}"></textarea>
+                    <label for="messageAttachment" class="cd-attach" title="{% translate 'Joindre un fichier' %}">
+                        <span aria-hidden="true">📎</span>
+                        <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
+                    </label>
+                </div>
+                <div class="cd-tools">
+                    <button type="button" id="voiceRecorderBtn" class="cd-voice" title="{% translate 'Envoyer un message vocal' %}" aria-label="{% translate 'Enregistrer un message vocal' %}">🎤</button>
+                    <span id="voiceStatus" class="cd-voice-status">{% translate "Enregistrer un vocal" %}</span>
+                </div>
+                <div class="cd-send-wrap">
+                    <button type="submit" class="cd-btn cd-btn-send">
+                        <span class="cd-send-text">{% translate "Envoyer" %}</span>
+                        <span class="cd-send-arrow" aria-hidden="true">→</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Appel en cours -->
+        <div class="cd-call-panel" id="callPanel" hidden>
+            <div class="cd-call-header">
+                <strong id="callStatus">{% translate "Appel en cours" %}</strong>
+                <div class="cd-call-buttons">
+                    <button type="button" class="cd-btn cd-btn-hold" id="holdCallBtn">⏸ {% translate "Mettre en attente" %}</button>
+                    <button type="button" class="cd-btn cd-btn-danger" id="endCallBtn">{% translate "Raccrocher" %}</button>
+                </div>
+            </div>
+            <div class="cd-call-videos">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <video id="localVideo" autoplay muted playsinline></video>
+            </div>
+        </div>
+
+        <!-- Appel entrant -->
+        <div class="cd-incoming" id="incomingCall" hidden>
+            <span class="cd-incoming-text" id="incomingCallText" data-call-template="{% blocktranslate with caller='__CALLER__' %}{{ caller }} vous appelle{% endblocktranslate %}">{% translate "Appel entrant" %}</span>
+            <div class="cd-call-buttons">
+                <button type="button" class="cd-btn cd-btn-accept" id="acceptCallBtn">📞 {% translate "Décrocher" %}</button>
+                <button type="button" class="cd-btn cd-btn-reject" id="rejectCallBtn">☎️ {% translate "Raccrocher" %}</button>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <!-- Modal de confirmation de suppression -->
-<div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <h3>{% translate "Supprimer la conversation ?" %}</h3>
+<div id="deleteModal" class="cd-modal" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="cd-modal-content">
+        <div class="cd-modal-icon" aria-hidden="true">🗑️</div>
+        <h3 id="deleteModalTitle">{% translate "Supprimer la conversation ?" %}</h3>
         <p>{% translate "Cette action est irréversible. Tous les messages seront supprimés." %}</p>
-        <div class="modal-actions">
-            <button type="button" class="btn secondary" onclick="fermerModal()">{% translate "Annuler" %}</button>
+        <div class="cd-modal-actions">
+            <button type="button" class="cd-btn cd-btn-ghost" onclick="fermerModal()">{% translate "Annuler" %}</button>
             <form method="post" action="{% url 'messagerie:supprimer_conversation' conversation.id %}">
                 {% csrf_token %}
-                <button type="submit" class="btn danger">{% translate "Supprimer" %}</button>
+                <button type="submit" class="cd-btn cd-btn-danger">{% translate "Supprimer" %}</button>
             </form>
         </div>
     </div>
 </div>
 
 <style>
-    .conversation-page {
-        width: 100%;
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: clamp(10px, 1.8vw, 20px);
-        background: #f0f2f5;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+    /* ── Palette Côte d'Ivoire : orange · blanc · vert ── */
+    .cd-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger: #B3261E;
+        --ci-danger-soft: #FDF1F1;
+
+        font-family: 'Figtree', system-ui, sans-serif;
+        color: var(--ci-ink);
+        background: var(--ci-bg);
+        min-height: 100vh;
+        padding: clamp(10px, 1.8vw, 24px);
     }
 
-    .conversation-header {
+    .cd-container {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .cd-page :where(h1, h3, p) { margin: 0; }
+
+    /* ── En-tête ── */
+    .cd-header {
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        overflow: hidden;
+        flex: 0 0 auto;
+    }
+
+    .cd-stripe {
+        height: 6px;
+        background: linear-gradient(
+            90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%
+        );
+    }
+
+    .cd-header-body {
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 16px;
-        padding: 10px 14px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border-bottom: 1px solid #e5e7eb;
-        flex: 0 0 auto;
+        padding: 12px 16px;
     }
 
-    .participant-info {
+    .cd-participant {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
         min-width: 0;
     }
 
-    .participant-avatar {
-        position: relative;
-    }
+    .cd-avatar { flex: 0 0 auto; }
 
-    .participant-avatar img,
-    .avatar-placeholder {
+    .cd-avatar img,
+    .cd-avatar-placeholder {
+        display: block;
         width: 56px;
         height: 56px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid #e5e7eb;
+        border: 3px solid var(--ci-green-soft);
     }
 
-    .participant-details h1 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: #1a1a1a;
-        font-weight: 600;
+    .cd-avatar-placeholder {
+        background: var(--ci-green);
+        color: var(--ci-white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+
+    .cd-participant-details { min-width: 0; }
+
+    .cd-participant-details h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 1.25;
         overflow-wrap: anywhere;
     }
 
-    .conversation-subject {
-        color: #65676b;
-        font-weight: 400;
-        margin: 2px 0 0 0;
-        font-size: 0.9rem;
+    .cd-subject {
+        margin-top: 2px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ci-green-deep);
     }
 
-    .conversation-status {
-        margin: 0;
-        display: flex;
-        gap: 8px;
-        align-items: center;
+    .cd-status {
         margin-top: 4px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
     }
 
-    .verified-badge {
-        background: #31a24c;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.75rem;
+    .cd-status:empty { display: none; }
+
+    .cd-verified {
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        border: 1px solid #BFE0CE;
+        padding: 1px 9px;
+        border-radius: 999px;
+        font-size: 12px;
         font-weight: 600;
     }
 
-    .location {
-        color: #65676b;
-        font-size: 0.9rem;
-    }
+    .cd-location { color: var(--ci-muted); font-size: 13px; }
 
-    .conversation-actions {
+    /* ── Boutons ── */
+    .cd-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
         justify-content: flex-end;
     }
 
-    .conversation-actions .btn {
-        padding: 7px 10px;
-        font-size: 0.82rem;
-    }
-
-    .call-panel,
-    .incoming-call {
-        background: #111827;
-        color: white;
-        border-radius: 12px;
-        padding: 14px;
-        margin: 12px 0;
-    }
-
-    .call-panel[hidden],
-    .incoming-call[hidden] {
-        display: none !important;
-    }
-
-    .call-panel-header,
-    .incoming-call {
-        display: flex;
+    .cd-btn {
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
-        justify-content: space-between;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1.5px solid transparent;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.2;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
     }
 
-    .call-videos {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 10px;
-        margin-top: 12px;
+    .cd-btn:focus-visible,
+    .cd-voice:focus-visible,
+    .cd-attach:focus-within {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
     }
 
-    .call-videos video {
-        width: 100%;
-        min-height: 120px;
-        max-height: 360px;
-        object-fit: cover;
-        border-radius: 8px;
-        background: #030712;
+    .cd-btn-ghost {
+        background: transparent;
+        color: var(--ci-green-deep);
+        border-color: #BFE0CE;
     }
+    .cd-btn-ghost:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
 
-    #audioCallBtn {
-        background: #059669;
-        color: white;
+    .cd-btn-call {
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        border-color: #BFE0CE;
     }
+    .cd-btn-call:hover { background: #D5EDDF; border-color: var(--ci-green); }
 
-    .hold-btn {
-        background: #f59e0b;
-        color: white;
+    .cd-btn-danger-outline {
+        background: transparent;
+        color: var(--ci-danger);
+        border-color: #F0CACA;
     }
+    .cd-btn-danger-outline:hover { background: var(--ci-danger-soft); border-color: var(--ci-danger); }
 
-    @media (max-width: 768px) {
-        .call-videos {
-            grid-template-columns: 1fr;
-        }
+    .cd-btn-danger {
+        background: var(--ci-danger);
+        color: var(--ci-white);
     }
+    .cd-btn-danger:hover { background: #8F1D17; }
 
-    .messages-container {
-        background: white;
-        border-radius: 12px;
-        padding: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    .cd-btn-hold {
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+    }
+    .cd-btn-hold:hover { background: var(--ci-orange-hover); }
+
+    .cd-btn-accept {
+        background: var(--ci-green);
+        color: var(--ci-ink);
+    }
+    .cd-btn-accept:hover { background: #12B573; }
+
+    .cd-btn-reject {
+        background: transparent;
+        color: var(--ci-white);
+        border-color: rgba(255,255,255,0.45);
+    }
+    .cd-btn-reject:hover { background: rgba(255,255,255,0.12); }
+
+    /* ── Messages ── */
+    .cd-messages {
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        padding: 16px;
         flex: 0 1 auto;
-        min-height: 0;
-        max-height: min(55vh, 520px);
+        min-height: 220px;
+        max-height: min(58vh, 560px);
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -301,465 +394,416 @@
         scroll-behavior: smooth;
     }
 
-    @keyframes messageSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+    .cd-row { display: flex; margin-bottom: 10px; }
+    .cd-row--sent { justify-content: flex-end; }
+    .cd-row--received { justify-content: flex-start; }
 
-    .avatar-placeholder {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-
-    /* ─── Alternating Message Styles ─── */
-    .message-row {
-        display: flex;
-        margin-bottom: 10px;
-        animation: messageSlideIn 0.3s ease-out;
-    }
-
-    .message-row.sent {
-        justify-content: flex-end;
-    }
-
-    .message-row.received {
-        justify-content: flex-start;
-    }
-
-    .message-bubble-item {
+    .cd-bubble-item {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
         max-width: 72%;
     }
 
-    .message-row.sent .message-bubble-item {
-        align-items: flex-end;
-    }
+    .cd-row--sent .cd-bubble-item { align-items: flex-end; }
+    .cd-row--received .cd-bubble-item { align-items: flex-start; }
 
-    .message-row.received .message-bubble-item {
-        align-items: flex-start;
-    }
-
-    .message-bubble {
-        background: #e4e6eb;
-        color: #1a1a1a;
+    .cd-bubble {
         padding: 10px 14px;
-        border-radius: 18px;
-        word-wrap: break-word;
-        line-height: 1.4;
-        font-size: 0.95rem;
+        font-size: 15px;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
     }
 
-    .message-bubble p {
-        margin: 0;
+    /* Reçu : gris-vert clair. Envoyé : vert profond. */
+    .cd-row--received .cd-bubble {
+        background: #EEF3EF;
+        color: var(--ci-ink);
+        border-radius: 18px 18px 18px 4px;
     }
 
-    .message-row.sent .message-bubble {
-        background: var(--primary);
-        color: white;
-        border-radius: 18px;
+    .cd-row--sent .cd-bubble {
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        border-radius: 18px 18px 4px 18px;
     }
 
-    .empty-chat {
-        text-align: center;
-        color: #65676b;
-        padding: 20px 0;
-        font-size: 0.95rem;
-    }
+    .cd-text p { margin: 0; }
+    .cd-text p + p { margin-top: 6px; }
 
-    .message-attachment {
+    .cd-attachment {
         margin-top: 6px;
-        font-size: 0.85rem;
-        opacity: 0.9;
-    }
-
-    .audio-attachment {
+        font-size: 14px;
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
 
-    .attachment-label-inline {
-        font-weight: 600;
-        font-size: 0.8rem;
-    }
+    .cd-text + .cd-attachment { margin-top: 8px; }
 
-    .message-attachment audio {
-        width: 220px;
-        max-width: 100%;
-    }
+    .cd-attachment-label { font-weight: 600; font-size: 13px; }
 
-    .video-attachment {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
+    .cd-attachment audio { width: 240px; max-width: 100%; }
 
-    .message-attachment video {
+    .cd-attachment video {
         display: block;
         width: min(360px, 100%);
         max-height: 280px;
-        border-radius: 8px;
-        background: #111827;
+        border-radius: 10px;
+        background: #08301F;
     }
 
-    .message-attachment a {
-        color: inherit;
-        text-decoration: underline;
-    }
+    .cd-attachment a { color: inherit; text-decoration: underline; }
 
-    .message-meta {
-        font-size: 0.75rem;
-        color: #65676b;
+    .cd-meta {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 5px;
         padding: 0 4px;
+        font-size: 12px;
+        color: var(--ci-muted);
     }
 
-    .message-time {
-        font-size: 0.75rem;
-        color: #65676b;
-    }
-
-    .read-status {
-        font-size: 0.7rem;
+    .cd-read {
+        font-size: 12px;
         font-weight: 600;
-        color: #7b9ae6;
         letter-spacing: -1px;
+        color: var(--ci-muted);
     }
 
-    .message-form-container {
-        background: white;
-        border-radius: 12px;
-        padding: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border-top: 1px solid #e5e7eb;
+    .cd-read--seen { color: var(--ci-green); }
+
+    .cd-empty-chat {
+        margin: auto;
+        text-align: center;
+        color: var(--ci-muted);
+        font-size: 15px;
+        padding: 24px 0;
+    }
+
+    .cd-empty-chat-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+    }
+
+    /* ── Saisie ── */
+    .cd-composer {
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        padding: 10px;
         flex: 0 0 auto;
     }
 
-    .message-form {
+    .cd-form {
         display: flex;
-        gap: 12px;
+        gap: 10px;
         align-items: flex-end;
     }
 
-    .form-group {
+    .cd-field {
         flex: 1;
         min-width: 0;
         position: relative;
         display: flex;
         align-items: center;
-        gap: 8px;
     }
 
-    .message-form textarea {
+    .cd-form textarea {
         width: 100%;
-        min-height: 44px;
+        min-height: 46px;
         max-height: 120px;
-        padding: 10px 44px 10px 14px;
-        border: 1px solid #d0d0d0;
-        border-radius: 20px;
+        padding: 12px 46px 12px 16px;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 23px;
         resize: none;
         font-family: inherit;
-        font-size: 0.95rem;
-        color: #1a1a1a;
+        font-size: 15px;
+        line-height: 1.4;
+        color: var(--ci-ink);
+        background: var(--ci-white);
+        box-sizing: border-box;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
 
-    .attachment-label {
-        position: absolute;
-        right: 10px;
-        cursor: pointer;
-        font-size: 1.1rem;
-        opacity: 0.7;
-    }
+    .cd-form textarea::placeholder { color: #8A9A91; }
 
-    .attachment-label:hover {
-        opacity: 1;
-    }
-
-    .attachment-label input[type="file"] {
-        display: none;
-    }
-
-    .message-form textarea::placeholder {
-        color: #65676b;
-    }
-
-    .message-form textarea:focus {
+    .cd-form textarea:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(94, 93, 255, 0.1);
+        border-color: var(--ci-green);
+        box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
     }
 
-    .message-tools {
+    .cd-attach {
+        position: absolute;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.05rem;
+        opacity: 0.75;
+        transition: background-color .15s ease, opacity .15s ease;
+    }
+
+    .cd-attach:hover { opacity: 1; background: var(--ci-green-soft); }
+    .cd-attach input[type="file"] { display: none; }
+
+    .cd-tools {
         display: flex;
         align-items: center;
         gap: 8px;
         flex-shrink: 0;
+        min-height: 46px;
     }
 
-    .voice-btn {
-        border: none;
-        background: #eef2ff;
-        color: var(--primary);
-        width: 42px;
-        height: 42px;
+    .cd-voice {
+        border: 1.5px solid #BFE0CE;
+        background: var(--ci-green-soft);
+        width: 46px;
+        height: 46px;
         border-radius: 50%;
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 1.05rem;
+        transition: background-color .15s ease;
     }
 
-    .voice-btn.recording {
-        background: #ef4444;
-        color: white;
-        animation: pulse 1s infinite;
+    .cd-voice:hover { background: #D5EDDF; }
+
+    .cd-voice.recording {
+        background: var(--ci-danger);
+        border-color: var(--ci-danger);
+        animation: cdPulse 1s infinite;
     }
 
-    .voice-status {
-        color: #65676b;
-        font-size: 0.85rem;
+    .cd-voice-status {
+        color: var(--ci-muted);
+        font-size: 13px;
         white-space: nowrap;
     }
 
-    .form-actions {
-        flex-shrink: 0;
+    .cd-send-wrap { flex-shrink: 0; }
+
+    .cd-btn-send {
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        padding: 0 8px 0 20px;
+        height: 46px;
+        border-radius: 23px;
+        font-size: 15px;
+        gap: 10px;
     }
 
-    .form-actions .btn {
-        padding: 10px 20px;
-        border-radius: 20px;
-        font-weight: 600;
+    .cd-btn-send:hover { background: var(--ci-orange-hover); transform: translateY(-1px); }
+
+    .cd-send-arrow {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
     }
 
-    /* Modal styles */
-    .modal {
+    @keyframes cdPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+    }
+
+    /* ── Appels ── */
+    .cd-call-panel,
+    .cd-incoming {
+        background: #08301F;
+        color: var(--ci-white);
+        border-radius: 16px;
+        padding: 14px 16px;
+        border-top: 4px solid var(--ci-orange);
+    }
+
+    .cd-call-panel[hidden],
+    .cd-incoming[hidden] { display: none !important; }
+
+    .cd-call-header,
+    .cd-incoming {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .cd-call-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .cd-incoming-text {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 500;
+    }
+
+    .cd-call-videos {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .cd-call-videos video {
+        width: 100%;
+        min-height: 120px;
+        max-height: 360px;
+        object-fit: cover;
+        border-radius: 10px;
+        background: #04180F;
+    }
+
+    /* ── Modal ── */
+    .cd-modal {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.6);
+        inset: 0;
+        background: rgba(8, 48, 31, 0.6);
         z-index: 1000;
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(4px);
     }
 
-    .modal.show {
+    .cd-modal.show {
         display: flex;
-        animation: modalSlideIn 0.3s ease-out;
+        animation: cdModalIn .25s ease-out;
     }
 
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
+    @keyframes cdModalIn {
+        from { opacity: 0; transform: scale(0.96); }
+        to { opacity: 1; transform: scale(1); }
     }
 
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.08); }
-    }
-
-    .modal-content {
-        background: white;
+    .cd-modal-content {
+        font-family: 'Figtree', system-ui, sans-serif;
+        background: #FFFFFF;
         padding: 28px;
-        border-radius: 12px;
+        border-radius: 16px;
         max-width: 420px;
         width: 90%;
         text-align: center;
-        box-shadow: 0 20px 25px rgba(0,0,0,0.15);
+        border-top: 6px solid #B3261E;
+        box-shadow: 0 20px 25px rgba(0,0,0,0.18);
     }
 
-    .modal-content h3 {
-        margin: 0 0 12px 0;
-        font-size: 1.2rem;
-        color: #1a1a1a;
-    }
-
-    .modal-content p {
-        margin: 0 0 20px 0;
-        color: #65676b;
-        font-size: 0.95rem;
-    }
-
-    .modal-actions {
+    .cd-modal-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        background: #FDF1F1;
         display: flex;
-        gap: 12px;
+        align-items: center;
         justify-content: center;
+        font-size: 1.5rem;
     }
 
-    .modal-actions .btn,
-    .modal-actions form {
-        flex: 1;
+    .cd-modal-content h3 {
+        margin: 0 0 8px;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #10231A;
     }
 
-    .modal-actions form .btn {
-        width: 100%;
+    .cd-modal-content p {
+        margin: 0 0 22px;
+        color: #5B6B62;
+        font-size: 15px;
+        line-height: 1.5;
     }
 
+    .cd-modal-actions { display: flex; gap: 12px; }
+    .cd-modal-actions .cd-btn,
+    .cd-modal-actions form { flex: 1; }
+    .cd-modal-actions form .cd-btn { width: 100%; }
+    .cd-modal-actions .cd-btn { padding: 11px 14px; font-size: 14px; }
+
+    /* Le modal est hors de .cd-page : on redéfinit les couleurs nécessaires aux boutons */
+    .cd-modal .cd-btn-ghost { color: #0B5D3B; border-color: #BFE0CE; }
+    .cd-modal .cd-btn-ghost:hover { background: #E6F4EC; border-color: #009E60; }
+    .cd-modal .cd-btn-danger { background: #B3261E; color: #fff; }
+    .cd-modal .cd-btn-danger:hover { background: #8F1D17; }
+
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .conversation-page {
-            gap: 6px;
-            padding: 6px 10px;
-        }
+        .cd-page { padding: 6px 10px 12px; }
+        .cd-container { gap: 6px; }
 
-        .conversation-header {
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-        }
+        .cd-header-body { gap: 8px; padding: 8px 10px; }
+        .cd-participant { flex: 1 1 auto; gap: 10px; }
 
-        .participant-info {
-            justify-content: flex-start;
-            flex: 1 1 auto;
-            gap: 8px;
-        }
+        .cd-avatar img,
+        .cd-avatar-placeholder { width: 40px; height: 40px; font-size: 1.05rem; }
 
-        .participant-avatar img,
-        .participant-avatar .avatar-placeholder {
-            width: 38px;
-            height: 38px;
-        }
+        .cd-participant-details h1 { font-size: 0.98rem; }
+        .cd-subject, .cd-location { font-size: 12px; }
+        .cd-verified { font-size: 11px; padding: 0 7px; }
 
-        .participant-details h1 {
-            font-size: 0.92rem;
-        }
+        .cd-actions { flex: 0 0 auto; flex-wrap: nowrap; gap: 4px; }
 
-        .conversation-subject,
-        .location {
-            font-size: 0.72rem;
-        }
-
-        .conversation-status {
-            gap: 5px;
-            margin-top: 2px;
-        }
-
-        .verified-badge {
-            padding: 1px 6px;
-            font-size: 0.65rem;
-        }
-
-        .conversation-actions {
-            flex: 0 0 auto;
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 4px;
-        }
-
-        .conversation-actions .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 34px;
-            height: 34px;
+        .cd-actions .cd-btn {
+            width: 36px;
+            height: 36px;
             padding: 0;
-            font-size: 0.95rem;
-            white-space: nowrap;
+            font-size: 1rem;
         }
 
-        .conversation-actions .action-label {
-            display: none;
-        }
+        .cd-action-label { display: none; }
 
-        .messages-container {
-            max-height: 45dvh;
-            padding: 8px;
-        }
+        .cd-messages { max-height: 48dvh; padding: 12px; min-height: 180px; }
+        .cd-bubble-item { max-width: 86%; }
 
-        .message-form {
+        .cd-form {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 38px auto;
+            grid-template-columns: minmax(0, 1fr) 42px auto;
             align-items: center;
             gap: 6px;
         }
 
-        .form-group {
-            grid-column: 1;
-            grid-row: 1;
-            width: 100%;
-        }
+        .cd-field { grid-column: 1; grid-row: 1; }
+        .cd-tools { grid-column: 2; grid-row: 1; justify-content: center; }
+        .cd-voice-status { display: none; }
+        .cd-send-wrap { grid-column: 3; grid-row: 1; }
 
-        .message-form textarea {
-            min-height: 40px;
-            font-size: 0.9rem;
-        }
+        .cd-voice { width: 42px; height: 42px; }
+        .cd-btn-send { padding: 0 6px 0 14px; height: 42px; font-size: 14px; }
+        .cd-send-arrow { width: 28px; height: 28px; }
+        .cd-form textarea { min-height: 42px; font-size: 14px; }
 
-        .message-tools {
-            grid-column: 2;
-            grid-row: 1;
-            justify-content: center;
-        }
-
-        .voice-status {
-            display: none;
-        }
-
-        .form-actions {
-            grid-column: 3;
-            grid-row: 1;
-            width: auto;
-        }
-
-        .form-actions .btn {
-            width: auto;
-            padding: 8px 10px;
-            white-space: nowrap;
-            font-size: 0.82rem;
-        }
-
-        .message-bubble-item {
-            max-width: 86%;
-        }
-
-        .messages-container {
-            padding: 12px;
-        }
+        .cd-call-videos { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 380px) {
-        .conversation-header {
-            padding: 7px;
-        }
+        .cd-actions .cd-btn { width: 32px; height: 32px; }
+        .cd-send-text { display: none; }
+        .cd-btn-send { padding: 0 6px; }
+    }
 
-        .conversation-actions .btn {
-            width: 30px;
-            height: 30px;
-        }
-
-        .message-tools .voice-btn {
-            width: 36px;
-            height: 36px;
-        }
-
-        .form-actions .btn {
-            padding: 9px 10px;
-            font-size: 0.82rem;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .cd-page *,
+        .cd-modal * { transition: none !important; }
+        .cd-voice.recording,
+        .cd-modal.show { animation: none; }
+        .cd-btn-send:hover { transform: none; }
+        .cd-messages { scroll-behavior: auto; }
     }
 </style>
 
@@ -807,6 +851,11 @@
         if (e.target === this) {
             fermerModal();
         }
+    });
+
+    // Fermer le modal avec Échap
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fermerModal();
     });
 
     // Auto-resize du textarea

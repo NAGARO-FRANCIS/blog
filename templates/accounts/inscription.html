@@ -4,288 +4,388 @@
 {% block title %}{% translate "S'inscrire" %} - Coloc.ai{% endblock %}
 
 {% block content %}
-<div class="signup-wrapper">
-    <div class="signup-container" style="max-width: 700px;">
-        <!-- Branding Section -->
-        <div class="signup-header">
-            <h1>{% translate "Bienvenue sur Coloc.ai" %} 🏠</h1>
-            <p>{% translate "Choisissez votre type de compte pour continuer" %}</p>
-        </div>
 
-        <!-- Error Messages -->
-        {% if account_type_form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in account_type_form.non_field_errors %}
-                    <div>❌ {{ error }}</div>
-                {% endfor %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
+<div class="su-page">
+    <div class="su-card">
+
+        <!-- En-tête -->
+        <header class="su-header">
+            <div class="su-stripe" aria-hidden="true"></div>
+            <div class="su-header-body">
+                <span class="su-header-icon" aria-hidden="true">🏠</span>
+                <h1>{% translate "Bienvenue sur Coloc.ai" %}</h1>
+                <p>{% translate "Choisissez votre type de compte pour continuer" %}</p>
             </div>
-        {% endif %}
+        </header>
 
-        <form method="post" class="signup-form" novalidate>
+        <form method="post" class="su-form" novalidate>
             {% csrf_token %}
 
-            <div class="account-type-selection">
-                <fieldset>
-                    <legend style="font-size: 1.2rem; font-weight: 600; margin-bottom: 30px;">{{ account_type_form.account_type.label }}</legend>
-                    
-                    <div class="account-type-options">
-                        {% for value, label in account_type_form.account_type.field.choices %}
-                            <label class="account-type-option">
-                                <input type="radio" name="account_type" value="{{ value }}" {% if account_type_form.account_type.value == value %}checked{% endif %}>
-                                <div class="option-card">
-                                    {% if value == 'individu' %}
-                                        <div class="option-icon">👤</div>
-                                        <div class="option-title">{% translate "Individu" %}</div>
-                                        <div class="option-description">{% translate "Vous cherchez une colocation ou un logement" %}</div>
-                                    {% elif value == 'residence' %}
-                                        <div class="option-icon">🏢</div>
-                                        <div class="option-title">{% translate "Résidence" %}</div>
-                                        <div class="option-description">{% translate "Vous gérez une résidence" %}</div>
-                                    {% elif value == 'hotel' %}
-                                        <div class="option-icon">🏨</div>
-                                        <div class="option-title">{% translate "Hôtel" %}</div>
-                                        <div class="option-description">{% translate "Vous gérez un hôtel" %}</div>
-                                    {% endif %}
-                                </div>
-                            </label>
-                        {% endfor %}
-                    </div>
+            <!-- Erreurs globales -->
+            {% if account_type_form.non_field_errors %}
+                <div class="su-alert" role="alert">
+                    {% for error in account_type_form.non_field_errors %}
+                        <div>❌ {{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-                    {% if account_type_form.account_type.errors %}
-                        <div class="field-error">{{ account_type_form.account_type.errors.0 }}</div>
-                    {% endif %}
-                </fieldset>
-            </div>
+            <fieldset class="su-fieldset">
+                <legend class="su-legend">{{ account_type_form.account_type.label }}</legend>
 
-            <div style="display: flex; gap: 10px; margin-top: 30px;">
-                <button type="submit" class="btn btn-primary" style="flex: 1;">{% translate "Continuer" %} →</button>
-            </div>
+                <div class="su-options">
+                    {% for value, label in account_type_form.account_type.field.choices %}
+                        <label class="su-option">
+                            <input type="radio" name="account_type" value="{{ value }}" {% if account_type_form.account_type.value == value %}checked{% endif %}>
+                            <div class="su-option-card">
+                                {% if value == 'individu' %}
+                                    <div class="su-option-icon" aria-hidden="true">👤</div>
+                                    <div class="su-option-text">
+                                        <div class="su-option-title">{% translate "Individu" %}</div>
+                                        <div class="su-option-description">{% translate "Vous cherchez une colocation ou un logement" %}</div>
+                                    </div>
+                                {% elif value == 'residence' %}
+                                    <div class="su-option-icon" aria-hidden="true">🏢</div>
+                                    <div class="su-option-text">
+                                        <div class="su-option-title">{% translate "Résidence" %}</div>
+                                        <div class="su-option-description">{% translate "Vous gérez une résidence" %}</div>
+                                    </div>
+                                {% elif value == 'hotel' %}
+                                    <div class="su-option-icon" aria-hidden="true">🏨</div>
+                                    <div class="su-option-text">
+                                        <div class="su-option-title">{% translate "Hôtel" %}</div>
+                                        <div class="su-option-description">{% translate "Vous gérez un hôtel" %}</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
 
-            <p style="text-align: center; margin-top: 20px; color: #666;">
+                {% if account_type_form.account_type.errors %}
+                    <div class="su-field-error" role="alert">{{ account_type_form.account_type.errors.0 }}</div>
+                {% endif %}
+            </fieldset>
+
+            <button type="submit" class="su-btn">
+                {% translate "Continuer" %}
+                <span class="su-btn-arrow" aria-hidden="true">→</span>
+            </button>
+
+            <p class="su-login">
                 {% translate "Déjà inscrit ?" %} <a href="{% url 'accounts:login' %}">{% translate "Connectez-vous" %}</a>
             </p>
         </form>
     </div>
-
-    <div class="signup-background">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-    </div>
 </div>
 
 <style>
-    .signup-wrapper {
-        position: relative;
+    /* ── Palette Côte d'Ivoire : orange · blanc · vert ── */
+    .su-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
+        font-family: 'Figtree', system-ui, sans-serif;
+        color: var(--ci-ink);
+        background: var(--ci-bg);
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        overflow: hidden;
-        padding: 30px 20px;
+        padding: 2rem 1.25rem;
     }
 
-    .signup-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-    }
+    .su-page :where(h1, p, fieldset, legend) { margin: 0; padding: 0; }
+    .su-page :where(*, *::before, *::after) { box-sizing: border-box; }
 
-    .shape {
-        position: absolute;
-        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-        opacity: 0.08;
-    }
-
-    .shape-1 {
-        width: 350px;
-        height: 350px;
-        background: #007A5E;
-        top: -150px;
-        right: -100px;
-        animation: float 7s ease-in-out infinite;
-    }
-
-    .shape-2 {
-        width: 300px;
-        height: 300px;
-        background: #FF8800;
-        bottom: -150px;
-        left: -80px;
-        animation: float 9s ease-in-out infinite reverse;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(40px); }
-    }
-
-    .signup-container {
-        position: relative;
-        z-index: 1;
+    .su-card {
         width: 100%;
-        max-width: 600px;
-        background: white;
-        border-radius: 24px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        max-width: 700px;
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 20px;
         overflow: hidden;
+        box-shadow: 0 12px 40px rgba(11, 93, 59, 0.10);
     }
 
-    .signup-header {
-        background: linear-gradient(135deg, #007A5E 0%, #005244 100%);
-        padding: 50px 40px;
-        color: white;
+    /* ── En-tête ── */
+    .su-header {
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
         text-align: center;
     }
 
-    .signup-header h1 {
-        font-size: 2.2rem;
-        margin: 0 0 15px;
+    .su-stripe {
+        height: 8px;
+        background: linear-gradient(
+            90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%
+        );
+    }
+
+    .su-header-body { padding: 2.25rem 2rem 2.5rem; }
+
+    .su-header-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+    }
+
+    .su-header h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 2.1rem;
         font-weight: 700;
-        letter-spacing: -0.5px;
+        line-height: 1.2;
+        margin-bottom: 8px;
     }
 
-    .signup-header p {
-        margin: 0;
-        opacity: 0.95;
-        font-size: 1.1rem;
+    .su-header p {
+        font-size: 1.05rem;
+        color: rgba(255,255,255,0.85);
+    }
+
+    /* ── Formulaire ── */
+    .su-form { padding: 2rem 2.25rem 2.25rem; }
+
+    .su-fieldset { border: none; min-width: 0; }
+
+    .su-legend {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.2rem;
         font-weight: 500;
+        color: var(--ci-green-deep);
+        margin-bottom: 1.25rem;
     }
 
-    .signup-form {
-        padding: 40px;
-    }
-
-    .account-type-selection {
-        margin: 20px 0;
-    }
-
-    .account-type-options {
+    .su-options {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 20px;
-        margin: 30px 0;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 14px;
     }
 
-    .account-type-option {
-        cursor: pointer;
+    .su-option { display: block; cursor: pointer; position: relative; }
+
+    /* Radio masqué visuellement mais accessible au clavier */
+    .su-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        pointer-events: none;
     }
 
-    .account-type-option input[type="radio"] {
-        display: none;
-    }
-
-    .option-card {
-        padding: 25px;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        text-align: center;
-        background: white;
+    .su-option-card {
+        position: relative;
         height: 100%;
+        padding: 1.4rem 1rem 1.25rem;
+        border: 2px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+        text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        transition: border-color .15s ease, background-color .15s ease;
     }
 
-    .account-type-option input[type="radio"]:checked + .option-card {
-        border-color: #007A5E;
-        background: linear-gradient(135deg, rgba(0, 122, 94, 0.05) 0%, rgba(0, 82, 68, 0.05) 100%);
-        box-shadow: 0 4px 15px rgba(0, 122, 94, 0.2);
-        transform: scale(1.02);
+    .su-option:hover .su-option-card { border-color: #9FB3A7; }
+
+    .su-option input[type="radio"]:focus-visible + .su-option-card {
+        outline: 3px solid var(--ci-orange);
+        outline-offset: 2px;
     }
 
-    .account-type-option:hover .option-card {
-        border-color: #007A5E;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    /* Sélectionné : bordure verte, fond vert clair et coche (pas seulement la couleur) */
+    .su-option input[type="radio"]:checked + .su-option-card {
+        border-color: var(--ci-green);
+        background: var(--ci-green-soft);
     }
 
-    .option-icon {
-        font-size: 2.5rem;
-        margin-bottom: 12px;
-    }
-
-    .option-title {
-        font-size: 1rem;
+    .su-option-card::after {
+        content: '✓';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--ci-green);
+        color: var(--ci-white);
+        font-size: 12px;
         font-weight: 700;
-        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.6);
+        transition: opacity .15s ease, transform .15s ease;
+    }
+
+    .su-option input[type="radio"]:checked + .su-option-card::after {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .su-option-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+        margin-bottom: 12px;
+        transition: background-color .15s ease;
+    }
+
+    .su-option input[type="radio"]:checked + .su-option-card .su-option-icon {
+        background: var(--ci-white);
+    }
+
+    .su-option-text { min-width: 0; }
+
+    .su-option-title {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ci-ink);
         margin-bottom: 6px;
     }
 
-    .option-description {
-        font-size: 0.8rem;
-        color: #666;
-        line-height: 1.3;
-        word-wrap: break-word;
+    .su-option-description {
+        font-size: 14px;
+        line-height: 1.4;
+        color: var(--ci-muted);
+        overflow-wrap: break-word;
     }
 
-    .btn {
-        padding: 12px 24px;
-        border: none;
+    /* ── Erreurs ── */
+    .su-alert {
+        margin-bottom: 1.25rem;
+        padding: 0.8rem 1rem;
+        background: #FDF1F1;
+        border: 1px solid #F0CACA;
+        border-radius: 10px;
+        color: #7E1F1F;
+        font-size: 14px;
+    }
+
+    .su-field-error {
+        margin-top: 1rem;
+        padding: 0.5rem 0.75rem;
+        background: #FDF1F1;
+        border: 1px solid #F0CACA;
         border-radius: 8px;
-        font-size: 1rem;
+        color: #A12B2B;
+        font-size: 14px;
+    }
+
+    /* ── Bouton ── */
+    .su-btn {
+        width: 100%;
+        margin-top: 1.75rem;
+        padding: 0.95rem 1.5rem;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        border: none;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 16px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background-color .15s ease, transform .1s ease;
+    }
+
+    .su-btn:hover { background: var(--ci-orange-hover); transform: translateY(-1px); }
+    .su-btn:active { transform: translateY(0); }
+
+    .su-btn:focus-visible {
+        outline: 3px solid var(--ci-green);
+        outline-offset: 2px;
+    }
+
+    .su-btn-arrow {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .su-login {
         text-align: center;
+        margin-top: 1.25rem;
+        font-size: 14px;
+        color: var(--ci-muted);
     }
 
-    .btn-primary {
-        background: linear-gradient(135deg, #534AB7 0%, #4c3aa3 100%);
-        color: white;
+    .su-login a {
+        color: var(--ci-green-deep);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
     }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(83, 74, 183, 0.3);
-    }
+    .su-login a:hover { color: var(--ci-green); }
 
-    .alert {
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-
-    .alert-danger {
-        background: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fee2e2;
-    }
-
-    .field-error {
-        color: #e74c3c;
-        font-size: 0.85rem;
-        margin-top: 15px;
-        display: block;
-    }
-
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .signup-container {
-            border-radius: 0;
+        .su-page { padding: 0; align-items: stretch; }
+
+        .su-card { border-radius: 0; border-left: none; border-right: none; max-width: none; }
+
+        .su-header-body { padding: 1.75rem 1.25rem 2rem; }
+        .su-header h1 { font-size: 1.7rem; }
+
+        .su-form { padding: 1.5rem 1.25rem 2rem; }
+
+        .su-options { grid-template-columns: 1fr; }
+
+        /* Cartes en ligne sur mobile : icône à gauche, texte à droite */
+        .su-option-card {
+            flex-direction: row;
+            text-align: left;
+            align-items: center;
+            gap: 14px;
+            padding: 1rem 2.6rem 1rem 1rem;
         }
 
-        .signup-form {
-            padding: 30px 20px;
-        }
+        .su-option-icon { margin-bottom: 0; flex-shrink: 0; }
+        .su-option-text { min-width: 0; }
+    }
 
-        .account-type-options {
-            grid-template-columns: 1fr;
-        }
-
-        .signup-header {
-            padding: 40px 20px;
-        }
-
-        .signup-header h1 {
-            font-size: 1.8rem;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        .su-page * { transition: none !important; }
+        .su-btn:hover { transform: none; }
     }
 </style>
 {% endblock %}

@@ -207,12 +207,14 @@ class ReservationSecurityTests(TestCase):
                 self.assertEqual(paiement.methode, 'cash')
                 self.assertEqual(paiement.statut, 'pending')
                 self.assertEqual(paiement.montant, reservation.montant_final)
-                self.assertContains(
-                    self.client.get(
-                        reverse('logement:confirmation_reservation', args=[reservation.id])
-                    ),
-                    'Réglez le montant total',
+                confirmation = self.client.get(
+                    reverse('logement:confirmation_reservation', args=[reservation.id])
                 )
+                self.assertContains(confirmation, 'Réglez le montant total')
+                self.assertContains(confirmation, 'Informations du voyageur')
+                self.assertContains(confirmation, 'Client Test')
+                self.assertContains(confirmation, f'RES-{reservation.id}')
+                self.assertContains(confirmation, 'Imprimer la fiche')
 
     def test_tarif_journalier_est_obligatoire_a_la_publication_professionnelle(self):
         self.assertTrue(LogementHotelForm().fields['prix_par_nuit'].required)
