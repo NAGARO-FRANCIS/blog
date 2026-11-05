@@ -10,8 +10,90 @@ from .forms import (
     RechercheLogementForm,
     ReservationForm,
 )
+from accounts.models import DocumentVerification, ProfessionalProfile
 from .models import AvisLogement, Etablissement, Paiement, Reservation, Logement
 from .views import _apply_logement_filters
+
+
+class PublicationVerificationTests(TestCase):
+    def test_unverified_owner_cannot_open_lodging_publication_form(self):
+        owner = User.objects.create_user(
+            username='unverified_lodging_owner',
+            password='StrongPassword123!',
+        )
+        owner.profile.account_type = 'individu'
+        owner.profile.role = 'proprietaire'
+        owner.profile.save(update_fields=['account_type', 'role'])
+        self.client.force_login(owner)
+
+        response = self.client.post(reverse('logement:ajouter_logement'), {})
+
+        self.assertRedirects(response, reverse('accounts:verification_docs'))
+        self.assertFalse(Logement.objects.filter(proprietaire=owner).exists())
+
+    def create_verified_residence_owner(self, establishment_verified):
+        owner = User.objects.create_user(
+            username=f'residence_owner_{establishment_verified}',
+            password='StrongPassword123!',
+        )
+        profile = owner.profile
+        profile.account_type = 'residence'
+        profile.role = 'proprietaire'
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=[
+            'account_type',
+            'role',
+            'verification_status',
+            'verified',
+        ])
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file=f'identity/{document_type}.jpg',
+                status='verified',
+            )
+        ProfessionalProfile.objects.create(
+            profile=profile,
+            establishment_type='residence',
+            establishment_name='Résidence test',
+            siret_or_rccm=f'CI-TEST-{establishment_verified}',
+            legal_representative='Responsable test',
+            legal_phone='+22501020304',
+            establishment_address='Adresse test',
+            establishment_city='Abidjan',
+            number_of_rooms=3,
+            legal_document='legal/test.pdf',
+            establishment_photo='facade/test.jpg',
+            is_verified=establishment_verified,
+        )
+        return owner
+
+    def test_professional_publication_explains_that_establishment_review_is_pending(self):
+        owner = self.create_verified_residence_owner(establishment_verified=False)
+        self.client.force_login(owner)
+
+        response = self.client.get(reverse('logement:ajouter_logement'), follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Vos pièces d’établissement sont en attente')
+        self.assertFalse(Logement.objects.filter(proprietaire=owner).exists())
+
+    def test_professional_owner_can_open_listing_form_after_both_reviews(self):
+        owner = self.create_verified_residence_owner(establishment_verified=True)
+        Etablissement.objects.create(
+            proprietaire=owner,
+            nom='Résidence test',
+            type_etablissement='residence',
+            ville='Abidjan',
+        )
+        self.client.force_login(owner)
+
+        response = self.client.get(reverse('logement:ajouter_logement'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('etablissement_form', response.context)
 
 
 class PaymentViewTests(TestCase):
@@ -759,6 +841,43 @@ class AvisLogementTests(TestCase):
 
 
 class RechercheLogementTests(TestCase):
+    def test_accueil_ne_charge_que_les_annonces_de_la_page_demandee(self):
+        for index in range(13):
+            Logement.objects.create(
+                titre=f'Annonce {index}',
+                description='Description test',
+                ville='Abidjan',
+                account_type='individu',
+            )
+
+        first_page = self.client.get(reverse('logement:home'))
+        second_page = self.client.get(reverse('logement:home'), {'page': '2'})
+
+        self.assertEqual(len(first_page.context['annonces']), 12)
+        self.assertEqual(first_page.context['total_annonces'], 13)
+        self.assertEqual(len(second_page.context['annonces']), 1)
+        self.assertEqual(second_page.context['page_obj'].number, 2)
+
+    def test_liste_tous_types_limite_chaque_categorie_a_une_page(self):
+        for index in range(13):
+            Logement.objects.create(
+                titre=f'Hôtel {index}',
+                description='Description test',
+                ville='Abidjan',
+                account_type='hotel',
+            )
+
+        first_page = self.client.get(reverse('logement:listings_all_types'))
+        second_page = self.client.get(
+            reverse('logement:listings_all_types'),
+            {'hotel_page': '2'},
+        )
+
+        self.assertEqual(len(first_page.context['hotels']), 12)
+        self.assertEqual(first_page.context['hotel_count'], 13)
+        self.assertEqual(len(second_page.context['hotels']), 1)
+        self.assertEqual(second_page.context['hotel_page'].number, 2)
+
     def test_filtre_avance_par_commune_prix_et_equipements(self):
         matching = Logement.objects.create(
             titre='Studio proche université',

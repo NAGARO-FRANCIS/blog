@@ -17,8 +17,81 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from PIL import Image
 
-from .models import DocumentVerification, Notification, ProfileVerification, Subscription
+from .forms import ProfileEditForm
+from .models import (
+    DocumentVerification,
+    Notification,
+    ProfessionalProfile,
+    ProfileVerification,
+    Subscription,
+)
 from .notification_service import notify_user
+from .views import send_sms
+
+
+class ProfileEditFormTests(TestCase):
+    def test_profile_edit_page_renders_for_authenticated_user(self):
+        user = User.objects.create_user(
+            username='profile_edit_test',
+            email='profile.edit@example.com',
+            password='StrongPassword123!',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('accounts:edit_profil'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'profile.edit@example.com')
+
+    def test_profile_email_can_remain_unchanged(self):
+        user = User.objects.create_user(
+            username='profile_email_unchanged',
+            email='profile.unchanged@example.com',
+            password='StrongPassword123!',
+        )
+
+        form = ProfileEditForm(
+            data={
+                'first_name': 'Test',
+                'last_name': 'User',
+                'email': user.email,
+                'telephone': '+22501020304',
+                'ville': 'Abidjan',
+                'profession': 'Développeur',
+            },
+            instance=user.profile,
+            user=user,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_profile_email_rejects_another_users_email(self):
+        user = User.objects.create_user(
+            username='profile_email_owner',
+            email='profile.owner@example.com',
+            password='StrongPassword123!',
+        )
+        other_user = User.objects.create_user(
+            username='profile_email_other',
+            email='profile.other@example.com',
+            password='StrongPassword123!',
+        )
+
+        form = ProfileEditForm(
+            data={
+                'first_name': 'Test',
+                'last_name': 'User',
+                'email': other_user.email,
+                'telephone': '+22501020304',
+                'ville': 'Abidjan',
+                'profession': 'Développeur',
+            },
+            instance=user.profile,
+            user=user,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
 
 
 class PublicLanguageSelectionTests(TestCase):
@@ -40,8 +113,12 @@ class PublicLanguageSelectionTests(TestCase):
 
 
 class AccountActivationTests(TestCase):
-    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
-    def test_individual_signup_creates_inactive_user_and_sends_activation_email(self):
+    @override_settings(
+        DEBUG=True,
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    )
+    @mock.patch('accounts.views.send_sms', return_value=True)
+    def test_individual_signup_creates_inactive_user_and_sends_activation_email(self, send_sms_mock):
         session = self.client.session
         session['account_type'] = 'individu'
         session['individu_role'] = 'touriste'
@@ -68,6 +145,63 @@ class AccountActivationTests(TestCase):
         self.assertFalse(response.wsgi_request.user.is_authenticated)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('activation', mail.outbox[0].subject.lower())
+        self.assertEqual(
+            User.objects.get(username='nagaro_touriste').profile.telephone,
+            '+22501020304',
+        )
+        send_sms_mock.assert_called_once()
+        self.assertEqual(send_sms_mock.call_args.args[0], '+22501020304')
+
+    @override_settings(
+        DEBUG=True,
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    )
+    @mock.patch('accounts.views.send_sms', return_value=True)
+    def test_professional_signup_sends_code_to_saved_phone(self, send_sms_mock):
+        image_bytes = io.BytesIO()
+        Image.new('RGB', (10, 10), (80, 120, 160)).save(image_bytes, format='JPEG')
+        session = self.client.session
+        session['account_type'] = 'hotel'
+        session.save()
+
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            response = self.client.post(
+                reverse('accounts:inscription_hotel'),
+                {
+                    'first_name': 'Gestionnaire',
+                    'last_name': 'Test',
+                    'email': 'hotel.manager@example.com',
+                    'username': 'hotel_manager_test',
+                    'telephone': '+2250701020304',
+                    'password1': 'StrongPassword123!',
+                    'password2': 'StrongPassword123!',
+                    'establishment_name': 'Hôtel test',
+                    'siret_or_rccm': 'CI-HOTEL-TEST-1',
+                    'legal_phone': '+2250705060708',
+                    'establishment_address': 'Plateaux',
+                    'establishment_city': 'Abidjan',
+                    'number_of_rooms': '5',
+                    'type_piece_identite': 'cni',
+                    'numero_piece_identite': 'CI-HOTEL-ID-1',
+                    'legal_document': SimpleUploadedFile(
+                        'legal.pdf',
+                        b'%PDF-1.4 test document',
+                        content_type='application/pdf',
+                    ),
+                    'establishment_photo': SimpleUploadedFile(
+                        'hotel.jpg',
+                        image_bytes.getvalue(),
+                        content_type='image/jpeg',
+                    ),
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            User.objects.get(username='hotel_manager_test').profile.telephone,
+            '+2250701020304',
+        )
+        self.assertEqual(send_sms_mock.call_args.args[0], '+2250701020304')
 
     def test_smtp_backend_is_used_when_smtp_env_is_configured(self):
         with mock.patch.dict(os.environ, {
@@ -242,7 +376,7 @@ class AccountActivationTests(TestCase):
         notification.refresh_from_db()
         self.assertTrue(notification.is_read)
 
-    def test_authentication_activates_pending_account_with_valid_credentials(self):
+    def test_authentication_does_not_activate_pending_account_with_valid_credentials(self):
         user = User.objects.create_user(
             username='thales_test',
             email='thales.test@example.com',
@@ -255,13 +389,173 @@ class AccountActivationTests(TestCase):
         profile.activation_token = 'pending-token'
         profile.activation_token_created_at = timezone.now()
         profile.save(update_fields=['activation_token', 'activation_token_created_at'])
-
         authenticated_user = authenticate(username='thales_test', password='StrongPassword123!')
 
-        self.assertIsNotNone(authenticated_user)
-        self.assertTrue(authenticated_user.is_active)
-        authenticated_user.refresh_from_db()
-        self.assertTrue(authenticated_user.is_active)
+        self.assertIsNone(authenticated_user)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+    def test_email_activation_alone_does_not_activate_account(self):
+        user = User.objects.create_user(
+            username='email_only_test',
+            email='email.only@example.com',
+            password='StrongPassword123!',
+        )
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+        profile = user.profile
+        profile.activation_token = 'email-token'
+        profile.activation_token_created_at = timezone.now()
+        profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+        response = self.client.get(reverse(
+            'accounts:activate_account',
+            kwargs={'uidb64': uidb64, 'token': 'email-token'},
+        ))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Adresse email vérifiée')
+        user.refresh_from_db()
+        profile.refresh_from_db()
+        self.assertTrue(profile.email_verified)
+        self.assertFalse(profile.phone_verified)
+        self.assertFalse(user.is_active)
+
+    def test_phone_activation_alone_does_not_activate_account(self):
+        user = User.objects.create_user(
+            username='phone_only_test',
+            email='phone.only@example.com',
+            password='StrongPassword123!',
+        )
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+        profile = user.profile
+        profile.phone_verification_code = '123456'
+        profile.phone_verification_created_at = timezone.now()
+        profile.activation_token = 'phone-token'
+        profile.activation_token_created_at = timezone.now()
+        profile.save(update_fields=[
+            'phone_verification_code',
+            'phone_verification_created_at',
+            'activation_token',
+            'activation_token_created_at',
+        ])
+        session = self.client.session
+        session['pending_user_id'] = user.pk
+        session.save()
+
+        response = self.client.post(
+            reverse('accounts:verify_phone'),
+            {'code': '123456'},
+        )
+
+        self.assertRedirects(response, reverse('accounts:inscription_pending'))
+        user.refresh_from_db()
+        profile.refresh_from_db()
+        self.assertTrue(profile.phone_verified)
+        self.assertFalse(profile.email_verified)
+        self.assertFalse(user.is_active)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        response = self.client.get(reverse(
+            'accounts:activate_account',
+            kwargs={'uidb64': uidb64, 'token': 'phone-token'},
+        ))
+        self.assertContains(response, 'Compte activé')
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+    def test_account_activates_only_after_both_email_and_phone_are_verified(self):
+        user = User.objects.create_user(
+            username='both_channels_test',
+            email='both.channels@example.com',
+            password='StrongPassword123!',
+        )
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+        profile = user.profile
+        profile.activation_token = 'both-token'
+        profile.activation_token_created_at = timezone.now()
+        profile.save(update_fields=['activation_token', 'activation_token_created_at'])
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        self.client.get(reverse(
+            'accounts:activate_account',
+            kwargs={'uidb64': uidb64, 'token': 'both-token'},
+        ))
+
+        profile.refresh_from_db()
+        profile.phone_verification_code = '654321'
+        profile.phone_verification_created_at = timezone.now()
+        profile.save(update_fields=['phone_verification_code', 'phone_verification_created_at'])
+        session = self.client.session
+        session['pending_user_id'] = user.pk
+        session.save()
+
+        response = self.client.post(reverse('accounts:verify_phone'), {'code': '654321'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse('accounts:dashboard'))
+        user.refresh_from_db()
+        profile.refresh_from_db()
+        self.assertTrue(user.is_active)
+        self.assertTrue(profile.email_verified)
+        self.assertTrue(profile.phone_verified)
+        self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
+
+    @override_settings(DEBUG=False, SMS_BACKEND='console')
+    def test_console_sms_cannot_verify_a_phone_in_production(self):
+        self.assertFalse(send_sms('+22501020304', 'Code de test'))
+
+    @mock.patch('accounts.views.send_sms', return_value=True)
+    def test_resend_phone_code_refuses_ambiguous_phone_number(self, send_sms_mock):
+        users = [
+            User.objects.create_user(username=f'duplicate_phone_{index}')
+            for index in range(2)
+        ]
+        for user in users:
+            profile = user.profile
+            profile.telephone = '0103280809'
+            profile.phone_verification_code = '123456'
+            profile.save(update_fields=['telephone', 'phone_verification_code'])
+
+        response = self.client.post(
+            reverse('accounts:resend_phone_code'),
+            {'phone': '0103280809'},
+            follow=True,
+        )
+
+        self.assertContains(
+            response,
+            'Plusieurs comptes sont associés à ce numéro',
+            status_code=200,
+        )
+        send_sms_mock.assert_not_called()
+        for user in users:
+            user.profile.refresh_from_db()
+            self.assertEqual(user.profile.phone_verification_code, '123456')
+
+    @mock.patch('accounts.views.send_sms', return_value=True)
+    def test_resend_phone_code_works_for_a_unique_phone_number(self, send_sms_mock):
+        user = User.objects.create_user(username='unique_phone_user')
+        user.is_active = False
+        user.save(update_fields=['is_active'])
+        profile = user.profile
+        profile.telephone = '0103280809'
+        profile.save(update_fields=['telephone'])
+
+        response = self.client.post(
+            reverse('accounts:resend_phone_code'),
+            {'phone': '0103280809'},
+        )
+
+        self.assertRedirects(response, reverse('accounts:verify_phone'))
+        send_sms_mock.assert_called_once()
+        self.assertEqual(send_sms_mock.call_args.args[0], '0103280809')
+        profile.refresh_from_db()
+        self.assertEqual(profile.phone_verification_code, send_sms_mock.call_args.args[1].split(': ')[1])
+        self.assertEqual(self.client.session['pending_user_id'], user.pk)
 
 
 class DocumentUploadSecurityTests(TestCase):
@@ -305,7 +599,7 @@ class DocumentUploadSecurityTests(TestCase):
                         'document_type': document_type,
                         'document_file': self.make_image_upload(
                             f'{document_type}.jpg',
-                            color=(20 + index, 80, 140),
+                                color=(20 + index * 50, 80, 140),
                         ),
                     },
                 )
@@ -318,3 +612,133 @@ class DocumentUploadSecurityTests(TestCase):
         self.user.profile.refresh_from_db()
         self.assertEqual(self.user.profile.verification_status, 'pending')
         self.assertFalse(self.user.profile.verified)
+
+    def test_complete_identity_upload_shows_waiting_for_manual_review_message(self):
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            for index, document_type in enumerate(('id_front', 'id_back', 'selfie')):
+                response = self.client.post(
+                    reverse('accounts:upload_document'),
+                    {
+                        'document_type': document_type,
+                        'document_file': self.make_image_upload(
+                            f'{document_type}.jpg',
+                            color=(30 + index * 60, 80, 140),
+                        ),
+                    },
+                    follow=index == 2,
+                )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Dossier complet — vérification en cours')
+        self.assertContains(response, 'Vous recevrez une notification et un e-mail')
+        self.assertContains(response, 'Notre équipe va vérifier vos informations')
+
+    def test_verification_page_shows_existing_document_review_statuses(self):
+        DocumentVerification.objects.create(
+            profile=self.user.profile,
+            document_type='id_front',
+            document_file='identity-front.jpg',
+            status='verified',
+        )
+        DocumentVerification.objects.create(
+            profile=self.user.profile,
+            document_type='selfie',
+            document_file='identity-selfie.jpg',
+            status='pending',
+        )
+
+        response = self.client.get(reverse('accounts:verification_docs'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context['document_statuses'],
+            {'id_front': 'verified', 'selfie': 'pending'},
+        )
+        self.assertContains(response, 'document-statuses')
+
+    def test_flagged_profile_can_upload_missing_documents_to_resume_review(self):
+        profile = self.user.profile
+        profile.verification_status = 'flagged'
+        profile.save(update_fields=['verification_status'])
+
+        page_response = self.client.get(reverse('accounts:verification_docs'))
+        self.assertEqual(page_response.status_code, 200)
+        self.assertContains(page_response, 'file-id_back')
+        self.assertContains(page_response, 'file-selfie')
+        self.assertContains(page_response, 'vous pouvez compléter votre dossier')
+
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            response = self.client.post(
+                reverse('accounts:upload_document'),
+                {
+                    'document_type': 'id_back',
+                    'document_file': self.make_image_upload('id-back.jpg', color=(220, 40, 100)),
+                },
+            )
+
+        self.assertRedirects(response, reverse('accounts:verification_docs'))
+        profile.refresh_from_db()
+        self.assertEqual(profile.verification_status, 'pending')
+        self.assertFalse(profile.verified)
+        self.assertTrue(
+            DocumentVerification.objects.filter(
+                profile=profile,
+                document_type='id_back',
+                status='pending',
+            ).exists()
+        )
+
+    def test_publication_requires_all_three_identity_documents_to_be_approved(self):
+        profile = self.user.profile
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=['verification_status', 'verified'])
+
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file='identity.jpg',
+                status='verified',
+            )
+
+        profile.refresh_from_db()
+        self.assertTrue(profile.can_publish)
+
+        DocumentVerification.objects.filter(
+            profile=profile,
+            document_type='id_back',
+        ).update(status='pending')
+        self.assertFalse(profile.can_publish)
+
+    def test_professional_publication_also_requires_establishment_review(self):
+        profile = self.user.profile
+        profile.account_type = 'hotel'
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=['account_type', 'verification_status', 'verified'])
+        ProfessionalProfile.objects.create(
+            profile=profile,
+            establishment_type='hotel',
+            establishment_name='Hôtel test',
+            siret_or_rccm='CI-TEST-123',
+            legal_representative='Responsable test',
+            legal_phone='+22501020304',
+            establishment_address='Adresse test',
+            establishment_city='Abidjan',
+            number_of_rooms=1,
+            legal_document='legal.pdf',
+            establishment_photo='facade.jpg',
+        )
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file='identity.jpg',
+                status='verified',
+            )
+
+        self.assertFalse(profile.can_publish)
+        profile.professional_profile.is_verified = True
+        profile.professional_profile.save(update_fields=['is_verified'])
+        self.assertTrue(profile.can_publish)

@@ -5,7 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.core.paginator import Paginator
+from django.db.models import Count, Prefetch, Q
 from .models import AppelSession, AppelSignal, Conversation, Message, ParticipationConversation
 import json
 from colocation.models import ColocationAnnonce
@@ -29,28 +30,46 @@ def _trouver_ou_creer_conversation(user, destinataire, annonce_coloc=None, sujet
 
 @login_required
 def mes_conversations(request):
-    """Affiche toutes les conversations de l'utilisateur"""
+    """Affiche les conversations récentes sans charger tous leurs messages."""
+    latest_messages = Message.objects.select_related(
+        'expediteur',
+    ).order_by('-created_at', '-pk')[:1]
     conversations = Conversation.objects.filter(
         participationconversation__user=request.user,
         participationconversation__masquee=False,
-    ).prefetch_related('participants', 'messages').order_by('-updated_at')
+    ).annotate(
+        unread_count=Count(
+            'messages',
+            filter=Q(messages__lu=False) & ~Q(messages__expediteur=request.user),
+            distinct=True,
+        )
+    ).select_related(
+        'annonce',
+    ).prefetch_related(
+        Prefetch(
+            'participants',
+            queryset=User.objects.prefetch_related('profile'),
+        ),
+        Prefetch('messages', queryset=latest_messages, to_attr='latest_messages'),
+    ).order_by('-updated_at', '-pk')
 
-    # Ajouter des informations supplémentaires pour chaque conversation
+    page_obj = Paginator(conversations, 20).get_page(request.GET.get('page'))
     conversations_with_info = []
-    for conv in conversations:
-        other_participant = conv.get_other_participant(request.user)
-        last_message = conv.get_last_message()
-        unread_count = conv.get_unread_count(request.user)
-
+    for conv in page_obj.object_list:
+        other_participant = next(
+            (participant for participant in conv.participants.all() if participant.pk != request.user.pk),
+            None,
+        )
         conversations_with_info.append({
             'conversation': conv,
             'other_participant': other_participant,
-            'last_message': last_message,
-            'unread_count': unread_count,
+            'last_message': conv.latest_messages[0] if conv.latest_messages else None,
+            'unread_count': conv.unread_count,
         })
 
     return render(request, 'messagerie/mes_messages.html', {
-        'conversations': conversations_with_info
+        'conversations': conversations_with_info,
+        'page_obj': page_obj,
     })
 
 

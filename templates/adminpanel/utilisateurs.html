@@ -143,6 +143,12 @@
                                     {% else %}
                                         <a class="action-btn" href="{% url 'accounts:profil_user' user_id=user.id %}">{% translate "Voir le profil" %}</a>
                                     {% endif %}
+                                    {% if not user.is_active %}
+                                        <form method="post" action="{% url 'adminpanel:activate_user' user_id=user.id %}" style="display:inline">
+                                            {% csrf_token %}
+                                            <button class="action-btn" type="submit">{% translate "Activer le compte" %}</button>
+                                        </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% empty %}

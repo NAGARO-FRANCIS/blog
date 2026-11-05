@@ -226,6 +226,7 @@ class SignUpForm(UserCreationForm):
         profile.numero_piece_identite = self.cleaned_data['numero_piece_identite']
         if commit:
             profile.save()
+            user.profile = profile
         return user
 
 
@@ -393,6 +394,7 @@ class ProfessionalSignUpForm(UserCreationForm):
         profile.numero_piece_identite = self.cleaned_data['numero_piece_identite']
         if commit:
             profile.save()
+            user.profile = profile
         
         # Créer le profil professionnel avec tous les champs requis
         prof_profile_data = {
@@ -486,9 +488,9 @@ class ProfileEditForm(forms.ModelForm):
             self.fields['first_name'].initial = user.first_name
             self.fields['last_name'].initial = user.last_name
             self.fields['email'].initial = user.email
-            
-        def clean_email(self):
-            email = (self.cleaned_data.get('email') or '').strip()
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip()
         doublons = User.objects.filter(email__iexact=email)
         if self.user:
             doublons = doublons.exclude(pk=self.user.pk)

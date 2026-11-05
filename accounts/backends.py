@@ -2,7 +2,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
-from django.utils import timezone
 
 User = get_user_model()
 
@@ -27,17 +26,6 @@ class EmailOrUsernameBackend(ModelBackend):
         # Vérifier le mot de passe
         if not user.check_password(password):
             return None
-
-        if not user.is_active:
-            profile = getattr(user, 'profile', None)
-            if profile and profile.activation_token:
-                user.is_active = True
-                user.save(update_fields=['is_active'])
-                profile.activation_token = ''
-                profile.activation_token_created_at = None
-                profile.save(update_fields=['activation_token', 'activation_token_created_at'])
-            else:
-                return None
 
         if self.user_can_authenticate(user):
             return user

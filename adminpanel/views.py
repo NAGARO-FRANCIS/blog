@@ -3,13 +3,24 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-from django.db.models import Sum
+from django.db import transaction
+from django.db.models import Prefetch, Sum
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from accounts.models import Profile, DocumentVerification, Notification
+from PIL import Image, UnidentifiedImageError
+
+from accounts.models import (
+    DocumentVerification,
+    Notification,
+    Profile,
+    ProfessionalProfile,
+    VerificationLog,
+)
+from accounts.notification_service import notify_user
 from logement.models import (
     AvisLogement,
     Logement,
@@ -313,8 +324,187 @@ def colocations(request):
 
 @user_passes_test(is_staff)
 def hotels_residences(request):
-    items = Etablissement.objects.order_by('-created_at')[:12]
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'hotels_residences', 'Hôtels & Résidences', items, {'total_etablissements': Etablissement.objects.count()}))
+    items = list(
+        Etablissement.objects
+        .select_related('proprietaire')
+        .order_by('-created_at')[:50]
+    )
+    profiles = ProfessionalProfile.objects.filter(
+        profile__user_id__in=[item.proprietaire_id for item in items]
+    ).select_related('profile')
+    professional_profiles = {
+        professional_profile.profile.user_id: professional_profile
+        for professional_profile in profiles
+    }
+    for item in items:
+        item.professional_profile = professional_profiles.get(item.proprietaire_id)
+    stats = {
+        'total_etablissements': Etablissement.objects.count(),
+        'etablissements_en_attente': ProfessionalProfile.objects.filter(
+            profile__user__etablissement_logement__isnull=False,
+            is_verified=False,
+        ).count(),
+    }
+    return render(
+        request,
+        'adminpanel/section.html',
+        _build_section_context(
+            request,
+            'hotels_residences',
+            'Hôtels & Résidences',
+            items,
+            stats,
+        ),
+    )
+
+
+@user_passes_test(is_staff)
+def establishment_review(request, establishment_id):
+    establishment = get_object_or_404(
+        Etablissement.objects.select_related('proprietaire'),
+        pk=establishment_id,
+    )
+    profile = Profile.objects.filter(user=establishment.proprietaire).first()
+    professional_profile = (
+        ProfessionalProfile.objects.filter(profile=profile).first()
+        if profile
+        else None
+    )
+    context = _build_section_context(
+        request,
+        'establishment_review',
+        f"Vérification de {establishment.nom}",
+    )
+    context.update({
+        'establishment': establishment,
+        'establishment_profile': profile,
+        'professional_profile': professional_profile,
+        'identity_review_complete': bool(
+            profile
+            and profile.verified
+            and profile.verification_status == 'verified'
+            and profile.has_verified_identity_documents
+        ),
+    })
+    return render(request, 'adminpanel/section.html', context)
+
+
+@user_passes_test(is_staff)
+def establishment_document_file(request, establishment_id, document_kind):
+    if document_kind not in {'legal_document', 'establishment_photo'}:
+        raise Http404('Type de document inconnu.')
+    establishment = get_object_or_404(
+        Etablissement.objects.select_related('proprietaire'),
+        pk=establishment_id,
+    )
+    profile = Profile.objects.filter(user=establishment.proprietaire).first()
+    professional_profile = (
+        ProfessionalProfile.objects.filter(profile=profile).first()
+        if profile
+        else None
+    )
+    document = getattr(professional_profile, document_kind, None)
+    if not document or not document.name:
+        raise Http404('Document introuvable.')
+
+    file_handle = document.open('rb')
+    if document_kind == 'legal_document':
+        if file_handle.read(5) != b'%PDF-':
+            file_handle.close()
+            raise Http404('Le document légal n’est pas un PDF valide.')
+        file_handle.seek(0)
+        response = FileResponse(
+            file_handle,
+            as_attachment=True,
+            filename='document-legal.pdf',
+            content_type='application/pdf',
+        )
+    else:
+        try:
+            with Image.open(file_handle) as image:
+                content_type = {
+                    'JPEG': 'image/jpeg',
+                    'PNG': 'image/png',
+                    'GIF': 'image/gif',
+                }.get(image.format)
+                image.verify()
+        except (Image.DecompressionBombError, OSError, UnidentifiedImageError) as error:
+            file_handle.close()
+            raise Http404('La photo de l’établissement est illisible.') from error
+        if not content_type:
+            file_handle.close()
+            raise Http404('Format de photo non pris en charge.')
+        file_handle.seek(0)
+        extension = {
+            'image/jpeg': 'jpg',
+            'image/png': 'png',
+            'image/gif': 'gif',
+        }[content_type]
+        response = FileResponse(
+            file_handle,
+            as_attachment=False,
+            filename=f'photo-etablissement.{extension}',
+            content_type=content_type,
+        )
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
+@user_passes_test(is_staff)
+@require_POST
+def approve_establishment(request, establishment_id):
+    establishment = get_object_or_404(Etablissement, pk=establishment_id)
+    with transaction.atomic():
+        profile = get_object_or_404(
+            Profile.objects.select_for_update().select_related('user'),
+            user=establishment.proprietaire,
+        )
+        professional_profile = get_object_or_404(
+            ProfessionalProfile.objects.select_for_update(),
+            profile=profile,
+        )
+        if professional_profile.is_verified:
+            messages.info(request, 'Cet établissement est déjà vérifié.')
+            return redirect('adminpanel:establishment_review', establishment_id=establishment.pk)
+        if (
+            not profile.verified
+            or profile.verification_status != 'verified'
+            or not profile.has_verified_identity_documents
+        ):
+            messages.warning(
+                request,
+                'Vérifiez d’abord l’identité du gestionnaire et ses trois pièces.',
+            )
+            return redirect('adminpanel:establishment_review', establishment_id=establishment.pk)
+        if not professional_profile.legal_document or not professional_profile.establishment_photo:
+            messages.warning(
+                request,
+                'Le document légal et la photo de l’établissement doivent être fournis.',
+            )
+            return redirect('adminpanel:establishment_review', establishment_id=establishment.pk)
+
+        professional_profile.is_verified = True
+        professional_profile.verification_date = timezone.now()
+        professional_profile.save(update_fields=['is_verified', 'verification_date'])
+        VerificationLog.objects.create(
+            profile=profile,
+            action='establishment_verified',
+            details=f'Établissement « {professional_profile.establishment_name} » vérifié depuis admin-ivoire.',
+            performed_by=request.user,
+        )
+
+    notify_user(
+        profile.user,
+        'system',
+        'Établissement vérifié',
+        'Les documents de votre établissement ont été vérifiés. Vous pouvez maintenant publier des annonces.',
+        email_subject='Votre établissement est vérifié - Ivoire Connect',
+    )
+    messages.success(
+        request,
+        'Établissement vérifié. Le gestionnaire peut maintenant publier des annonces.',
+    )
+    return redirect('adminpanel:establishment_review', establishment_id=establishment.pk)
 
 
 @user_passes_test(is_staff)
@@ -332,7 +522,33 @@ def finance(request):
 
 @user_passes_test(is_staff)
 def verifications(request):
-    items = DocumentVerification.objects.select_related('profile', 'profile__user').order_by('-uploaded_at')[:50]
+    required_document_types = ('id_front', 'id_back', 'selfie')
+    dossiers = (
+        Profile.objects
+        .filter(
+            verification_status__in=['pending', 'flagged'],
+            documents__document_type__in=required_document_types,
+        )
+        .select_related('user')
+        .prefetch_related(
+            Prefetch(
+                'documents',
+                queryset=DocumentVerification.objects.filter(
+                    document_type__in=required_document_types,
+                ),
+            )
+        )
+        .distinct()
+        .order_by('-date_creation')
+    )
+    page_obj = Paginator(dossiers, 25).get_page(request.GET.get('page'))
+    items = list(page_obj.object_list)
+    for profile in items:
+        profile.verified_required_identity_document_count = sum(
+            document.status == 'verified'
+            for document in profile.documents.all()
+            if document.document_type in required_document_types
+        )
     documents_en_attente = DocumentVerification.objects.filter(
         status__in=['pending', 'flagged']
     ).count()
@@ -343,33 +559,176 @@ def verifications(request):
     return render(
         request,
         'adminpanel/section.html',
-        _build_section_context(request, 'verifications', 'Vérifications', items, stats),
+        _build_section_context(
+            request,
+            'verifications',
+            'Vérifications',
+            items,
+            {**stats, 'page_obj': page_obj},
+        ),
     )
+
+
+@user_passes_test(is_staff)
+def verification_dossier(request, profile_id):
+    profile = get_object_or_404(
+        Profile.objects.select_related('user').prefetch_related('documents'),
+        pk=profile_id,
+    )
+    documents_by_type = {
+        document.document_type: document
+        for document in profile.documents.all()
+        if document.document_type in {'id_front', 'id_back', 'selfie'}
+    }
+    dossier_documents = [
+        {
+            'document_type': document_type,
+            'label': dict(DocumentVerification.DOCUMENT_TYPE_CHOICES)[document_type],
+            'document': documents_by_type.get(document_type),
+        }
+        for document_type in ('id_front', 'id_back', 'selfie')
+    ]
+    context = _build_section_context(
+        request,
+        'verification_dossier',
+        f"Dossier de {profile.get_full_name() or profile.user.username}",
+    )
+    context.update({
+        'verification_profile': profile,
+        'dossier_documents': dossier_documents,
+    })
+    return render(request, 'adminpanel/section.html', context)
+
+
+@user_passes_test(is_staff)
+def verification_document_file(request, document_id):
+    document = get_object_or_404(
+        DocumentVerification,
+        pk=document_id,
+        document_type__in=('id_front', 'id_back', 'selfie'),
+    )
+    file_handle = document.document_file.open('rb')
+    try:
+        with Image.open(file_handle) as image:
+            content_type = {
+                'JPEG': 'image/jpeg',
+                'PNG': 'image/png',
+                'GIF': 'image/gif',
+            }.get(image.format)
+    except (Image.DecompressionBombError, OSError, UnidentifiedImageError) as error:
+        file_handle.close()
+        raise Http404('Fichier de vérification illisible.') from error
+    if not content_type:
+        file_handle.close()
+        raise Http404('Format de document non pris en charge.')
+
+    file_handle.seek(0)
+    extension = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif'}[content_type]
+    response = FileResponse(
+        file_handle,
+        as_attachment=False,
+        filename=f'{document.document_type}.{extension}',
+        content_type=content_type,
+    )
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
+@user_passes_test(is_staff)
+@require_POST
+def activate_user(request, user_id):
+    with transaction.atomic():
+        user = get_object_or_404(User.objects.select_for_update(), pk=user_id)
+        if user.is_active:
+            messages.info(request, f'Le compte de {user.get_full_name() or user.username} est déjà actif.')
+            return redirect('adminpanel:users')
+
+        user.is_active = True
+        user.save(update_fields=['is_active'])
+        profile = Profile.objects.filter(user=user).first()
+        if profile:
+            VerificationLog.objects.create(
+                profile=profile,
+                action='account_activated',
+                details='Compte activé manuellement depuis admin-ivoire.',
+                performed_by=request.user,
+            )
+
+    messages.success(
+        request,
+        f'Le compte de {user.get_full_name() or user.username} est maintenant actif. '
+        'La vérification des pièces reste indépendante.',
+    )
+    return redirect('adminpanel:users')
 
 
 @user_passes_test(is_staff)
 @require_POST
 def approve_document(request, document_id):
-    document = get_object_or_404(DocumentVerification, pk=document_id)
-    if document.status not in {'pending', 'flagged'}:
-        messages.info(request, 'Ce document a déjà été traité.')
-        return redirect('adminpanel:verifications')
+    initial_document = get_object_or_404(DocumentVerification, pk=document_id)
+    should_notify_user = False
+    with transaction.atomic():
+        profile = get_object_or_404(
+            Profile.objects.select_for_update().select_related('user'),
+            pk=initial_document.profile_id,
+        )
+        document = get_object_or_404(
+            DocumentVerification.objects.select_for_update(),
+            pk=document_id,
+            profile=profile,
+        )
+        if document.status not in {'pending', 'flagged'}:
+            messages.info(request, 'Ce document a déjà été traité.')
+            return redirect('adminpanel:verification_dossier', profile_id=profile.pk)
 
-    now = timezone.now()
-    document.status = 'verified'
-    document.verified_by = request.user
-    document.verified_at = now
-    document.save(update_fields=['status', 'verified_by', 'verified_at'])
+        if not profile.has_required_identity_documents:
+            received_count = profile.uploaded_required_identity_document_count
+            messages.warning(
+                request,
+                f'Approbation impossible : les 3 pièces doivent être téléversées avant le début de la vérification '
+                f'({received_count}/3 reçues).',
+            )
+            return redirect('adminpanel:verification_dossier', profile_id=profile.pk)
 
-    if document.is_complete_verification():
-        profile = document.profile
-        profile.verification_status = 'verified'
-        profile.verified = True
-        profile.verification_date = now
-        profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+        now = timezone.now()
+        document.status = 'verified'
+        document.verified_by = request.user
+        document.verified_at = now
+        document.save(update_fields=['status', 'verified_by', 'verified_at'])
 
-    messages.success(request, 'Document approuvé.')
-    return redirect('adminpanel:verifications')
+        if document.is_complete_verification():
+            should_notify_user = not profile.verified or profile.verification_status != 'verified'
+            profile.verification_status = 'verified'
+            profile.verified = True
+            profile.verification_date = now
+            profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+            messages.success(request, 'Les trois pièces sont approuvées. Le profil est maintenant vérifié.')
+        else:
+            approved_count = profile.documents.filter(
+                status='verified',
+                document_type__in=['id_front', 'id_back', 'selfie'],
+            ).count()
+            messages.success(
+                request,
+                f'Document approuvé. Le profil restera en attente jusqu’à l’approbation des 3 pièces '
+                f'({approved_count}/3 approuvées).',
+            )
+
+    if should_notify_user:
+        message = (
+            'Vos trois pièces d’identité ont été vérifiées par notre équipe. '
+            'Votre identité est maintenant validée.'
+        )
+        if profile.account_type in {'hotel', 'residence'}:
+            message += ' La publication reste soumise à la vérification de votre établissement.'
+        notify_user(
+            profile.user,
+            'system',
+            'Identité vérifiée',
+            message,
+            email_subject='Votre identité est vérifiée - Ivoire Connect',
+        )
+    return redirect('adminpanel:verification_dossier', profile_id=profile.pk)
 
 
 @user_passes_test(is_staff)
@@ -392,7 +751,7 @@ def reject_document(request, document_id):
     profile.verification_date = None
     profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
     messages.success(request, 'Document rejeté.')
-    return redirect('adminpanel:verifications')
+    return redirect('adminpanel:verification_dossier', profile_id=profile.pk)
 
 
 @user_passes_test(is_staff)

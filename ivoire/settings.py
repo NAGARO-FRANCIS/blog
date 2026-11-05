@@ -113,12 +113,38 @@ WSGI_APPLICATION = 'ivoire.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DB_ENGINE = os.getenv('DB_ENGINE', 'sqlite').strip().lower()
+if DB_ENGINE == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+elif DB_ENGINE in ('postgres', 'postgresql'):
+    required_db_settings = ('DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST')
+    missing_db_settings = [name for name in required_db_settings if not os.getenv(name)]
+    if missing_db_settings:
+        raise RuntimeError(
+            'Variables PostgreSQL manquantes : ' + ', '.join(missing_db_settings)
+        )
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ['DB_NAME'],
+            'USER': os.environ['DB_USER'],
+            'PASSWORD': os.environ['DB_PASSWORD'],
+            'HOST': os.environ['DB_HOST'],
+            'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
+            'OPTIONS': {'connect_timeout': 5},
+        }
+    }
+else:
+    raise RuntimeError(
+        "DB_ENGINE doit être 'sqlite' ou 'postgresql'."
+    )
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailOrUsernameBackend',

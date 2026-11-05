@@ -9,7 +9,14 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ['username', 'get_full_name', 'role', 'verification_status_badge', 'ville', 'date_creation']
     list_filter = ['role', 'verification_status', 'sexe', 'date_creation']
     search_fields = ['user__username', 'user__email', 'profession', 'ville', 'numero_piece_identite']
-    readonly_fields = ['user', 'date_creation', 'derniere_connexion', 'verification_date']
+    readonly_fields = [
+        'user',
+        'date_creation',
+        'derniere_connexion',
+        'verification_date',
+        'email_verified',
+        'phone_verified',
+    ]
     
     fieldsets = (
         ('Utilisateur', {
@@ -25,7 +32,13 @@ class ProfileAdmin(admin.ModelAdmin):
             'fields': ('type_piece_identite', 'numero_piece_identite')
         }),
         ('Vérification', {
-            'fields': ('verification_status', 'verified', 'verification_date'),
+            'fields': (
+                'email_verified',
+                'phone_verified',
+                'verification_status',
+                'verified',
+                'verification_date',
+            ),
             'description': 'Statut de vérification et conformité'
         }),
         ('Dates', {
@@ -60,8 +73,19 @@ class ProfileAdmin(admin.ModelAdmin):
     verification_status_badge.short_description = 'Statut'
     
     def approve_profiles(self, request, queryset):
-        count = queryset.update(verification_status='verified', verified=True, verification_date=timezone.now())
-        self.message_user(request, f'{count} profil(s) approuvé(s)')
+        count = 0
+        for profile in queryset:
+            if not profile.has_verified_identity_documents:
+                continue
+            profile.verification_status = 'verified'
+            profile.verified = True
+            profile.verification_date = timezone.now()
+            profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+            count += 1
+        self.message_user(
+            request,
+            f'{count} profil(s) approuvé(s). Les profils sans les trois pièces validées ont été ignorés.',
+        )
     approve_profiles.short_description = "✅ Approuver les profils sélectionnés"
     
     def reject_profiles(self, request, queryset):
@@ -117,17 +141,31 @@ class DocumentVerificationAdmin(admin.ModelAdmin):
     status_badge.short_description = 'Statut'
     
     def approve_documents(self, request, queryset):
-        count = queryset.update(status='verified', verified_by=request.user, verified_at=timezone.now())
-        
-        # Mettre à jour le profil si tous les documents sont approuvés
+        count = 0
+        skipped = 0
+        now = timezone.now()
         for doc in queryset:
+            if doc.status not in {'pending', 'flagged'}:
+                continue
+            if not doc.profile.has_required_identity_documents:
+                skipped += 1
+                continue
+
+            doc.status = 'verified'
+            doc.verified_by = request.user
+            doc.verified_at = now
+            doc.save(update_fields=['status', 'verified_by', 'verified_at'])
             if doc.is_complete_verification():
                 doc.profile.verification_status = 'verified'
                 doc.profile.verified = True
-                doc.profile.verification_date = timezone.now()
-                doc.profile.save()
-        
-        self.message_user(request, f'{count} document(s) approuvé(s)')
+                doc.profile.verification_date = now
+                doc.profile.save(update_fields=['verification_status', 'verified', 'verification_date'])
+            count += 1
+
+        message = f'{count} document(s) approuvé(s).'
+        if skipped:
+            message += f' {skipped} document(s) ignoré(s) : les 3 pièces doivent être téléversées avant approbation.'
+        self.message_user(request, message)
     approve_documents.short_description = "✅ Approuver les documents sélectionnés"
     
     def reject_documents(self, request, queryset):

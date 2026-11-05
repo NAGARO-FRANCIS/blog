@@ -1,0 +1,18 @@
+{% load i18n %}
+{% if page_obj.has_other_pages %}
+<nav aria-label="{% translate 'Pagination' %}" style="display:flex;justify-content:center;align-items:center;gap:12px;margin:24px 0;">
+    {% if page_obj.has_previous %}
+        <a class="btn btn-outline-secondary" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}{{ page_param|default:'page' }}={{ page_obj.previous_page_number }}">
+            ← {% translate "Précédent" %}
+        </a>
+    {% endif %}
+    <span aria-current="page">
+        {% blocktranslate with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} sur {{ total }}{% endblocktranslate %}
+    </span>
+    {% if page_obj.has_next %}
+        <a class="btn btn-outline-secondary" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}{{ page_param|default:'page' }}={{ page_obj.next_page_number }}">
+            {% translate "Suivant" %} →
+        </a>
+    {% endif %}
+</nav>
+{% endif %}

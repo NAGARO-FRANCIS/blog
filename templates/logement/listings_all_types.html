@@ -53,6 +53,7 @@
                         {% include 'components/property_card.html' with logement=hotel %}
                     {% endfor %}
                 </div>
+                {% include 'components/pagination.html' with page_obj=hotel_page page_param='hotel_page' %}
             {% else %}
                 <div class="properties-empty">
                     <div class="properties-empty-icon">🏨</div>
@@ -75,6 +76,7 @@
                         {% include 'components/property_card.html' with logement=residence %}
                     {% endfor %}
                 </div>
+                {% include 'components/pagination.html' with page_obj=residence_page page_param='residence_page' %}
             {% else %}
                 <div class="properties-empty">
                     <div class="properties-empty-icon">🏢</div>
@@ -97,6 +99,7 @@
                         {% include 'components/property_card.html' with logement=individu %}
                     {% endfor %}
                 </div>
+                {% include 'components/pagination.html' with page_obj=individual_page page_param='individual_page' %}
             {% else %}
                 <div class="properties-empty">
                     <div class="properties-empty-icon">🏠</div>

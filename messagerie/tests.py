@@ -1,16 +1,51 @@
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.db import connection
+from django.test import RequestFactory, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from ivoire.context_processors import unread_messages_count
 from logement.models import Logement
-from .models import Conversation, Message
+from .models import Conversation, Message, ParticipationConversation
 
 
 class MessagerieTests(TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(username='alice', password='pass1234')
         self.user2 = User.objects.create_user(username='bob', password='pass1234')
+
+    def test_unread_message_count_uses_one_query_and_ignores_hidden_conversations(self):
+        visible_conversation = Conversation.objects.create()
+        visible_conversation.participants.add(self.user1, self.user2)
+        hidden_conversation = Conversation.objects.create()
+        hidden_conversation.participants.add(self.user1, self.user2)
+        ParticipationConversation.objects.filter(
+            conversation=hidden_conversation,
+            user=self.user1,
+        ).update(masquee=True)
+        Message.objects.create(
+            conversation=visible_conversation,
+            expediteur=self.user2,
+            contenu='Message non lu',
+        )
+        Message.objects.create(
+            conversation=visible_conversation,
+            expediteur=self.user1,
+            contenu='Mon message',
+        )
+        Message.objects.create(
+            conversation=hidden_conversation,
+            expediteur=self.user2,
+            contenu='Message dans une conversation masquée',
+        )
+        request = RequestFactory().get('/')
+        request.user = self.user1
+
+        with self.assertNumQueries(1):
+            result = unread_messages_count(request)
+
+        self.assertEqual(result['unread_messages_count'], 1)
 
     def test_send_message_with_audio_attachment_saves_file(self):
         self.client.login(username='alice', password='pass1234')
@@ -125,6 +160,38 @@ class MessagerieTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Contact indisponible')
         self.assertContains(response, 'avatar-placeholder">?</div>')
+
+    def test_conversation_list_paginates_and_query_count_does_not_grow_per_conversation(self):
+        self.client.login(username='alice', password='pass1234')
+        for index in range(3):
+            conversation = Conversation.objects.create()
+            conversation.participants.add(self.user1, self.user2)
+            Message.objects.create(
+                conversation=conversation,
+                expediteur=self.user2,
+                contenu=f'Message {index}',
+            )
+
+        with CaptureQueriesContext(connection) as first_page_queries:
+            response = self.client.get(reverse('messagerie:mes_conversations'))
+        self.assertEqual(response.status_code, 200)
+        first_query_count = len(first_page_queries)
+
+        for index in range(3, 23):
+            conversation = Conversation.objects.create()
+            conversation.participants.add(self.user1, self.user2)
+            Message.objects.create(
+                conversation=conversation,
+                expediteur=self.user2,
+                contenu=f'Message {index}',
+            )
+
+        with CaptureQueriesContext(connection) as expanded_page_queries:
+            expanded_response = self.client.get(reverse('messagerie:mes_conversations'))
+        self.assertEqual(expanded_response.status_code, 200)
+        self.assertEqual(len(expanded_page_queries), first_query_count)
+        self.assertEqual(len(expanded_response.context['conversations']), 20)
+        self.assertEqual(expanded_response.context['page_obj'].paginator.count, 23)
 
     def test_conversation_detail_displays_alternating_messages(self):
         self.client.login(username='alice', password='pass1234')

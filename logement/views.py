@@ -3,12 +3,14 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Sum, Avg, Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
+from accounts.models import Profile
 from .forms import (
     EtablissementForm, LogementProprietaireForm, LogementTouristeForm, LogementHotelForm,
     LogementResidenceForm, BlocageCalendrierForm, RechercheLogementForm, PhotoLogementFormSet,
@@ -99,11 +101,6 @@ def choisir_type_annonce(request):
 def home(request):
     """Page d'accueil avec annonces filtrées selon le rôle"""
     form = RechercheLogementForm(request.GET or None)
-    
-    # Récupérer les favoris
-    favoris_ids = set()
-    if request.user.is_authenticated:
-        favoris_ids = set(FavoriLogement.objects.filter(utilisateur=request.user).values_list('logement_id', flat=True))
 
     if request.user.is_authenticated:
         try:
@@ -167,20 +164,32 @@ def home(request):
     if form.is_valid():
         logements = _apply_logement_filters(logements, form.cleaned_data)
 
-    logements = logements.prefetch_related('photos').order_by('-created_at')
-    map_items = _map_items(logements)
+    logements = logements.select_related(
+        'proprietaire__profile',
+    ).prefetch_related('photos').order_by('-created_at', '-pk')
+    page_obj = Paginator(logements, 12).get_page(request.GET.get('page'))
+    annonces = list(page_obj.object_list)
+    map_items = _map_items(annonces)
+    favoris_ids = set()
+    if request.user.is_authenticated and annonces:
+        favoris_ids = set(
+            FavoriLogement.objects.filter(
+                utilisateur=request.user,
+                logement_id__in=[annonce.id for annonce in annonces],
+            ).values_list('logement_id', flat=True)
+        )
 
     # ── GROUPER LES ANNONCES POUR LES TOURISTES EN 4 CATÉGORIES ─────────────
     if is_tourist:
-        hotels = [l for l in logements if l.account_type == 'hotel']
-        residences = [l for l in logements if l.account_type == 'residence']
-        locataires = [l for l in logements if l.account_type == 'individu' and l.proprietaire and l.proprietaire.profile.role == 'locataire']
-        proprietaires = [l for l in logements if l.account_type == 'individu' and l.proprietaire and l.proprietaire.profile.role == 'proprietaire']
+        hotels = [l for l in annonces if l.account_type == 'hotel']
+        residences = [l for l in annonces if l.account_type == 'residence']
+        locataires = [l for l in annonces if l.account_type == 'individu' and l.proprietaire and l.proprietaire.profile.role == 'locataire']
+        proprietaires = [l for l in annonces if l.account_type == 'individu' and l.proprietaire and l.proprietaire.profile.role == 'proprietaire']
         
         context = {
             'form': form,
             'is_tourist': True,
-            'annonces': list(logements),
+            'annonces': annonces,
             'hotels': hotels,
             'residences': residences,
             'locataires': locataires,
@@ -188,16 +197,20 @@ def home(request):
             'favoris_ids': favoris_ids,
             'user_type': 'touriste',
             'map_items': map_items,
+            'page_obj': page_obj,
+            'total_annonces': page_obj.paginator.count,
         }
     else:
         context = {
             'form': form,
-            'logements': logements,
-            'annonces': logements,  # Pour compatibilité avec le template
+            'logements': annonces,
+            'annonces': annonces,
             'favoris_ids': favoris_ids,
             'user_type': request.user.profile.account_type if request.user.is_authenticated else 'anonymous',
             'is_tourist': False,
             'map_items': map_items,
+            'page_obj': page_obj,
+            'total_annonces': page_obj.paginator.count,
         }
 
     return render(request, 'acceuil.html', context)
@@ -207,9 +220,9 @@ def home(request):
 def listings_all_types(request):
     """Page professionnelle affichant tous les types de propriétés distincts"""
 
-    hotels     = Logement.objects.filter(account_type='hotel').prefetch_related('photos').order_by('-created_at')
-    residences = Logement.objects.filter(account_type='residence').prefetch_related('photos').order_by('-created_at')
-    individuals = Logement.objects.filter(account_type='individu').prefetch_related('photos').order_by('-created_at')
+    hotels = Logement.objects.filter(account_type='hotel')
+    residences = Logement.objects.filter(account_type='residence')
+    individuals = Logement.objects.filter(account_type='individu')
 
     form = RechercheLogementForm(request.GET or None)
     if form.is_valid():
@@ -217,17 +230,28 @@ def listings_all_types(request):
         residences = _apply_logement_filters(residences, form.cleaned_data)
         individuals = _apply_logement_filters(individuals, form.cleaned_data)
 
+    def paginate(queryset, parameter):
+        queryset = queryset.select_related(
+            'proprietaire__profile',
+        ).prefetch_related('photos').order_by('-created_at', '-pk')
+        return Paginator(queryset, 12).get_page(request.GET.get(parameter))
+
+    hotel_page = paginate(hotels, 'hotel_page')
+    residence_page = paginate(residences, 'residence_page')
+    individual_page = paginate(individuals, 'individual_page')
+
     context = {
         'form':             form,
-        'hotels':           hotels,
-        'residences':       residences,
-        'individuals':      individuals,
-        'hotel_count':      len(hotels)      if isinstance(hotels,      list) else hotels.count(),
-        'residence_count':  len(residences)  if isinstance(residences,  list) else residences.count(),
-        'individu_count':   len(individuals) if isinstance(individuals, list) else individuals.count(),
-        'total_count':     (len(hotels)      if isinstance(hotels,      list) else hotels.count()) +
-                           (len(residences)  if isinstance(residences,  list) else residences.count()) +
-                           (len(individuals) if isinstance(individuals, list) else individuals.count()),
+        'hotels':           hotel_page.object_list,
+        'residences':       residence_page.object_list,
+        'individuals':      individual_page.object_list,
+        'hotel_page':       hotel_page,
+        'residence_page':   residence_page,
+        'individual_page':  individual_page,
+        'hotel_count':      hotel_page.paginator.count,
+        'residence_count':  residence_page.paginator.count,
+        'individu_count':   individual_page.paginator.count,
+        'total_count':      hotel_page.paginator.count + residence_page.paginator.count + individual_page.paginator.count,
     }
 
     return render(request, 'logement/listings_all_types.html', context)
@@ -655,19 +679,25 @@ def ajouter_logement(request):
 
     try:
         profile = request.user.profile
-        account_type = profile.account_type
-        role = profile.role
+    except Profile.DoesNotExist:
+        messages.error(request, _('Votre profil doit être complété avant de publier une annonce.'))
+        return redirect('accounts:profil')
 
-        professional_profile = getattr(profile, 'professional_profile', None)
-        if professional_profile and account_type not in ['hotel', 'residence']:
-            account_type = professional_profile.establishment_type or account_type
-            profile.account_type = account_type
-            profile.role = 'proprietaire'
-            profile.save(update_fields=['account_type', 'role'])
+    account_type = profile.account_type
+    role = profile.role
+    professional_profile = profile._professional_profile()
+    if professional_profile and account_type not in ['hotel', 'residence']:
+        account_type = professional_profile.establishment_type or account_type
+        profile.account_type = account_type
+        profile.role = 'proprietaire'
+        profile.save(update_fields=['account_type', 'role'])
 
-    except Exception:
-        account_type = 'individu'
-        role = None
+    if not profile.can_publish:
+        messages.warning(
+            request,
+            profile.publication_block_reason,
+        )
+        return redirect('accounts:verification_docs')
 
     if account_type == 'individu' and role == 'colocataire':
         messages.error(request, _('En tant que colocataire, vous ne pouvez pas publier d\'annonces.'))
@@ -945,7 +975,14 @@ def modifier_logement(request, id):
     if logement.proprietaire != request.user:
         messages.error(request, _('❌ Vous n\'avez pas la permission de modifier cette annonce.'))
         return redirect('logement:detail_logement', id=logement.id)
-    
+
+    if not request.user.profile.can_publish:
+        messages.warning(
+            request,
+            _('La modification des annonces est réservée aux profils dont les pièces ont été validées.'),
+        )
+        return redirect('accounts:verification_docs')
+
     account_type = logement.account_type
     
     # Sélectionner le bon formulaire et template

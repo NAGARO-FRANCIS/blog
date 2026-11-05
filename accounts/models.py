@@ -103,6 +103,7 @@ class Profile(models.Model):
     
     activation_token = models.CharField(max_length=100, blank=True, default='')
     activation_token_created_at = models.DateTimeField(null=True, blank=True)
+    email_verified = models.BooleanField(default=False)
     # Vérification par téléphone
     phone_verification_code = models.CharField(max_length=10, blank=True, default='')
     phone_verification_created_at = models.DateTimeField(null=True, blank=True)
@@ -126,6 +127,52 @@ class Profile(models.Model):
     @property
     def est_verifie(self):
         return self.verification_status == 'verified'
+
+    @property
+    def uploaded_required_identity_document_count(self):
+        required_documents = {'id_front', 'id_back', 'selfie'}
+        return len({
+            document.document_type
+            for document in self.documents.all()
+            if document.document_type in required_documents
+        })
+
+    @property
+    def has_required_identity_documents(self):
+        return self.uploaded_required_identity_document_count == 3
+
+    @property
+    def has_verified_identity_documents(self):
+        required_documents = {'id_front', 'id_back', 'selfie'}
+        verified_documents = set(
+            self.documents.filter(
+                status='verified',
+                document_type__in=required_documents,
+            ).values_list('document_type', flat=True)
+        )
+        return verified_documents == required_documents
+
+    @property
+    def publication_block_reason(self):
+        if (
+            not self.verified
+            or self.verification_status != 'verified'
+            or not self.has_verified_identity_documents
+        ):
+            return _('La publication attend l’approbation de vos trois pièces d’identité.')
+
+        if self.account_type in {'hotel', 'residence'}:
+            professional_profile = self._professional_profile()
+            if not professional_profile:
+                return _('Les informations de votre établissement doivent être complétées et vérifiées.')
+            if not professional_profile.is_verified:
+                return _('Vos pièces d’établissement sont en attente de vérification par notre équipe.')
+
+        return ''
+
+    @property
+    def can_publish(self):
+        return not self.publication_block_reason
 
     @property
     def verified_by_count(self):
@@ -349,9 +396,11 @@ class VerificationLog(models.Model):
     """Log de toutes les actions de vérification pour l'audit"""
     ACTION_CHOICES = [
         ('created', 'Inscription créée'),
+        ('account_activated', 'Compte activé manuellement'),
         ('document_uploaded', 'Document téléchargé'),
         ('document_verified', 'Document approuvé'),
         ('document_rejected', 'Document rejeté'),
+        ('establishment_verified', 'Établissement vérifié'),
         ('profile_flagged', 'Profil signalé'),
         ('profile_verified', 'Profil vérifié'),
         ('profile_banned', 'Profil banni'),

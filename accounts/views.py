@@ -54,17 +54,14 @@ class PasswordChangeView(DjangoPasswordChangeView):
 
 
 def send_sms(phone_number: str, message: str):
-    """Envoie un SMS via le backend configuré. Par défaut, affiche dans la console pour le dev."""
+    """Envoie un SMS; le backend console est réservé au développement."""
     backend = getattr(settings, 'SMS_BACKEND', '')
-    if not backend or backend == 'console':
-        # Afficher dans la console / logs pour le développement
+    if backend in ('', 'console') and settings.DEBUG:
         logger.info(f"[SMS -> {phone_number}] {message}")
         print(f"[SMS -> {phone_number}] {message}")
         return True
 
-    # Placeholder: intégration avec Twilio ou autre service peut être ajoutée ici
-    # Si aucun backend connu n'est configuré, journaliser et échouer proprement
-    logger.warning('Aucun backend SMS pris en charge n\'est configuré; message non envoyé.')
+    logger.error('Aucun fournisseur SMS de production n’est configuré; message non envoyé.')
     return False
 
 
@@ -105,7 +102,16 @@ def send_activation_email(request, user, subject='Activation de votre compte Col
         'activation_link': activation_link,
         'site_name': get_current_site(request).name,
     })
-    safe_send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], html_message=message)
+    if not settings.DEBUG and settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+        logger.error('Le backend email console ne peut pas vérifier une adresse en production.')
+        return False
+    return safe_send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=message,
+    ) == 1
 
 
 def inscription(request):
@@ -172,9 +178,13 @@ def inscription_individu_form(request):
             profile.phone_verification_created_at = timezone.now()
             profile.save(update_fields=['phone_verification_code', 'phone_verification_created_at'])
 
-            # Envoyer le SMS (console fallback)
-            send_sms(profile.telephone, f"Votre code Coloc.ai : {code}")
-            send_activation_email(request, user)
+            sms_sent = send_sms(profile.telephone, f"Votre code Coloc.ai : {code}")
+            email_sent = send_activation_email(request, user)
+            if not sms_sent or not email_sent:
+                messages.error(
+                    request,
+                    _("Votre compte est en attente. La vérification nécessite un service SMS et email correctement configuré."),
+                )
 
             client_ip = get_client_ip(request)
             role_label = dict(Profile.ROLE_CHOICES).get(role, role)
@@ -229,9 +239,10 @@ def resend_activation(request):
             messages.info(request, _("Ce compte est déjà activé. Vous pouvez vous connecter."))
             return redirect('accounts:login')
 
-        send_activation_email(request, user, 'Activation de votre compte Coloc.ai - Renvoyé')
-
-        messages.success(request, _("Un nouvel email d'activation a été envoyé."))
+        if send_activation_email(request, user, 'Activation de votre compte Coloc.ai - Renvoyé'):
+            messages.success(request, _("Un nouvel email d'activation a été envoyé."))
+        else:
+            messages.error(request, _("L'email de vérification n'a pas pu être envoyé. Réessayez plus tard."))
         return redirect('accounts:inscription_pending')
 
     # GET -> afficher la page avec formulaire simple
@@ -250,12 +261,20 @@ def activate_account(request, uidb64, token):
         if timezone.now() - user.profile.activation_token_created_at > timezone.timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS):
             return render(request, 'accounts/activation_expired.html')
 
-        user.is_active = True
+        profile = user.profile
+        profile.email_verified = True
+        profile.activation_token = ''
+        profile.activation_token_created_at = None
+        profile.save(update_fields=[
+            'email_verified',
+            'activation_token',
+            'activation_token_created_at',
+        ])
+        user.is_active = profile.phone_verified
         user.save(update_fields=['is_active'])
-        user.profile.activation_token = ''
-        user.profile.activation_token_created_at = None
-        user.profile.save(update_fields=['activation_token', 'activation_token_created_at'])
-        return render(request, 'accounts/activation_success.html')
+        return render(request, 'accounts/activation_success.html', {
+            'account_activated': user.is_active,
+        })
 
     return render(request, 'accounts/activation_invalid.html')
 
@@ -290,28 +309,38 @@ def verify_phone(request):
                 'debug_code': profile.phone_verification_code if settings.DEBUG else '',
             })
 
+        if not profile.phone_verification_created_at:
+            messages.error(request, _("Aucun code valide n'a été généré. Demandez un nouveau code."))
+            return redirect('accounts:inscription_pending')
+
         # Vérifier expiration (15 minutes)
-        if profile.phone_verification_created_at and timezone.now() - profile.phone_verification_created_at > timezone.timedelta(minutes=15):
+        if timezone.now() - profile.phone_verification_created_at > timezone.timedelta(minutes=15):
             messages.error(request, _("Le code a expiré. Demandez un nouveau code."))
             return redirect('accounts:inscription_pending')
 
         if code == profile.phone_verification_code:
-            user.is_active = True
-            user.save(update_fields=['is_active'])
-
             profile.phone_verified = True
             profile.phone_verification_code = ''
             profile.phone_verification_created_at = None
             profile.save(update_fields=['phone_verified', 'phone_verification_code', 'phone_verification_created_at'])
+            user.is_active = profile.email_verified
+            user.save(update_fields=['is_active'])
 
             # Nettoyer la session
             if 'pending_user_id' in request.session:
                 del request.session['pending_user_id']
 
-            login(request, user)
-            messages.success(request, _("Votre numéro a été vérifié et votre compte activé."))
-            destination = request.session.pop('pending_post_verification_redirect', 'accounts:dashboard')
-            return redirect(destination)
+            if user.is_active:
+                login(request, user)
+                messages.success(request, _("Votre numéro a été vérifié et votre compte activé."))
+                destination = request.session.pop('pending_post_verification_redirect', 'accounts:dashboard')
+                return redirect(destination)
+
+            messages.success(
+                request,
+                _("Votre numéro a été vérifié. Confirmez aussi votre adresse email pour activer le compte."),
+            )
+            return redirect('accounts:inscription_pending')
         else:
             messages.error(request, _("Code invalide. Vérifiez et réessayez."))
 
@@ -341,24 +370,36 @@ def resend_phone_code(request):
         if not phone:
             messages.error(request, _("Veuillez fournir un numéro de téléphone."))
             return redirect('accounts:inscription_pending')
-        try:
-            profile = Profile.objects.select_related('user').get(telephone=phone)
-            user = profile.user
-        except Profile.DoesNotExist:
+        profiles = Profile.objects.select_related('user').filter(telephone=phone)
+        profile = profiles.first()
+        if profile is None:
             messages.error(request, _("Aucun compte trouvé pour ce numéro."))
             return redirect('accounts:inscription_pending')
+        if profiles.exclude(pk=profile.pk).exists():
+            messages.error(
+                request,
+                _("Plusieurs comptes sont associés à ce numéro. Pour votre sécurité, contactez l’assistance afin de vérifier votre compte."),
+            )
+            return redirect('accounts:inscription_pending')
+        user = profile.user
 
     if user.is_active:
         messages.info(request, _("Le compte lié à ce numéro est déjà activé."))
         return redirect('accounts:login')
+
+    if profile.phone_verified:
+        messages.info(request, _("Votre numéro est déjà vérifié. Confirmez votre adresse email pour activer le compte."))
+        return redirect('accounts:inscription_pending')
 
     code = '{:06d}'.format(secrets.randbelow(1000000))
     profile.phone_verification_code = code
     profile.phone_verification_created_at = timezone.now()
     profile.save(update_fields=['phone_verification_code', 'phone_verification_created_at'])
 
-    send_sms(profile.telephone, f"Votre nouveau code Coloc.ai : {code}")
-    messages.success(request, _("Un nouveau code a été envoyé par SMS."))
+    if send_sms(profile.telephone, f"Votre nouveau code Coloc.ai : {code}"):
+        messages.success(request, _("Un nouveau code a été envoyé par SMS."))
+    else:
+        messages.error(request, _("Le SMS n'a pas pu être envoyé. Réessayez plus tard."))
     # Si le compte est celui en attente, mettre à jour la session
     request.session['pending_user_id'] = user.pk
     return redirect('accounts:verify_phone')
@@ -382,8 +423,13 @@ def inscription_residence(request):
             profile.save(update_fields=[
                 'verification_status', 'phone_verification_code', 'phone_verification_created_at'
             ])
-            send_sms(profile.telephone, f"Votre code Coloc.ai : {profile.phone_verification_code}")
-            send_activation_email(request, user)
+            sms_sent = send_sms(profile.telephone, f"Votre code Coloc.ai : {profile.phone_verification_code}")
+            email_sent = send_activation_email(request, user)
+            if not sms_sent or not email_sent:
+                messages.error(
+                    request,
+                    _("Votre compte est en attente. La vérification nécessite un service SMS et email correctement configuré."),
+                )
             
             # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
@@ -424,8 +470,13 @@ def inscription_hotel(request):
             profile.save(update_fields=[
                 'verification_status', 'phone_verification_code', 'phone_verification_created_at'
             ])
-            send_sms(profile.telephone, f"Votre code Coloc.ai : {profile.phone_verification_code}")
-            send_activation_email(request, user)
+            sms_sent = send_sms(profile.telephone, f"Votre code Coloc.ai : {profile.phone_verification_code}")
+            email_sent = send_activation_email(request, user)
+            if not sms_sent or not email_sent:
+                messages.error(
+                    request,
+                    _("Votre compte est en attente. La vérification nécessite un service SMS et email correctement configuré."),
+                )
             
             # Créer un log de vérification pour l'inscription
             client_ip = get_client_ip(request)
@@ -452,11 +503,26 @@ def inscription_hotel(request):
 def verification_docs(request):
     """Page de vérification des documents"""
     profile = request.user.profile
-    documents = profile.documents.all()
-    
+    required_document_types = {'id_front', 'id_back', 'selfie'}
+    documents = profile.documents.filter(document_type__in=required_document_types)
+    document_statuses = {
+        document.document_type: document.status
+        for document in documents
+    }
+    all_required_documents_uploaded = set(document_statuses) == required_document_types
+    professional_profile = profile._professional_profile()
+    professional_account = profile.account_type in {'hotel', 'residence'}
+
     context = {
         'profile': profile,
         'documents': documents,
+        'document_statuses': document_statuses,
+        'all_required_documents_uploaded': all_required_documents_uploaded,
+        'has_rejected_identity_document': 'rejected' in document_statuses.values(),
+        'professional_account': professional_account,
+        'professional_establishment_verified': bool(
+            professional_profile and professional_profile.is_verified
+        ),
         'verification_status': profile.verification_status,
     }
     return render(request, 'accounts/verification_docs.html', context)
@@ -577,7 +643,12 @@ def upload_document(request):
     )
     messages.success(
         request,
-        _('Document reçu. Il sera vérifié par notre équipe avant validation de votre profil.'),
+        _(
+            'Votre dossier est complet. Notre équipe va vérifier vos trois pièces et vous notifiera '
+            'dès que votre identité sera validée.'
+            if profile.has_required_identity_documents
+            else 'Document reçu. Continuez à déposer les pièces manquantes; la vérification commencera lorsque le dossier sera complet.'
+        ),
     )
     return redirect('accounts:verification_docs')
 

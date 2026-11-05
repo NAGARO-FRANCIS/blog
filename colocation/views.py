@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -8,17 +9,38 @@ from .forms import ColocationAnnonceForm, RechercheAnnonceForm, PhotoColocationF
 from .models import ColocationAnnonce, Favori
 from logement.models import Logement, FavoriLogement
 from logement.forms import RechercheLogementForm
-from django.shortcuts import render
+from logement.views import _apply_logement_filters, _map_items
 
 def home(request):
-    annonces = Logement.objects.all()[:5]
-    
-    # Récupérer les IDs des favoris si l'utilisateur est connecté
+    form = RechercheLogementForm(request.GET or None)
+    annonces = Logement.objects.all()
+    if form.is_valid():
+        annonces = _apply_logement_filters(annonces, form.cleaned_data)
+
+    annonces = annonces.select_related(
+        'proprietaire__profile',
+    ).prefetch_related('photos').order_by('-created_at', '-pk')
+    page_obj = Paginator(annonces, 12).get_page(request.GET.get('page'))
+    annonces_page = list(page_obj.object_list)
     favoris_ids = set()
-    if request.user.is_authenticated:
-        favoris_ids = set(FavoriLogement.objects.filter(utilisateur=request.user).values_list('logement_id', flat=True))
-    
-    return render(request, 'acceuil.html', {'annonces': annonces, 'favoris_ids': favoris_ids})
+    if request.user.is_authenticated and annonces_page:
+        favoris_ids = set(
+            FavoriLogement.objects.filter(
+                utilisateur=request.user,
+                logement_id__in=[annonce.pk for annonce in annonces_page],
+            ).values_list('logement_id', flat=True)
+        )
+
+    return render(request, 'acceuil.html', {
+        'form': form,
+        'annonces': annonces_page,
+        'favoris_ids': favoris_ids,
+        'page_obj': page_obj,
+        'total_annonces': page_obj.paginator.count,
+        'map_items': _map_items(annonces_page),
+        'is_tourist': False,
+        'user_type': 'anonymous',
+    })
 
 def liste_annonces(request):
     form = RechercheLogementForm(request.GET or None)
@@ -145,6 +167,14 @@ def publier_annonce(request):
             'form': None,
             'error': 'Vous devez avoir un rôle valide pour publier une annonce.'
         })
+
+    if not profile.can_publish:
+        from django.contrib import messages
+        messages.warning(
+            request,
+            profile.publication_block_reason,
+        )
+        return redirect('accounts:verification_docs')
 
     if request.method == 'POST':
         form = ColocationAnnonceForm(request.POST)

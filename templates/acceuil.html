@@ -63,7 +63,7 @@
 
     <div class="feed-hero">
         <h1>🇨🇮 {% translate "Trouvez votre prochain logement" %}</h1>
-        <p>{% blocktranslate count counter=annonces|length %}{{ counter }} logement disponible maintenant{% plural %}{{ counter }} logements disponibles maintenant{% endblocktranslate %}</p>
+        <p>{% blocktranslate count counter=total_annonces|default:annonces|length %}{{ counter }} logement disponible maintenant{% plural %}{{ counter }} logements disponibles maintenant{% endblocktranslate %}</p>
     </div>
 
     {% if annonces %}
@@ -144,6 +144,7 @@
                 </div>
             {% endfor %}
         </div>
+        {% include 'components/pagination.html' with page_obj=page_obj page_param='page' %}
     {% else %}
         <div class="feed-empty">
             <div class="feed-empty-emoji">😔</div>

@@ -4,6 +4,10 @@
 {% translate "Format non supporté (JPG ou PNG uniquement)" as error_file_type %}
 {% translate "Téléchargement en cours…" as upload_in_progress %}
 {% translate "Envoyé" as document_sent %}
+{% translate "En attente de vérification" as document_pending %}
+{% translate "Approuvé" as document_verified %}
+{% translate "Rejeté — téléversez une nouvelle photo" as document_rejected %}
+{% translate "À revoir par notre équipe" as document_flagged %}
 
 {% block title %}{% translate "Finaliser votre inscription" %} — Ivoire Connect{% endblock %}
 
@@ -15,7 +19,7 @@
         <header class="vf-header">
             <span class="vf-header__flag">🇨🇮</span>
             <h1 class="vf-header__title">{% translate "Finaliser votre inscription" %}</h1>
-            <p class="vf-header__sub">{% translate "Envoyez vos documents. Notre équipe vérifiera votre identité avant d’activer le badge de confiance." %}</p>
+            <p class="vf-header__sub">{% translate "Téléversez d’abord les trois pièces : recto, verso et selfie avec la pièce. L’examen commence lorsque le dossier est complet; la publication est autorisée après approbation manuelle des trois pièces. Les gestionnaires doivent aussi faire vérifier leur établissement." %}</p>
         </header>
 
         <!-- ── CONTENU ── -->
@@ -25,21 +29,32 @@
             <!-- ── SUCCÈS ── -->
             <div class="vf-state vf-state--success">
                 <div class="vf-state__icon vf-state__icon--ok">✓</div>
-                <h2>{% translate "Identité vérifiée" %}</h2>
-                <p>{% translate "Vos documents ont été contrôlés par notre équipe. Votre badge de vérification est actif." %}</p>
+                {% if professional_account and not professional_establishment_verified %}
+                    <h2>{% translate "Identité vérifiée — établissement en attente" %}</h2>
+                    <p>{% translate "Vos pièces d’identité sont approuvées. Pour publier, les documents légaux et la photo de votre établissement doivent aussi être vérifiés par notre équipe dans admin-ivoire." %}</p>
+                {% else %}
+                    <h2>{% translate "Identité vérifiée" %}</h2>
+                    <p>{% translate "Vos pièces d’identité ont été contrôlées par notre équipe." %}</p>
+                {% endif %}
                 <a href="{% url 'home' %}" class="vf-btn vf-btn--primary">{% translate "Commencer à explorer" %}</a>
             </div>
 
-            {% elif verification_status == 'flagged' %}
+            {% else %}
+            {% if verification_status == 'flagged' %}
             <!-- ── EXAMEN ── -->
             <div class="vf-state vf-state--warning">
                 <div class="vf-state__icon vf-state__icon--warn">⏳</div>
                 <h2>{% translate "Compte en examen" %}</h2>
-                <p>{% translate "Notre équipe examine votre compte. Vous serez contacté par email sous peu." %}</p>
-                <a href="{% url 'home' %}" class="vf-btn vf-btn--ghost">{% translate "Retour à l'accueil" %}</a>
+                <p>{% translate "Un fichier déjà soumis a été détecté. Votre compte reste en examen, mais vous pouvez compléter votre dossier avec les pièces manquantes. Ne téléversez pas une nouvelle fois le même fichier." %}</p>
             </div>
-
-            {% else %}
+            {% endif %}
+            {% if all_required_documents_uploaded and not has_rejected_identity_document %}
+            <div class="vf-state vf-state--warning">
+                <div class="vf-state__icon vf-state__icon--warn">⏳</div>
+                <h2>{% translate "Dossier complet — vérification en cours" %}</h2>
+                <p>{% translate "Nous avons reçu vos trois pièces. Notre équipe va vérifier vos informations. Vous recevrez une notification et un e-mail dès que votre identité sera validée." %}</p>
+            </div>
+            {% endif %}
             <!-- ── PROGRESSION ── -->
             <div class="vf-progress-card">
                 <div class="vf-progress-card__header">
@@ -516,8 +531,11 @@
 }
 </style>
 
+{{ document_statuses|json_script:"document-statuses" }}
+
 <script>
 const documentTypes = ['id_front', 'id_back', 'selfie'];
+const storedDocumentStatuses = JSON.parse(document.getElementById('document-statuses').textContent);
 
 documentTypes.forEach(docType => {
     const fileInput = document.getElementById(`file-${docType}`);
@@ -579,7 +597,7 @@ function showStatus(docType, type, message) {
 function updateProgress() {
     const done = documentTypes.filter(d => {
         const p = document.getElementById(`placeholder-${d}`);
-        return p && p.style.display === 'none';
+        return storedDocumentStatuses[d] || (p && p.style.display === 'none');
     }).length;
 
     const pct = (done / 3) * 100;
@@ -591,7 +609,17 @@ function updateProgress() {
     documentTypes.forEach(d => {
         const step = document.getElementById(`step-${d}`);
         const p = document.getElementById(`placeholder-${d}`);
-        if (step && p && p.style.display === 'none') {
+        const status = storedDocumentStatuses[d];
+        if (step && status) {
+            step.classList.toggle('completed', status === 'verified');
+            const labels = {
+                pending: '{{ document_pending|escapejs }}',
+                verified: '{{ document_verified|escapejs }}',
+                rejected: '{{ document_rejected|escapejs }}',
+                flagged: '{{ document_flagged|escapejs }}',
+            };
+            document.getElementById(`stepstatus-${d}`).textContent = labels[status] || '{{ document_sent|escapejs }}';
+        } else if (step && p && p.style.display === 'none') {
             step.classList.add('completed');
             document.getElementById(`stepstatus-${d}`).textContent = '{{ document_sent|escapejs }}';
         }
