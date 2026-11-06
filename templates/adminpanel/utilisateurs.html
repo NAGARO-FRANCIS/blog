@@ -5,15 +5,13 @@
 
 {% block content %}
 <div class="admin-shell">
-    <aside class="admin-sidebar">
-        <div class="brand">
-            <span class="brand-main">Ivoire</span> <span class="brand-accent">Connect</span>
-        </div>
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="{% translate 'Navigation de l’administration' %}">
+        <a class="brand" href="{% url 'adminpanel:dashboard' %}">Ivoire <span class="brand-accent">Connect</span></a>
 
         <nav class="admin-menu">
             <div class="menu-title">{% translate "Principal" %}</div>
             <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
-            <a href="{% url 'adminpanel:users' %}" class="active">👥 {% translate "Utilisateurs" %}</a>
+            <a href="{% url 'adminpanel:users' %}" class="active" aria-current="page">👥 {% translate "Utilisateurs" %}</a>
             <a href="{% url 'adminpanel:logements' %}">🏠 {% translate "Logements" %}</a>
             <a href="{% url 'adminpanel:colocations' %}">🤝 {% translate "Colocations" %}</a>
 
@@ -29,83 +27,103 @@
             <a href="{% url 'adminpanel:notifications' %}">🔔 Notifications</a>
             <a href="{% url 'adminpanel:statistiques' %}">📈 {% translate "Statistiques" %}</a>
             <a href="{% url 'adminpanel:parametres' %}">⚙️ {% translate "Paramètres" %}</a>
+            <div class="menu-back">
+                <a href="{% url 'logement:home' %}">↩ {% translate "Retour au site" %}</a>
+            </div>
         </nav>
     </aside>
 
-    <main class="admin-main">
+    <a class="skip-link" href="#users-main">{% translate "Aller à la liste des utilisateurs" %}</a>
+    <main class="admin-main" id="users-main">
         <header class="admin-topbar">
-            <h1>{% translate "Utilisateurs" %}</h1>
+            <div class="topbar-title">
+                <button type="button" class="menu-toggle" id="users-menu-toggle" aria-controls="admin-sidebar" aria-expanded="false" aria-label="{% translate 'Ouvrir le menu' %}">☰</button>
+                <h1>{% translate "Utilisateurs" %}</h1>
+            </div>
             <div class="topbar-user">
                 <div>
                     <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
                     <small>{% translate "Administrateur" %}</small>
                 </div>
-                <div class="avatar">{{ request.user.username|slice:':1'|upper }}</div>
+                <div class="avatar" aria-hidden="true">{{ request.user.username|slice:':1'|upper }}</div>
             </div>
         </header>
 
         <div class="admin-content">
-            <div class="stats-bar">
-                <div class="mini-card">
-                    <span>{% translate "Total" %}</span>
-                    <strong>{{ total_users }}</strong>
+            <div class="section-header-row">
+                <div>
+                    <h2>{% translate "Gestion des utilisateurs" %}</h2>
+                    <p>{% translate "Recherchez les comptes et suivez leur activation et leur vérification." %}</p>
                 </div>
-                <div class="mini-card success">
-                    <span>{% translate "Actifs" %}</span>
-                    <strong>{{ active_users }}</strong>
-                </div>
-                <div class="mini-card warning">
-                    <span>{% translate "En attente" %}</span>
-                    <strong>{{ pending_users }}</strong>
-                </div>
-                <div class="mini-card danger">
-                    <span>{% translate "Inactifs" %}</span>
-                    <strong>{{ inactive_users }}</strong>
-                </div>
+                <a class="btn btn-secondary" href="{% url 'adminpanel:dashboard' %}">← {% translate "Retour au tableau de bord" %}</a>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><div><div class="stat-label">{% translate "Utilisateurs" %}</div><div class="stat-value">{{ total_users }}</div></div><div class="stat-icon" aria-hidden="true">👥</div></div>
+                <div class="stat-card stat-card--success"><div><div class="stat-label">{% translate "Comptes actifs" %}</div><div class="stat-value">{{ active_users }}</div></div><div class="stat-icon" aria-hidden="true">✅</div></div>
+                <div class="stat-card stat-card--success"><div><div class="stat-label">{% translate "Identités vérifiées" %}</div><div class="stat-value">{{ verified_users }}</div></div><div class="stat-icon" aria-hidden="true">🛡️</div></div>
+                <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "Vérifications en attente" %}</div><div class="stat-value">{{ pending_users }}</div></div><div class="stat-icon" aria-hidden="true">⏳</div></div>
+                <div class="stat-card stat-card--danger"><div><div class="stat-label">{% translate "Comptes inactifs" %}</div><div class="stat-value">{{ inactive_users }}</div></div><div class="stat-icon" aria-hidden="true">⛔</div></div>
             </div>
 
             <div class="filters-panel">
                 <form method="get" action="{{ request.path }}" class="filters-form">
-                    <input type="text" name="q" value="{{ search }}" placeholder="{% translate 'Rechercher un utilisateur...' %}">
+                    <input type="search" name="q" value="{{ search }}" placeholder="{% translate 'Nom, identifiant, courriel ou téléphone' %}" aria-label="{% translate 'Rechercher un utilisateur par nom, identifiant, courriel ou téléphone' %}">
 
-                    <select name="account_type">
+                    <select name="account_type" aria-label="{% translate 'Type de compte' %}">
                         <option value="">{% translate "Type de compte" %}</option>
                         <option value="individu" {% if account_type == 'individu' %}selected{% endif %}>{% translate "Individu" %}</option>
                         <option value="hotel" {% if account_type == 'hotel' %}selected{% endif %}>{% translate "Hôtel" %}</option>
                         <option value="residence" {% if account_type == 'residence' %}selected{% endif %}>{% translate "Résidence" %}</option>
                     </select>
 
-                    <select name="role">
+                    <select name="role" aria-label="{% translate 'Rôle' %}">
                         <option value="">{% translate "Rôle" %}</option>
                         <option value="proprietaire" {% if role == 'proprietaire' %}selected{% endif %}>{% translate "Propriétaire" %}</option>
                         <option value="locataire" {% if role == 'locataire' %}selected{% endif %}>{% translate "Locataire" %}</option>
                         <option value="touriste" {% if role == 'touriste' %}selected{% endif %}>{% translate "Touriste" %}</option>
                     </select>
 
-                    <select name="status">
+                    <select name="status" aria-label="{% translate 'Statut' %}">
                         <option value="">{% translate "Statut" %}</option>
                         <option value="active" {% if status == 'active' %}selected{% endif %}>{% translate "Actif" %}</option>
                         <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>{% translate "Inactif" %}</option>
                         <option value="verified" {% if status == 'verified' %}selected{% endif %}>{% translate "Vérifié" %}</option>
                         <option value="pending" {% if status == 'pending' %}selected{% endif %}>{% translate "En attente" %}</option>
                         <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>{% translate "Rejeté" %}</option>
+                        <option value="flagged" {% if status == 'flagged' %}selected{% endif %}>{% translate "À revoir" %}</option>
                     </select>
 
-                    <button type="submit">{% translate "Filtrer" %}</button>
+                    <button type="submit" class="btn btn-primary">{% translate "Appliquer les filtres" %}</button>
+                    {% if search or account_type or role or status %}
+                        <a class="btn btn-secondary" href="{% url 'adminpanel:users' %}">{% translate "Effacer les filtres" %}</a>
+                    {% endif %}
                 </form>
+            </div>
+
+            <div class="results-heading">
+                <h2>{% translate "Liste des comptes" %}</h2>
+                <p>
+                    {% if page_obj.paginator.count %}
+                        {% blocktranslate with start=page_obj.start_index end=page_obj.end_index total=page_obj.paginator.count %}Affichage de {{ start }} à {{ end }} sur {{ total }} utilisateur(s){% endblocktranslate %}
+                    {% else %}
+                        {% translate "Aucun compte ne correspond à ces filtres." %}
+                    {% endif %}
+                </p>
             </div>
 
             <div class="table-panel">
                 <table>
+                    <caption class="sr-only">{% translate "Liste des utilisateurs" %}</caption>
                     <thead>
                         <tr>
-                            <th>{% translate "Utilisateur" %}</th>
-                            <th>{% translate "Email" %}</th>
-                            <th>{% translate "Rôle" %}</th>
-                            <th>{% translate "Type" %}</th>
-                            <th>{% translate "Compte" %}</th>
-                            <th>{% translate "Vérification" %}</th>
-                            <th>{% translate "Actions" %}</th>
+                            <th scope="col">{% translate "Utilisateur" %}</th>
+                            <th scope="col">{% translate "Courriel" %}</th>
+                            <th scope="col">{% translate "Rôle" %}</th>
+                            <th scope="col">{% translate "Type de compte" %}</th>
+                            <th scope="col">{% translate "Compte" %}</th>
+                            <th scope="col">{% translate "Vérification" %}</th>
+                            <th scope="col">{% translate "Actions" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,7 +131,7 @@
                             <tr>
                                 <td>
                                     <div class="user-cell">
-                                        <div class="avatar small">{{ user.username|slice:':1'|upper }}</div>
+                                        <div class="avatar small" aria-hidden="true">{{ user.username|slice:':1'|upper }}</div>
                                         <div>
                                             <strong>{{ user.get_full_name|default:user.username }}</strong><br>
                                             <small>@{{ user.username }}</small>
@@ -121,8 +139,20 @@
                                     </div>
                                 </td>
                                 <td>{{ user.email|default:'—' }}</td>
-                                <td>{{ user.profile.role|default:'—' }}</td>
-                                <td>{{ user.profile.account_type|default:'—' }}</td>
+                                <td>
+                                    {% if user.profile %}
+                                        {{ user.profile.get_role_display }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.profile %}
+                                        {{ user.profile.get_account_type_display }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if user.is_active %}
                                         <span class="badge ok">{% translate "Actif" %}</span>
@@ -132,28 +162,34 @@
                                 </td>
                                 <td>
                                     {% if user.profile %}
-                                        {{ user.profile.get_verification_status_display }}
+                                        <span class="badge {% if user.profile.verification_status == 'verified' %}ok{% elif user.profile.verification_status == 'pending' %}warning{% elif user.profile.verification_status == 'rejected' %}danger{% else %}off{% endif %}">
+                                            {{ user.profile.get_verification_status_display }}
+                                        </span>
                                     {% else %}
                                         —
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="user-actions">
                                     {% if user.id == request.user.id %}
-                                        <a class="action-btn" href="{% url 'accounts:profil' %}">{% translate "Voir le profil" %}</a>
+                                        <a class="btn btn-secondary btn-sm" href="{% url 'accounts:profil' %}">{% translate "Voir le profil" %}</a>
                                     {% else %}
-                                        <a class="action-btn" href="{% url 'accounts:profil_user' user_id=user.id %}">{% translate "Voir le profil" %}</a>
+                                        <a class="btn btn-secondary btn-sm" href="{% url 'accounts:profil_user' user_id=user.id %}">{% translate "Voir le profil" %}</a>
                                     {% endif %}
                                     {% if not user.is_active %}
-                                        <form method="post" action="{% url 'adminpanel:activate_user' user_id=user.id %}" style="display:inline">
+                                        <form method="post" action="{% url 'adminpanel:activate_user' user_id=user.id %}">
                                             {% csrf_token %}
-                                            <button class="action-btn" type="submit">{% translate "Activer le compte" %}</button>
+                                            <button class="btn btn-primary btn-sm" type="submit">{% translate "Activer" %}</button>
                                         </form>
                                     {% endif %}
                                 </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="7" class="empty-state">{% translate "Aucun utilisateur trouvé." %}</td>
+                                <td colspan="7" class="empty-state">
+                                    <span class="empty-state-icon" aria-hidden="true">🔎</span>
+                                    <strong>{% translate "Aucun utilisateur trouvé" %}</strong>
+                                    <span>{% translate "Modifiez votre recherche ou effacez les filtres pour afficher les comptes." %}</span>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -165,7 +201,7 @@
                 {% if page_obj.has_previous %}
                     <a href="?page={{ page_obj.previous_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">{% translate "Précédent" %}</a>
                 {% endif %}
-                <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                <span>{% blocktranslate with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} sur {{ total }}{% endblocktranslate %}</span>
                 {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}{% if search %}&q={{ search|urlencode }}{% endif %}{% if account_type %}&account_type={{ account_type|urlencode }}{% endif %}{% if role %}&role={{ role|urlencode }}{% endif %}{% if status %}&status={{ status|urlencode }}{% endif %}">{% translate "Suivant" %}</a>
                 {% endif %}
@@ -472,5 +508,292 @@
             grid-template-columns: repeat(2, minmax(140px, 1fr));
         }
     }
+
+    :root {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-orange-text: #8A4300;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-night: #08301F;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger: #B3261E;
+    }
+
+    body {
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font-family: 'Figtree', system-ui, sans-serif;
+    }
+
+    .admin-shell { min-height: 100vh; }
+    .admin-sidebar {
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+        width: 260px;
+        height: 100vh;
+        flex-shrink: 0;
+        overflow-y: auto;
+        padding: 1.5rem 1rem 1.25rem;
+        background: var(--ci-green-night);
+        border-top: 6px solid transparent;
+        border-image: linear-gradient(90deg, var(--ci-orange) 0 33.33%, #E9EFEB 33.33% 66.66%, var(--ci-green) 66.66% 100%) 1;
+    }
+    .brand {
+        display: block;
+        padding: 0 0.75rem 1.25rem;
+        color: var(--ci-white);
+        font-family: 'Bricolage Grotesque', 'Figtree', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .brand-accent { color: var(--ci-orange); }
+    .menu-title { color: #8FB8A2; }
+    .admin-menu { display: flex; flex-direction: column; gap: 2px; }
+    .admin-menu a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.65rem 0.75rem;
+        border-radius: 10px;
+        color: #D5E8DD;
+        text-decoration: none;
+        transition: background-color .15s ease, color .15s ease;
+    }
+    .admin-menu a:hover { background: rgba(255,255,255,.09); color: var(--ci-white); }
+    .admin-menu a.active { background: var(--ci-orange); color: var(--ci-ink); font-weight: 600; }
+    .menu-icon { width: 22px; text-align: center; }
+    .menu-back { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.12); }
+    .admin-main { min-width: 0; }
+    .admin-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        min-height: 72px;
+        height: auto;
+        padding: 0 2rem;
+        background: var(--ci-white);
+        border-bottom-color: var(--ci-line);
+    }
+    .topbar-title { display: flex; align-items: center; gap: 12px; }
+    .admin-topbar h1, .section-header-row h2, .results-heading h2 {
+        color: var(--ci-green-deep);
+        font-family: 'Bricolage Grotesque', 'Figtree', sans-serif;
+    }
+    .admin-content { padding: 1.75rem 2rem 3rem; }
+    .section-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+    .section-header-row h2, .results-heading h2 { font-size: 1.3rem; margin-bottom: 4px; }
+    .section-header-row p, .results-heading p { color: var(--ci-muted); font-size: 14px; }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .stat-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 1.1rem 1.25rem;
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: 14px;
+    }
+    .stat-label { margin-bottom: 6px; color: var(--ci-muted); font-size: 14px; }
+    .stat-value { color: var(--ci-ink); font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
+    .stat-card--success .stat-value { color: var(--ci-green); }
+    .stat-card--warning .stat-value { color: var(--ci-orange-text); }
+    .stat-card--danger .stat-value { color: var(--ci-danger); }
+    .stat-icon {
+        display: flex;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--ci-orange-soft);
+        font-size: 1.3rem;
+    }
+    .filters-panel, .table-panel {
+        margin-bottom: 1.25rem;
+        overflow-x: auto;
+        border: 1px solid var(--ci-line);
+        border-radius: 14px;
+        background: var(--ci-white);
+    }
+    .filters-form { display: flex; flex-wrap: wrap; gap: 12px; padding: 1.1rem 1.25rem; }
+    .filters-form input, .filters-form select {
+        height: 42px;
+        padding: 0 0.85rem;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 10px;
+        background: var(--ci-white);
+        color: var(--ci-ink);
+        font: inherit;
+    }
+    .filters-form input { flex: 1; min-width: 220px; }
+    .filters-form input:focus, .filters-form select:focus { outline: 3px solid rgba(0,158,96,.2); border-color: var(--ci-green); }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: .6rem 1.1rem;
+        border: 1.5px solid transparent;
+        border-radius: 10px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+    .btn-primary { background: var(--ci-orange); color: var(--ci-ink); }
+    .btn-primary:hover { background: var(--ci-orange-hover); }
+    .btn-secondary { background: transparent; color: var(--ci-green-deep); border-color: #BFE0CE; }
+    .btn-secondary:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+    .btn-sm { padding: .4rem .8rem; font-size: 13px; }
+    .results-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 1.5rem 0 .75rem;
+    }
+    table { width: 100%; min-width: 850px; border-collapse: collapse; }
+    th, td { padding: .9rem 1.1rem; border-bottom: 1px solid #EEF3EF; text-align: left; vertical-align: middle; }
+    th { background: #F8FAF8; color: var(--ci-muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    tbody tr:hover { background: #FAFCFA; }
+    .user-cell { display: flex; align-items: center; gap: 10px; min-width: 170px; }
+    .user-cell strong { display: inline-block; margin-bottom: 2px; }
+    .user-cell small { color: var(--ci-muted); }
+    .avatar {
+        display: flex;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: var(--ci-green);
+        color: var(--ci-white);
+        font-weight: 700;
+    }
+    .avatar.small { width: 34px; height: 34px; font-size: 13px; }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+    .badge.ok { background: var(--ci-green-soft); color: var(--ci-green-deep); border-color: #BFE0CE; }
+    .badge.warning { background: var(--ci-orange-soft); color: var(--ci-orange-text); border-color: #F6D9B0; }
+    .badge.danger, .badge.off { background: #FDF1F1; color: #8F1D17; border-color: #F0CACA; }
+    .user-actions { min-width: 180px; }
+    .user-actions, .user-actions form { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .user-actions form { margin: 0; }
+    .empty-state { padding: 2rem 1rem; color: var(--ci-muted); text-align: center; }
+    .empty-state span, .empty-state strong { display: block; }
+    .empty-state-icon { margin-bottom: .4rem; font-size: 1.5rem; }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 10px 0 0; color: var(--ci-muted); }
+    .pagination a { color: var(--ci-green-deep); font-weight: 600; text-decoration: none; }
+    .pagination a:hover { color: var(--ci-orange-text); text-decoration: underline; }
+    .skip-link {
+        position: absolute;
+        top: -60px;
+        left: 12px;
+        z-index: 100;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        font-weight: 600;
+    }
+    .skip-link:focus { top: 12px; }
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        white-space: nowrap;
+        border: 0;
+    }
+    #users-menu-toggle { display: none; }
+
+    @media (max-width: 900px) {
+        .admin-shell { flex-direction: row; }
+        .admin-sidebar {
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            transform: translateX(-100%);
+            transition: transform .2s ease;
+            box-shadow: 0 0 40px rgba(0,0,0,.3);
+            width: 260px;
+            height: 100vh;
+            padding: 1.5rem 1rem 1.25rem;
+        }
+        .admin-menu { flex-direction: column; }
+        .menu-title { flex-basis: auto; }
+        .admin-sidebar.is-open { transform: translateX(0); }
+        #users-menu-toggle { display: inline-flex !important; align-items: center; justify-content: center; }
+        .admin-topbar { padding: 0 1rem; }
+        .admin-content { padding: 1.25rem 1rem 2.5rem; }
+        .topbar-user div:first-child { display: none; }
+    }
+    @media (max-width: 560px) {
+        .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+        .stat-card { padding: .85rem; }
+        .stat-value { font-size: 1.45rem; }
+        .filters-form { padding: .9rem; }
+        .filters-form input, .filters-form select, .filters-form .btn { width: 100%; }
+        .section-header-row > .btn { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
 </style>
+<script>
+    (() => {
+        const toggle = document.getElementById('users-menu-toggle');
+        const sidebar = document.querySelector('.admin-sidebar');
+        if (!toggle || !sidebar) return;
+        toggle.addEventListener('click', () => {
+            const isOpen = sidebar.classList.toggle('is-open');
+            toggle.setAttribute('aria-expanded', String(isOpen));
+            toggle.setAttribute(
+                'aria-label',
+                isOpen ? '{% translate "Fermer le menu" %}' : '{% translate "Ouvrir le menu" %}'
+            );
+        });
+    })();
+</script>
 {% endblock %}

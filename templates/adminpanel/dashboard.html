@@ -1,872 +1,727 @@
-<!DOCTYPE html>
-{% load i18n %}
-<html lang="fr">
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>{% translate "Ivoire Connect — Administration" %}</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
     <style>
-
-        * {
-            box-sizing: border-box;
+        :root {
+            --ci-orange: #F77F00;
+            --ci-orange-hover: #FF9122;
+            --ci-orange-soft: #FFF1E0;
+            --ci-orange-text: #8A4300;
+            --ci-green: #009E60;
+            --ci-green-deep: #0B5D3B;
+            --ci-green-night: #08301F;
+            --ci-green-soft: #E6F4EC;
+            --ci-ink: #10231A;
+            --ci-muted: #5B6B62;
+            --ci-line: #DCE5DF;
+            --ci-bg: #F3F7F4;
+            --ci-white: #FFFFFF;
+            --ci-danger: #B3261E;
+            --ci-danger-soft: #FDF1F1;
+            --sidebar-w: 260px;
+            --radius: 14px;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        h1, h2, h3, p, dl, dd { margin: 0; }
+        body.admin-body {
             margin: 0;
-            padding: 0;
+            font-family: 'Figtree', system-ui, sans-serif;
+            font-size: 15px;
+            background: var(--ci-bg);
+            color: var(--ci-ink);
         }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #172033;
+        [hidden] { display: none !important; }
+        .skip-link {
+            position: absolute;
+            left: 12px;
+            top: -60px;
+            z-index: 100;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: var(--ci-orange);
+            color: var(--ci-ink);
+            font-weight: 600;
+            text-decoration: none;
         }
-
-        /* =========================
-           SIDEBAR
-        ========================= */
-
-        .sidebar {
-            position: fixed;
-            left: 0;
+        .skip-link:focus { top: 12px; }
+        :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+        .admin-shell { display: flex; min-height: 100vh; }
+        .admin-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .admin-content { padding: 1.75rem 2rem 3rem; }
+        .admin-sidebar {
+            position: sticky;
             top: 0;
-            bottom: 0;
-            width: 250px;
-            background: #101828;
-            color: white;
-            padding: 25px 15px;
+            align-self: flex-start;
+            width: var(--sidebar-w);
+            height: 100vh;
+            flex-shrink: 0;
             overflow-y: auto;
+            padding: 1.5rem 1rem 1.25rem;
+            background: var(--ci-green-night);
+            color: var(--ci-white);
+            border-top: 6px solid transparent;
+            border-image: linear-gradient(90deg, var(--ci-orange) 0 33.33%, #E9EFEB 33.33% 66.66%, var(--ci-green) 66.66% 100%) 1;
         }
-
-        .logo {
-            font-size: 22px;
-            font-weight: 800;
-            padding: 0 12px 30px;
+        .brand {
+            display: block;
+            padding: 0 0.75rem 1.25rem;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ci-white);
+            text-decoration: none;
         }
-
-        .logo span {
-            color: #f77f00;
-        }
-
+        .brand-accent { color: var(--ci-orange); }
         .menu-title {
-            color: #98a2b3;
-            font-size: 11px;
+            padding: 1.1rem 0.75rem 0.4rem;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            padding: 15px 12px 8px;
-            letter-spacing: 1px;
+            color: #8FB8A2;
         }
-
-        .menu a {
+        .admin-menu { display: flex; flex-direction: column; gap: 2px; }
+        .admin-menu a {
             display: flex;
             align-items: center;
             gap: 12px;
-            color: #d0d5dd;
+            padding: 0.65rem 0.75rem;
+            border-radius: 10px;
+            color: #D5E8DD;
+            font-size: 15px;
             text-decoration: none;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 4px;
-            font-size: 14px;
+            transition: background-color .15s ease, color .15s ease;
         }
-
-        .menu a:hover,
-        .menu a.active {
-            background: #f77f00;
-            color: white;
+        .admin-menu a:hover { background: rgba(255,255,255,0.09); color: var(--ci-white); }
+        .admin-menu a.active {
+            background: var(--ci-orange);
+            color: var(--ci-ink);
+            font-weight: 600;
         }
-
-        /* =========================
-           MAIN
-        ========================= */
-
-        .main {
-            margin-left: 250px;
-            min-height: 100vh;
+        .menu-icon { width: 22px; text-align: center; }
+        .menu-back {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.12);
         }
-
-        .topbar {
-            height: 72px;
-            background: white;
-            border-bottom: 1px solid #eaecf0;
+        .admin-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 35px;
+            gap: 1rem;
+            min-height: 72px;
+            padding: 0 2rem;
+            background: var(--ci-white);
+            border-bottom: 1px solid var(--ci-line);
         }
-
-        .topbar h1 {
-            font-size: 22px;
+        .admin-topbar h1 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ci-green-deep);
         }
-
-        .admin-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .menu-toggle {
+            display: none;
+            width: 42px;
+            height: 42px;
+            border: 1.5px solid #BFE0CE;
+            border-radius: 10px;
+            background: var(--ci-green-soft);
+            color: var(--ci-green-deep);
+            font-size: 1.2rem;
+            cursor: pointer;
         }
-
+        .topbar-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .topbar-user { display: flex; align-items: center; gap: 12px; }
+        .topbar-user small { display: block; color: var(--ci-muted); font-size: 13px; }
         .avatar {
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: #f77f00;
-            color: white;
+            background: var(--ci-green);
+            color: var(--ci-white);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-weight: 700;
+            flex-shrink: 0;
         }
-
-        .content {
-            padding: 30px 35px;
+        .avatar.small { width: 34px; height: 34px; font-size: 13px; }
+        .card, .panel, .table-panel, .filters-panel, .empty-panel {
+            background: var(--ci-white);
+            border: 1px solid var(--ci-line);
+            border-radius: var(--radius);
         }
-
-        /* =========================
-           CARDS STATISTIQUES
-        ========================= */
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid #eaecf0;
-            border-radius: 12px;
-            padding: 22px;
-            box-shadow: 0 2px 5px rgba(0,0,0,.03);
-        }
-
-        .stat-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .stat-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: #fff3e8;
-            color: #f77f00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .stat-label {
-            color: #667085;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        /* =========================
-           ALERTES
-        ========================= */
-
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-
-        .actions-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .action-card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #eaecf0;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .action-card-link {
-            color: inherit;
-            text-decoration: none;
-            transition: transform .15s ease, box-shadow .15s ease;
-        }
-
-        .action-card-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 24, 40, .1);
-        }
-
-        .action-card h3 {
-            font-size: 15px;
-            margin-bottom: 5px;
-        }
-
-        .action-card p {
-            color: #667085;
-            font-size: 13px;
-        }
-
-        .badge {
-            min-width: 35px;
-            height: 35px;
-            padding: 0 10px;
-            border-radius: 20px;
-            background: #f04438;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .badge.green {
-            background: #12b76a;
-        }
-
-        /* =========================
-           DEUX COLONNES
-        ========================= */
-
-        .columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .panel {
-            background: white;
-            border: 1px solid #eaecf0;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
+        .panel, .table-panel, .empty-panel { overflow: hidden; }
+        .card { padding: 1.5rem; margin-bottom: 1.25rem; }
+        .panel--spaced { margin-top: 1.25rem; }
+        .panel--padded { padding: 1.5rem; margin-bottom: 1.25rem; }
         .panel-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid #eaecf0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--ci-line);
         }
-
         .panel-header h2 {
-            font-size: 16px;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--ci-green-deep);
         }
-
         .panel-header a {
-            color: #f77f00;
-            font-size: 13px;
-            text-decoration: none;
-        }
-
-        /* =========================
-           LISTES
-        ========================= */
-
-        .list-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f2f4f7;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .list-item:last-child {
-            border-bottom: none;
-        }
-
-        .item-main strong {
-            display: block;
+            color: var(--ci-green-deep);
             font-size: 14px;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .section-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .section-header-row h2 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.3rem;
+            color: var(--ci-green-deep);
             margin-bottom: 4px;
         }
-
-        .item-main span {
+        .section-header-row p { color: var(--ci-muted); font-size: 14px; }
+        .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 1.75rem 0 0.9rem;
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.2rem;
+            color: var(--ci-green-deep);
+        }
+        .rule-note {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 4px solid var(--ci-orange);
+            border-radius: 10px;
+            background: var(--ci-orange-soft);
+            color: #6F3A00;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .stat-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 1.1rem 1.25rem;
+            background: var(--ci-white);
+            border: 1px solid var(--ci-line);
+            border-radius: var(--radius);
+        }
+        .stat-label { margin-bottom: 6px; font-size: 14px; color: var(--ci-muted); }
+        .stat-value {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .stat-unit { font-family: 'Figtree', sans-serif; font-size: 13px; font-weight: 500; color: var(--ci-muted); }
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--ci-orange-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-card--success .stat-value { color: var(--ci-green); }
+        .stat-card--warning .stat-value { color: var(--ci-orange-text); }
+        .stat-card--danger .stat-value { color: var(--ci-danger); }
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .action-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 1.1rem 1.25rem;
+            background: var(--ci-white);
+            border: 1px solid var(--ci-line);
+            border-radius: var(--radius);
+            color: inherit;
+            text-decoration: none;
+            transition: border-color .15s ease, transform .15s ease;
+        }
+        .action-card:hover { border-color: var(--ci-orange); transform: translateY(-2px); }
+        .action-card h3 { font-size: 16px; margin-bottom: 4px; }
+        .action-card p { color: var(--ci-muted); font-size: 14px; }
+        .count-badge {
+            min-width: 38px;
+            height: 38px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: var(--ci-danger);
+            color: var(--ci-white);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .count-badge.is-zero { background: var(--ci-green); }
+        .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid #EEF3EF;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .item-main strong { display: block; font-size: 15px; margin-bottom: 2px; }
+        .item-main span { font-size: 13px; color: var(--ci-muted); }
+        .list-empty { padding: 1.25rem; color: var(--ci-muted); }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border: 1px solid transparent;
+            border-radius: 999px;
             font-size: 12px;
-            color: #667085;
-        }
-
-        .status {
-            padding: 5px 9px;
-            border-radius: 20px;
-            font-size: 11px;
             font-weight: 600;
+            line-height: 1.4;
+            white-space: nowrap;
         }
-
-        .status.pending {
-            background: #fff3cd;
-            color: #946200;
+        .badge.ok, .badge.confirmed, .badge.completed {
+            background: var(--ci-green-soft); color: var(--ci-green-deep); border-color: #BFE0CE;
         }
-
-        .status.confirmed,
-        .status.completed {
-            background: #dcfae6;
-            color: #067647;
+        .badge.warning, .badge.pending {
+            background: var(--ci-orange-soft); color: var(--ci-orange-text); border-color: #F6D9B0;
         }
-
-        .status.cancelled,
-        .status.failed {
-            background: #fee4e2;
-            color: #b42318;
+        .badge.danger, .badge.cancelled, .badge.failed, .badge.off {
+            background: var(--ci-danger-soft); color: #8F1D17; border-color: #F0CACA;
         }
-
-        /* =========================
-           RESPONSIVE
-        ========================= */
-
+        .notice {
+            margin: 1rem 0 0;
+            padding: 0.7rem 1rem;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .notice--ok { background: var(--ci-green-soft); color: var(--ci-green-deep); border-color: #BFE0CE; }
+        .notice--warning { background: var(--ci-orange-soft); color: #6F3A00; border-color: #F6D9B0; }
+        .notice--danger { background: var(--ci-danger-soft); color: #8F1D17; border-color: #F0CACA; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.6rem 1.1rem;
+            border: 1.5px solid transparent;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.2;
+            text-decoration: none;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease;
+        }
+        .btn-primary { background: var(--ci-orange); color: var(--ci-ink); }
+        .btn-primary:hover { background: var(--ci-orange-hover); }
+        .btn-secondary { background: transparent; color: var(--ci-green-deep); border-color: #BFE0CE; }
+        .btn-secondary:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+        .btn-danger { background: transparent; color: var(--ci-danger); border-color: #F0CACA; }
+        .btn-danger:hover { background: var(--ci-danger-soft); border-color: var(--ci-danger); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 13px; }
+        .btn:disabled { opacity: .55; cursor: not-allowed; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .btn-group form { margin: 0; }
+        .filters-panel { margin-bottom: 1.25rem; overflow-x: auto; }
+        .filters-form { display: flex; flex-wrap: wrap; gap: 12px; padding: 1.1rem 1.25rem; }
+        .filters-form input,
+        .filters-form select {
+            height: 42px;
+            padding: 0 0.85rem;
+            border: 1.5px solid #CBD6CE;
+            border-radius: 10px;
+            background: var(--ci-white);
+            color: var(--ci-ink);
+            font-family: inherit;
+            font-size: 15px;
+        }
+        .filters-form input { flex: 1; min-width: 220px; }
+        .filters-form input:focus,
+        .filters-form select:focus {
+            outline: none;
+            border-color: var(--ci-green);
+            box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+        }
+        .filters-form .btn { height: 42px; }
+        .table-panel { overflow-x: auto; margin-bottom: 1.25rem; }
+        table { width: 100%; min-width: 680px; border-collapse: collapse; }
+        th, td { padding: 0.9rem 1.25rem; text-align: left; vertical-align: middle; border-bottom: 1px solid #EEF3EF; }
+        th {
+            background: #F0F7F3;
+            color: var(--ci-green-deep);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        tbody tr:hover { background: #FAFCFB; }
+        tbody tr:last-child td { border-bottom: none; }
+        .user-cell { display: flex; align-items: center; gap: 10px; }
+        .user-cell small { color: var(--ci-muted); }
+        .empty-state, .empty-panel { text-align: center; color: var(--ci-muted); padding: 2rem 1.25rem; }
+        .empty-panel h3 { font-family: 'Bricolage Grotesque', sans-serif; color: var(--ci-green-deep); margin-bottom: 6px; }
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 16px; color: var(--ci-muted); }
+        .page-link {
+            padding: 0.4rem 0.9rem;
+            border: 1.5px solid #BFE0CE;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--ci-green-deep);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .page-link:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+        .detail-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.4rem; margin: 1rem 0 4px; }
+        .detail-meta { color: var(--ci-muted); margin-top: 4px; }
+        .detail-list {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: 8px 20px;
+            margin-top: 1rem;
+        }
+        .detail-list dt { color: var(--ci-muted); font-size: 14px; }
+        .detail-list dd { font-weight: 500; }
+        .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; margin-top: 1.25rem; }
+        .doc-card { padding: 1.1rem; background: var(--ci-white); border: 1px solid var(--ci-line); border-radius: var(--radius); }
+        .doc-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.05rem; color: var(--ci-green-deep); margin-bottom: 8px; }
+        .doc-preview {
+            display: block;
+            width: 100%;
+            max-height: 360px;
+            margin: 12px 0 8px;
+            object-fit: contain;
+            background: #F7FAF8;
+            border: 1px solid var(--ci-line);
+            border-radius: 10px;
+        }
+        .doc-link { color: var(--ci-green-deep); font-weight: 600; font-size: 14px; }
+        .muted { color: var(--ci-muted); font-size: 14px; }
+        .form-spaced { margin-top: 1rem; }
+        .notification-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #EEF3EF;
+        }
+        .notification-row:last-child { border-bottom: none; }
+        .notification-row p { margin-top: 4px; color: var(--ci-muted); font-size: 14px; }
         @media (max-width: 1100px) {
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .actions-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .columns {
-                grid-template-columns: 1fr;
-            }
+            .columns { grid-template-columns: 1fr; }
         }
-
-        @media (max-width: 700px) {
-
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
+        @media (max-width: 900px) {
+            .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+            .admin-sidebar {
+                position: fixed;
+                z-index: 50;
+                left: 0;
+                top: 0;
+                transform: translateX(-100%);
+                transition: transform .2s ease;
+                box-shadow: 0 0 40px rgba(0,0,0,0.3);
             }
-
-            .main {
-                margin-left: 0;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .topbar {
-                padding: 0 20px;
-            }
-
-            .content {
-                padding: 20px;
-            }
+            .admin-sidebar.is-open { transform: translateX(0); }
+            .admin-topbar { padding: 0 1rem; }
+            .admin-content { padding: 1.25rem 1rem 2.5rem; }
+            .topbar-user div:first-child { display: none; }
+            .detail-list { grid-template-columns: 1fr; gap: 2px; }
+            .detail-list dd { margin-bottom: 8px; }
         }
-
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+            .action-card:hover { transform: none; }
+        }
     </style>
 </head>
 
-<body>
+<body class="admin-body">
+<a class="skip-link" href="#main-content">{% translate "Aller au contenu" %}</a>
 
-<!-- =========================
-     SIDEBAR
-========================= -->
+<div class="admin-shell">
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="{% translate 'Navigation de l’administration' %}">
+        <a class="brand" href="{% url 'adminpanel:dashboard' %}">Ivoire <span class="brand-accent">Connect</span></a>
 
-<aside class="sidebar">
+        <nav class="admin-menu">
+            <div class="menu-title">{% translate "Principal" %}</div>
+            <a href="{% url 'adminpanel:dashboard' %}" class="active" aria-current="page"><span class="menu-icon" aria-hidden="true">📊</span>{% translate "Dashboard" %}</a>
+            <a href="{% url 'adminpanel:users' %}"><span class="menu-icon" aria-hidden="true">👥</span>{% translate "Utilisateurs" %}</a>
+            <a href="{% url 'adminpanel:logements' %}"><span class="menu-icon" aria-hidden="true">🏠</span>{% translate "Logements" %}</a>
+            <a href="{% url 'adminpanel:colocations' %}"><span class="menu-icon" aria-hidden="true">🤝</span>{% translate "Colocations" %}</a>
 
-    <div class="logo">
-        Ivoire <span>Connect</span>
-    </div>
+            <div class="menu-title">{% translate "Gestion" %}</div>
+            <a href="{% url 'adminpanel:hotels_residences' %}"><span class="menu-icon" aria-hidden="true">🏨</span>{% translate "Hôtels & Résidences" %}</a>
+            <a href="{% url 'adminpanel:reservations' %}"><span class="menu-icon" aria-hidden="true">📅</span>{% translate "Réservations" %}</a>
+            <a href="{% url 'adminpanel:finance' %}"><span class="menu-icon" aria-hidden="true">💰</span>{% translate "Finance" %}</a>
+            <a href="{% url 'adminpanel:verifications' %}"><span class="menu-icon" aria-hidden="true">🪪</span>{% translate "Vérifications" %}</a>
+            <a href="{% url 'adminpanel:avis' %}"><span class="menu-icon" aria-hidden="true">⭐</span>{% translate "Avis" %}</a>
+            <a href="{% url 'adminpanel:signalements' %}"><span class="menu-icon" aria-hidden="true">🚨</span>{% translate "Signalements" %}</a>
 
-    <div class="menu">
+            <div class="menu-title">{% translate "Système" %}</div>
+            <a href="{% url 'adminpanel:notifications' %}"><span class="menu-icon" aria-hidden="true">🔔</span>{% translate "Notifications" %}</a>
+            <a href="{% url 'adminpanel:statistiques' %}"><span class="menu-icon" aria-hidden="true">📈</span>{% translate "Statistiques" %}</a>
+            <a href="{% url 'adminpanel:parametres' %}"><span class="menu-icon" aria-hidden="true">⚙️</span>{% translate "Paramètres" %}</a>
 
-        <div class="menu-title">{% translate "Principal" %}</div>
-
-        <a href="{% url 'adminpanel:dashboard' %}" class="active">
-            📊 Dashboard
-        </a>
-
-        <a href="{% url 'adminpanel:users' %}">
-            👥 Utilisateurs
-        </a>
-
-        <a href="{% url 'adminpanel:logements' %}">
-            🏠 Logements
-        </a>
-
-        <a href="{% url 'adminpanel:colocations' %}">
-            🤝 Colocations
-        </a>
-
-        <div class="menu-title">{% translate "Gestion" %}</div>
-
-        <a href="{% url 'adminpanel:hotels_residences' %}">
-            🏨 Hôtels & Résidences
-        </a>
-
-        <a href="{% url 'adminpanel:reservations' %}">
-            📅 Réservations
-        </a>
-
-        <a href="{% url 'adminpanel:finance' %}">
-            💰 Finance
-        </a>
-
-        <a href="{% url 'adminpanel:verifications' %}">
-            🪪 Vérifications
-        </a>
-
-        <a href="{% url 'adminpanel:avis' %}">
-            ⭐ Avis
-        </a>
-
-        <a href="{% url 'adminpanel:signalements' %}">
-            🚨 Signalements
-        </a>
-
-        <div class="menu-title">{% translate "Système" %}</div>
-
-        <a href="{% url 'adminpanel:notifications' %}">
-            🔔 Notifications
-        </a>
-
-        <a href="{% url 'adminpanel:statistiques' %}">
-            📈 Statistiques
-        </a>
-
-        <a href="{% url 'adminpanel:parametres' %}">
-            ⚙️ Paramètres
-        </a>
-
-    </div>
-
-</aside>
-
-
-<!-- =========================
-     MAIN
-========================= -->
-
-<main class="main">
-
-    <header class="topbar">
-
-        <h1>{% translate "Dashboard" %}</h1>
-
-        <div class="admin-user">
-
-            <div>
-                <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-                <small style="display:block;color:#667085;">
-                    Administrateur
-                </small>
+            <div class="menu-back">
+                <a href="{% url 'logement:home' %}"><span class="menu-icon" aria-hidden="true">↩</span>{% translate "Retour au site" %}</a>
             </div>
+        </nav>
+    </aside>
 
-            <div class="avatar">
-                {{ request.user.username|slice:":1"|upper }}
+
+    <main class="admin-main" id="main-content">
+        <header class="admin-topbar">
+            <div class="topbar-title">
+                <button type="button" class="menu-toggle" id="menu-toggle" aria-controls="admin-sidebar" aria-expanded="false" aria-label="{% translate 'Ouvrir le menu' %}">☰</button>
+                <h1>{% translate "Dashboard" %}</h1>
             </div>
-
-        </div>
-
-    </header>
-
-
-    <div class="content">
-
-        <!-- =========================
-             STATISTIQUES PRINCIPALES
-        ========================= -->
-
-        <div class="stats-grid">
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div>
-                        <div class="stat-label">{% translate "Utilisateurs" %}</div>
-                        <div class="stat-value">{{ total_users }}</div>
-                    </div>
-
-                    <div class="stat-icon">👥</div>
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div>
-                        <div class="stat-label">{% translate "Logements" %}</div>
-                        <div class="stat-value">{{ total_logements }}</div>
-                    </div>
-
-                    <div class="stat-icon">🏠</div>
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div>
-                        <div class="stat-label">{% translate "Colocations" %}</div>
-                        <div class="stat-value">{{ total_colocations }}</div>
-                    </div>
-
-                    <div class="stat-icon">🤝</div>
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-top">
-                    <div>
-                        <div class="stat-label">{% translate "Réservations" %}</div>
-                        <div class="stat-value">{{ total_reservations }}</div>
-                    </div>
-
-                    <div class="stat-icon">📅</div>
-                </div>
-            </div>
-
-        </div>
-
-
-        <!-- =========================
-             FINANCE
-        ========================= -->
-
-        <div class="stats-grid">
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Paiements
-                </div>
-
-                <div class="stat-value">
-                    {{ total_paiements }}
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Revenus encaissés
-                </div>
-
-                <div class="stat-value">
-                    {{ revenus|floatformat:0 }}
-                    <small style="font-size:13px;">FCFA</small>
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Établissements
-                </div>
-
-                <div class="stat-value">
-                    {{ total_etablissements }}
-                </div>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <div class="stat-label">
-                    Profils vérifiés
-                </div>
-
-                <div class="stat-value">
-                    {{ profils_verifies }}
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =========================
-             À TRAITER
-        ========================= -->
-
-        <h2 class="section-title">
-            ⚡ À traiter
-        </h2>
-
-        <div class="actions-grid">
-
-            <a class="action-card action-card-link" href="{% url 'adminpanel:users' %}?status=pending">
-
+            <div class="topbar-user">
                 <div>
-                    <h3>{% translate "Vérifications" %}</h3>
-                    <p>{% translate "Profils en attente" %}</p>
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <small>{% translate "Administrateur" %}</small>
                 </div>
+                <div class="avatar" aria-hidden="true">{{ request.user.username|slice:':1'|upper }}</div>
+            </div>
+        </header>
 
-                <div class="badge">
-                    {{ verifications_en_attente }}
-                </div>
+        <div class="admin-content">
+            {# ── Statistiques principales ── #}
+            <div class="stats-grid">
+                <div class="stat-card"><div><div class="stat-label">{% translate "Utilisateurs" %}</div><div class="stat-value">{{ total_users }}</div></div><div class="stat-icon" aria-hidden="true">👥</div></div>
+                <div class="stat-card"><div><div class="stat-label">{% translate "Logements" %}</div><div class="stat-value">{{ total_logements }}</div></div><div class="stat-icon" aria-hidden="true">🏠</div></div>
+                <div class="stat-card"><div><div class="stat-label">{% translate "Colocations" %}</div><div class="stat-value">{{ total_colocations }}</div></div><div class="stat-icon" aria-hidden="true">🤝</div></div>
+                <div class="stat-card"><div><div class="stat-label">{% translate "Réservations" %}</div><div class="stat-value">{{ total_reservations }}</div></div><div class="stat-icon" aria-hidden="true">📅</div></div>
+            </div>
 
-            </a>
+            {# ── Finance ── #}
+            <div class="stats-grid">
+                <div class="stat-card"><div><div class="stat-label">{% translate "Paiements" %}</div><div class="stat-value">{{ total_paiements }}</div></div><div class="stat-icon" aria-hidden="true">💳</div></div>
+                <div class="stat-card"><div><div class="stat-label">{% translate "Revenus encaissés" %}</div><div class="stat-value">{{ revenus|floatformat:0 }} <span class="stat-unit">FCFA</span></div></div><div class="stat-icon" aria-hidden="true">💰</div></div>
+                <div class="stat-card"><div><div class="stat-label">{% translate "Établissements" %}</div><div class="stat-value">{{ total_etablissements }}</div></div><div class="stat-icon" aria-hidden="true">🏨</div></div>
+                <div class="stat-card"><div><div class="stat-label">{% translate "Profils vérifiés" %}</div><div class="stat-value">{{ profils_verifies }}</div></div><div class="stat-icon" aria-hidden="true">✅</div></div>
+            </div>
 
-            <a class="action-card action-card-link" href="{% url 'adminpanel:verifications' %}">
+            {# ── À traiter ── #}
+            <h2 class="section-title"><span aria-hidden="true">⚡</span> {% translate "À traiter" %}</h2>
 
-                <div>
-                    <h3>{% translate "Documents" %}</h3>
-                    <p>{% translate "Documents à vérifier" %}</p>
-                </div>
-
-                <div class="badge">
-                    {{ documents_en_attente }}
-                </div>
-
-            </a>
-
-            <a class="action-card action-card-link" href="{% url 'adminpanel:finance' %}">
-
-                <div>
-                    <h3>{% translate "Paiements" %}</h3>
-                    <p>{% translate "Paiements en attente" %}</p>
+            <div class="actions-grid">
+                <a class="action-card" href="{% url 'adminpanel:verifications' %}">
+                    <div>
+                        <h3>{% translate "Inscriptions et identités" %}</h3>
+                        <p>{% translate "Dossiers à examiner" %}</p>
+                    </div>
+                    <span class="count-badge{% if not verifications_en_attente %} is-zero{% endif %}">{{ verifications_en_attente }}</span>
                 </a>
 
-                <div class="badge">
-                    {{ paiements_pending }}
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- =========================
-             ACTIVITÉ
-        ========================= -->
-
-        <div class="columns">
-
-            <!-- UTILISATEURS -->
-
-            <div class="panel">
-
-                <div class="panel-header">
-
-                    <h2>👥 {% translate "Nouveaux utilisateurs" %}</h2>
-
-                    <a href="{% url 'adminpanel:users' %}">
-                        Voir tout
-                    </a>
-
-                </div>
-
-
-                {% for user in derniers_utilisateurs %}
-
-                <div class="list-item">
-
-                    <div class="item-main">
-
-                        <strong>
-                            {{ user.get_full_name|default:user.username }}
-                        </strong>
-
-                        <span>
-                            {{ user.email|default:"Email non renseigné" }}
-                        </span>
-
+                <a class="action-card" href="{% url 'adminpanel:verifications' %}">
+                    <div>
+                        <h3>{% translate "Hôtels et résidences" %}</h3>
+                        <p>{% translate "Dossiers d’établissement à compléter" %}</p>
                     </div>
-
-                    {% if user.profile %}
-
-                        <span class="status {% if user.profile.verification_status == 'verified' %}confirmed{% else %}pending{% endif %}">
-                            {{ user.profile.get_verification_status_display }}
-                        </span>
-
-                    {% endif %}
-
-                </div>
-
-                {% empty %}
-
-                <div class="list-item">
-                    <span>{% translate "Aucun utilisateur récent." %}</span>
-                </div>
-
-                {% endfor %}
-
-            </div>
-
-
-            <!-- RÉSERVATIONS -->
-
-            <div class="panel">
-
-                <div class="panel-header">
-
-                    <h2>📅 {% translate "Dernières réservations" %}</h2>
-
-                    <a href="{% url 'adminpanel:reservations' %}">
-                        Voir tout
-                    </a>
-
-                </div>
-
-
-                {% for reservation in dernieres_reservations %}
-
-                <div class="list-item">
-
-                    <div class="item-main">
-
-                        <strong>
-                            {{ reservation.logement.titre }}
-                        </strong>
-
-                        <span>
-                            {{ reservation.client_nom }}
-                            ·
-                            {{ reservation.montant_final|floatformat:0 }} FCFA
-                        </span>
-
-                    </div>
-
-
-                    <span class="status {{ reservation.statut }}">
-                        {{ reservation.get_statut_display }}
-                    </span>
-
-                </div>
-
-                {% empty %}
-
-                <div class="list-item">
-                    <span>{% translate "Aucune réservation récente." %}</span>
-                </div>
-
-                {% endfor %}
-
-            </div>
-
-        </div>
-
-
-        <!-- =========================
-             PAIEMENTS
-        ========================= -->
-
-        <div class="panel" style="margin-top:20px;">
-
-            <div class="panel-header">
-
-                <h2>💰 {% translate "Derniers paiements" %}</h2>
-
-                <a href="{% url 'adminpanel:finance' %}">
-                    Voir tout
+                    <span class="count-badge{% if not etablissements_en_attente %} is-zero{% endif %}">{{ etablissements_en_attente }}</span>
                 </a>
 
+                <a class="action-card" href="{% url 'adminpanel:verifications' %}">
+                    <div>
+                        <h3>{% translate "Pièces justificatives" %}</h3>
+                        <p>{% translate "Pièces en attente ou à revoir" %}</p>
+                    </div>
+                    <span class="count-badge{% if not documents_en_attente %} is-zero{% endif %}">{{ documents_en_attente }}</span>
+                </a>
+
+                <a class="action-card" href="{% url 'adminpanel:finance' %}">
+                    <div>
+                        <h3>{% translate "Paiements" %}</h3>
+                        <p>{% translate "Paiements en attente" %}</p>
+                    </div>
+                    <span class="count-badge{% if not paiements_pending %} is-zero{% endif %}">{{ paiements_pending }}</span>
+                </a>
             </div>
 
+            {# ── Activité récente ── #}
+            <div class="columns">
 
-            {% for paiement in derniers_paiements %}
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2><span aria-hidden="true">👥</span> {% translate "Nouveaux utilisateurs" %}</h2>
+                        <a href="{% url 'adminpanel:users' %}">{% translate "Voir tout" %}</a>
+                    </div>
 
-            <div class="list-item">
+                    {% for user in derniers_utilisateurs %}
+                        <div class="list-item">
+                            <div class="item-main">
+                                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                                <span>{{ user.email|default:_("Email non renseigné") }}</span>
+                            </div>
+                            {% if user.profile %}
+                                <span class="badge {% if user.profile.verification_status == 'verified' %}ok{% else %}warning{% endif %}">
+                                    {{ user.profile.get_verification_status_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="list-empty">{% translate "Aucun utilisateur récent." %}</p>
+                    {% endfor %}
+                </section>
 
-                <div class="item-main">
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2><span aria-hidden="true">📅</span> {% translate "Dernières réservations" %}</h2>
+                        <a href="{% url 'adminpanel:reservations' %}">{% translate "Voir tout" %}</a>
+                    </div>
 
-                    <strong>
-                        {{ paiement.reservation.logement.titre }}
-                    </strong>
+                    {% for reservation in dernieres_reservations %}
+                        <div class="list-item">
+                            <div class="item-main">
+                                <strong>{{ reservation.logement.titre }}</strong>
+                                <span>{{ reservation.client_nom }} · {{ reservation.montant_final|floatformat:0 }} FCFA</span>
+                            </div>
+                            <span class="badge {{ reservation.statut }}">{{ reservation.get_statut_display }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="list-empty">{% translate "Aucune réservation récente." %}</p>
+                    {% endfor %}
+                </section>
+            </div>
 
-                    <span>
-                        {{ paiement.montant|floatformat:0 }}
-                        FCFA
-                        ·
-                        {{ paiement.get_methode_display }}
-                    </span>
-
+            {# ── Paiements ── #}
+            <section class="panel panel--spaced">
+                <div class="panel-header">
+                    <h2><span aria-hidden="true">💰</span> {% translate "Derniers paiements" %}</h2>
+                    <a href="{% url 'adminpanel:finance' %}">{% translate "Voir tout" %}</a>
                 </div>
 
+                {% for paiement in derniers_paiements %}
+                    <div class="list-item">
+                        <div class="item-main">
+                            <strong>{{ paiement.reservation.logement.titre }}</strong>
+                            <span>{{ paiement.montant|floatformat:0 }} FCFA · {{ paiement.get_methode_display }}</span>
+                        </div>
+                        <span class="badge {{ paiement.statut }}">{{ paiement.get_statut_display }}</span>
+                    </div>
+                {% empty %}
+                    <p class="list-empty">{% translate "Aucun paiement enregistré." %}</p>
+                {% endfor %}
+            </section>
 
-                <span class="status {{ paiement.statut }}">
-                    {{ paiement.get_statut_display }}
-                </span>
+            {# ── Résumé ── #}
+            <section class="panel panel--spaced">
+                <div class="panel-header">
+                    <h2><span aria-hidden="true">📊</span> {% translate "Résumé de la plateforme" %}</h2>
+                </div>
 
-            </div>
-
-            {% empty %}
-
-            <div class="list-item">
-                <span>{% translate "Aucun paiement enregistré." %}</span>
-            </div>
-
-            {% endfor %}
-
+                <div class="list-item">
+                    <div class="item-main">
+                        <strong>{% translate "Propriétaires" %}</strong>
+                        <span>{% translate "Comptes individuels propriétaires" %}</span>
+                    </div>
+                    <strong>{{ proprietaires }}</strong>
+                </div>
+                <div class="list-item">
+                    <div class="item-main">
+                        <strong>{% translate "Locataires" %}</strong>
+                        <span>{% translate "Utilisateurs à la recherche d'un logement" %}</span>
+                    </div>
+                    <strong>{{ locataires }}</strong>
+                </div>
+                <div class="list-item">
+                    <div class="item-main">
+                        <strong>{% translate "Hôtels" %}</strong>
+                        <span>{% translate "Établissements hôteliers" %}</span>
+                    </div>
+                    <strong>{{ hotels }}</strong>
+                </div>
+                <div class="list-item">
+                    <div class="item-main">
+                        <strong>{% translate "Résidences" %}</strong>
+                        <span>{% translate "Établissements résidentiels" %}</span>
+                    </div>
+                    <strong>{{ residences }}</strong>
+                </div>
+                <div class="list-item">
+                    <div class="item-main">
+                        <strong>{% translate "Réservations confirmées" %}</strong>
+                        <span>{% translate "Réservations actuellement confirmées" %}</span>
+                    </div>
+                    <strong>{{ reservations_confirmed }}</strong>
+                </div>
+                <div class="list-item">
+                    <div class="item-main">
+                        <strong>{% translate "Documents à revoir" %}</strong>
+                        <span>{% translate "Documents signalés par le système" %}</span>
+                    </div>
+                    <strong>{{ documents_a_revoir }}</strong>
+                </div>
+            </section>
         </div>
+    </main>
+</div>
 
-
-        <!-- =========================
-             RÉSUMÉ
-        ========================= -->
-
-        <div class="panel" style="margin-top:20px;">
-
-            <div class="panel-header">
-                <h2>📊 {% translate "Résumé de la plateforme" %}</h2>
-            </div>
-
-            <div class="list-item">
-                <div class="item-main">
-                    <strong>{% translate "Propriétaires" %}</strong>
-                    <span>{% translate "Comptes individuels propriétaires" %}</span>
-                </div>
-                <strong>{{ proprietaires }}</strong>
-            </div>
-
-            <div class="list-item">
-                <div class="item-main">
-                    <strong>{% translate "Locataires" %}</strong>
-                    <span>{% translate "Utilisateurs à la recherche d'un logement" %}</span>
-                </div>
-                <strong>{{ locataires }}</strong>
-            </div>
-
-            <div class="list-item">
-                <div class="item-main">
-                    <strong>{% translate "Hôtels" %}</strong>
-                    <span>{% translate "Établissements hôteliers" %}</span>
-                </div>
-                <strong>{{ hotels }}</strong>
-            </div>
-
-            <div class="list-item">
-                <div class="item-main">
-                    <strong>{% translate "Résidences" %}</strong>
-                    <span>{% translate "Établissements résidentiels" %}</span>
-                </div>
-                <strong>{{ residences }}</strong>
-            </div>
-
-            <div class="list-item">
-                <div class="item-main">
-                    <strong>{% translate "Réservations confirmées" %}</strong>
-                    <span>{% translate "Réservations actuellement confirmées" %}</span>
-                </div>
-                <strong>{{ reservations_confirmed }}</strong>
-            </div>
-
-            <div class="list-item">
-                <div class="item-main">
-                    <strong>{% translate "Documents à revoir" %}</strong>
-                    <span>{% translate "Documents signalés par le système" %}</span>
-                </div>
-                <strong>{{ documents_a_revoir }}</strong>
-            </div>
-
-        </div>
-
-    </div>
-
-</main>
-
+<script>
+    (function () {
+        // Menu latéral sur mobile
+        const toggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('admin-sidebar');
+        function setMenu(open) {
+            sidebar.classList.toggle('is-open', open);
+            toggle.setAttribute('aria-expanded', String(open));
+        }
+        toggle.addEventListener('click', () => setMenu(!sidebar.classList.contains('is-open')));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+        document.addEventListener('click', e => {
+            if (sidebar.classList.contains('is-open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) setMenu(false);
+        });
+    })();
+</script>
 </body>
 </html>

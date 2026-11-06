@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
 from .models import Profile, DocumentVerification, VerificationLog, ProfessionalProfile, Subscription, Notification
+from .notification_service import notify_user
 
 
 @admin.register(Profile)
@@ -255,8 +256,46 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
     is_verified_badge.short_description = 'Statut'
     
     def verify_establishments(self, request, queryset):
-        count = queryset.update(is_verified=True, verification_date=timezone.now())
-        self.message_user(request, f'{count} établissement(s) vérifié(s)')
+        count = 0
+        skipped = 0
+        now = timezone.now()
+        approved_profiles = []
+        for professional_profile in queryset.select_related(
+            'profile__user'
+        ).prefetch_related('profile__documents'):
+            if not professional_profile.eligible_for_automatic_verification:
+                skipped += 1
+                continue
+            professional_profile.is_verified = True
+            professional_profile.verification_date = now
+            professional_profile.save(update_fields=['is_verified', 'verification_date'])
+            VerificationLog.objects.create(
+                profile=professional_profile.profile,
+                action='establishment_verified',
+                details=(
+                    f'Établissement « {professional_profile.establishment_name} » approuvé '
+                    'automatiquement depuis l’administration Django après validation de '
+                    'l’identité et confirmation de la présence des fichiers requis. '
+                    'Les fichiers n’ont pas fait l’objet d’un examen manuel.'
+                ),
+                performed_by=request.user,
+            )
+            approved_profiles.append(professional_profile)
+            count += 1
+
+        for professional_profile in approved_profiles:
+            notify_user(
+                professional_profile.profile.user,
+                'system',
+                'Établissement vérifié',
+                'Votre établissement est vérifié. Vous pouvez maintenant publier des annonces.',
+                email_subject='Votre établissement est vérifié - Ivoire Connect',
+            )
+
+        message = f'{count} établissement(s) vérifié(s).'
+        if skipped:
+            message += f' {skipped} établissement(s) ignoré(s) : dossier incomplet ou identité non approuvée.'
+        self.message_user(request, message)
     verify_establishments.short_description = "✅ Vérifier les établissements sélectionnés"
     
     def unverify_establishments(self, request, queryset):

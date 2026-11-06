@@ -21,6 +21,7 @@ from .forms import ProfileEditForm
 from .models import (
     DocumentVerification,
     Notification,
+    Profile,
     ProfessionalProfile,
     ProfileVerification,
     Subscription,
@@ -94,6 +95,27 @@ class ProfileEditFormTests(TestCase):
         self.assertIn('email', form.errors)
 
 
+class ProfilePersistenceTests(TestCase):
+    def test_saving_user_does_not_overwrite_profile_changes_from_a_stale_instance(self):
+        user = User.objects.create_user(
+            username='profile_persistence_test',
+            password='StrongPassword123!',
+        )
+        stale_profile = user.profile
+        current_profile = Profile.objects.get(user=user)
+        current_profile.verified = True
+        current_profile.verification_status = 'verified'
+        current_profile.save(update_fields=['verified', 'verification_status'])
+
+        user.last_login = timezone.now()
+        user.save(update_fields=['last_login'])
+
+        current_profile.refresh_from_db()
+        self.assertTrue(current_profile.verified)
+        self.assertEqual(current_profile.verification_status, 'verified')
+        self.assertFalse(stale_profile.verified)
+
+
 class PublicLanguageSelectionTests(TestCase):
     def test_anonymous_visitor_can_select_english_from_the_public_header(self):
         response = self.client.get(reverse('accounts:login'))
@@ -119,6 +141,12 @@ class AccountActivationTests(TestCase):
     )
     @mock.patch('accounts.views.send_sms', return_value=True)
     def test_individual_signup_creates_inactive_user_and_sends_activation_email(self, send_sms_mock):
+        administrator = User.objects.create_user(
+            username='signup_admin',
+            email='admin@example.com',
+            password='StrongPassword123!',
+            is_staff=True,
+        )
         session = self.client.session
         session['account_type'] = 'individu'
         session['individu_role'] = 'touriste'
@@ -143,8 +171,16 @@ class AccountActivationTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertFalse(response.wsgi_request.user.is_authenticated)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 2)
         self.assertIn('activation', mail.outbox[0].subject.lower())
+        self.assertIn('nouvelle inscription', mail.outbox[1].subject.lower())
+        notification = Notification.objects.get(
+            recipient=administrator,
+            notification_type='system',
+            title='Nouvelle inscription',
+        )
+        self.assertIn('Nagaro Touriste', notification.message)
+        self.assertIn('Touriste', notification.message)
         self.assertEqual(
             User.objects.get(username='nagaro_touriste').profile.telephone,
             '+22501020304',
@@ -158,6 +194,12 @@ class AccountActivationTests(TestCase):
     )
     @mock.patch('accounts.views.send_sms', return_value=True)
     def test_professional_signup_sends_code_to_saved_phone(self, send_sms_mock):
+        administrator = User.objects.create_user(
+            username='professional_signup_admin',
+            email='professional-admin@example.com',
+            password='StrongPassword123!',
+            is_staff=True,
+        )
         image_bytes = io.BytesIO()
         Image.new('RGB', (10, 10), (80, 120, 160)).save(image_bytes, format='JPEG')
         session = self.client.session
@@ -201,7 +243,74 @@ class AccountActivationTests(TestCase):
             User.objects.get(username='hotel_manager_test').profile.telephone,
             '+2250701020304',
         )
+        notification = Notification.objects.get(
+            recipient=administrator,
+            notification_type='system',
+            title='Nouvelle inscription',
+        )
+        self.assertIn('Hôtel test', notification.message)
+        self.assertTrue(any('nouvelle inscription' in message.subject.lower() for message in mail.outbox))
         self.assertEqual(send_sms_mock.call_args.args[0], '+2250701020304')
+
+    @override_settings(
+        DEBUG=True,
+        EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    )
+    @mock.patch('accounts.views.send_sms', return_value=True)
+    def test_residence_signup_notifies_administrator(self, send_sms_mock):
+        administrator = User.objects.create_user(
+            username='residence_signup_admin',
+            email='residence-admin@example.com',
+            password='StrongPassword123!',
+            is_staff=True,
+        )
+        image_bytes = io.BytesIO()
+        Image.new('RGB', (10, 10), (80, 120, 160)).save(image_bytes, format='JPEG')
+        session = self.client.session
+        session['account_type'] = 'residence'
+        session.save()
+
+        with tempfile.TemporaryDirectory() as media_root, override_settings(MEDIA_ROOT=media_root):
+            response = self.client.post(
+                reverse('accounts:inscription_residence'),
+                {
+                    'first_name': 'Gestionnaire',
+                    'last_name': 'Residence',
+                    'email': 'residence.manager@example.com',
+                    'username': 'residence_manager_test',
+                    'telephone': '+2250701020305',
+                    'password1': 'StrongPassword123!',
+                    'password2': 'StrongPassword123!',
+                    'establishment_name': 'Résidence test',
+                    'siret_or_rccm': 'CI-RESIDENCE-TEST-1',
+                    'legal_phone': '+2250705060709',
+                    'establishment_address': 'Cocody',
+                    'establishment_city': 'Abidjan',
+                    'number_of_rooms': '5',
+                    'type_piece_identite': 'cni',
+                    'numero_piece_identite': 'CI-RESIDENCE-ID-1',
+                    'legal_document': SimpleUploadedFile(
+                        'legal.pdf',
+                        b'%PDF-1.4 test document',
+                        content_type='application/pdf',
+                    ),
+                    'establishment_photo': SimpleUploadedFile(
+                        'residence.jpg',
+                        image_bytes.getvalue(),
+                        content_type='image/jpeg',
+                    ),
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        notification = Notification.objects.get(
+            recipient=administrator,
+            notification_type='system',
+            title='Nouvelle inscription',
+        )
+        self.assertIn('Résidence test', notification.message)
+        self.assertTrue(any('nouvelle inscription' in message.subject.lower() for message in mail.outbox))
+        send_sms_mock.assert_called_once()
 
     def test_smtp_backend_is_used_when_smtp_env_is_configured(self):
         with mock.patch.dict(os.environ, {
@@ -303,6 +412,55 @@ class AccountActivationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'vérification')
 
+    def test_verified_professional_profile_does_not_claim_publication_is_allowed_before_establishment_review(self):
+        user = User.objects.create_user(
+            username='verified_residence_profile',
+            email='verified.residence.profile@example.com',
+            password='StrongPassword123!',
+        )
+        profile = user.profile
+        profile.account_type = 'residence'
+        profile.verified = True
+        profile.verification_status = 'verified'
+        profile.save(update_fields=['account_type', 'verified', 'verification_status'])
+        ProfessionalProfile.objects.create(
+            profile=profile,
+            establishment_type='residence',
+            establishment_name='Résidence test',
+            siret_or_rccm='CI-TEST-VERIFIED-RESIDENCE',
+            legal_representative='Responsable test',
+            legal_phone='+22501020304',
+            establishment_address='Adresse test',
+            establishment_city='Abidjan',
+            number_of_rooms=1,
+            legal_document='legal/test.pdf',
+            establishment_photo='facade/test.jpg',
+        )
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file='identity.jpg',
+                status='verified',
+            )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('accounts:profil'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Identité vérifiée — publication indisponible')
+        self.assertContains(response, 'Vos pièces d’établissement sont en attente')
+        self.assertContains(response, 'La vérification de l’identité ne valide pas automatiquement')
+        self.assertContains(response, reverse('accounts:verification_docs'))
+        self.assertNotContains(response, 'Vous pouvez publier des annonces sans restriction')
+
+        professional_profile = profile.professional_profile
+        professional_profile.is_verified = True
+        professional_profile.save(update_fields=['is_verified'])
+        response = self.client.get(reverse('accounts:profil'))
+
+        self.assertContains(response, 'Vous pouvez publier des annonces sans restriction')
+
     def test_residence_dashboard_renders_without_professional_profile(self):
         user = User.objects.create_user(
             username='residence_without_professional_profile',
@@ -317,6 +475,42 @@ class AccountActivationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Ma Résidence')
+
+    def test_professional_dashboards_show_verified_establishment_status(self):
+        for account_type, dashboard_url in (
+            ('hotel', 'accounts:dashboard_hotel'),
+            ('residence', 'accounts:dashboard_residence'),
+        ):
+            with self.subTest(account_type=account_type):
+                user = User.objects.create_user(
+                    username=f'{account_type}_verified_dashboard',
+                    email=f'{account_type}.verified.dashboard@example.com',
+                    password='StrongPassword123!',
+                )
+                profile = user.profile
+                profile.account_type = account_type
+                profile.save(update_fields=['account_type'])
+                ProfessionalProfile.objects.create(
+                    profile=profile,
+                    establishment_type=account_type,
+                    establishment_name=f'Établissement {account_type}',
+                    siret_or_rccm=f'CI-TEST-{account_type}',
+                    legal_representative='Responsable test',
+                    legal_phone='+22501020304',
+                    establishment_address='Adresse test',
+                    establishment_city='Abidjan',
+                    number_of_rooms=1,
+                    legal_document='legal/test.pdf',
+                    establishment_photo='facade/test.jpg',
+                    is_verified=True,
+                )
+                self.client.force_login(user)
+
+                response = self.client.get(reverse(dashboard_url))
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'Compte vérifié')
+                self.client.logout()
 
     def test_profile_page_for_other_user_shows_follow_button(self):
         owner = User.objects.create_user(

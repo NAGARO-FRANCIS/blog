@@ -336,6 +336,19 @@ class ProfessionalProfile(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+    @property
+    def eligible_for_automatic_verification(self):
+        profile = self.profile
+        return (
+            not self.is_verified
+            and profile.account_type in {'hotel', 'residence'}
+            and self.establishment_type == profile.account_type
+            and profile.verified
+            and profile.verification_status == 'verified'
+            and profile.has_verified_identity_documents
+            and bool(self.legal_document and self.establishment_photo)
+        )
+
     def __str__(self):
         return f"{self.establishment_name} ({self.get_establishment_type_display()})"
 
@@ -400,6 +413,7 @@ class VerificationLog(models.Model):
         ('document_uploaded', 'Document téléchargé'),
         ('document_verified', 'Document approuvé'),
         ('document_rejected', 'Document rejeté'),
+        ('profile_rejected', 'Inscription rejetée'),
         ('establishment_verified', 'Établissement vérifié'),
         ('profile_flagged', 'Profil signalé'),
         ('profile_verified', 'Profil vérifié'),
@@ -430,17 +444,6 @@ def create_user_profile(sender, instance, created, **kwargs):
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error creating profile for user {instance.id}: {str(e)}")
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    try:
-        if hasattr(instance, 'profile'):
-            instance.profile.save()
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error saving profile for user {instance.id}: {str(e)}")
 
 
 # ================================

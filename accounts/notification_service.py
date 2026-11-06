@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 
 from .models import Notification
@@ -60,6 +61,37 @@ def notify_user(user, notification_type, title, message, actor=None,
     if sms_message:
         _send_sms(user, sms_message)
     return notification
+
+
+def notify_admins_of_registration(user):
+    profile = user.profile
+    account_type = profile.get_account_type_display()
+    account_details = f'Type de compte : {account_type}.'
+    if profile.account_type == 'individu':
+        account_details += f' Rôle : {profile.get_role_display()}.'
+    elif profile.establishment_name:
+        account_details += f' Établissement : {profile.establishment_name}.'
+
+    message = (
+        f'Nouvelle inscription de {user.get_full_name() or user.username} '
+        f'(@{user.username}, {user.email or "courriel non renseigné"}). '
+        f'{account_details} Le compte attend la confirmation du téléphone et '
+        'la vérification des pièces avant toute publication.'
+    )
+    administrators = User.objects.filter(is_staff=True, is_active=True).exclude(pk=user.pk)
+    if not administrators.exists():
+        logger.warning('Inscription utilisateur sans administrateur actif à notifier: user_id=%s', user.pk)
+        return
+
+    for administrator in administrators:
+        notify_user(
+            administrator,
+            'system',
+            'Nouvelle inscription',
+            message,
+            actor=user,
+            email_subject='Nouvelle inscription sur Ivoire Connect',
+        )
 
 
 def reservation_created(reservation):

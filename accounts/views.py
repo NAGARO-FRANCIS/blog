@@ -25,7 +25,7 @@ from .forms import SignUpForm, ProfessionalSignUpForm, AccountTypeForm, ProfileE
 from django.contrib import messages
 import logging
 from django.http import HttpResponseRedirect
-from .notification_service import safe_send_mail
+from .notification_service import notify_admins_of_registration, safe_send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -194,6 +194,7 @@ def inscription_individu_form(request):
                 details=f"Inscription (Individu - {role_label}) complétée. Code SMS envoyé au {profile.telephone}",
                 ip_address=client_ip
             )
+            notify_admins_of_registration(user)
 
             # Conserver l'utilisateur en attente dans la session
             request.session['pending_user_id'] = user.pk
@@ -439,6 +440,7 @@ def inscription_residence(request):
                 details=f"Inscription (Résidence) complétée. Établissement: {form.cleaned_data['establishment_name']}",
                 ip_address=client_ip
             )
+            notify_admins_of_registration(user)
             
             # Supprimer le type de compte de la session
             if 'account_type' in request.session:
@@ -486,6 +488,7 @@ def inscription_hotel(request):
                 details=f"Inscription (Hôtel) complétée. Établissement: {form.cleaned_data['establishment_name']}",
                 ip_address=client_ip
             )
+            notify_admins_of_registration(user)
             
             # Supprimer le type de compte de la session
             if 'account_type' in request.session:
@@ -721,11 +724,7 @@ def dashboard_residence(request):
     if profile.account_type != 'residence':
         return redirect('accounts:dashboard')
     
-    # Récupérer le profil professionnel
-    try:
-        prof_profile = profile.professionalprofile
-    except:
-        prof_profile = None
+    prof_profile = profile._professional_profile()
     
     # Récupérer les statistiques
     try:
@@ -774,11 +773,7 @@ def dashboard_hotel(request):
     if profile.account_type != 'hotel':
         return redirect('accounts:dashboard')
     
-    # Récupérer le profil professionnel
-    try:
-        prof_profile = profile.professionalprofile
-    except:
-        prof_profile = None
+    prof_profile = profile._professional_profile()
     
     # Récupérer les statistiques
     try:
@@ -845,6 +840,7 @@ def profil(request):
 
     context = {
         'profile': profile,
+        'publication_block_reason': profile.publication_block_reason,
         'nb_annonces': nb_annonces,
         'nb_favoris': nb_favoris,
         'nb_messages': nb_messages,
@@ -890,6 +886,7 @@ def profil_user(request, user_id):
 
     context = {
         'profile': profile,
+        'publication_block_reason': profile.publication_block_reason,
         'nb_annonces': nb_annonces,
         'nb_favoris': nb_favoris,
         'nb_messages': nb_messages,

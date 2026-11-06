@@ -105,6 +105,23 @@ class AdminPanelDashboardTests(TestCase):
         )
         return avis, signalement
 
+    def create_verification_applicant(self):
+        user = User.objects.create_user(
+            username='verification_applicant',
+            email='applicant@example.com',
+            password='StrongPass123!',
+        )
+        profile = user.profile
+        profile.verification_status = 'pending'
+        profile.save(update_fields=['verification_status'])
+        DocumentVerification.objects.create(
+            profile=profile,
+            document_type='id_front',
+            document_file=SimpleUploadedFile('applicant-front.jpg', b'fake-image', content_type='image/jpeg'),
+            status='pending',
+        )
+        return profile
+
     def test_reviews_section_can_hide_and_restore_a_review(self):
         avis, _ = self.create_review_and_report()
         self.client.force_login(self.admin)
@@ -225,24 +242,25 @@ class AdminPanelDashboardTests(TestCase):
         self.assertIn('trois pièces d’identité ont été vérifiées', mail.outbox[0].body)
 
     def test_verification_queue_shows_upload_count_and_waits_for_all_three_files(self):
+        applicant = self.create_verification_applicant()
         self.client.force_login(self.admin)
 
         response = self.client.get(reverse('adminpanel:verifications'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '1/3 pièces reçues')
+        self.assertContains(response, '1/3 reçues')
         self.assertContains(response, 'Ouvrir le dossier')
-        self.assertNotContains(response, 'Approuver')
         self.assertEqual(len(response.context['items']), 1)
-        self.assertEqual(response.context['items'][0].pk, self.profile.pk)
+        self.assertEqual(response.context['items'][0].pk, applicant.pk)
 
     def test_staff_can_open_a_grouped_dossier_with_all_document_types(self):
+        applicant = self.create_verification_applicant()
         for document_type, filename in (
             ('id_back', 'back.jpg'),
             ('selfie', 'selfie.jpg'),
         ):
             DocumentVerification.objects.create(
-                profile=self.profile,
+                profile=applicant,
                 document_type=document_type,
                 document_file=SimpleUploadedFile(filename, b'fake-image', content_type='image/jpeg'),
                 status='pending',
@@ -251,16 +269,132 @@ class AdminPanelDashboardTests(TestCase):
 
         queue_response = self.client.get(reverse('adminpanel:verifications'))
         response = self.client.get(
-            reverse('adminpanel:verification_dossier', args=[self.profile.pk])
+            reverse('adminpanel:verification_dossier', args=[applicant.pk])
         )
 
         self.assertEqual(len(queue_response.context['items']), 1)
-        self.assertEqual(queue_response.context['items'][0].pk, self.profile.pk)
+        self.assertEqual(queue_response.context['items'][0].pk, applicant.pk)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Avant')
         self.assertContains(response, 'Arrière')
         self.assertContains(response, 'Selfie avec pièce')
         self.assertContains(response, 'Approuver cette pièce')
+        self.assertContains(response, 'Téléphone')
+        self.assertContains(response, 'Rejeter cette pièce')
+        self.assertContains(response, 'Marquer à revoir')
+
+    def test_staff_can_review_complete_professional_file_from_identity_dossier(self):
+        applicant = self.create_verification_applicant()
+        applicant.account_type = 'hotel'
+        applicant.role = 'proprietaire'
+        applicant.verified = True
+        applicant.verification_status = 'verified'
+        applicant.save(update_fields=['account_type', 'role', 'verified', 'verification_status'])
+        applicant.documents.all().delete()
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=applicant,
+                document_type=document_type,
+                document_file=f'identity/{document_type}.jpg',
+                status='verified',
+            )
+        professional_profile = ProfessionalProfile.objects.create(
+            profile=applicant,
+            establishment_type='hotel',
+            establishment_name='Hôtel Ivoire',
+            siret_or_rccm='CI-HOTEL-REVIEW',
+            legal_representative='Responsable Ivoire',
+            legal_phone='+2250700000000',
+            establishment_address='Rue des Jardins',
+            establishment_city='Abidjan',
+            establishment_postal_code='01 BP',
+            establishment_country='Côte d’Ivoire',
+            number_of_rooms=12,
+            number_of_floors=3,
+            website='https://hotel.example.com',
+            wifi=True,
+            parking=True,
+            legal_document='legal/review.pdf',
+            establishment_photo='photos/review.jpg',
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse('adminpanel:verification_dossier', args=[applicant.pk])
+        )
+        queue_response = self.client.get(reverse('adminpanel:verifications'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [profile.pk for profile in queue_response.context['items']],
+            [applicant.pk],
+        )
+        self.assertContains(response, 'RCCM / SIRET')
+        self.assertContains(response, 'Hôtel Ivoire')
+        self.assertContains(response, 'Responsable Ivoire')
+        self.assertContains(response, 'Approuver l’établissement')
+        self.assertContains(
+            response,
+            reverse('adminpanel:verification_establishment_document_file', args=[
+                applicant.pk,
+                'legal_document',
+            ]),
+        )
+        self.assertFalse(professional_profile.is_verified)
+
+        response = self.client.post(
+            reverse('adminpanel:approve_professional_profile', args=[applicant.pk])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('adminpanel:verification_dossier', args=[applicant.pk]),
+        )
+        professional_profile.refresh_from_db()
+        self.assertTrue(professional_profile.is_verified)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_staff_can_reject_a_pending_registration_from_its_dossier(self):
+        applicant = self.create_verification_applicant()
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('adminpanel:reject_profile', args=[applicant.pk]),
+            {'rejection_reason': 'Les justificatifs ne correspondent pas aux informations déclarées.'},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('adminpanel:verification_dossier', args=[applicant.pk]),
+        )
+        applicant.refresh_from_db()
+        applicant.user.refresh_from_db()
+        self.assertEqual(applicant.verification_status, 'rejected')
+        self.assertFalse(applicant.user.is_active)
+        self.assertTrue(
+            VerificationLog.objects.filter(
+                profile=applicant,
+                action='profile_rejected',
+                performed_by=self.admin,
+            ).exists()
+        )
+
+    def test_staff_can_flag_document_with_a_required_review_note(self):
+        document = DocumentVerification.objects.get(profile=self.profile)
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('adminpanel:flag_document', args=[document.pk]),
+            {'admin_notes': 'La photo est floue.'},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('adminpanel:verification_dossier', args=[self.profile.pk]),
+        )
+        document.refresh_from_db()
+        self.assertEqual(document.status, 'flagged')
+        self.assertEqual(document.admin_notes, 'La photo est floue.')
 
     def test_verification_document_file_is_available_only_to_staff(self):
         image_bytes = io.BytesIO()
@@ -333,25 +467,45 @@ class AdminPanelDashboardTests(TestCase):
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     def test_staff_can_review_and_approve_establishment_to_unlock_publication(self):
         professional_profile, establishment = self.create_verified_professional_establishment()
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.verified)
+        self.assertEqual(self.profile.verification_status, 'verified')
+        self.assertTrue(self.profile.has_verified_identity_documents)
         self.client.force_login(self.admin)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.verified)
 
-        list_response = self.client.get(reverse('adminpanel:hotels_residences'))
+        list_response = self.client.get(
+            reverse('adminpanel:hotels_residences'),
+            follow=True,
+        )
         self.assertEqual(list_response.status_code, 200)
-        self.assertContains(list_response, 'Vérifier l’établissement')
-        self.assertContains(list_response, 'Vérification en attente')
-        self.assertContains(list_response, 'Établissements à vérifier')
+        self.assertRedirects(
+            list_response,
+            reverse('adminpanel:verifications'),
+        )
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.verified)
 
         review_response = self.client.get(
-            reverse('adminpanel:establishment_review', args=[establishment.pk])
+            reverse('adminpanel:establishment_review', args=[establishment.pk]),
+            follow=True,
         )
         self.assertEqual(review_response.status_code, 200)
-        self.assertTrue(review_response.context['identity_review_complete'])
+        self.assertRedirects(
+            review_response,
+            reverse('adminpanel:verification_dossier', args=[self.profile.pk]),
+        )
+        self.assertTrue(review_response.context['verification_profile'].verified)
+        self.assertTrue(
+            review_response.context['verification_profile'].has_verified_identity_documents
+        )
         self.assertFalse(review_response.context['professional_profile'].is_verified)
         self.assertTrue(review_response.context['professional_profile'].legal_document)
         self.assertTrue(review_response.context['professional_profile'].establishment_photo)
         self.assertContains(review_response, 'CI-TEST-RESIDENCE')
-        self.assertContains(review_response, 'Télécharger et examiner le document')
-        self.assertContains(review_response, 'Approuver l’établissement et autoriser la publication')
+        self.assertContains(review_response, 'Ouvrir le document PDF')
+        self.assertContains(review_response, 'Approuver l’établissement')
         self.assertFalse(self.profile.can_publish)
 
         response = self.client.post(
@@ -361,7 +515,7 @@ class AdminPanelDashboardTests(TestCase):
 
         self.assertRedirects(
             response,
-            reverse('adminpanel:establishment_review', args=[establishment.pk]),
+            reverse('adminpanel:verification_dossier', args=[self.profile.pk]),
         )
         professional_profile.refresh_from_db()
         self.profile.refresh_from_db()
@@ -414,6 +568,105 @@ class AdminPanelDashboardTests(TestCase):
         self.assertContains(response, 'Vérifiez d’abord l’identité du gestionnaire')
         professional_profile.refresh_from_db()
         self.assertFalse(professional_profile.is_verified)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_staff_can_automatically_approve_all_complete_establishments_without_existing_listings(self):
+        eligible_user = User.objects.create_user(
+            username='eligible_hotel_owner',
+            email='eligible.hotel@example.com',
+            password='StrongPass123!',
+        )
+        eligible_profile = eligible_user.profile
+        eligible_profile.account_type = 'hotel'
+        eligible_profile.verified = True
+        eligible_profile.verification_status = 'verified'
+        eligible_profile.save(update_fields=['account_type', 'verified', 'verification_status'])
+        eligible_professional_profile = ProfessionalProfile.objects.create(
+            profile=eligible_profile,
+            establishment_type='hotel',
+            establishment_name='Hôtel éligible',
+            siret_or_rccm='CI-AUTO-ELIGIBLE',
+            legal_representative='Responsable test',
+            legal_phone='+22501020304',
+            establishment_address='Adresse test',
+            establishment_city='Abidjan',
+            number_of_rooms=3,
+            legal_document='legal/eligible.pdf',
+            establishment_photo='facade/eligible.jpg',
+        )
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=eligible_profile,
+                document_type=document_type,
+                document_file=f'identity/{document_type}.jpg',
+                status='verified',
+            )
+
+        incomplete_user = User.objects.create_user(
+            username='incomplete_hotel_owner',
+            email='incomplete.hotel@example.com',
+            password='StrongPass123!',
+        )
+        incomplete_profile = incomplete_user.profile
+        incomplete_profile.account_type = 'hotel'
+        incomplete_profile.verified = True
+        incomplete_profile.verification_status = 'verified'
+        incomplete_profile.save(update_fields=['account_type', 'verified', 'verification_status'])
+        incomplete_professional_profile = ProfessionalProfile.objects.create(
+            profile=incomplete_profile,
+            establishment_type='hotel',
+            establishment_name='Hôtel incomplet',
+            siret_or_rccm='CI-AUTO-INCOMPLETE',
+            legal_representative='Responsable test',
+            legal_phone='+22501020304',
+            establishment_address='Adresse test',
+            establishment_city='Abidjan',
+            number_of_rooms=2,
+            legal_document='legal/incomplete.pdf',
+            establishment_photo='facade/incomplete.jpg',
+        )
+        for document_type in ('id_front', 'id_back'):
+            DocumentVerification.objects.create(
+                profile=incomplete_profile,
+                document_type=document_type,
+                document_file=f'identity/{document_type}.jpg',
+                status='verified',
+            )
+
+        self.client.force_login(self.admin)
+        list_response = self.client.get(
+            reverse('adminpanel:hotels_residences'),
+            follow=True,
+        )
+        self.assertEqual(list_response.status_code, 200)
+        self.assertContains(list_response, 'Approuver automatiquement les 1 dossiers éligibles')
+
+        response = self.client.post(
+            reverse('adminpanel:approve_eligible_establishments'),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '1 établissement(s) éligible(s) approuvé(s)')
+        eligible_professional_profile.refresh_from_db()
+        incomplete_professional_profile.refresh_from_db()
+        self.assertTrue(eligible_professional_profile.is_verified)
+        self.assertTrue(eligible_professional_profile.verification_date)
+        self.assertFalse(incomplete_professional_profile.is_verified)
+        self.assertTrue(
+            VerificationLog.objects.filter(
+                profile=eligible_profile,
+                action='establishment_verified',
+                performed_by=self.admin,
+            ).exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                recipient=eligible_user,
+                title='Établissement vérifié',
+            ).exists()
+        )
+        self.assertTrue(eligible_profile.can_publish)
 
     def test_establishment_documents_are_restricted_to_staff(self):
         _, establishment = self.create_verified_professional_establishment()
@@ -505,7 +758,10 @@ class AdminPanelDashboardTests(TestCase):
             reverse('adminpanel:activate_user', args=[user.pk]),
         )
 
-        self.assertRedirects(response, reverse('adminpanel:users'))
+        self.assertRedirects(
+            response,
+            reverse('adminpanel:verification_dossier', args=[user.profile.pk]),
+        )
         user.refresh_from_db()
         user.profile.refresh_from_db()
         self.assertTrue(user.is_active)
@@ -542,6 +798,56 @@ class AdminPanelDashboardTests(TestCase):
             response,
             reverse('adminpanel:activate_user', args=[user.pk]),
         )
+
+    def test_users_control_panel_filters_flagged_identities(self):
+        flagged_user = User.objects.create_user(
+            username='flagged_user_in_control_panel',
+            first_name='Awa',
+            last_name='Kone',
+            password='StrongPass123!',
+        )
+        flagged_user.profile.verification_status = 'flagged'
+        flagged_user.profile.save(update_fields=['verification_status'])
+        other_user = User.objects.create_user(
+            username='verified_user_in_control_panel',
+            first_name='Mariam',
+            last_name='Traore',
+            password='StrongPass123!',
+        )
+        other_user.profile.verification_status = 'verified'
+        other_user.profile.save(update_fields=['verification_status'])
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('adminpanel:users'), {'status': 'flagged'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'flagged_user_in_control_panel')
+        self.assertNotContains(response, 'verified_user_in_control_panel')
+        self.assertContains(response, 'À revoir')
+        self.assertContains(response, 'Affichage de 1 à 1 sur 1 utilisateur(s)')
+
+    def test_section_navigation_highlights_the_open_section(self):
+        self.client.force_login(self.admin)
+        users_url = reverse('adminpanel:users')
+
+        for route_name in ('finance', 'verifications'):
+            with self.subTest(section=route_name):
+                response = self.client.get(reverse(f'adminpanel:{route_name}'))
+                current_url = reverse(f'adminpanel:{route_name}')
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(
+                    response,
+                    f'href="{current_url}" class="active" aria-current="page"',
+                )
+                self.assertNotContains(
+                    response,
+                    f'href="{users_url}" class="active" aria-current="page"',
+                )
+
+        response = self.client.get(reverse('adminpanel:hotels_residences'), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse('adminpanel:verifications'))
 
     def test_non_staff_cannot_activate_accounts(self):
         user = User.objects.create_user(

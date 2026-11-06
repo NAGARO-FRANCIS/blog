@@ -341,8 +341,17 @@
                         {% endif %}
                     </div>
                     {% if profile.verified %}
-                        <h3>{% translate "Profil vérifié" %}</h3>
-                        <p>{% translate "Félicitations ! Votre profil a été vérifié avec succès. Vous pouvez publier des annonces sans restriction et accéder à toutes les fonctionnalités." %}</p>
+                        {% if publication_block_reason %}
+                            <h3>{% translate "Identité vérifiée — publication indisponible" %}</h3>
+                            <p>{{ publication_block_reason }}
+                                {% if profile.account_type == 'hotel' or profile.account_type == 'residence' %}
+                                    {% translate "La vérification de l’identité ne valide pas automatiquement l’établissement." %}
+                                {% endif %}
+                            </p>
+                        {% else %}
+                            <h3>{% translate "Profil vérifié" %}</h3>
+                            <p>{% translate "Félicitations ! Votre profil a été vérifié avec succès. Vous pouvez publier des annonces sans restriction et accéder à toutes les fonctionnalités." %}</p>
+                        {% endif %}
                         <div class="ic-verif-details">
                             <div class="ic-verif-detail">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -353,6 +362,9 @@
                                 <div><span class="ic-verif-detail__label">{% translate "Vérifié par" %}</span><br>{% translate "Admin Ivoire Connect" %}</div>
                             </div>
                         </div>
+                        {% if publication_block_reason and request.user == viewed_user %}
+                            <a href="{% url 'accounts:verification_docs' %}" class="ic-btn-verif">{% translate "Voir l’état de mes vérifications" %}</a>
+                        {% endif %}
                     {% else %}
                         <h3>{% translate "Vérification en attente" %}</h3>
                         <p>{% translate "Votre profil est en cours de vérification par notre équipe. Vous serez notifié dès que ce sera fait." %}</p>

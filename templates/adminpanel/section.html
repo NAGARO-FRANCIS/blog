@@ -1,329 +1,202 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% blocktranslate with title=section_title %}{{ title }} - Administration{% endblocktranslate %}{% endblock %}
+{% block title %}{{ section_title }} - {% translate "Administration" %}{% endblock %}
 
 {% block content %}
 <div class="admin-shell">
-    <aside class="admin-sidebar">
-        <div class="brand">
-            <span class="brand-main">Ivoire</span> <span class="brand-accent">Connect</span>
-        </div>
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="{% translate 'Navigation de l’administration' %}">
+        <a class="brand" href="{% url 'adminpanel:dashboard' %}">Ivoire <span class="brand-accent">Connect</span></a>
 
         <nav class="admin-menu">
             <div class="menu-title">{% translate "Principal" %}</div>
-            <a href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
-            <a href="{% url 'adminpanel:users' %}">👥 {% translate "Utilisateurs" %}</a>
-            <a href="{% url 'adminpanel:logements' %}"{% if active_section == 'logements' %} class="active" aria-current="page"{% endif %}>🏠 {% translate "Logements" %}</a>
-            <a href="{% url 'adminpanel:colocations' %}"{% if active_section == 'colocations' %} class="active" aria-current="page"{% endif %}>🤝 {% translate "Colocations" %}</a>
+            <a href="{% url 'adminpanel:dashboard' %}"{% if active_section == 'dashboard' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">📊</span>{% translate "Dashboard" %}</a>
+            <a href="{% url 'adminpanel:users' %}"{% if active_section == 'users' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">👥</span>{% translate "Utilisateurs" %}</a>
+            <a href="{% url 'adminpanel:logements' %}"{% if active_section == 'logements' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">🏠</span>{% translate "Logements" %}</a>
+            <a href="{% url 'adminpanel:colocations' %}"{% if active_section == 'colocations' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">🤝</span>{% translate "Colocations" %}</a>
 
             <div class="menu-title">{% translate "Gestion" %}</div>
-            <a href="{% url 'adminpanel:hotels_residences' %}"{% if active_section == 'hotels_residences' %} class="active" aria-current="page"{% endif %}>🏨 {% translate "Hôtels & Résidences" %}</a>
-            <a href="{% url 'adminpanel:reservations' %}"{% if active_section == 'reservations' %} class="active" aria-current="page"{% endif %}>📅 {% translate "Réservations" %}</a>
-            <a href="{% url 'adminpanel:finance' %}"{% if active_section == 'finance' %} class="active" aria-current="page"{% endif %}>💰 Finance</a>
-            <a href="{% url 'adminpanel:verifications' %}"{% if active_section == 'verifications' or active_section == 'verification_dossier' %} class="active" aria-current="page"{% endif %}>🪪 {% translate "Vérifications" %}</a>
-            <a href="{% url 'adminpanel:avis' %}"{% if active_section == 'avis' %} class="active" aria-current="page"{% endif %}>⭐ {% translate "Avis" %}</a>
-            <a href="{% url 'adminpanel:signalements' %}"{% if active_section == 'signalements' %} class="active" aria-current="page"{% endif %}>🚨 {% translate "Signalements" %}</a>
+            <a href="{% url 'adminpanel:hotels_residences' %}"{% if active_section == 'hotels_residences' or active_section == 'establishment_review' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">🏨</span>{% translate "Hôtels & Résidences" %}</a>
+            <a href="{% url 'adminpanel:reservations' %}"{% if active_section == 'reservations' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">📅</span>{% translate "Réservations" %}</a>
+            <a href="{% url 'adminpanel:finance' %}"{% if active_section == 'finance' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">💰</span>{% translate "Finance" %}</a>
+            <a href="{% url 'adminpanel:verifications' %}"{% if active_section == 'verifications' or active_section == 'verification_dossier' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">🪪</span>{% translate "Vérifications" %}</a>
+            <a href="{% url 'adminpanel:avis' %}"{% if active_section == 'avis' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">⭐</span>{% translate "Avis" %}</a>
+            <a href="{% url 'adminpanel:signalements' %}"{% if active_section == 'signalements' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">🚨</span>{% translate "Signalements" %}</a>
 
             <div class="menu-title">{% translate "Système" %}</div>
-            <a href="{% url 'adminpanel:notifications' %}"{% if active_section == 'notifications' %} class="active" aria-current="page"{% endif %}>🔔 {% translate "Notifications" %}</a>
-            <a href="{% url 'adminpanel:statistiques' %}"{% if active_section == 'statistiques' %} class="active" aria-current="page"{% endif %}>📈 {% translate "Statistiques" %}</a>
-            <a href="{% url 'adminpanel:parametres' %}"{% if active_section == 'parametres' %} class="active" aria-current="page"{% endif %}>⚙️ {% translate "Paramètres" %}</a>
+            <a href="{% url 'adminpanel:notifications' %}"{% if active_section == 'notifications' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">🔔</span>{% translate "Notifications" %}</a>
+            <a href="{% url 'adminpanel:statistiques' %}"{% if active_section == 'statistiques' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">📈</span>{% translate "Statistiques" %}</a>
+            <a href="{% url 'adminpanel:parametres' %}"{% if active_section == 'parametres' %} class="active" aria-current="page"{% endif %}><span class="menu-icon" aria-hidden="true">⚙️</span>{% translate "Paramètres" %}</a>
+
+            <div class="menu-back">
+                <a href="{% url 'logement:home' %}"><span class="menu-icon" aria-hidden="true">↩</span>{% translate "Retour au site" %}</a>
+            </div>
         </nav>
     </aside>
 
+
     <main class="admin-main">
         <header class="admin-topbar">
-            <h1>{{ section_title }}</h1>
+            <div class="topbar-title">
+                <button type="button" class="menu-toggle" id="menu-toggle" aria-controls="admin-sidebar" aria-expanded="false" aria-label="{% translate 'Ouvrir le menu' %}">☰</button>
+                <h1>{{ section_title }}</h1>
+            </div>
             <div class="topbar-user">
                 <div>
                     <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
                     <small>{% translate "Administrateur" %}</small>
                 </div>
-                <div class="avatar">{{ request.user.username|slice:':1'|upper }}</div>
+                <div class="avatar" aria-hidden="true">{{ request.user.username|slice:':1'|upper }}</div>
             </div>
         </header>
 
         <div class="admin-content">
-            <div class="section-card">
-                <div class="section-header-row">
-                    <div>
-                        <h2>{{ section_title }}</h2>
-                        <p>{% translate "Vue d’exploitation en temps réel de la plateforme." %}</p>
-                    </div>
-                    <div class="action-row">
-                        {% if items %}
-                            <button type="button" class="secondary-btn" data-action="export" data-export-name="{{ active_section }}">{% translate "Exporter les éléments affichés" %}</button>
-                        {% endif %}
-                    </div>
-                    {% if active_section == 'verifications' %}
-                        <p class="verification-review-rule">
-                            {% translate "Règle de contrôle : les trois pièces (recto, verso et selfie) doivent être téléversées avant qu’un administrateur puisse commencer à les approuver. Le profil ne sera vérifié qu’après l’approbation des trois pièces." %}
-                        </p>
-                    {% endif %}
+            {% if active_section == 'verifications' %}
+                <div class="stats-grid">
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "Dossiers à examiner" %}</div><div class="stat-value">{{ profils_en_attente }}</div></div><div class="stat-icon" aria-hidden="true">👥</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "Pièces en attente ou à revoir" %}</div><div class="stat-value">{{ documents_en_attente }}</div></div><div class="stat-icon" aria-hidden="true">🪪</div></div>
                 </div>
-            </div>
-
-            <div class="stats-grid">
-                {% if total_users != None %}<div class="stat-box"><span>{% translate "Utilisateurs" %}</span><strong>{{ total_users }}</strong></div>{% endif %}
-                {% if total_logements != None %}<div class="stat-box"><span>{% translate "Logements" %}</span><strong>{{ total_logements }}</strong></div>{% endif %}
-                {% if total_colocations != None %}<div class="stat-box"><span>{% translate "Colocations" %}</span><strong>{{ total_colocations }}</strong></div>{% endif %}
-                {% if total_etablissements != None %}<div class="stat-box"><span>{% translate "Hôtels & résidences" %}</span><strong>{{ total_etablissements }}</strong></div>{% endif %}
-                {% if total_reservations != None %}<div class="stat-box"><span>{% translate "Réservations" %}</span><strong>{{ total_reservations }}</strong></div>{% endif %}
-                {% if reservations_en_attente != None %}<div class="stat-box"><span>{% translate "Réservations en attente" %}</span><strong>{{ reservations_en_attente }}</strong></div>{% endif %}
-                {% if documents_en_attente != None %}<div class="stat-box"><span>{% translate "Vérifications" %}</span><strong>{{ documents_en_attente }}</strong></div>{% endif %}
-                {% if profils_en_attente != None %}<div class="stat-box"><span>{% translate "Profils en attente" %}</span><strong>{{ profils_en_attente }}</strong></div>{% endif %}
-                {% if etablissements_en_attente != None %}<div class="stat-box"><span>{% translate "Établissements à vérifier" %}</span><strong>{{ etablissements_en_attente }}</strong></div>{% endif %}
-                {% if paiements_total != None %}<div class="stat-box"><span>{% translate "Paiements" %}</span><strong>{{ paiements_total }}</strong></div>{% endif %}
-                {% if paiements_en_attente != None %}<div class="stat-box"><span>{% translate "Paiements en attente" %}</span><strong>{{ paiements_en_attente }}</strong></div>{% endif %}
-                {% if revenus_total != None %}<div class="stat-box"><span>{% translate "Revenus" %}</span><strong>{{ revenus_total|floatformat:0 }} FCFA</strong></div>{% endif %}
-                {% if notifications_total != None %}<div class="stat-box"><span>{% translate "Notifications" %}</span><strong>{{ notifications_total }}</strong></div>{% endif %}
-                {% if avis_total != None %}<div class="stat-box"><span>{% translate "Avis" %}</span><strong>{{ avis_total }}</strong></div>{% endif %}
-                {% if avis_masques != None %}<div class="stat-box"><span>{% translate "Avis masqués" %}</span><strong>{{ avis_masques }}</strong></div>{% endif %}
-                {% if signalements_total != None %}<div class="stat-box"><span>{% translate "Signalements" %}</span><strong>{{ signalements_total }}</strong></div>{% endif %}
-                {% if signalements_a_traiter != None %}<div class="stat-box"><span>{% translate "À traiter" %}</span><strong>{{ signalements_a_traiter }}</strong></div>{% endif %}
-                {% if system_status %}<div class="stat-box"><span>{% translate "Système" %}</span><strong>{{ system_status }}</strong></div>{% endif %}
-            </div>
-
-            {% if active_section == 'establishment_review' %}
-                <section class="panel" style="padding:24px;margin-bottom:22px;">
-                    <a href="{% url 'adminpanel:hotels_residences' %}" class="secondary-btn">← {% translate "Retour aux établissements" %}</a>
-                    <h2 style="margin-top:20px;">{{ establishment.nom }}</h2>
-                    <p>{{ establishment.type_etablissement|title }} · {{ establishment.ville }}{% if establishment.quartier %} · {{ establishment.quartier }}{% endif %}</p>
-                    <p>
-                        {% translate "Gestionnaire" %} :
-                        {{ establishment.proprietaire.get_full_name|default:establishment.proprietaire.username }}
-                        {% if establishment.proprietaire.email %} · {{ establishment.proprietaire.email }}{% endif %}
-                    </p>
-                    {% if professional_profile %}
-                        <p>
-                            {% translate "Statut de l’établissement" %} :
-                            <span class="badge {% if professional_profile.is_verified %}ok{% else %}warning{% endif %}">
-                                {% if professional_profile.is_verified %}{% translate "Vérifié" %}{% else %}{% translate "En attente" %}{% endif %}
-                            </span>
-                        </p>
-                        <dl>
-                            <dt>{% translate "Nom officiel" %}</dt><dd>{{ professional_profile.establishment_name }}</dd>
-                            <dt>{% translate "RCCM / SIRET" %}</dt><dd>{{ professional_profile.siret_or_rccm }}</dd>
-                            <dt>{% translate "Représentant légal" %}</dt><dd>{{ professional_profile.legal_representative }}</dd>
-                            <dt>{% translate "Téléphone légal" %}</dt><dd>{{ professional_profile.legal_phone }}</dd>
-                            <dt>{% translate "Adresse" %}</dt><dd>{{ professional_profile.establishment_address }}, {{ professional_profile.establishment_city }}</dd>
-                            <dt>{% translate "Nombre de chambres" %}</dt><dd>{{ professional_profile.number_of_rooms }}</dd>
-                        </dl>
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:20px;">
-                            <article class="panel" style="padding:18px;">
-                                <h3>{% translate "Document légal" %}</h3>
-                                {% if professional_profile.legal_document %}
-                                    <a class="row-action-btn" href="{% url 'adminpanel:establishment_document_file' establishment.pk 'legal_document' %}">{% translate "Télécharger et examiner le document" %}</a>
-                                {% else %}
-                                    <p class="badge warning">{% translate "Document manquant" %}</p>
-                                {% endif %}
-                            </article>
-                            <article class="panel" style="padding:18px;">
-                                <h3>{% translate "Photo de l’établissement" %}</h3>
-                                {% if professional_profile.establishment_photo %}
-                                    <a href="{% url 'adminpanel:establishment_document_file' establishment.pk 'establishment_photo' %}" target="_blank" rel="noopener">
-                                        <img
-                                            src="{% url 'adminpanel:establishment_document_file' establishment.pk 'establishment_photo' %}"
-                                            alt="{% translate 'Photo de l’établissement' %}"
-                                            style="display:block;width:100%;max-height:360px;object-fit:contain;background:#f9fafb;border:1px solid #eaecf0;border-radius:8px;margin:12px 0;"
-                                        >
-                                        {% translate "Ouvrir la photo dans un nouvel onglet" %}
-                                    </a>
-                                {% else %}
-                                    <p class="badge warning">{% translate "Photo manquante" %}</p>
-                                {% endif %}
-                            </article>
-                        </div>
-                        {% if professional_profile.is_verified %}
-                            <p class="badge ok" style="margin-top:20px;">{% translate "Cet établissement est déjà vérifié." %}</p>
-                        {% elif not identity_review_complete %}
-                            <p class="badge warning" style="margin-top:20px;">{% translate "L’identité du gestionnaire et ses trois pièces doivent être approuvées avant l’établissement." %}</p>
-                        {% elif not professional_profile.legal_document or not professional_profile.establishment_photo %}
-                            <p class="badge warning" style="margin-top:20px;">{% translate "Les deux documents de l’établissement sont requis avant son approbation." %}</p>
-                        {% else %}
-                            <form method="post" action="{% url 'adminpanel:approve_establishment' establishment.pk %}" style="margin-top:20px;">
-                                {% csrf_token %}
-                                <button type="submit" class="primary-btn">{% translate "Approuver l’établissement et autoriser la publication" %}</button>
-                            </form>
-                        {% endif %}
-                    {% else %}
-                        <p class="badge warning" style="margin-top:20px;">{% translate "Aucun dossier professionnel n’est associé à ce compte." %}</p>
-                    {% endif %}
-                </section>
-            {% elif active_section == 'verification_dossier' %}
-                <section class="panel" style="padding:24px;margin-bottom:22px;">
-                    <a href="{% url 'adminpanel:verifications' %}" class="secondary-btn">← {% translate "Retour aux dossiers" %}</a>
-                    <h2 style="margin-top:20px;">{{ verification_profile.get_full_name|default:verification_profile.user.username }}</h2>
-                    <p>{{ verification_profile.user.email }}{% if verification_profile.telephone %} · {{ verification_profile.telephone }}{% endif %}</p>
-                    <p>
-                        {% translate "Statut du profil" %} :
-                        <span class="badge {% if verification_profile.verification_status == 'verified' %}ok{% elif verification_profile.verification_status == 'pending' %}warning{% else %}danger{% endif %}">
-                            {{ verification_profile.get_verification_status_display }}
-                        </span>
-                    </p>
-                    {% if not verification_profile.has_required_identity_documents %}
-                        <p class="badge warning" style="margin-top:12px;">{% translate "L’approbation est bloquée jusqu’au dépôt des trois pièces." %}</p>
-                    {% endif %}
-                </section>
-
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
-                    {% for entry in dossier_documents %}
-                        <article class="panel" style="padding:18px;">
-                            <h3>{% if entry.document %}{{ entry.document.get_document_type_display }}{% else %}{{ entry.label }}{% endif %}</h3>
-                            {% if entry.document %}
-                                <p>
-                                    {% translate "Statut" %} :
-                                    <span class="badge {% if entry.document.status == 'verified' %}ok{% elif entry.document.status == 'pending' or entry.document.status == 'flagged' %}warning{% else %}danger{% endif %}">
-                                        {{ entry.document.get_status_display }}
-                                    </span>
-                                </p>
-                                <a href="{% url 'adminpanel:verification_document_file' entry.document.pk %}" target="_blank" rel="noopener">
-                                    <img
-                                        src="{% url 'adminpanel:verification_document_file' entry.document.pk %}"
-                                        alt="{{ entry.document.get_document_type_display }}"
-                                        style="display:block;width:100%;max-height:360px;object-fit:contain;background:#f9fafb;border:1px solid #eaecf0;border-radius:8px;margin:12px 0;"
-                                    >
-                                    {% translate "Ouvrir le document dans un nouvel onglet" %}
-                                </a>
-                                {% if entry.document.rejection_reason %}
-                                    <p class="badge danger">{{ entry.document.rejection_reason }}</p>
-                                {% endif %}
-                                {% if entry.document.status == 'pending' or entry.document.status == 'flagged' %}
-                                    {% if verification_profile.has_required_identity_documents %}
-                                        <div class="row-action-group" style="margin-top:14px;">
-                                            <form method="post" action="{% url 'adminpanel:approve_document' entry.document.pk %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="row-action-btn">{% translate "Approuver cette pièce" %}</button>
-                                            </form>
-                                            <form method="post" action="{% url 'adminpanel:reject_document' entry.document.pk %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="row-action-btn row-action-btn--danger">{% translate "Rejeter" %}</button>
-                                            </form>
-                                        </div>
-                                    {% else %}
-                                        <p class="row-action-done">{% translate "En attente des trois pièces avant examen." %}</p>
-                                    {% endif %}
-                                {% endif %}
-                            {% else %}
-                                <p class="badge warning">{% translate "Pièce non encore téléversée" %}</p>
-                            {% endif %}
-                        </article>
-                    {% endfor %}
-                </div>
-            {% elif items %}
-                <div class="table-panel">
+                <div class="rule-note">{% translate "Ouvrez chaque dossier pour examiner les informations du compte, les pièces d’identité et, pour les hôtels et résidences, les documents de l’établissement. L’activation du compte et la validation de l’identité sont deux décisions distinctes." %}</div>
+                {% if etablissements_eligibles %}
+                    <form method="post" action="{% url 'adminpanel:approve_eligible_establishments' %}" class="form-spaced">
+                        {% csrf_token %}
+                        <button class="btn btn-secondary" type="submit">{% blocktranslate with count=etablissements_eligibles %}Approuver automatiquement les {{ count }} dossiers éligibles{% endblocktranslate %}</button>
+                        <p class="muted">{% translate "Cette action concerne uniquement les établissements dont l’identité et les trois pièces sont déjà approuvées et dont les deux fichiers requis sont présents." %}</p>
+                    </form>
+                {% endif %}
+                <div class="table-panel panel--spaced">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>{% translate "Élément" %}</th>
-                                <th>{% translate "Détails" %}</th>
-                                <th>{% translate "Statut" %}</th>
-                                {% if active_section == 'verifications' or active_section == 'hotels_residences' or active_section == 'avis' or active_section == 'signalements' %}<th data-no-export>{% translate "Action" %}</th>{% endif %}
-                            </tr>
-                        </thead>
+                        <caption class="sr-only">{% translate "Dossiers à vérifier" %}</caption>
+                        <thead><tr><th>{% translate "Demandeur" %}</th><th>{% translate "Compte" %}</th><th>{% translate "Statut du compte" %}</th><th>{% translate "Pièces d’identité" %}</th><th>{% translate "Établissement" %}</th><th>{% translate "Action" %}</th></tr></thead>
                         <tbody>
-                            {% for item in items %}
+                            {% for profile in items %}
                                 <tr>
-                                    {% if active_section == 'logements' %}
-                                        <td>{{ item.titre }}</td>
-                                        <td>{{ item.ville }} • {{ item.proprietaire.get_full_name|default:item.proprietaire.username }}</td>
-                                        <td><span class="badge {% if item.disponible %}ok{% else %}warning{% endif %}">{% if item.disponible %}Disponible{% else %}Indisponible{% endif %}</span></td>
-                                    {% elif active_section == 'colocations' %}
-                                        <td>{{ item.titre }}</td>
-                                        <td>{{ item.ville }} • {{ item.proprietaire.get_full_name|default:item.proprietaire.username }}</td>
-                                        <td><span class="badge ok">{% translate "Actif" %}</span></td>
-                                    {% elif active_section == 'hotels_residences' %}
-                                        <td>{{ item.nom }}</td>
-                                        <td>{{ item.type_etablissement|title }} • {{ item.ville }} • {{ item.proprietaire.get_full_name|default:item.proprietaire.username }}</td>
-                                        <td>
-                                            {% if item.professional_profile and item.professional_profile.is_verified %}
-                                                <span class="badge ok">{% translate "Établissement vérifié" %}</span>
-                                            {% else %}
-                                                <span class="badge warning">{% translate "Vérification en attente" %}</span>
-                                            {% endif %}
-                                        </td>
-                                    {% elif active_section == 'reservations' %}
-                                        <td>{{ item.logement.titre }}</td>
-                                        <td>{{ item.client_nom }} • {{ item.montant_final|floatformat:0 }} FCFA</td>
-                                        <td><span class="badge {% if item.statut == 'confirmed' or item.statut == 'completed' %}ok{% elif item.statut == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_statut_display }}</span></td>
-                                    {% elif active_section == 'finance' %}
-                                        <td>{{ item.reservation.logement.titre }}</td>
-                                        <td>{{ item.montant|floatformat:0 }} FCFA • {{ item.get_methode_display }}</td>
-                                        <td><span class="badge {% if item.statut == 'completed' %}ok{% elif item.statut == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_statut_display }}</span></td>
-                                    {% elif active_section == 'verifications' %}
-                                        <td>{{ item.get_full_name|default:item.user.username }}</td>
-                                        <td>
-                                            {{ item.uploaded_required_identity_document_count }}/3 {% translate "pièces reçues" %}
-                                            • {{ item.verified_required_identity_document_count }}/3 {% translate "approuvées" %}
-                                        </td>
-                                        <td><span class="badge {% if item.verification_status == 'verified' %}ok{% elif item.verification_status == 'pending' %}warning{% else %}danger{% endif %}">{{ item.get_verification_status_display }}</span></td>
-                                    {% elif active_section == 'notifications' %}
-                                        <td>{{ item.title }}</td>
-                                        <td>{{ item.message }}</td>
-                                        <td><span class="badge {% if item.is_read %}ok{% else %}warning{% endif %}">{% if item.is_read %}Lue{% else %}Nouvelle{% endif %}</span></td>
-                                    {% elif active_section == 'avis' %}
-                                        <td>{{ item.logement.titre }}</td>
-                                        <td>{{ item.auteur.get_full_name|default:item.auteur.username }} · {{ item.note_logement|default:"—" }}/5 · {{ item.commentaire|truncatechars:120 }}</td>
-                                        <td><span class="badge {% if item.est_visible %}ok{% else %}warning{% endif %}">{% if item.est_visible %}Visible{% else %}Masqué{% endif %}</span></td>
-                                    {% elif active_section == 'signalements' %}
-                                        <td>{{ item.avis.logement.titre }}</td>
-                                        <td>{{ item.auteur.get_full_name|default:item.auteur.username }} · {{ item.motif|truncatechars:120 }}</td>
-                                        <td><span class="badge {% if item.traite %}ok{% else %}warning{% endif %}">{% if item.traite %}Traité{% else %}À traiter{% endif %}</span></td>
-                                    {% else %}
-                                        <td>{{ item }}</td>
-                                        <td>{% translate "À traiter" %}</td>
-                                        <td><span class="badge warning">{% translate "À vérifier" %}</span></td>
-                                    {% endif %}
-                                    {% if active_section == 'verifications' or active_section == 'hotels_residences' or active_section == 'avis' or active_section == 'signalements' %}
-                                        <td data-no-export>
-                                            {% if active_section == 'verifications' %}
-                                                <a class="row-action-btn" href="{% url 'adminpanel:verification_dossier' item.pk %}">{% translate "Ouvrir le dossier" %}</a>
-                                            {% elif active_section == 'hotels_residences' %}
-                                                <a class="row-action-btn" href="{% url 'adminpanel:establishment_review' item.pk %}">{% translate "Vérifier l’établissement" %}</a>
-                                            {% elif active_section == 'avis' %}
-                                                <form method="post" action="{% url 'adminpanel:toggle_avis_visibility' item.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="row-action-btn">{% if item.est_visible %}Masquer{% else %}Rendre visible{% endif %}</button>
-                                                </form>
-                                            {% else %}
-                                                <form method="post" action="{% url 'adminpanel:traiter_signalement' item.id %}">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="row-action-btn"{% if item.traite %} disabled{% endif %}>{% if item.traite %}Déjà traité{% else %}Marquer traité{% endif %}</button>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-                                    {% endif %}
+                                    <td><strong>{{ profile.get_full_name|default:profile.user.username }}</strong><br><small>{{ profile.user.email|default:"—" }} · {{ profile.telephone|default:"—" }}</small></td>
+                                    <td>{{ profile.get_account_type_display }}{% if profile.account_type == 'individu' %}<br><small>{{ profile.get_role_display }}</small>{% endif %}</td>
+                                    <td>{% if profile.user.is_active %}{% translate "Actif" %}{% else %}{% translate "Inactif" %}{% endif %}<br><small>{{ profile.get_verification_status_display }}</small></td>
+                                    <td>{{ profile.uploaded_required_identity_document_count }}/3 {% translate "reçues" %} · {{ profile.verified_required_identity_document_count }}/3 {% translate "approuvées" %}</td>
+                                    <td>{% if profile.professional_profile %}{{ profile.professional_profile.establishment_name }}{% if profile.professional_profile.is_verified %} · {% translate "Vérifié" %}{% else %} · {% translate "À vérifier" %}{% endif %}{% else %}—{% endif %}</td>
+                                    <td><a class="btn btn-primary btn-sm" href="{% url 'adminpanel:verification_dossier' profile_id=profile.pk %}">{% translate "Ouvrir le dossier" %}</a></td>
                                 </tr>
+                            {% empty %}
+                                <tr><td colspan="6" class="empty-state">{% translate "Aucun dossier en attente de vérification." %}</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                {% if active_section == 'verifications' and page_obj %}
-                    {% include "components/pagination.html" with page_obj=page_obj %}
+                {% if page_obj.paginator.num_pages > 1 %}
+                    <nav class="pagination" aria-label="{% translate 'Pagination' %}">
+                        {% if page_obj.has_previous %}<a class="page-link" href="?page={{ page_obj.previous_page_number }}">← {% translate "Précédent" %}</a>{% endif %}
+                        <span>{% blocktranslate with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} / {{ total }}{% endblocktranslate %}</span>
+                        {% if page_obj.has_next %}<a class="page-link" href="?page={{ page_obj.next_page_number }}">{% translate "Suivant" %} →</a>{% endif %}
+                    </nav>
                 {% endif %}
-            {% else %}
-                <div class="empty-panel">
-                    <h3>{% translate "Aucune donnée disponible pour cette vue." %}</h3>
-                    <p>{% translate "Les éléments arriveront dès qu’il y aura une activité sur la plateforme." %}</p>
-                </div>
-            {% endif %}
-
-            {% if recent_notifications %}
-                <div class="panel" style="margin-top: 22px;">
-                    <div class="panel-header">
-                        <h2>🔔 {% translate "Notifications récentes" %}</h2>
-                    </div>
-                    {% for notification in recent_notifications %}
-                        <div class="notification-row">
-                            <div>
-                                <strong>{{ notification.title }}</strong>
-                                <p>{{ notification.message }}</p>
-                            </div>
-                            <span class="badge {% if notification.is_read %}ok{% else %}warning{% endif %}">{{ notification.is_read|yesno:"Lue,Nouvelle" }}</span>
+            {% elif active_section == 'verification_dossier' %}
+                {% with profile=verification_profile %}
+                    <a class="btn btn-secondary" href="{% url 'adminpanel:verifications' %}">← {% translate "Retour aux dossiers" %}</a>
+                    <section class="panel panel--spaced panel--padded">
+                        <div class="section-header-row">
+                            <div><h2>{{ profile.get_full_name|default:profile.user.username }}</h2><p>@{{ profile.user.username }} · {{ profile.user.date_joined|date:"d/m/Y H:i" }}</p></div>
+                            <span class="badge {% if profile.verification_status == 'verified' %}ok{% elif profile.verification_status == 'rejected' %}danger{% else %}warning{% endif %}">{{ profile.get_verification_status_display }}</span>
                         </div>
-                    {% endfor %}
-                </div>
+                        <dl class="detail-list">
+                            <dt>{% translate "Nom" %}</dt><dd>{{ profile.user.first_name|default:"—" }}</dd>
+                            <dt>{% translate "Prénoms" %}</dt><dd>{{ profile.user.last_name|default:"—" }}</dd>
+                            <dt>{% translate "Adresse courriel" %}</dt><dd>{{ profile.user.email|default:"—" }} · {% if profile.email_verified %}{% translate "confirmée" %}{% else %}{% translate "non confirmée" %}{% endif %}</dd>
+                            <dt>{% translate "Téléphone" %}</dt><dd>{{ profile.telephone|default:"—" }} · {% if profile.phone_verified %}{% translate "confirmé" %}{% else %}{% translate "non confirmé" %}{% endif %}</dd>
+                            <dt>{% translate "Type de compte / rôle" %}</dt><dd>{{ profile.get_account_type_display }} · {{ profile.get_role_display }}</dd>
+                            <dt>{% translate "Ville / quartier" %}</dt><dd>{{ profile.ville|default:"—" }} / {{ profile.quartier|default:"—" }}</dd>
+                            <dt>{% translate "Date de naissance / sexe" %}</dt><dd>{{ profile.date_naissance|default:"—" }} / {{ profile.get_sexe_display|default:"—" }}</dd>
+                            <dt>{% translate "Profession" %}</dt><dd>{{ profile.profession|default:"—" }}</dd>
+                            <dt>{% translate "Pièce d’identité déclarée" %}</dt><dd>{{ profile.get_type_piece_identite_display|default:"—" }} · {{ profile.numero_piece_identite|default:"—" }}</dd>
+                            <dt>{% translate "Compte utilisateur" %}</dt><dd>{% if profile.user.is_active %}{% translate "Actif" %}{% else %}{% translate "Inactif" %}{% endif %}</dd>
+                        </dl>
+                        {% if profile.photo_profil %}<img class="doc-preview" src="{{ profile.photo_profil.url }}" alt="{% translate 'Photo de profil du demandeur' %}">{% endif %}
+                        {% if not profile.user.is_active %}
+                            <form method="post" action="{% url 'adminpanel:activate_user' user_id=profile.user_id %}" class="form-spaced">
+                                {% csrf_token %}<button class="btn btn-primary" type="submit">{% translate "Activer le compte" %}</button>
+                                <p class="muted">{% translate "Cette action n’approuve ni l’identité ni les annonces." %}</p>
+                            </form>
+                        {% endif %}
+                        {% if profile.verification_status == 'pending' or profile.verification_status == 'flagged' or professional_profile and not professional_profile.is_verified %}
+                            <form method="post" action="{% url 'adminpanel:reject_profile' profile_id=profile.pk %}" class="form-spaced">
+                                {% csrf_token %}
+                                <label>{% translate "Motif du refus de l’inscription" %}<textarea name="rejection_reason" rows="2" required></textarea></label>
+                                <button class="btn btn-danger" type="submit">{% translate "Refuser l’inscription et désactiver le compte" %}</button>
+                            </form>
+                        {% endif %}
+                    </section>
+
+                    {% if professional_profile %}
+                        <section class="panel panel--spaced panel--padded">
+                            <h2>{% translate "Informations de l’établissement" %} — {{ professional_profile.establishment_name }}</h2>
+                            <dl class="detail-list">
+                                <dt>{% translate "Type / nom" %}</dt><dd>{{ professional_profile.get_establishment_type_display }} · {{ professional_profile.establishment_name }}</dd>
+                                <dt>{% translate "RCCM / SIRET" %}</dt><dd>{{ professional_profile.siret_or_rccm }}</dd>
+                                <dt>{% translate "Représentant légal" %}</dt><dd>{{ professional_profile.legal_representative }}</dd>
+                                <dt>{% translate "Téléphone légal" %}</dt><dd>{{ professional_profile.legal_phone }}</dd>
+                                <dt>{% translate "Adresse" %}</dt><dd>{{ professional_profile.establishment_address }}, {{ professional_profile.establishment_city }} {{ professional_profile.establishment_postal_code }} {{ professional_profile.establishment_country }}</dd>
+                                <dt>{% translate "Chambres / étages" %}</dt><dd>{{ professional_profile.number_of_rooms }} / {{ professional_profile.number_of_floors|default:"—" }}</dd>
+                                <dt>{% translate "Site web" %}</dt><dd>{% if professional_profile.website %}<a href="{{ professional_profile.website }}" rel="noopener noreferrer" target="_blank">{{ professional_profile.website }}</a>{% else %}—{% endif %}</dd>
+                                <dt>{% translate "Équipements" %}</dt><dd>{% if professional_profile.wifi %}{% translate "Wi-Fi" %} · {% endif %}{% if professional_profile.parking %}{% translate "Parking" %} · {% endif %}{% if professional_profile.restaurant %}{% translate "Restaurant" %} · {% endif %}{% if professional_profile.reception_24h %}{% translate "Réception 24h" %} · {% endif %}{% if professional_profile.air_conditioning %}{% translate "Climatisation" %} · {% endif %}{% if professional_profile.laundry_service %}{% translate "Blanchisserie" %} · {% endif %}{% if professional_profile.gym %}{% translate "Salle de sport" %} · {% endif %}{% if professional_profile.conference_room %}{% translate "Salle de conférence" %}{% endif %}</dd>
+                                <dt>{% translate "Établissement" %}</dt><dd>{% if professional_profile.is_verified %}{% translate "Vérifié" %}{% else %}{% translate "En attente" %}{% endif %}</dd>
+                            </dl>
+                            <div class="doc-grid">
+                                <article class="doc-card"><h3>{% translate "Document légal" %}</h3>{% if professional_profile.legal_document %}<a class="doc-link" href="{% url 'adminpanel:verification_establishment_document_file' profile_id=profile.pk document_kind='legal_document' %}">{% translate "Ouvrir le document PDF" %}</a>{% else %}<p class="muted">{% translate "Document absent" %}</p>{% endif %}</article>
+                                <article class="doc-card"><h3>{% translate "Photo de l’établissement" %}</h3>{% if professional_profile.establishment_photo %}<img class="doc-preview" src="{% url 'adminpanel:verification_establishment_document_file' profile_id=profile.pk document_kind='establishment_photo' %}" alt="{% translate 'Photo de l’établissement' %}">{% else %}<p class="muted">{% translate "Photo absente" %}</p>{% endif %}</article>
+                            </div>
+                            {% if not professional_profile.is_verified %}
+                                {% if profile.has_verified_identity_documents and professional_profile.legal_document and professional_profile.establishment_photo %}
+                                    <form method="post" action="{% url 'adminpanel:approve_professional_profile' profile_id=profile.pk %}" class="form-spaced">
+                                        {% csrf_token %}<button class="btn btn-primary" type="submit">{% translate "Approuver l’établissement" %}</button>
+                                    </form>
+                                {% else %}
+                                    <p class="notice notice--warning">{% translate "L’établissement sera approuvable après validation des trois pièces d’identité et présence des deux documents de l’établissement." %}</p>
+                                {% endif %}
+                            {% endif %}
+                        </section>
+                    {% endif %}
+
+                    <h2 class="section-title">{% translate "Pièces d’identité à vérifier" %}</h2>
+                    <div class="doc-grid">
+                        {% for item in dossier_documents %}
+                            <article class="doc-card">
+                                <h3>{{ item.label }}</h3>
+                                {% if item.document %}
+                                    <p class="muted">{% translate "État" %} : {{ item.document.get_status_display }} · {% translate "Reçu le" %} {{ item.document.uploaded_at|date:"d/m/Y H:i" }}</p>
+                                    {% if item.document.status == 'rejected' %}<p class="notice notice--danger">{{ item.document.rejection_reason }}</p>{% endif %}
+                                    {% if item.document.admin_notes %}<p class="notice notice--warning">{{ item.document.admin_notes }}</p>{% endif %}
+                                    <img class="doc-preview" src="{% url 'adminpanel:verification_document_file' document_id=item.document.pk %}" alt="{{ item.label }}">
+                                    {% if item.document.status == 'pending' or item.document.status == 'flagged' %}
+                                        <form method="post" action="{% url 'adminpanel:approve_document' document_id=item.document.pk %}" class="form-spaced">
+                                            {% csrf_token %}<label>{% translate "Note d’examen (facultative)" %}<textarea name="admin_notes" rows="2"></textarea></label><button class="btn btn-primary" type="submit">{% translate "Approuver cette pièce" %}</button>
+                                        </form>
+                                        <form method="post" action="{% url 'adminpanel:reject_document' document_id=item.document.pk %}" class="form-spaced">
+                                            {% csrf_token %}<label>{% translate "Motif du rejet" %}<input name="rejection_reason" maxlength="255" required value="{{ item.document.rejection_reason }}"></label><button class="btn btn-danger" type="submit">{% translate "Rejeter cette pièce" %}</button>
+                                        </form>
+                                        <form method="post" action="{% url 'adminpanel:flag_document' document_id=item.document.pk %}" class="form-spaced">
+                                            {% csrf_token %}<label>{% translate "Motif de mise en revue" %}<textarea name="admin_notes" rows="2" required></textarea></label><button class="btn btn-secondary" type="submit">{% translate "Marquer à revoir" %}</button>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="notice notice--warning">{% translate "Pièce non envoyée." %}</p>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                    {% if verification_logs %}
+                        <section class="panel panel--spaced">
+                            <div class="panel-header"><h2>{% translate "Historique des décisions" %}</h2></div>
+                            {% for log in verification_logs %}<div class="list-item"><div class="item-main"><strong>{{ log.get_action_display }}</strong><span>{{ log.details }}</span></div><small>{{ log.timestamp|date:"d/m/Y H:i" }} · {{ log.performed_by|default:"Système" }}</small></div>{% endfor %}
+                        </section>
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                <section class="empty-panel">
+                    <h2>{{ section_title }}</h2>
+                    <p>{% translate "Cette rubrique est disponible dans le panneau d’administration. Les validations de comptes et de documents se font depuis la rubrique Vérifications." %}</p>
+                    <a class="btn btn-primary form-spaced" href="{% url 'adminpanel:verifications' %}">{% translate "Ouvrir les vérifications" %}</a>
+                </section>
             {% endif %}
         </div>
     </main>
@@ -331,338 +204,505 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const exportBtn = document.querySelector('[data-action="export"]');
-
-        if (exportBtn) {
-            exportBtn.addEventListener('click', function () {
-                const table = document.querySelector('.table-panel table');
-                if (!table) {
-                    return;
-                }
-
-                const rows = Array.from(table.querySelectorAll('tr'));
-                const csvRows = rows.map(row => Array.from(row.children)
-                    .filter(cell => !cell.hasAttribute('data-no-export'))
-                    .map(cell => {
-                        let value = cell.innerText.trim().replace(/\s+/g, ' ');
-                        if (/^[=+\-@]/.test(value)) {
-                            value = "'" + value;
-                        }
-                        return '"' + value.replace(/"/g, '""') + '"';
-                    }).join(';'));
-                const csv = '\uFEFF' + csvRows.join('\r\n');
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = (exportBtn.dataset.exportName || 'export-admin') + '.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-            });
+        // Menu latéral sur mobile
+        const toggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('admin-sidebar');
+        function setMenu(open) {
+            sidebar.classList.toggle('is-open', open);
+            toggle.setAttribute('aria-expanded', String(open));
         }
+        toggle.addEventListener('click', () => setMenu(!sidebar.classList.contains('is-open')));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+        document.addEventListener('click', e => {
+            if (sidebar.classList.contains('is-open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) setMenu(false);
+        });
     });
 </script>
 
 <style>
-    body {
-        margin: 0;
-        background: #f5f7fb;
-        font-family: Arial, sans-serif;
-        color: #172033;
-    }
-
     .admin-shell {
-        display: flex;
-        min-height: 100vh;
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-orange-text: #8A4300;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-night: #08301F;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger: #B3261E;
+        --ci-danger-soft: #FDF1F1;
+        --sidebar-w: 260px;
+        --radius: 14px;
     }
-
-    .admin-sidebar {
-        width: 250px;
-        background: #101828;
-        color: white;
-        padding: 24px 16px;
+    .admin-shell *,
+    .admin-shell *::before,
+    .admin-shell *::after { box-sizing: border-box; }
+    .admin-shell h1,
+    .admin-shell h2,
+    .admin-shell h3,
+    .admin-shell p,
+    .admin-shell dl,
+    .admin-shell dd { margin: 0; }
+    .admin-shell {
+        margin: 0;
+        font-family: 'Figtree', system-ui, sans-serif;
+        font-size: 15px;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
     }
-
-    .brand {
-        font-size: 24px;
-        font-weight: 800;
-        padding: 0 10px 20px;
+    .admin-shell [hidden] { display: none !important; }
+    .admin-shell :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+    .admin-shell { display: flex; min-height: 100vh; }
+    .admin-shell .admin-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .admin-shell .admin-content { padding: 1.75rem 2rem 3rem; }
+    .admin-shell .admin-sidebar {
+        position: sticky;
+        top: 0;
+        align-self: flex-start;
+        width: var(--sidebar-w);
+        height: 100vh;
+        flex-shrink: 0;
+        overflow-y: auto;
+        padding: 1.5rem 1rem 1.25rem;
+        background: var(--ci-green-night);
+        color: var(--ci-white);
+        border-top: 6px solid transparent;
+        border-image: linear-gradient(90deg, var(--ci-orange) 0 33.33%, #E9EFEB 33.33% 66.66%, var(--ci-green) 66.66% 100%) 1;
     }
-
-    .brand-accent {
-        color: #f77f00;
-    }
-
-    .admin-menu {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .menu-title {
-        color: #98a2b3;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding: 18px 10px 8px;
-    }
-
-    .admin-menu a {
-        color: #d0d5dd;
+    .admin-shell .brand {
+        display: block;
+        padding: 0 0.75rem 1.25rem;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ci-white);
         text-decoration: none;
-        padding: 12px 12px;
-        border-radius: 8px;
-        transition: all 0.2s ease;
     }
-
-    .admin-menu a:hover,
-    .admin-menu a.active {
-        background: #f77f00;
-        color: white;
+    .admin-shell .brand-accent { color: var(--ci-orange); }
+    .admin-shell .menu-title {
+        padding: 1.1rem 0.75rem 0.4rem;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #8FB8A2;
     }
-
-    .admin-main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .admin-topbar {
-        height: 72px;
-        background: white;
-        border-bottom: 1px solid #eaecf0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 28px;
-    }
-
-    .topbar-user {
+    .admin-shell .admin-menu { display: flex; flex-direction: column; gap: 2px; }
+    .admin-shell .admin-menu a {
         display: flex;
         align-items: center;
         gap: 12px;
+        padding: 0.65rem 0.75rem;
+        border-radius: 10px;
+        color: #D5E8DD;
+        font-size: 15px;
+        text-decoration: none;
+        transition: background-color .15s ease, color .15s ease;
     }
-
-    .topbar-user small {
-        display: block;
-        color: #667085;
+    .admin-shell .admin-menu a:hover { background: rgba(255,255,255,0.09); color: var(--ci-white); }
+    .admin-shell .admin-menu a.active {
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        font-weight: 600;
     }
-
-    .avatar {
-        width: 36px;
-        height: 36px;
+    .admin-shell .menu-icon { width: 22px; text-align: center; }
+    .admin-shell .menu-back {
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    .admin-shell .admin-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 72px;
+        padding: 0 2rem;
+        background: var(--ci-white);
+        border-bottom: 1px solid var(--ci-line);
+    }
+    .admin-shell .admin-topbar h1 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ci-green-deep);
+    }
+    .admin-shell .menu-toggle {
+        display: none;
+        width: 42px;
+        height: 42px;
+        border: 1.5px solid #BFE0CE;
+        border-radius: 10px;
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    .admin-shell .topbar-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .admin-shell .topbar-user { display: flex; align-items: center; gap: 12px; }
+    .admin-shell .topbar-user small { display: block; color: var(--ci-muted); font-size: 13px; }
+    .admin-shell .avatar {
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
-        background: #f77f00;
-        color: white;
+        background: var(--ci-green);
+        color: var(--ci-white);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-weight: 700;
+        flex-shrink: 0;
     }
-
-    .admin-content {
-        padding: 28px;
+    .admin-shell .avatar.small { width: 34px; height: 34px; font-size: 13px; }
+    .admin-shell .card,
+    .admin-shell .panel,
+    .admin-shell .table-panel,
+    .admin-shell .filters-panel,
+    .admin-shell .empty-panel {
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: var(--radius);
     }
-
-    .section-card {
-        background: white;
-        border: 1px solid #eaecf0;
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 22px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    .admin-shell .panel,
+    .admin-shell .table-panel,
+    .admin-shell .empty-panel { overflow: hidden; }
+    .admin-shell .card { padding: 1.5rem; margin-bottom: 1.25rem; }
+    .admin-shell .panel--spaced { margin-top: 1.25rem; }
+    .admin-shell .panel--padded { padding: 1.5rem; margin-bottom: 1.25rem; }
+    .admin-shell .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--ci-line);
     }
-
-    .section-header-row {
+    .admin-shell .panel-header h2 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ci-green-deep);
+    }
+    .admin-shell .panel-header a {
+        color: var(--ci-green-deep);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+    .admin-shell .section-header-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 15px;
-    }
-
-    .section-header-row h2 {
-        margin-bottom: 6px;
-    }
-
-    .section-header-row p {
-        color: #667085;
-        font-size: 14px;
-    }
-
-    .action-row {
-        display: flex;
-        gap: 10px;
+        gap: 1rem;
         flex-wrap: wrap;
     }
-
-    .primary-btn,
-    .secondary-btn,
-    .row-action-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 10px 16px;
+    .admin-shell .section-header-row h2 {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.3rem;
+        color: var(--ci-green-deep);
+        margin-bottom: 4px;
+    }
+    .admin-shell .section-header-row p { color: var(--ci-muted); font-size: 14px; }
+    .admin-shell .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .admin-shell .section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 1.75rem 0 0.9rem;
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.2rem;
+        color: var(--ci-green-deep);
+    }
+    .admin-shell .rule-note {
+        margin-top: 1rem;
+        padding: 0.75rem 1rem;
+        border-left: 4px solid var(--ci-orange);
+        border-radius: 10px;
+        background: var(--ci-orange-soft);
+        color: #6F3A00;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .admin-shell .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+    .admin-shell .stat-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 1.1rem 1.25rem;
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: var(--radius);
+    }
+    .admin-shell .stat-label { margin-bottom: 6px; font-size: 14px; color: var(--ci-muted); }
+    .admin-shell .stat-value {
+        font-family: 'Bricolage Grotesque', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+    .admin-shell .stat-unit { font-family: 'Figtree', sans-serif; font-size: 13px; font-weight: 500; color: var(--ci-muted); }
+    .admin-shell .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--ci-orange-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    .admin-shell .stat-card--success .stat-value { color: var(--ci-green); }
+    .admin-shell .stat-card--warning .stat-value { color: var(--ci-orange-text); }
+    .admin-shell .stat-card--danger .stat-value { color: var(--ci-danger); }
+    .admin-shell .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .admin-shell .action-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 1.1rem 1.25rem;
+        background: var(--ci-white);
+        border: 1px solid var(--ci-line);
+        border-radius: var(--radius);
+        color: inherit;
+        text-decoration: none;
+        transition: border-color .15s ease, transform .15s ease;
+    }
+    .admin-shell .action-card:hover { border-color: var(--ci-orange); transform: translateY(-2px); }
+    .admin-shell .action-card h3 { font-size: 16px; margin-bottom: 4px; }
+    .admin-shell .action-card p { color: var(--ci-muted); font-size: 14px; }
+    .admin-shell .count-badge {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: var(--ci-danger);
+        color: var(--ci-white);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+    .admin-shell .count-badge.is-zero { background: var(--ci-green); }
+    .admin-shell .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .admin-shell .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid #EEF3EF;
+    }
+    .admin-shell .list-item:last-child { border-bottom: none; }
+    .admin-shell .item-main strong { display: block; font-size: 15px; margin-bottom: 2px; }
+    .admin-shell .item-main span { font-size: 13px; color: var(--ci-muted); }
+    .admin-shell .list-empty { padding: 1.25rem; color: var(--ci-muted); }
+    .admin-shell .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+    .admin-shell .badge.ok,
+    .admin-shell .badge.confirmed,
+    .admin-shell .badge.completed {
+        background: var(--ci-green-soft); color: var(--ci-green-deep); border-color: #BFE0CE;
+    }
+    .admin-shell .badge.warning,
+    .admin-shell .badge.pending {
+        background: var(--ci-orange-soft); color: var(--ci-orange-text); border-color: #F6D9B0;
+    }
+    .admin-shell .badge.danger,
+    .admin-shell .badge.cancelled,
+    .admin-shell .badge.failed,
+    .admin-shell .badge.off {
+        background: var(--ci-danger-soft); color: #8F1D17; border-color: #F0CACA;
+    }
+    .admin-shell .notice {
+        margin: 1rem 0 0;
+        padding: 0.7rem 1rem;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .admin-shell .notice--ok { background: var(--ci-green-soft); color: var(--ci-green-deep); border-color: #BFE0CE; }
+    .admin-shell .notice--warning { background: var(--ci-orange-soft); color: #6F3A00; border-color: #F6D9B0; }
+    .admin-shell .notice--danger { background: var(--ci-danger-soft); color: #8F1D17; border-color: #F0CACA; }
+    .admin-shell .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0.6rem 1.1rem;
+        border: 1.5px solid transparent;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.2;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease;
+    }
+    .admin-shell .btn-primary { background: var(--ci-orange); color: var(--ci-ink); }
+    .admin-shell .btn-primary:hover { background: var(--ci-orange-hover); }
+    .admin-shell .btn-secondary { background: transparent; color: var(--ci-green-deep); border-color: #BFE0CE; }
+    .admin-shell .btn-secondary:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+    .admin-shell .btn-danger { background: transparent; color: var(--ci-danger); border-color: #F0CACA; }
+    .admin-shell .btn-danger:hover { background: var(--ci-danger-soft); border-color: var(--ci-danger); }
+    .admin-shell .btn-sm { padding: 0.4rem 0.8rem; font-size: 13px; }
+    .admin-shell .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .admin-shell .btn-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .admin-shell .btn-group form { margin: 0; }
+    .admin-shell .filters-panel { margin-bottom: 1.25rem; overflow-x: auto; }
+    .admin-shell .filters-form { display: flex; flex-wrap: wrap; gap: 12px; padding: 1.1rem 1.25rem; }
+    .admin-shell .filters-form input,
+    .admin-shell .filters-form select {
+        height: 42px;
+        padding: 0 0.85rem;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 10px;
+        background: var(--ci-white);
+        color: var(--ci-ink);
+        font-family: inherit;
+        font-size: 15px;
+    }
+    .admin-shell .filters-form input { flex: 1; min-width: 220px; }
+    .admin-shell .filters-form input:focus,
+    .admin-shell .filters-form select:focus {
+        outline: none;
+        border-color: var(--ci-green);
+        box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+    }
+    .admin-shell .filters-form .btn { height: 42px; }
+    .admin-shell .table-panel { overflow-x: auto; margin-bottom: 1.25rem; }
+    .admin-shell table { width: 100%; min-width: 680px; border-collapse: collapse; }
+    .admin-shell th,
+    .admin-shell td { padding: 0.9rem 1.25rem; text-align: left; vertical-align: middle; border-bottom: 1px solid #EEF3EF; }
+    .admin-shell th {
+        background: #F0F7F3;
+        color: var(--ci-green-deep);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+    .admin-shell tbody tr:hover { background: #FAFCFB; }
+    .admin-shell tbody tr:last-child td { border-bottom: none; }
+    .admin-shell .user-cell { display: flex; align-items: center; gap: 10px; }
+    .admin-shell .user-cell small { color: var(--ci-muted); }
+    .admin-shell .empty-state,
+    .admin-shell .empty-panel { text-align: center; color: var(--ci-muted); padding: 2rem 1.25rem; }
+    .admin-shell .empty-panel h3 { font-family: 'Bricolage Grotesque', sans-serif; color: var(--ci-green-deep); margin-bottom: 6px; }
+    .admin-shell .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .admin-shell .pagination { display: flex; justify-content: center; align-items: center; gap: 16px; color: var(--ci-muted); }
+    .admin-shell .page-link {
+        padding: 0.4rem 0.9rem;
+        border: 1.5px solid #BFE0CE;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--ci-green-deep);
+        font-family: inherit;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
     }
-
-    .primary-btn {
-        background: #f77f00;
-        color: white;
-    }
-
-    .secondary-btn {
-        background: #eef2f7;
-        color: #172033;
-    }
-
-    .row-action-btn {
-        border: 1px solid #d0d5dd;
-        background: white;
-        color: #172033;
-        padding: 7px 10px;
-        white-space: nowrap;
-    }
-
-    .row-action-btn:disabled {
-        cursor: not-allowed;
-        opacity: .6;
-    }
-
-    .row-action-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .row-action-btn--danger {
-        color: #b42318;
-    }
-
-    .row-action-done {
-        color: #667085;
-        font-size: 13px;
-    }
-
-    .stats-grid {
+    .admin-shell .page-link:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+    .admin-shell .detail-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.4rem; margin: 1rem 0 4px; }
+    .admin-shell .detail-meta { color: var(--ci-muted); margin-top: 4px; }
+    .admin-shell .detail-list {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-        margin-bottom: 22px;
+        grid-template-columns: max-content 1fr;
+        gap: 8px 20px;
+        margin-top: 1rem;
     }
-
-    .stat-box {
-        background: white;
-        border: 1px solid #eaecf0;
-        border-radius: 12px;
-        padding: 16px 18px;
-    }
-
-    .stat-box span {
+    .admin-shell .detail-list dt { color: var(--ci-muted); font-size: 14px; }
+    .admin-shell .detail-list dd { font-weight: 500; }
+    .admin-shell .doc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.1rem; margin-top: 1.25rem; }
+    .admin-shell .doc-card { padding: 1.1rem; background: var(--ci-white); border: 1px solid var(--ci-line); border-radius: var(--radius); }
+    .admin-shell .doc-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.05rem; color: var(--ci-green-deep); margin-bottom: 8px; }
+    .admin-shell .doc-preview {
         display: block;
-        font-size: 12px;
-        color: #667085;
-        margin-bottom: 6px;
-    }
-
-    .stat-box strong {
-        font-size: 22px;
-    }
-
-    .table-panel,
-    .panel,
-    .empty-panel {
-        background: white;
-        border: 1px solid #eaecf0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table-panel {
-        overflow-x: auto;
-    }
-
-    table {
         width: 100%;
-        border-collapse: collapse;
+        max-height: 360px;
+        margin: 12px 0 8px;
+        object-fit: contain;
+        background: #F7FAF8;
+        border: 1px solid var(--ci-line);
+        border-radius: 10px;
     }
-
-    th, td {
-        padding: 14px 16px;
-        text-align: left;
-        border-bottom: 1px solid #f2f4f7;
-    }
-
-    th {
-        background: #f9fafb;
-        color: #344054;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .badge {
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-    .badge.ok {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .badge.warning {
-        background: #fff7d6;
-        color: #92400e;
-    }
-
-    .badge.danger {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .notification-row {
-        padding: 16px 18px;
+    .admin-shell .doc-link { color: var(--ci-green-deep); font-weight: 600; font-size: 14px; }
+    .admin-shell .muted { color: var(--ci-muted); font-size: 14px; }
+    .admin-shell .form-spaced { margin-top: 1rem; }
+    .admin-shell .notification-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid #f2f4f7;
         gap: 12px;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #EEF3EF;
     }
-
-    .notification-row:last-child {
-        border-bottom: none;
+    .admin-shell .notification-row:last-child { border-bottom: none; }
+    .admin-shell .notification-row p { margin-top: 4px; color: var(--ci-muted); font-size: 14px; }
+    @media (max-width: 1100px) {
+        .admin-shell .columns { grid-template-columns: 1fr; }
     }
-
-    .notification-row p {
-        color: #667085;
-        margin-top: 4px;
-        font-size: 13px;
-    }
-
-    .empty-panel {
-        padding: 24px;
-        text-align: center;
-        color: #667085;
-    }
-
     @media (max-width: 900px) {
-        .admin-shell {
-            display: block;
+        .admin-shell .menu-toggle { display: inline-flex !important; align-items: center; justify-content: center; }
+        .admin-shell .admin-sidebar {
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            transform: translateX(-100%);
+            transition: transform .2s ease;
+            box-shadow: 0 0 40px rgba(0,0,0,0.3);
         }
-
-        .admin-sidebar {
-            width: 100%;
-        }
-
-        .section-header-row {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+        .admin-shell .admin-sidebar.is-open { transform: translateX(0); }
+        .admin-shell .admin-topbar { padding: 0 1rem; }
+        .admin-shell .admin-content { padding: 1.25rem 1rem 2.5rem; }
+        .admin-shell .topbar-user div:first-child { display: none; }
+        .admin-shell .detail-list { grid-template-columns: 1fr; gap: 2px; }
+        .admin-shell .detail-list dd { margin-bottom: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .admin-shell * { transition: none !important; }
+        .admin-shell .action-card:hover { transform: none; }
+    }
+    @media (min-width: 901px) {
+        .admin-shell .admin-sidebar { position: static; height: auto; min-height: 100vh; align-self: stretch; }
+        .admin-shell .admin-topbar { position: static; }
     }
 </style>
 {% endblock %}
