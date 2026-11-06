@@ -7,168 +7,581 @@
 <link rel="stylesheet" href="{% static 'form_fields.css' %}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
-/* Ivoire Connect — publication d'un établissement
-   Orange (hôtel) et vert (résidence) viennent du drapeau ivoirien. */
+/* ══════════════════════════════════════════════════════════
+   Ivoire Connect — publication d'un établissement
+   Palette Côte d'Ivoire : orange · blanc · vert
+   Tout est limité à .professional-publish-page.
+   Plan : 1 Base · 2 En-tête · 3 Étapes · 4 Panneaux · 5 Champs
+          6 Types de chambres · 7 Vérification · 8 Boutons · 9 Responsive
+══════════════════════════════════════════════════════════ */
+
+/* ── 1. Base ── */
 .professional-publish-page {
-  --ink: #1a2332; --muted: #6b7280; --line: #e5e7eb; --paper: #f8fafc; --surface: #fff;
-  --accent: #f59e0b; --accent-deep: #d97706; --accent-soft: #fff2db;
-  --danger: #b42318;
-  max-width: 1100px; margin: 0 auto; padding: 36px 20px 64px;
-  color: var(--ink); font: 400 15px/1.6 'Figtree', system-ui, sans-serif;
-}
-.professional-publish-page.residence {
-  --accent: #10b981; --accent-deep: #059669; --accent-soft: #e6f8f1;
-}
-.professional-publish-page *, .professional-publish-page *::before, .professional-publish-page *::after { box-sizing: border-box; }
-body:has(.professional-publish-page) { background: #f8fafc; }
+  --ci-orange: #F77F00;
+  --ci-orange-hover: #FF9122;
+  --ci-orange-soft: #FFF1E0;
+  --ci-orange-text: #8A4300;
+  --ci-green: #009E60;
+  --ci-green-deep: #0B5D3B;
+  --ci-green-soft: #E6F4EC;
+  --ci-ink: #10231A;
+  --ci-muted: #5B6B62;
+  --ci-line: #DCE5DF;
+  --ci-bg: #F3F7F4;
+  --ci-white: #FFFFFF;
+  --ci-danger: #B3261E;
+  --ci-danger-soft: #FDF1F1;
 
-/* ---------- En-tête et progression ---------- */
-.pp-head { margin-bottom: 28px; }
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  color: var(--ci-ink);
+  font: 400 15px/1.6 'Figtree', system-ui, sans-serif;
+}
+
+.professional-publish-page *,
+.professional-publish-page *::before,
+.professional-publish-page *::after { box-sizing: border-box; }
+
+body:has(.professional-publish-page) { background: var(--ci-bg); }
+
+.professional-publish-page [hidden],
+.wizard-panel[hidden] { display: none !important; }
+
+/* ── 2. En-tête et progression ── */
+.pp-head { margin-bottom: 1.75rem; }
+
 .publish-header {
-  margin-bottom: 26px; padding: 32px 24px; border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
-  box-shadow: 0 18px 42px rgba(0,0,0,.12);
-  color: #fff; text-align: center;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--ci-green-deep);
+  color: var(--ci-white);
+  text-align: center;
 }
-.publish-header h1 { margin: 0 0 8px; font: 700 clamp(1.8rem, 4vw, 2.5rem)/1.15 'Bricolage Grotesque', 'Figtree', sans-serif; letter-spacing: -.02em; }
-.publish-header p { margin: 0 0 16px; color: #fff; opacity: .95; }
-.publish-header .badge { display: inline-block; padding: 6px 14px; border-radius: 99px; background: rgba(255,255,255,.2); font-size: .9rem; }
-.progress-bar { height: 4px; margin-bottom: 14px; overflow: hidden; border-radius: 99px; background: var(--line); }
-.progress-bar-fill { width: 25%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); transition: width .3s ease; }
-.publish-progress { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 0 0 26px; padding: 0; list-style: none; }
-.publish-progress-item { min-width: 0; }
+
+.publish-header-stripe {
+  height: 8px;
+  background: linear-gradient(90deg,
+    var(--ci-orange) 0 33.33%,
+    #E9EFEB 33.33% 66.66%,
+    var(--ci-green) 66.66% 100%);
+}
+
+.publish-header-body { padding: 1.9rem 1.5rem 2.1rem; }
+
+.publish-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 0.9rem;
+  border-radius: 50%;
+  background: var(--ci-orange);
+  font-size: 1.6rem;
+}
+
+.publish-header h1 {
+  margin: 0 0 6px;
+  font: 700 clamp(1.7rem, 4vw, 2.4rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+  letter-spacing: -.02em;
+  color: var(--ci-white);
+}
+
+.publish-header p { margin: 0 0 1rem; color: rgba(255,255,255,.85); font-size: 1.02rem; }
+
+.publish-header .badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  color: var(--ci-white);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 6px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--ci-green-soft);
+}
+
+.progress-bar-fill {
+  width: 17%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ci-green), var(--ci-orange));
+  transition: width .3s ease;
+}
+
+/* ── 3. Étapes ── */
+.publish-progress {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.publish-progress-item { position: relative; min-width: 0; }
+
 .publish-progress-button {
-  display: flex; min-width: 0; min-height: 86px; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
-  width: 100%; padding: 10px 8px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff;
-  color: #374151; text-align: center; font-weight: 600; font-size: .85rem; transition: border-color .2s, background .2s;
-  font-family: inherit; cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: 96px;
+  padding: 10px 8px;
+  border: 1.5px solid var(--ci-line);
+  border-radius: 14px;
+  background: var(--ci-white);
+  color: var(--ci-ink);
+  font: 600 14px/1.25 inherit;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
 }
-.publish-progress-item.is-active .publish-progress-button { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
-.publish-progress-item.is-complete .publish-progress-button { border-color: var(--accent-deep); color: var(--ink); }
-.publish-progress-button:hover { border-color: var(--accent); }
-.publish-progress-button:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
-.publish-progress-icon { font-size: 1.65rem; line-height: 1; }
 
-/* ---------- Mise en page : formulaire + aperçu ---------- */
-.pp-layout { display: block; }
-.pp-layout form { margin: 0; padding: clamp(22px, 4vw, 32px); border-radius: 14px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+.publish-progress-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ci-green-soft);
+  font-size: 1.25rem;
+  line-height: 1;
+}
 
-.professional-publish-page .card { margin: 0 0 20px !important; border: 0 !important; border-radius: 14px !important; background: var(--surface); box-shadow: 0 2px 8px rgba(0,0,0,.05) !important; }
-.professional-publish-page .wizard-panel.card { margin: 0 !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+.publish-progress-button:hover { border-color: #9FB3A7; }
+.publish-progress-button:focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+.publish-progress-item.is-active .publish-progress-button {
+  border-color: var(--ci-green);
+  background: var(--ci-green-soft);
+}
+.publish-progress-item.is-active .publish-progress-icon { background: var(--ci-white); }
+.publish-progress-item.is-active .publish-progress-button::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: -1.5px;
+  height: 4px;
+  border-radius: 2px 2px 0 0;
+  background: var(--ci-orange);
+}
+
+.publish-progress-item.is-complete .publish-progress-button { border-color: #BFE0CE; color: var(--ci-green-deep); }
+.publish-progress-item.is-complete::before {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ci-green);
+  color: var(--ci-white);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── 4. Panneaux et formulaire ── */
+.pp-layout form {
+  margin: 0;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--ci-line);
+  border-radius: 18px;
+  background: var(--ci-white);
+}
+
+/* Neutralise le style global de .card : le panneau est transparent, c'est le formulaire qui est la carte */
+.professional-publish-page .card {
+  margin: 0 0 20px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: var(--ci-white);
+  box-shadow: none !important;
+}
+.professional-publish-page .wizard-panel.card {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
 .professional-publish-page .wizard-panel .card-body { padding: 0 !important; }
-.wizard-heading { margin-bottom: 22px; }
-.wizard-heading h2 { margin: 0 0 6px; font: 700 1.4rem/1.25 'Bricolage Grotesque', 'Figtree', sans-serif; letter-spacing: -.01em; }
-.wizard-heading p { margin: 0; max-width: 60ch; color: var(--muted); }
+
 .wizard-panel { animation: ppIn .25s ease-out; }
-@keyframes ppIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.wizard-panel[hidden], .professional-publish-page [hidden] { display: none !important; }
+@keyframes ppIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
 
-/* ---------- Champs ---------- */
+.wizard-heading {
+  margin-bottom: 1.4rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ci-line);
+}
+.wizard-heading h2 {
+  margin: 0 0 6px;
+  font: 700 1.4rem/1.25 'Bricolage Grotesque', 'Figtree', sans-serif;
+  letter-spacing: -.01em;
+  color: var(--ci-green-deep);
+}
+.wizard-heading p { margin: 0; max-width: 60ch; color: var(--ci-muted); }
+
+.wizard-validation-message {
+  display: none;
+  margin-bottom: 1.1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #F0CACA;
+  border-radius: 10px;
+  background: var(--ci-danger-soft);
+  color: #8F1D17;
+  font-weight: 500;
+}
+.wizard-validation-message.is-visible { display: block; }
+
+.professional-publish-page .alert {
+  padding: 0.8rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+.professional-publish-page .alert-danger  { background: var(--ci-danger-soft); border-color: #F0CACA; color: #8F1D17; }
+.professional-publish-page .alert-success { background: var(--ci-green-soft); border-color: #BFE0CE; color: var(--ci-green-deep); }
+.professional-publish-page .alert-warning,
+.professional-publish-page .alert-info    { background: var(--ci-orange-soft); border-color: #F6D9B0; color: #6F3A00; }
+
+/* ── 5. Champs ── */
 .professional-publish-page .row { --bs-gutter-x: 18px; --bs-gutter-y: 18px; }
-.professional-publish-page label { display: inline-block; margin-bottom: 6px; font-weight: 600; font-size: .9rem; color: var(--ink); }
-.professional-publish-page input:not([type=checkbox]):not([type=radio]):not([type=file]),
-.professional-publish-page select, .professional-publish-page textarea {
-  display: block; width: 100%; min-height: 46px; padding: 10px 13px;
-  border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
-  font: inherit; transition: border-color .15s, box-shadow .15s;
-}
-.professional-publish-page textarea { min-height: 112px; resize: vertical; }
-.professional-publish-page input::placeholder, .professional-publish-page textarea::placeholder { color: #7d8a82; }
-.professional-publish-page input:hover, .professional-publish-page select:hover, .professional-publish-page textarea:hover { border-color: #9fb0a5; }
-.professional-publish-page input:focus-visible, .professional-publish-page select:focus-visible, .professional-publish-page textarea:focus-visible {
-  border-color: var(--accent-deep); outline: 3px solid var(--accent-soft); outline-offset: 0;
-}
-.professional-publish-page .is-invalid, .professional-publish-page [aria-invalid=true] { border-color: var(--danger) !important; }
-.professional-publish-page .text-danger, .professional-publish-page .errorlist { color: var(--danger) !important; font-size: .85rem; margin: 6px 0 0; padding-left: 0; list-style: none; }
 
-.professional-publish-page .form-check { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 10px 13px !important; margin: 0 !important; border: 1.5px solid var(--line) !important; border-radius: 8px !important; background: #fff; cursor: pointer; }
-.professional-publish-page .form-check:hover { border-color: var(--accent); }
-.professional-publish-page .form-check:has(input:checked) { border-color: var(--accent-deep) !important; background: var(--accent-soft); }
-.professional-publish-page .form-check input { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; accent-color: var(--accent-deep); }
+.professional-publish-page label {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ci-ink);
+}
+
+.professional-publish-page input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),
+.professional-publish-page select,
+.professional-publish-page textarea {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid #CBD6CE;
+  border-radius: 10px;
+  background: var(--ci-white);
+  color: var(--ci-ink);
+  font: inherit;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.professional-publish-page textarea { min-height: 112px; line-height: 1.5; resize: vertical; }
+.professional-publish-page input::placeholder,
+.professional-publish-page textarea::placeholder { color: #7D8A82; }
+
+.professional-publish-page input:hover,
+.professional-publish-page select:hover,
+.professional-publish-page textarea:hover { border-color: #9FB3A7; }
+
+.professional-publish-page input:focus-visible,
+.professional-publish-page select:focus-visible,
+.professional-publish-page textarea:focus-visible {
+  outline: none;
+  border-color: var(--ci-green);
+  box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+}
+
+.professional-publish-page .is-invalid,
+.professional-publish-page [aria-invalid=true] { border-color: var(--ci-danger) !important; }
+
+.professional-publish-page .text-danger,
+.professional-publish-page .errorlist {
+  margin: 6px 0 0;
+  padding-left: 0;
+  color: var(--ci-danger) !important;
+  font-size: 14px;
+  list-style: none;
+}
+
+/* Cases à cocher en cartes cliquables */
+.professional-publish-page .form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--ci-line);
+  border-radius: 10px;
+  background: var(--ci-white);
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.professional-publish-page .form-check:hover { border-color: #9FB3A7; }
+.professional-publish-page .form-check:has(input:checked) { border-color: var(--ci-green); background: var(--ci-green-soft); }
+.professional-publish-page .form-check:has(input:focus-visible) { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+.professional-publish-page .form-check input {
+  flex: 0 0 18px;
+  float: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--ci-green);
+}
 .professional-publish-page .form-check label { margin: 0; font-weight: 500; cursor: pointer; }
 
-/* ---------- Types de chambres ---------- */
-.room-card { margin: 0 0 20px !important; padding: clamp(16px, 3vw, 26px) !important; border: 1px solid var(--line) !important; border-left: 5px solid var(--accent) !important; border-radius: 10px !important; background: #fafcfa; }
-.room-card:focus-within { border-color: var(--accent-deep) !important; }
-.room-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-.room-card-heading h3 { display: flex; align-items: center; gap: 12px; margin: 0; font: 700 1.1rem 'Bricolage Grotesque', 'Figtree', sans-serif; }
-.room-number { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: .95rem; }
-.professional-publish-page.hotel .room-number { color: #1a0f00; }
-.room-card-heading [data-remove-room] { min-height: 38px; padding: 6px 14px; border: 1.5px solid #f2b8b5; border-radius: 8px; background: #fff; color: var(--danger); font-weight: 600; font-size: .85rem; }
-.room-card-heading [data-remove-room]:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+/* ── 6. Types de chambres ── */
+.room-card {
+  margin: 0 0 20px !important;
+  padding: clamp(1rem, 3vw, 1.6rem) !important;
+  border: 1px solid var(--ci-line) !important;
+  border-left: 5px solid var(--ci-orange) !important;
+  border-radius: 14px !important;
+  background: #FAFCFB;
+}
+.room-card:focus-within { border-color: var(--ci-green) !important; border-left-color: var(--ci-orange) !important; }
 .room-card .row { --bs-gutter-y: 16px; }
 
-.room-media-section { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--line); }
-.room-media-heading { margin: 0 0 6px; font: 700 1.05rem 'Bricolage Grotesque', 'Figtree', sans-serif; }
-.room-media-help { margin: 0 0 16px; color: var(--muted); font-size: .9rem; }
+.room-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ci-line);
+}
+.room-card-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font: 700 1.1rem 'Bricolage Grotesque', 'Figtree', sans-serif;
+}
+.room-number {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ci-orange);
+  color: var(--ci-ink);
+  font-weight: 700;
+  font-size: .95rem;
+}
+.room-card-heading [data-remove-room] {
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 1.5px solid #F0CACA;
+  border-radius: 10px;
+  background: var(--ci-white);
+  color: var(--ci-danger);
+  font-weight: 600;
+  font-size: 14px;
+}
+.room-card-heading [data-remove-room]:hover { background: var(--ci-danger); border-color: var(--ci-danger); color: var(--ci-white); }
+
+.room-media-section { margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--ci-line); }
+.room-media-heading { margin: 0 0 6px; font: 700 1.05rem 'Bricolage Grotesque', 'Figtree', sans-serif; color: var(--ci-green-deep); }
+.room-media-help { margin: 0 0 1rem; color: var(--ci-muted); font-size: 14px; }
+
 .media-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.media-form-card { min-width: 0; padding: 14px; border: 1.5px dashed #a9b8ae; border-radius: 10px; background: #fff; }
-.media-form-card:hover, .media-form-card:focus-within { border-color: var(--accent-deep); background: var(--accent-soft); }
-.media-form-card input[type=file] { width: 100%; min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; font-size: .82rem; }
-.media-form-card input[type=file]::file-selector-button { margin-right: 8px; padding: 7px 11px; border: 0; border-radius: 6px; background: var(--accent-deep); color: #fff; font-weight: 600; cursor: pointer; }
+.media-form-card {
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1.5px dashed #BFD0C5;
+  border-radius: 14px;
+  background: var(--ci-white);
+}
+.media-form-card:hover,
+.media-form-card:focus-within { border-color: var(--ci-green); background: var(--ci-green-soft); }
 .media-form-card .media-detail-fields { margin-top: 12px; }
 .media-form-card .text-danger { overflow-wrap: anywhere; }
+.media-form-card input[type=file] {
+  width: 100%;
+  min-width: 0;
+  padding: 6px;
+  border: 1.5px solid #CBD6CE;
+  border-radius: 10px;
+  background: var(--ci-white);
+  font: inherit;
+  font-size: 13px;
+  color: var(--ci-muted);
+}
+.media-form-card input[type=file]::file-selector-button {
+  margin-right: 8px;
+  padding: 6px 11px;
+  border: 1.5px solid #BFE0CE;
+  border-radius: 8px;
+  background: var(--ci-green-soft);
+  color: var(--ci-green-deep);
+  font-weight: 600;
+  cursor: pointer;
+}
 
-.professional-publish-page .add-room-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; margin-top: 6px; border: 2px dashed var(--accent-deep) !important; border-radius: 10px !important; background: transparent !important; color: var(--accent-deep) !important; font-weight: 700; }
-.professional-publish-page .add-room-button:hover { background: var(--accent-soft) !important; }
-#room-count { color: var(--muted); }
+.professional-publish-page .add-room-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 6px;
+  border: 2px dashed var(--ci-green) !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  color: var(--ci-green-deep) !important;
+  font-weight: 700;
+}
+.professional-publish-page .add-room-button:hover { background: var(--ci-green-soft) !important; }
+#room-count { margin-top: 8px; color: var(--ci-muted); }
 
-/* ---------- Vérification ---------- */
+/* ── 7. Vérification ── */
 .wizard-review-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; margin: 0; }
-.wizard-review-item { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); }
-.wizard-review-item span { color: var(--muted); }
+.wizard-review-item { display: flex; justify-content: space-between; gap: 16px; padding: 0.8rem 0; border-bottom: 1px solid #EEF3EF; }
+.wizard-review-item span { color: var(--ci-muted); }
 .wizard-review-item strong { text-align: right; overflow-wrap: anywhere; }
-.wizard-review-note { margin-top: 20px; padding: 14px 16px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 8px 8px 0; }
-.wizard-validation-message { display: none; margin-bottom: 18px; padding: 12px 16px; border: 1px solid #f2b8b5; border-radius: 8px; background: #fef3f2; color: var(--danger); font-weight: 500; }
-.wizard-validation-message.is-visible { display: block; }
-.professional-publish-page .alert { padding: 13px 16px; border-radius: 8px; }
+.wizard-review-note {
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--ci-orange);
+  border-radius: 0 10px 10px 0;
+  background: var(--ci-orange-soft);
+  color: #6F3A00;
+}
 
-/* ---------- Boutons ---------- */
-.publish-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+/* ── 8. Boutons ── */
+.publish-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ci-line);
+}
 .publish-actions .wizard-spacer { display: none; }
+
+/* Étape 1 : un seul gros bouton, « Annuler » en lien discret dessous */
 .publish-actions[data-current-step="1"] { grid-template-columns: 1fr; }
 .publish-actions[data-current-step="1"] #wizard-next { grid-row: 1; }
-.publish-actions[data-current-step="1"] #cancel-publish { grid-row: 2; justify-self: center; min-height: 0; padding: 0; border: 0 !important; background: transparent !important; color: var(--muted) !important; font-size: .85rem; }
-.professional-publish-page .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 24px; border-radius: 8px; font: 700 .95rem 'Figtree', sans-serif; text-decoration: none; cursor: pointer; }
-.professional-publish-page .btn-primary { border: 0 !important; background: linear-gradient(135deg, var(--accent), var(--accent-deep)) !important; color: #fff !important; box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 28%, transparent); }
-.professional-publish-page .btn-primary:hover { filter: brightness(.92); }
-.professional-publish-page .btn-secondary { border: 1.5px solid var(--line) !important; background: #fff !important; color: var(--ink) !important; }
-.professional-publish-page .btn-secondary:hover { border-color: var(--ink) !important; }
-.professional-publish-page .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.publish-actions[data-current-step="1"] #cancel-publish {
+  grid-row: 2;
+  justify-self: center;
+  min-height: 0;
+  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--ci-muted) !important;
+  font-size: 14px;
+}
+
+.professional-publish-page .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0.65rem 1.5rem;
+  border-radius: 12px;
+  font: 600 16px 'Figtree', sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
+}
+.professional-publish-page .btn:focus-visible { outline: 3px solid var(--ci-green); outline-offset: 2px; }
+
+.professional-publish-page .btn-primary {
+  border: 0 !important;
+  background: var(--ci-orange) !important;
+  color: var(--ci-ink) !important;
+}
+.professional-publish-page .btn-primary:hover { background: var(--ci-orange-hover) !important; transform: translateY(-1px); }
+
+.professional-publish-page .btn-secondary {
+  border: 1.5px solid #BFE0CE !important;
+  background: transparent !important;
+  color: var(--ci-green-deep) !important;
+}
+.professional-publish-page .btn-secondary:hover { background: var(--ci-green-soft) !important; border-color: var(--ci-green) !important; }
+
 .professional-publish-page .btn-loading { pointer-events: none; opacity: .75; }
 
+/* ── 9. Responsive ── */
+@media (max-width: 991px) {
+  .publish-progress { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 767px) {
-  .professional-publish-page { padding: 20px 12px 40px; }
-  .publish-header { padding: 34px 20px; }
-  .publish-progress { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .media-form-grid, .wizard-review-list { grid-template-columns: 1fr; }
-  .publish-actions .btn { width: 100%; padding-right: 10px; padding-left: 10px; }
+  .professional-publish-page { padding: 1rem 0.75rem 3rem; }
+  .publish-header-body { padding: 1.5rem 1.1rem 1.7rem; }
+
+  /* Étapes : défilement horizontal, l'étape active est recentrée par le script */
+  .publish-progress {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 2px 8px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+  .publish-progress-item { flex: 0 0 104px; scroll-snap-align: center; }
+  .publish-progress-button { min-height: 88px; }
+
+  .media-form-grid,
+  .wizard-review-list { grid-template-columns: 1fr; }
+  .publish-actions .btn { width: 100%; }
   .room-card-heading h3 { font-size: 1rem; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .wizard-panel { animation: none; }
   .professional-publish-page * { transition: none !important; }
+  .professional-publish-page .btn-primary:hover { transform: none; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="professional-publish-page {% if account_type == 'residence' %}residence{% else %}hotel{% endif %}" id="publication-wizard">
+
+  <!-- En-tête et progression -->
   <header class="pp-head">
     <div class="publish-header">
-      <h1>{% if account_type == 'hotel' %}🏨 {% translate "Publier une Chambre d'Hôtel" %}{% else %}🏢 {% translate "Publier un Logement en Résidence" %}{% endif %}</h1>
-      <p>
-      {% if account_type == 'hotel' %}
-        {% translate "Ajoutez une catégorie de chambre à votre établissement" %}
-      {% else %}
-        {% translate "Présentez votre logement de manière professionnelle" %}
-      {% endif %}
-      </p>
-      <span class="badge">{% if account_type == 'hotel' %}{% translate "Pour les hôtels et établissements officiels" %}{% else %}{% translate "Pour les résidences et habitations collectives" %}{% endif %}</span>
+      <div class="publish-header-stripe" aria-hidden="true"></div>
+      <div class="publish-header-body">
+        <span class="publish-header-icon" aria-hidden="true">{% if account_type == 'hotel' %}🏨{% else %}🏢{% endif %}</span>
+        <h1>{% if account_type == 'hotel' %}{% translate "Publier une Chambre d'Hôtel" %}{% else %}{% translate "Publier un Logement en Résidence" %}{% endif %}</h1>
+        <p>
+          {% if account_type == 'hotel' %}
+            {% translate "Ajoutez une catégorie de chambre à votre établissement" %}
+          {% else %}
+            {% translate "Présentez votre logement de manière professionnelle" %}
+          {% endif %}
+        </p>
+        <span class="badge">{% if account_type == 'hotel' %}{% translate "Pour les hôtels et établissements officiels" %}{% else %}{% translate "Pour les résidences et habitations collectives" %}{% endif %}</span>
+      </div>
     </div>
+
     <div class="progress-bar" aria-hidden="true"><div class="progress-bar-fill" id="publish-progress-fill"></div></div>
+
     <ol class="publish-progress" aria-label="{% translate 'Progression de la publication' %}">
       <li class="publish-progress-item is-active" data-progress-step="1" aria-current="step"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">📍</span><span>{% translate "Localisation" %}</span></button></li>
       <li class="publish-progress-item" data-progress-step="2"><button class="publish-progress-button" type="button"><span class="publish-progress-icon" aria-hidden="true">{% if account_type == 'hotel' %}🛏️{% else %}🏠{% endif %}</span><span>{% if account_type == 'hotel' %}{% translate "Caractéristiques" %}{% else %}{% translate "Détails" %}{% endif %}</span></button></li>
@@ -186,7 +599,7 @@ body:has(.professional-publish-page) { background: #f8fafc; }
 
       {% if messages %}
         {% for message in messages %}
-          <div class="alert alert-{{ message.tags|default:'info' }} mb-4">{{ message }}</div>
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} mb-4">{{ message }}</div>
         {% endfor %}
       {% endif %}
 
@@ -225,7 +638,6 @@ body:has(.professional-publish-page) { background: #f8fafc; }
               {{ etablissement_form.description }}
               {% if etablissement_form.description.errors %}<div class="text-danger small mt-1">{{ etablissement_form.description.errors }}</div>{% endif %}
             </div>
-            
           </div>
         </div>
       </section>
@@ -290,6 +702,7 @@ body:has(.professional-publish-page) { background: #f8fafc; }
         </div>
       </section>
 
+      <!-- Navigation -->
       <div class="publish-actions" id="publish-wizard-actions" data-current-step="1">
         <a href="{% url 'logement:home' %}" class="btn btn-secondary" id="cancel-publish">{% translate "Annuler" %}</a>
         <button type="button" class="btn btn-secondary" id="wizard-back" hidden>{% translate "Retour" %}</button>
@@ -298,9 +711,16 @@ body:has(.professional-publish-page) { background: #f8fafc; }
         <button type="submit" class="btn btn-primary" id="wizard-submit" hidden>{% translate "Publier l'établissement" %}</button>
       </div>
     </form>
-
   </div>
 </div>
+
+{# Textes utilisés par le script (traduits côté serveur, échappés pour JavaScript) #}
+{% translate "type de chambre renseigné" as txt_room_one %}
+{% translate "types de chambre renseignés" as txt_room_many %}
+{% translate "Continuer" as txt_continue %}
+{% translate "Vérifier l’annonce" as txt_review %}
+{% translate "Veuillez vérifier les champs obligatoires avant de continuer." as txt_check_fields %}
+{% translate "Ajoutez au moins un type de chambre et renseignez son titre avant de continuer." as txt_need_room %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -310,6 +730,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const addButton = document.getElementById('add-room');
   const template = document.getElementById('empty-room-form');
   const totalForms = document.getElementById('id_types-TOTAL_FORMS');
+  if (!root || !form || !container || !addButton || !template || !totalForms) return;
+
   const countLabel = document.getElementById('room-count');
   const nextButton = document.getElementById('wizard-next');
   const backButton = document.getElementById('wizard-back');
@@ -318,13 +740,28 @@ document.addEventListener('DOMContentLoaded', function () {
   const validationMessage = document.getElementById('wizard-validation-message');
   const progressFill = document.getElementById('publish-progress-fill');
   const progressSteps = root.querySelector('.publish-progress');
+  const roomStepHeadings = root.querySelectorAll('[data-room-step-heading]');
+  const actions = root.querySelector('#publish-wizard-actions');
+
+  const TEXT = {
+    roomOne: '{{ txt_room_one|escapejs }}',
+    roomMany: '{{ txt_room_many|escapejs }}',
+    next: '{{ txt_continue|escapejs }}',
+    review: '{{ txt_review|escapejs }}',
+    checkFields: '{{ txt_check_fields|escapejs }}',
+    needRoom: '{{ txt_need_room|escapejs }}'
+  };
+
   let currentStep = 1;
   const reviewStep = 7;
   const finalProgressStep = 6;
 
-  if (!root || !form || !container || !addButton || !template || !totalForms) return;
-  const roomStepHeadings = root.querySelectorAll('[data-room-step-heading]');
-  const actions = root.querySelector('#publish-wizard-actions');
+  // Message d'erreur du haut de page (le texte est remis à zéro à chaque affichage)
+  function showValidation(message) {
+    if (!validationMessage) return;
+    validationMessage.textContent = message || TEXT.checkFields;
+    validationMessage.classList.add('is-visible');
+  }
 
   function roomCards() {
     return Array.from(container.querySelectorAll('.room-card')).filter(card => {
@@ -342,9 +779,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateRoomCount() {
     const completed = namedRooms();
-    const label = completed === 1
-      ? '{% translate "type de chambre renseigné" %}'
-      : '{% translate "types de chambre renseignés" %}';
+    const label = completed === 1 ? TEXT.roomOne : TEXT.roomMany;
     if (countLabel) countLabel.textContent = `${completed} ${label}`;
   }
 
@@ -401,18 +836,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const setText = (selector, value) => {
       root.querySelectorAll(selector).forEach(node => { node.textContent = value; });
     };
-    const rooms = String(namedRooms());
-    const photos = String(countFiles('image'));
-    const videos = String(countFiles('video'));
-
     setText('[data-review="nom"]', valueOf('nom'));
     setText('[data-review="ville"]', valueOf('ville'));
     setText('[data-review="commune"]', valueOf('commune'));
     setText('[data-review="quartier"]', valueOf('quartier'));
-    setText('[data-review="rooms"]', rooms);
-    setText('[data-review="photos"]', photos);
-    setText('[data-review="videos"]', videos);
-
+    setText('[data-review="rooms"]', String(namedRooms()));
+    setText('[data-review="photos"]', String(countFiles('image')));
+    setText('[data-review="videos"]', String(countFiles('video')));
   }
 
   function showStep(step, shouldScroll = true) {
@@ -427,10 +857,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const progressStep = Math.min(currentStep, finalProgressStep);
     root.querySelectorAll('[data-progress-step]').forEach(item => {
       const n = Number(item.getAttribute('data-progress-step'));
-      item.classList.toggle('is-active', n === progressStep && currentStep !== reviewStep);
+      const isActive = n === progressStep && currentStep !== reviewStep;
+      item.classList.toggle('is-active', isActive);
       item.classList.toggle('is-complete', n < progressStep || currentStep === reviewStep);
-      if (n === progressStep && currentStep !== reviewStep) item.setAttribute('aria-current', 'step');
-      else item.removeAttribute('aria-current');
+      if (isActive) {
+        item.setAttribute('aria-current', 'step');
+        // Sur mobile, la liste des étapes défile : on garde l'étape active visible
+        if (shouldScroll && item.scrollIntoView) item.scrollIntoView({block: 'nearest', inline: 'center'});
+      } else {
+        item.removeAttribute('aria-current');
+      }
     });
     if (progressFill) progressFill.style.width = `${progressStep / finalProgressStep * 100}%`;
 
@@ -439,9 +875,7 @@ document.addEventListener('DOMContentLoaded', function () {
     submitButton.hidden = currentStep !== reviewStep;
     cancelButton.hidden = currentStep !== 1;
     if (actions) actions.dataset.currentStep = String(currentStep);
-    nextButton.textContent = currentStep === finalProgressStep
-      ? '{% translate "Vérifier l’annonce" %}'
-      : '{% translate "Continuer" %}';
+    nextButton.textContent = currentStep === finalProgressStep ? TEXT.review : TEXT.next;
     if (currentStep === reviewStep) updateReview();
     if (validationMessage) validationMessage.classList.remove('is-visible');
     if (shouldScroll) root.scrollIntoView({behavior: 'smooth', block: 'start'});
@@ -491,14 +925,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function goNext() {
     if (!validateVisibleStep()) {
-      if (validationMessage) validationMessage.classList.add('is-visible');
+      showValidation();
       return;
     }
     if (currentStep === 2 && namedRooms() === 0) {
-      if (validationMessage) {
-        validationMessage.textContent = '{% translate "Ajoutez au moins un type de chambre et renseignez son titre avant de continuer." %}';
-        validationMessage.classList.add('is-visible');
-      }
+      showValidation(TEXT.needRoom);
       return;
     }
     showStep(currentStep + 1);

@@ -7,8 +7,9 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Sum, Avg, Count
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.http import JsonResponse
 from accounts.models import Profile
 from .forms import (
@@ -265,7 +266,9 @@ def detail_logement(request, id):
     logement = get_object_or_404(Logement, id=id)
     photos   = logement.photos.all()
     videos   = logement.videos.all()
-    reservations_count = logement.reservations.filter(statut='confirmed').count()
+    reservations_count = logement.reservations.filter(
+        statut__in=['confirmed', 'checked_in'],
+    ).count()
     
     # Vérifier si le logement est dans les favoris de l'utilisateur
     is_favorite = False
@@ -1169,6 +1172,43 @@ def mes_reservations(request):
 
 
 @login_required
+@require_POST
+def changer_statut_reservation(request, reservation_id):
+    reservation = get_object_or_404(
+        Reservation,
+        pk=reservation_id,
+        logement__proprietaire=request.user,
+        logement__account_type__in=['hotel', 'residence'],
+    )
+    transitions = {
+        'check_in': (
+            'confirmed',
+            'checked_in',
+            _('L’arrivée du client a été enregistrée.'),
+        ),
+        'check_out': (
+            'checked_in',
+            'completed',
+            _('Le séjour est clôturé ; la chambre est de nouveau disponible.'),
+        ),
+    }
+    transition = transitions.get(request.POST.get('action'))
+    if transition and reservation.statut == transition[0]:
+        if (
+            request.POST.get('action') == 'check_in'
+            and not reservation.date_arrivee <= timezone.localdate() < reservation.date_depart
+        ):
+            messages.error(request, _('L’arrivée ne peut être enregistrée que pendant les dates prévues du séjour.'))
+        else:
+            reservation.statut, message = transition[1:]
+            reservation.save(update_fields=['statut', 'updated_at'])
+            messages.success(request, message)
+    else:
+        messages.error(request, _('Cette réservation ne peut pas changer de statut.'))
+    return redirect('logement:mes_reservations')
+
+
+@login_required
 def calendrier_reservations(request):
     profile = request.user.profile
     titre   = 'Calendrier — Hôtel' if profile.account_type == 'hotel' else 'Calendrier — Résidence'
@@ -1207,7 +1247,7 @@ def calendrier_reservations(request):
         reservations = logement.reservations.filter(
             date_arrivee__lt=month_end,
             date_depart__gt=month_start,
-            statut__in=['pending', 'confirmed'],
+            statut__in=['pending', 'confirmed', 'checked_in'],
         ).select_related('client_user').prefetch_related('unites').order_by('date_arrivee')
         blocks = logement.blocages.filter(
             date_debut__lt=month_end,
@@ -1248,12 +1288,17 @@ def calendrier_reservations(request):
                 confirmed_reservations = [
                     item for item in day_reservations if item.statut == 'confirmed'
                 ]
+                checked_in_reservations = [
+                    item for item in day_reservations if item.statut == 'checked_in'
+                ]
                 pending_reservations = [
                     item for item in day_reservations if item.statut == 'pending'
                 ]
                 if block or (override and override.statut == 'bloquer'):
                     status = 'blocked'
                     label = block.motif if block else 'Indisponible'
+                elif checked_in_reservations:
+                    status, label = 'reserved', 'En séjour'
                 elif confirmed_reservations:
                     status, label = 'reserved', 'Réservé'
                 elif pending_reservations:
@@ -1310,6 +1355,28 @@ def mes_paiements(request):
 
 
 @login_required
+@require_POST
+def confirmer_paiement_especes(request, paiement_id):
+    with transaction.atomic():
+        paiement = get_object_or_404(
+            Paiement.objects.select_for_update().select_related('reservation'),
+            pk=paiement_id,
+            reservation__logement__proprietaire=request.user,
+            reservation__logement__account_type__in=['hotel', 'residence'],
+        )
+        if paiement.methode != 'cash' or paiement.statut != 'pending':
+            messages.error(request, _('Ce paiement ne peut pas être confirmé comme paiement sur place.'))
+        else:
+            paiement.statut = 'completed'
+            paiement.completed_at = timezone.now()
+            paiement.save(update_fields=['statut', 'completed_at'])
+            paiement.reservation.paye = True
+            paiement.reservation.save(update_fields=['paye', 'updated_at'])
+            messages.success(request, _('Paiement sur place enregistré.'))
+    return redirect('logement:mes_paiements')
+
+
+@login_required
 def mes_clients(request):
     profile = request.user.profile
     titre   = 'Clients — Hôtel' if profile.account_type == 'hotel' else 'Locataires — Résidence'
@@ -1317,6 +1384,15 @@ def mes_clients(request):
         logement__proprietaire=request.user,
         logement__account_type__in=['hotel', 'residence'],
     ).select_related('logement', 'client_user').order_by('-created_at')
+    payments_by_reservation = dict(
+        Paiement.objects.filter(
+            reservation__in=reservations,
+            statut='completed',
+        ).values('reservation_id').annotate(total=Sum('montant')).values_list(
+            'reservation_id',
+            'total',
+        )
+    )
 
     clients = {}
     for reservation in reservations:
@@ -1333,7 +1409,7 @@ def mes_clients(request):
             }
 
         client = clients[key]
-        client['total_depense'] += reservation.montant_final
+        client['total_depense'] += payments_by_reservation.get(reservation.pk, 0)
         client['nb_reservations'] += 1
         client['logements'].append(reservation.logement.titre)
         if reservation.date_depart > client['derniere_reservation']:
@@ -1352,6 +1428,8 @@ def mes_clients(request):
 def avis_clients(request):
     avis = AvisLogement.objects.filter(
         logement__proprietaire=request.user,
+        est_visible=True,
+        parent__isnull=True,
     ).select_related('logement', 'reservation', 'auteur').order_by('-created_at')
 
     note_moyenne = 0
@@ -1370,25 +1448,32 @@ def avis_clients(request):
 @login_required
 def statistiques_professionnel(request):
     logements = Logement.objects.filter(proprietaire=request.user, account_type__in=['hotel', 'residence'])
-    reservations = Reservation.objects.filter(logement__proprietaire=request.user).select_related('logement')
-    avis = AvisLogement.objects.filter(logement__proprietaire=request.user)
+    reservations = Reservation.objects.filter(
+        logement__in=logements,
+    ).select_related('logement').prefetch_related('unites')
+    paiements = list(
+        Paiement.objects.filter(
+            reservation__logement__in=logements,
+            statut='completed',
+        ).select_related('reservation', 'reservation__logement')
+    )
+    avis = AvisLogement.objects.filter(
+        logement__in=logements,
+        est_visible=True,
+        parent__isnull=True,
+    )
+    notes = [item.note_logement for item in avis if item.note_logement is not None]
 
     total_logements = logements.count()
     total_reservations = reservations.count()
-    revenu_total = sum((reservation.montant_final for reservation in reservations if reservation.statut in ['confirmed', 'completed']), 0)
-
-    note_moyenne = 0
-    notes = [item.note_logement for item in avis if item.note_logement is not None]
-    if notes:
-        note_moyenne = round(sum(notes) / len(notes), 1)
-
-    occupied_nights = sum((reservation.nombre_nuits or 0 for reservation in reservations if reservation.statut in ['confirmed', 'completed']))
-    available_nights = max(total_logements * 30, 1)
-    taux_occupation = round((occupied_nights / available_nights) * 100, 1) if available_nights else 0
+    revenu_total = sum((paiement.montant for paiement in paiements), 0)
+    note_moyenne = round(sum(notes) / len(notes), 1) if notes else 0
+    total_rooms = sum(logement.unites_totales for logement in logements)
+    occupied_nights = 0
 
     # Build a stable twelve-month series so the dashboard remains useful even
     # when the database contains sparse or incomplete historical data.
-    today = date.today()
+    today = timezone.localdate()
     months = []
     for offset in range(11, -1, -1):
         month_index = today.year * 12 + today.month - 1 - offset
@@ -1412,15 +1497,21 @@ def statistiques_professionnel(request):
             reservation for reservation in reservations
             if month_start <= reservation.date_arrivee < month_end
         ]
-        completed_month_reservations = [
-            reservation for reservation in month_reservations
-            if reservation.statut in ['confirmed', 'completed']
+        occupied_month_reservations = [
+            reservation for reservation in reservations
+            if reservation.date_arrivee < month_end
+            and reservation.date_depart > month_start
+            if reservation.statut in ['confirmed', 'checked_in', 'completed']
         ]
-        month_nights = sum(
-            (reservation.nombre_nuits or 0) for reservation in completed_month_reservations
-        )
+        month_nights = 0
+        for reservation in occupied_month_reservations:
+            stay_start = max(reservation.date_arrivee, month_start)
+            stay_end = min(reservation.date_depart, month_end)
+            nights = max((stay_end - stay_start).days, 0)
+            room_count = len(reservation.unites.all()) or reservation.nombre_chambres or 1
+            month_nights += nights * room_count
         days_in_month = (month_end - month_start).days
-        capacity = max(sum(logement.unites_totales for logement in logements) * days_in_month, 1)
+        capacity = max(total_rooms * days_in_month, 1)
         month_reviews = [
             review for review in avis
             if month_start <= review.created_at.date() < month_end
@@ -1428,10 +1519,12 @@ def statistiques_professionnel(request):
         ]
 
         monthly_revenue.append(float(sum(
-            reservation.montant_final for reservation in completed_month_reservations
+            paiement.montant for paiement in paiements
+            if month_start <= (paiement.completed_at or paiement.created_at).date() < month_end
         )))
         monthly_reservations.append(len(month_reservations))
         monthly_occupancy.append(round(min((month_nights / capacity) * 100, 100), 1))
+        occupied_nights += month_nights
         monthly_reviews.append(round(
             sum(review.note_logement for review in month_reviews) / len(month_reviews), 1
         ) if month_reviews else 0)
@@ -1443,12 +1536,13 @@ def statistiques_professionnel(request):
     property_revenue = []
     for logement in logements:
         amount = sum(
-            reservation.montant_final for reservation in reservations
-            if reservation.logement_id == logement.id
-            and reservation.statut in ['confirmed', 'completed']
+            paiement.montant for paiement in paiements
+            if paiement.reservation.logement_id == logement.id
         )
         property_revenue.append({'label': logement.titre, 'value': float(amount)})
 
+    available_nights = max(total_rooms * 365, 1)
+    taux_occupation = round(min((occupied_nights / available_nights) * 100, 100), 1)
     return render(request, 'logement/statistiques.html', {
         'total_logements': total_logements,
         'total_reservations': total_reservations,
@@ -1456,6 +1550,7 @@ def statistiques_professionnel(request):
         'revenu_total': revenu_total,
         'note_moyenne': note_moyenne,
         'nb_avis': avis.count(),
+        'nb_paiements': len(paiements),
         'reservations': reservations.order_by('-created_at')[:10],
         'chart_data': {
             'labels': month_labels,

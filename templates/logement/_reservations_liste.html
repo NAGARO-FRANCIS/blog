@@ -25,6 +25,10 @@
     .reservation-status--confirmed, .reservation-status--completed { background: #d1fae5; color: #065f46; }
     .reservation-status--pending { background: #fef3c7; color: #92400e; }
     .reservation-status--cancelled { background: #fee2e2; color: #991b1b; }
+    .reservation-status--checked_in { background: #dbeafe; color: #1e40af; }
+    .reservation-actions { display: flex; min-width: 150px; flex-wrap: wrap; gap: 7px; }
+    .reservation-action { padding: 8px 10px; border: 0; border-radius: 7px; color: #fff; background: #047857; font: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
+    .reservation-action--checkout { background: #1d4ed8; }
     .reservation-empty { padding: 36px 16px; color: #6b7280; text-align: center; }
     .reservations-back { display: inline-block; margin-top: 20px; color: #047857; font-weight: 650; text-decoration: none; }
     @media (max-width: 760px) {
@@ -77,6 +81,7 @@
                         <th>Statut</th>
                         <th>Paiement</th>
                         <th>Montant</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,10 +119,24 @@
                         <td><span class="reservation-status reservation-status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span></td>
                         <td>{% if reservation.paye %}Payée{% else %}À régler{% endif %}</td>
                         <td>{{ reservation.montant_final }} FCFA</td>
+                        <td>
+                            {% if reservation.statut == "confirmed" or reservation.statut == "checked_in" %}
+                            <form class="reservation-actions" method="post" action="{% url 'logement:changer_statut_reservation' reservation.id %}">
+                                {% csrf_token %}
+                                {% if reservation.statut == "confirmed" %}
+                                <button class="reservation-action" type="submit" name="action" value="check_in">Enregistrer l’arrivée</button>
+                                {% else %}
+                                <button class="reservation-action reservation-action--checkout" type="submit" name="action" value="check_out" onclick="return confirm('Confirmer le départ et libérer la chambre ?')">Clôturer le séjour</button>
+                                {% endif %}
+                            </form>
+                            {% else %}
+                            <span class="reservation-detail">Aucune action disponible</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td class="reservation-empty" colspan="6">
+                        <td class="reservation-empty" colspan="7">
                             {% if search_query or selected_status %}
                             Aucune réservation ne correspond à votre recherche.
                             {% else %}

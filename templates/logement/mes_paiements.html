@@ -101,6 +101,7 @@
                     <th>{% translate "Méthode" %}</th>
                     <th>{% translate "Statut" %}</th>
                     <th>{% translate "Date" %}</th>
+                    <th>{% translate "Action" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -116,10 +117,18 @@
                         </span>
                     </td>
                     <td>{{ paiement.created_at|date:'d/m/Y' }}</td>
+                    <td>
+                        {% if paiement.methode == 'cash' and paiement.statut == 'pending' %}
+                        <form method="post" action="{% url 'logement:confirmer_paiement_especes' paiement.id %}">
+                            {% csrf_token %}
+                            <button class="payment-confirm-button" type="submit">{% translate "Confirmer le paiement reçu" %}</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="empty-row">{% translate "Aucun paiement enregistré pour le moment." %}</td>
+                    <td colspan="7" class="empty-row">{% translate "Aucun paiement enregistré pour le moment." %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -148,6 +157,7 @@
     .status-pending { background: #fef3c7; color: #92400e; }
     .status-failed { background: #fee2e2; color: #991b1b; }
     .empty-row { text-align: center; color: #6b7280; padding: 28px; }
+    .payment-confirm-button { padding: 8px 11px; border: 0; border-radius: 7px; color: white; background: #047857; font: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
     .actions-row { margin-top: 22px; }
     .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
     .back-link:hover { background: #d97706; }

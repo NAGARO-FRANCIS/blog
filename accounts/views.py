@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db.models import Avg, Q, Sum
 from django.contrib.auth.views import (
     PasswordChangeView as DjangoPasswordChangeView,
     PasswordResetConfirmView as DjangoPasswordResetConfirmView,
@@ -28,6 +29,79 @@ from django.http import HttpResponseRedirect
 from .notification_service import notify_admins_of_registration, safe_send_mail
 
 logger = logging.getLogger(__name__)
+
+
+def _professional_dashboard_data(user, account_type):
+    from logement.models import AvisLogement, Logement, Paiement, Reservation
+
+    today = timezone.localdate()
+    logements = list(
+        Logement.objects.filter(
+            proprietaire=user,
+            account_type=account_type,
+        ).order_by('titre')
+    )
+    logement_ids = [logement.pk for logement in logements]
+    reservations = Reservation.objects.filter(
+        logement_id__in=logement_ids,
+    )
+    total_rooms = sum(logement.unites_totales for logement in logements)
+    reserved_today = sum(
+        logement.reserved_units_for_date(today) for logement in logements
+    )
+    available_today = sum(
+        logement.available_units_for_date(today) for logement in logements
+    )
+    current_guests = reservations.filter(statut='checked_in').values_list(
+        'client_user_id',
+        'client_email',
+    )
+    active_clients = {
+        ('email', email.lower()) if email else ('user', user_id)
+        for user_id, email in current_guests
+    }
+
+    month_start = today.replace(day=1)
+    if month_start.month == 12:
+        next_month = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        next_month = month_start.replace(month=month_start.month + 1)
+    monthly_payments = Paiement.objects.filter(
+        reservation__logement_id__in=logement_ids,
+        statut='completed',
+    ).filter(
+        Q(
+            completed_at__date__gte=month_start,
+            completed_at__date__lt=next_month,
+        ) |
+        Q(
+            completed_at__isnull=True,
+            created_at__date__gte=month_start,
+            created_at__date__lt=next_month,
+        )
+    )
+    reviews = AvisLogement.objects.filter(
+        logement_id__in=logement_ids,
+        est_visible=True,
+        parent__isnull=True,
+        note_logement__isnull=False,
+    )
+
+    return {
+        'total_properties': len(logements),
+        'total_rooms': total_rooms,
+        'nb_reservations': reservations.count(),
+        'nb_clients_actifs': len(active_clients),
+        'taux_occupation': min(round(reserved_today * 100 / total_rooms, 1), 100) if total_rooms else 0,
+        'revenu_mois': monthly_payments.aggregate(total=Sum('montant'))['total'] or 0,
+        'note_moyenne': reviews.aggregate(average=Avg('note_logement'))['average'] or 0,
+        'nb_avis': reviews.count(),
+        'available_today': available_today,
+        'recent_reservations': reservations.select_related(
+            'logement',
+            'client_user',
+        ).prefetch_related('unites').order_by('-created_at')[:5],
+    }
 
 
 class PasswordResetView(DjangoPasswordResetView):
@@ -725,42 +799,14 @@ def dashboard_residence(request):
         return redirect('accounts:dashboard')
     
     prof_profile = profile._professional_profile()
-    
-    # Récupérer les statistiques
-    try:
-        nb_logements = profile.user.logements.count()
-    except Exception:
-        nb_logements = 0
-    
-    # Statistiques avancées (à personnaliser selon vos modèles)
-    nb_reservations = 0  # À adapter selon vos modèles
-    nb_clients_actifs = 0  # À adapter selon vos modèles
-    taux_occupation = 0  # À calculer selon vos données
-    revenu_mois = 0  # À calculer selon vos données
-    note_moyenne = 4.5  # À calculer selon les avis
-    nb_avis = 0  # À adapter selon vos modèles
-    logements_disponibles = nb_logements  # À adapter
-    
-    # Données récentes (exemples)
-    recent_reservations = []  # À adapter selon vos modèles
-    recent_tenants = []  # À adapter selon vos modèles
-    recent_reviews = []  # À adapter selon vos modèles
-    
+    dashboard_data = _professional_dashboard_data(request.user, 'residence')
     context = {
         'profile': profile,
         'prof_profile': prof_profile,
-        'nb_logements': nb_logements,
-        'nb_reservations': nb_reservations,
-        'nb_clients_actifs': nb_clients_actifs,
-        'taux_occupation': taux_occupation,
-        'revenu_mois': revenu_mois,
-        'note_moyenne': note_moyenne,
-        'nb_avis': nb_avis,
-        'logements_disponibles': logements_disponibles,
-        'recent_reservations': recent_reservations,
-        'recent_tenants': recent_tenants,
-        'recent_reviews': recent_reviews,
+        'nb_logements': dashboard_data['total_properties'],
+        **dashboard_data,
     }
+    context['logements_disponibles'] = dashboard_data['available_today']
     return render(request, 'accounts/dashboard_residence.html', context)
 
 
@@ -774,41 +820,13 @@ def dashboard_hotel(request):
         return redirect('accounts:dashboard')
     
     prof_profile = profile._professional_profile()
-    
-    # Récupérer les statistiques
-    try:
-        nb_chambres = profile.user.logements.count()
-    except Exception:
-        nb_chambres = 0
-    
-    # Statistiques avancées (à personnaliser selon vos modèles)
-    nb_reservations = 0  # À adapter selon vos modèles
-    nb_clients_actifs = 0  # À adapter selon vos modèles
-    taux_occupation = 0  # À calculer selon vos données
-    revenu_mois = 0  # À calculer selon vos données
-    note_moyenne = 4.8  # À calculer selon les avis
-    nb_avis = 0  # À adapter selon vos modèles
-    chambres_disponibles = nb_chambres  # À adapter
-    
-    # Données récentes (exemples)
-    recent_reservations = []  # À adapter selon vos modèles
-    recent_clients = []  # À adapter selon vos modèles
-    recent_reviews = []  # À adapter selon vos modèles
-    
+    dashboard_data = _professional_dashboard_data(request.user, 'hotel')
     context = {
         'profile': profile,
         'prof_profile': prof_profile,
-        'nb_chambres': nb_chambres,
-        'nb_reservations': nb_reservations,
-        'nb_clients_actifs': nb_clients_actifs,
-        'taux_occupation': taux_occupation,
-        'revenu_mois': revenu_mois,
-        'note_moyenne': note_moyenne,
-        'nb_avis': nb_avis,
-        'chambres_disponibles': chambres_disponibles,
-        'recent_reservations': recent_reservations,
-        'recent_clients': recent_clients,
-        'recent_reviews': recent_reviews,
+        'nb_chambres': dashboard_data['total_rooms'],
+        'chambres_disponibles': dashboard_data['available_today'],
+        **dashboard_data,
     }
     return render(request, 'accounts/dashboard_hotel.html', context)
 

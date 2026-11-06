@@ -4,6 +4,7 @@ import os
 from smtplib import SMTPException
 import tempfile
 from unittest import mock
+from datetime import timedelta
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -475,6 +476,14 @@ class AccountActivationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Ma Résidence')
+        for route_name in (
+            'logement:gestion_logements',
+            'logement:calendrier_reservations',
+            'logement:mes_paiements',
+            'logement:statistiques',
+            'logement:avis_clients',
+        ):
+            self.assertContains(response, reverse(route_name))
 
     def test_professional_dashboards_show_verified_establishment_status(self):
         for account_type, dashboard_url in (
@@ -750,6 +759,85 @@ class AccountActivationTests(TestCase):
         profile.refresh_from_db()
         self.assertEqual(profile.phone_verification_code, send_sms_mock.call_args.args[1].split(': ')[1])
         self.assertEqual(self.client.session['pending_user_id'], user.pk)
+
+
+class ProfessionalDashboardConsistencyTests(TestCase):
+    def test_dashboard_uses_live_stay_payment_and_review_data(self):
+        from logement.models import AvisLogement, Logement, Paiement, Reservation
+
+        owner = User.objects.create_user(
+            username='hotel_dashboard_owner',
+            email='hotel.dashboard.owner@example.com',
+            password='StrongPassword123!',
+        )
+        owner.profile.account_type = 'hotel'
+        owner.profile.save(update_fields=['account_type'])
+        guest = User.objects.create_user(
+            username='hotel_dashboard_guest',
+            email='hotel.dashboard.guest@example.com',
+            first_name='Aminata',
+            last_name='Diallo',
+            password='StrongPassword123!',
+        )
+        logement = Logement.objects.create(
+            titre='Hôtel dashboard',
+            description='Chambres de test',
+            ville='Abidjan',
+            account_type='hotel',
+            unites_totales=2,
+            proprietaire=owner,
+        )
+        today = timezone.localdate()
+        reservation = Reservation.objects.create(
+            logement=logement,
+            client_user=guest,
+            client_nom='Aminata Diallo',
+            client_email=guest.email,
+            client_telephone='+2250700000000',
+            date_arrivee=today - timedelta(days=1),
+            date_depart=today + timedelta(days=1),
+            nombre_personnes=1,
+            nombre_chambres=1,
+            prix_par_nuit=25000,
+            nombre_nuits=2,
+            prix_total=50000,
+            montant_final=50000,
+            statut='checked_in',
+        )
+        reservation.unites.set(logement.unites.filter(numero='1'))
+        Paiement.objects.create(
+            reservation=reservation,
+            montant=25000,
+            methode='cash',
+            statut='completed',
+            completed_at=timezone.now(),
+        )
+        AvisLogement.objects.create(
+            logement=logement,
+            reservation=reservation,
+            auteur=guest,
+            note_logement=5,
+            note_proprietaire=5,
+            commentaire='Excellent séjour.',
+        )
+        self.client.force_login(owner)
+
+        response = self.client.get(reverse('accounts:dashboard_hotel'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['nb_chambres'], 2)
+        self.assertEqual(response.context['chambres_disponibles'], 1)
+        self.assertEqual(response.context['nb_clients_actifs'], 1)
+        self.assertEqual(response.context['taux_occupation'], 50)
+        self.assertEqual(response.context['revenu_mois'], 25000)
+        self.assertEqual(response.context['note_moyenne'], 5)
+        self.assertEqual(response.context['nb_avis'], 1)
+        self.assertEqual(response.context['recent_reservations'][0].pk, reservation.pk)
+        self.assertContains(response, 'Aminata Diallo')
+        self.assertContains(response, 'En séjour')
+        self.assertContains(response, reverse('logement:mes_paiements'))
+        self.assertContains(response, reverse('logement:statistiques'))
+        self.assertContains(response, reverse('logement:avis_clients'))
 
 
 class DocumentUploadSecurityTests(TestCase):

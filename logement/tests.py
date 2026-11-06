@@ -1,8 +1,9 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .forms import (
     LogementHotelForm,
@@ -722,6 +723,93 @@ class ReservationListViewTests(TestCase):
         self.assertContains(response, 'Aminata Diallo')
         self.assertEqual(response.context['nb_reservations'], 1)
 
+    def test_arrivee_et_depart_conservent_l_historique_et_liberent_la_chambre(self):
+        url = reverse('logement:changer_statut_reservation', args=[self.reservation.pk])
+        today = timezone.localdate()
+        self.reservation.date_arrivee = today
+        self.reservation.date_depart = today + timedelta(days=1)
+        self.reservation.save(update_fields=['date_arrivee', 'date_depart', 'updated_at'])
+
+        arrival_response = self.client.post(url, {'action': 'check_in'})
+
+        self.assertRedirects(arrival_response, reverse('logement:mes_reservations'))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'checked_in')
+        self.assertEqual(self.logement.reserved_units_for_date(today), 1)
+        self.assertEqual(self.logement.available_units_for_date(today), 0)
+
+        duplicate_arrival_response = self.client.post(url, {'action': 'check_in'})
+        self.assertRedirects(duplicate_arrival_response, reverse('logement:mes_reservations'))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'checked_in')
+
+        departure_response = self.client.post(url, {'action': 'check_out'})
+
+        self.assertRedirects(departure_response, reverse('logement:mes_reservations'))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'completed')
+        self.assertTrue(Reservation.objects.filter(pk=self.reservation.pk).exists())
+        self.assertEqual(self.logement.reserved_units_for_date(today), 0)
+        self.assertEqual(self.logement.available_units_for_date(today), 1)
+
+    def test_seul_le_proprietaire_peut_cloturer_une_reservation(self):
+        other_owner = User.objects.create_user(
+            username='other_hotel_owner',
+            password='StrongPassword123!',
+        )
+        self.client.force_login(other_owner)
+
+        response = self.client.post(
+            reverse('logement:changer_statut_reservation', args=[self.reservation.pk]),
+            {'action': 'check_out'},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'confirmed')
+
+    def test_proprietaire_peut_enregistrer_un_paiement_especes_recu(self):
+        self.reservation.paye = False
+        self.reservation.save(update_fields=['paye'])
+        paiement = Paiement.objects.create(
+            reservation=self.reservation,
+            montant=self.reservation.montant_final,
+            methode='cash',
+            statut='pending',
+        )
+        payments_page = self.client.get(reverse('logement:mes_paiements'))
+        self.assertContains(payments_page, 'Confirmer le paiement reçu')
+
+        response = self.client.post(
+            reverse('logement:confirmer_paiement_especes', args=[paiement.pk]),
+        )
+
+        self.assertRedirects(response, reverse('logement:mes_paiements'))
+        paiement.refresh_from_db()
+        self.reservation.refresh_from_db()
+        self.assertEqual(paiement.statut, 'completed')
+        self.assertIsNotNone(paiement.completed_at)
+        self.assertTrue(self.reservation.paye)
+        self.assertNotContains(
+            self.client.get(reverse('logement:mes_paiements')),
+            'Confirmer le paiement reçu',
+        )
+
+    def test_arrivee_ne_peut_pas_etre_enregistree_hors_dates_du_sejour(self):
+        today = timezone.localdate()
+        self.reservation.date_arrivee = today + timedelta(days=2)
+        self.reservation.date_depart = today + timedelta(days=3)
+        self.reservation.save(update_fields=['date_arrivee', 'date_depart', 'updated_at'])
+
+        response = self.client.post(
+            reverse('logement:changer_statut_reservation', args=[self.reservation.pk]),
+            {'action': 'check_in'},
+        )
+
+        self.assertRedirects(response, reverse('logement:mes_reservations'))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'confirmed')
+
 
 class ReservationCalendarTests(TestCase):
     def setUp(self):
@@ -783,6 +871,28 @@ class ReservationCalendarTests(TestCase):
         self.assertContains(response, 'n°2')
         self.assertContains(response, 'n°3')
         self.assertNotContains(response, 'Client Annule')
+
+    def test_calendrier_garde_une_chambre_occupee_pendant_le_sejour(self):
+        checked_in = self.create_reservation(
+            'Client En Séjour',
+            '2026-10-10',
+            '2026-10-12',
+            1,
+            'checked_in',
+        )
+        checked_in.unites.set(self.logement.unites.filter(numero='1'))
+
+        response = self.client.get(
+            reverse('logement:calendrier_reservations'),
+            {'year': 2026, 'month': 10, 'logement': self.logement.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        days = {day['number']: day for day in response.context['days'] if day}
+        self.assertEqual(days[10]['reserved_units'], 1)
+        self.assertEqual(days[10]['available_units'], 2)
+        self.assertEqual(days[10]['label'], 'En séjour')
+        self.assertContains(response, 'Client En Séjour')
 
 
 class AvisLogementTests(TestCase):

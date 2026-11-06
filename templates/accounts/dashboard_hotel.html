@@ -117,17 +117,14 @@
                     {% for reservation in recent_reservations %}
                     <div class="dh-reservation {% if not forloop.last %}dh-reservation--border{% endif %}">
                         <div>
-                            <p class="dh-reservation__guest">{% if reservation.guest_name %}{{ reservation.guest_name }}{% else %}{% translate "Client" %}{% endif %}</p>
+                            <p class="dh-reservation__guest">{{ reservation.client_user.get_full_name|default:reservation.client_nom }}</p>
                             <p class="dh-reservation__dates">
-                                {{ reservation.check_in|date:"d/m/y"|default:"—" }} → {{ reservation.check_out|date:"d/m/y"|default:"—" }}
+                                {{ reservation.date_arrivee|date:"d/m/y" }} → {{ reservation.date_depart|date:"d/m/y" }}
                             </p>
+                            <p class="dh-reservation__dates">{{ reservation.logement.titre }}</p>
                         </div>
-                        <span class="dh-status dh-status--{{ reservation.status|default:'pending' }}">
-                            {% if reservation.status == "confirmed" %}{% translate "Confirmée" %}
-                            {% elif reservation.status == "cancelled" %}{% translate "Annulée" %}
-                            {% else %}En attente{% endif %}
-                        </span>
-                        <span class="dh-reservation__amount">{{ reservation.amount|default:"—" }} FCFA</span>
+                        <span class="dh-status dh-status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span>
+                        <span class="dh-reservation__amount">{{ reservation.montant_final }} FCFA</span>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -155,7 +152,7 @@
         <section class="dh-section">
             <h2 class="dh-section__title">{% translate "Fonctionnalités" %}</h2>
             <div class="dh-features">
-                <a href="{% url 'logement:mes_logements' %}" class="dh-feature">
+                <a href="{% url 'logement:gestion_logements' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
                     <p class="dh-feature__name">{% translate "Gestion des chambres" %}</p>
                 </a>
@@ -427,6 +424,8 @@
     white-space: nowrap;
 }
 .dh-status--confirmed { background: var(--ci-green-lt); color: var(--ci-green-dk); border: 1px solid #a7d7b8; }
+.dh-status--checked_in { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.dh-status--completed { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
 .dh-status--pending   { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
 .dh-status--cancelled { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
 

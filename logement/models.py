@@ -241,7 +241,7 @@ class Logement(models.Model):
         reservations = self.reservations.filter(
             date_arrivee__lte=day,
             date_depart__gt=day,
-            statut__in=['pending', 'confirmed'],
+            statut__in=['pending', 'confirmed', 'checked_in'],
         ).prefetch_related('unites')
         return sum(
             len(reservation.unites.all()) or reservation.nombre_chambres or 1
@@ -279,7 +279,7 @@ class Logement(models.Model):
 
         overlapping_reservations = Reservation.objects.filter(
             logement=self,
-            statut__in=['pending', 'confirmed'],
+            statut__in=['pending', 'confirmed', 'checked_in'],
             date_arrivee__lt=end_date,
             date_depart__gt=start_date,
         ).prefetch_related('unites')
@@ -422,6 +422,7 @@ class Reservation(models.Model):
     STATUT_CHOICES = [
         ('pending', _('⏳ En attente de paiement')),
         ('confirmed', _('✅ Confirmée')),
+        ('checked_in', _('🏨 En séjour')),
         ('cancelled', _('❌ Annulée')),
         ('completed', _('✓ Complétée')),
     ]

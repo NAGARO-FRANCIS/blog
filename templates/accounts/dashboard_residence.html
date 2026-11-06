@@ -98,6 +98,59 @@
             </div>
         </section>
 
+        <section class="dr-section">
+            <h2 class="dr-section__title">{% translate "Fonctionnalités" %}</h2>
+            <div class="dr-actions">
+                <a href="{% url 'logement:gestion_logements' %}" class="dr-action">
+                    <span class="dr-action__icon">▦</span>
+                    <span>{% translate "Gestion des logements" %}</span>
+                </a>
+                <a href="{% url 'logement:calendrier_reservations' %}" class="dr-action">
+                    <span class="dr-action__icon">▦</span>
+                    <span>{% translate "Calendrier" %}</span>
+                </a>
+                <a href="{% url 'logement:mes_paiements' %}" class="dr-action">
+                    <span class="dr-action__icon">▦</span>
+                    <span>{% translate "Paiements" %}</span>
+                </a>
+                <a href="{% url 'logement:statistiques' %}" class="dr-action">
+                    <span class="dr-action__icon">▦</span>
+                    <span>{% translate "Statistiques" %}</span>
+                </a>
+                <a href="{% url 'logement:avis_clients' %}" class="dr-action">
+                    <span class="dr-action__icon">▦</span>
+                    <span>{% translate "Avis clients" %}</span>
+                </a>
+                <a href="{% url 'accounts:profil' %}" class="dr-action">
+                    <span class="dr-action__icon">⚙</span>
+                    <span>{% translate "Paramètres" %}</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="dr-section">
+            <div class="dr-section__row">
+                <h2 class="dr-section__title">{% translate "Réservations récentes" %}</h2>
+                <a href="{% url 'logement:mes_reservations' %}" class="dr-link">{% translate "Voir toutes" %} →</a>
+            </div>
+            <div class="dr-card">
+                {% if recent_reservations %}
+                    {% for reservation in recent_reservations %}
+                    <div class="dr-reservation {% if not forloop.last %}dr-reservation--border{% endif %}">
+                        <div>
+                            <p class="dr-reservation__guest">{{ reservation.client_user.get_full_name|default:reservation.client_nom }}</p>
+                            <p class="dr-reservation__dates">{{ reservation.logement.titre }} · {{ reservation.date_arrivee|date:"d/m/y" }} → {{ reservation.date_depart|date:"d/m/y" }}</p>
+                        </div>
+                        <span class="dr-status dr-status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span>
+                        <span class="dr-reservation__amount">{{ reservation.montant_final }} FCFA</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="dr-empty">{% translate "Aucune réservation récente" %}</div>
+                {% endif %}
+            </div>
+        </section>
+
     </div>
 </div>
 
@@ -272,6 +325,13 @@
 .dr-metric__star--on { color: var(--ci-orange); }
 
 /* ── Section ── */
+.dr-section__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.dr-section__row .dr-section__title { margin-bottom: 16px; }
 .dr-section__title {
     font-size: 1rem;
     font-weight: 700;
@@ -281,6 +341,20 @@
     border-left: 3px solid var(--ci-orange);
     letter-spacing: -.01em;
 }
+.dr-link { color: var(--ci-green-dk); font-size: .85rem; font-weight: 700; text-decoration: none; }
+.dr-card { overflow: hidden; background: var(--dr-white); border: 1px solid var(--dr-border); border-radius: var(--dr-radius); box-shadow: var(--dr-shadow); }
+.dr-reservation { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; }
+.dr-reservation--border { border-bottom: 1px solid var(--dr-border); }
+.dr-reservation__guest { margin: 0 0 4px; color: var(--dr-text); font-size: .9rem; font-weight: 700; }
+.dr-reservation__dates { margin: 0; color: var(--dr-muted); font-size: .78rem; }
+.dr-reservation__amount { color: var(--ci-green-dk); font-size: .84rem; font-weight: 700; white-space: nowrap; }
+.dr-status { padding: 5px 9px; border: 1px solid transparent; border-radius: 999px; font-size: .75rem; white-space: nowrap; }
+.dr-status--confirmed { background: var(--ci-green-lt); border-color: #a7d7b8; color: var(--ci-green-dk); }
+.dr-status--checked_in { background: #dbeafe; border-color: #bfdbfe; color: #1e40af; }
+.dr-status--completed { background: #f3f4f6; border-color: #d1d5db; color: #374151; }
+.dr-status--pending { background: #fef3c7; border-color: #fde68a; color: #92400e; }
+.dr-status--cancelled { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+.dr-empty { padding: 28px 16px; color: var(--dr-muted); text-align: center; }
 
 /* ── Actions ── */
 .dr-actions {
@@ -341,6 +415,7 @@
     .dr-metrics { grid-template-columns: 1fr; }
     .dr-actions { grid-template-columns: repeat(2, 1fr); }
     .dr-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .dr-reservation { align-items: flex-start; flex-wrap: wrap; }
 }
 </style>
 {% endblock %}
