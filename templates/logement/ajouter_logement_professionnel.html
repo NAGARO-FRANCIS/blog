@@ -777,6 +777,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }).length;
   }
 
+  function roomHasInput(card) {
+    return Array.from(card.querySelectorAll('input, select, textarea')).some(field => {
+      if (field.disabled || field.type === 'hidden' || (field.name && field.name.endsWith('-DELETE'))) return false;
+      if (field.type === 'checkbox' || field.type === 'radio') return field.checked;
+      if (field.type === 'file') return field.files && field.files.length > 0;
+      return Boolean((field.value || '').trim());
+    });
+  }
+
   function updateRoomCount() {
     const completed = namedRooms();
     const label = completed === 1 ? TEXT.roomOne : TEXT.roomMany;
@@ -912,6 +921,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if (field.type === 'hidden' || field.disabled) return false;
       if (field.name && field.name.endsWith('-DELETE')) return false;
       if (field.closest('[hidden]')) return false;
+      const card = field.closest('.room-card');
+      if (card) {
+        const deleteInput = card.querySelector('input[name$="-DELETE"]');
+        if ((deleteInput && deleteInput.checked) || !roomHasInput(card)) return false;
+      }
       return true;
     });
     for (const field of fields) {

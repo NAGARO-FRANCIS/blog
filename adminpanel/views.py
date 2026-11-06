@@ -357,7 +357,47 @@ def colocations(request):
 
 @user_passes_test(is_staff)
 def hotels_residences(request):
-    return redirect('adminpanel:verifications')
+    professional_profiles = ProfessionalProfile.objects.select_related(
+        'profile',
+        'profile__user',
+    ).order_by('is_verified', '-created_at')
+    selected_status = request.GET.get('statut', 'to_review')
+    if selected_status == 'to_review':
+        professional_profiles = professional_profiles.filter(is_verified=False)
+    elif selected_status == 'verified':
+        professional_profiles = professional_profiles.filter(is_verified=True)
+    elif selected_status != 'all':
+        selected_status = 'to_review'
+        professional_profiles = professional_profiles.filter(is_verified=False)
+
+    page_obj = Paginator(professional_profiles, 25).get_page(request.GET.get('page'))
+    items = list(page_obj.object_list)
+    for professional_profile in items:
+        professional_profile.identity_documents_verified = (
+            professional_profile.profile.verified
+            and professional_profile.profile.verification_status == 'verified'
+            and professional_profile.profile.has_verified_identity_documents
+        )
+        professional_profile.documents_present = bool(
+            professional_profile.legal_document
+            and professional_profile.establishment_photo
+        )
+
+    context = _build_section_context(
+        request,
+        'hotels_residences',
+        'Vérification des hôtels et résidences',
+        items,
+        {
+            'total_establishments': ProfessionalProfile.objects.count(),
+            'establishments_to_review': ProfessionalProfile.objects.filter(is_verified=False).count(),
+            'eligible_establishments': _eligible_professional_profiles().count(),
+            'verified_establishments': ProfessionalProfile.objects.filter(is_verified=True).count(),
+            'page_obj': page_obj,
+            'selected_establishment_status': selected_status,
+        },
+    )
+    return render(request, 'adminpanel/section.html', context)
 
 
 @user_passes_test(is_staff)

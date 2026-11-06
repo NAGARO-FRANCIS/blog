@@ -96,6 +96,64 @@ class PublicationVerificationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('etablissement_form', response.context)
 
+    def test_owner_can_publish_multiple_listings_and_find_add_button_again(self):
+        owner = User.objects.create_user(
+            username='multiple_listing_owner',
+            password='StrongPassword123!',
+        )
+        profile = owner.profile
+        profile.account_type = 'individu'
+        profile.role = 'proprietaire'
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=[
+            'account_type',
+            'role',
+            'verification_status',
+            'verified',
+        ])
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file=f'identity/{document_type}.jpg',
+                status='verified',
+            )
+        self.client.force_login(owner)
+
+        for title in ('Première annonce', 'Deuxième annonce'):
+            response = self.client.post(
+                reverse('logement:ajouter_logement'),
+                {
+                    'titre': title,
+                    'description': 'Description du logement',
+                    'type_logement': 'appartement',
+                    'prix': '35000',
+                    'ville': 'Abidjan',
+                    'quartier': 'Cocody',
+                    'photos-TOTAL_FORMS': '0',
+                    'photos-INITIAL_FORMS': '0',
+                    'photos-MIN_NUM_FORMS': '0',
+                    'photos-MAX_NUM_FORMS': '1000',
+                    'videos-TOTAL_FORMS': '0',
+                    'videos-INITIAL_FORMS': '0',
+                    'videos-MIN_NUM_FORMS': '0',
+                    'videos-MAX_NUM_FORMS': '1000',
+                },
+            )
+            self.assertRedirects(response, reverse('logement:mes_logements'))
+
+        self.assertEqual(Logement.objects.filter(proprietaire=owner).count(), 2)
+        listings_response = self.client.get(reverse('logement:mes_logements'))
+        self.assertEqual(listings_response.status_code, 200)
+        self.assertContains(listings_response, 'Première annonce')
+        self.assertContains(listings_response, 'Deuxième annonce')
+        self.assertContains(listings_response, 'Publier une autre annonce')
+
+        dashboard_response = self.client.get(reverse('accounts:dashboard_individu'))
+        self.assertContains(dashboard_response, 'Publier une annonce')
+        self.assertContains(dashboard_response, 'Voir toutes')
+
 
 class PaymentViewTests(TestCase):
     def test_hotel_payment_page_redirects_to_confirmation(self):

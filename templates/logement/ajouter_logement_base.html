@@ -46,6 +46,28 @@
         <form method="post" enctype="multipart/form-data" class="publication-form iw-form">
             {% csrf_token %}
 
+            {% if form.errors or formset.non_form_errors or video_formset.non_form_errors %}
+                <div class="iw-alert" role="alert">
+                    <strong>{% translate "L’annonce n’a pas pu être publiée. Corrigez les points suivants :" %}</strong>
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }} : {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in formset.non_form_errors %}
+                            <li>{% translate "Photos" %} : {{ error }}</li>
+                        {% endfor %}
+                        {% for error in video_formset.non_form_errors %}
+                            <li>{% translate "Vidéos" %} : {{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
             <div class="individual-progress" aria-hidden="true">
                 <div class="individual-progress-bar" id="individual-progress-bar"></div>
             </div>
@@ -67,13 +89,6 @@
                     <span class="iw-step-icon" aria-hidden="true">🎬</span>{% translate "Vidéos" %}
                 </button>
             </nav>
-
-            <!-- Erreurs générales -->
-            {% if form.non_field_errors %}
-                <div class="iw-alert" role="alert">
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
 
             <!-- Étape 1 : Informations de base -->
             <fieldset class="iw-panel individual-step-panel" data-individual-panel="0">

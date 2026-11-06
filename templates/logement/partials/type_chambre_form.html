@@ -9,20 +9,30 @@
 
   {{ room_form.id }}
   <div class="d-none">{{ room_form.DELETE }}</div>
-  {% if room_form.non_field_errors %}
-    <div class="alert alert-danger small">{{ room_form.non_field_errors }}</div>
+  {% if room_form.errors %}
+    <div class="alert alert-danger small room-validation-errors" role="alert">
+      <strong>{% translate "Vérifiez les informations de ce type :" %}</strong>
+      <ul class="mb-0">
+        {% for field in room_form %}
+          {% for error in field.errors %}
+            <li>{{ field.label }} : {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+        {% for error in room_form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
 
   <div class="row g-3 room-details-fields">
     <div class="col-md-6">
       {{ room_form.titre.label_tag }}
       {{ room_form.titre }}
-      {% if room_form.titre.errors %}<div class="text-danger small mt-1">{{ room_form.titre.errors }}</div>{% endif %}
     </div>
     <div class="col-md-6">
       {{ room_form.type_logement.label_tag }}
       {{ room_form.type_logement }}
-      {% if room_form.type_logement.errors %}<div class="text-danger small mt-1">{{ room_form.type_logement.errors }}</div>{% endif %}
     </div>
     <div class="col-md-3">
       {{ room_form.surface.label_tag }}

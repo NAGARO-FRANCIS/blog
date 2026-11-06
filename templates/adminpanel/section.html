@@ -91,6 +91,78 @@
                         {% if page_obj.has_next %}<a class="page-link" href="?page={{ page_obj.next_page_number }}">{% translate "Suivant" %} →</a>{% endif %}
                     </nav>
                 {% endif %}
+            {% elif active_section == 'hotels_residences' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Établissements enregistrés" %}</div><div class="stat-value">{{ total_establishments }}</div></div><div class="stat-icon" aria-hidden="true">🏨</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "À vérifier" %}</div><div class="stat-value">{{ establishments_to_review }}</div></div><div class="stat-icon" aria-hidden="true">🕒</div></div>
+                    <div class="stat-card stat-card--success"><div><div class="stat-label">{% translate "Vérifiés" %}</div><div class="stat-value">{{ verified_establishments }}</div></div><div class="stat-icon" aria-hidden="true">✅</div></div>
+                </div>
+                <div class="rule-note">{% translate "Examinez chaque dossier et ses justificatifs. La vérification de l’établissement est distincte de celle de l’identité du gestionnaire ; les deux doivent être validées avant la publication." %}</div>
+                <div class="filters-panel panel--spaced">
+                    <form method="get" class="filter-form">
+                        <label for="establishment-status">{% translate "Afficher" %}</label>
+                        <select id="establishment-status" name="statut">
+                            <option value="to_review" {% if selected_establishment_status == 'to_review' %}selected{% endif %}>{% translate "À vérifier" %}</option>
+                            <option value="verified" {% if selected_establishment_status == 'verified' %}selected{% endif %}>{% translate "Vérifiés" %}</option>
+                            <option value="all" {% if selected_establishment_status == 'all' %}selected{% endif %}>{% translate "Tous" %}</option>
+                        </select>
+                        <button class="btn btn-secondary" type="submit">{% translate "Filtrer" %}</button>
+                    </form>
+                </div>
+                <div class="table-panel panel--spaced">
+                    <table>
+                        <caption class="sr-only">{% translate "Établissements à vérifier" %}</caption>
+                        <thead>
+                            <tr>
+                                <th>{% translate "Établissement" %}</th>
+                                <th>{% translate "Gestionnaire" %}</th>
+                                <th>{% translate "Localisation" %}</th>
+                                <th>{% translate "Identité" %}</th>
+                                <th>{% translate "Justificatifs" %}</th>
+                                <th>{% translate "Statut" %}</th>
+                                <th>{% translate "Action" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for establishment in items %}
+                                <tr>
+                                    <td><strong>{{ establishment.establishment_name }}</strong><br><small>{{ establishment.get_establishment_type_display }} · RCCM/SIRET {{ establishment.siret_or_rccm }}</small></td>
+                                    <td>{{ establishment.profile.get_full_name|default:establishment.profile.user.username }}<br><small>{{ establishment.profile.user.email|default:"—" }}</small></td>
+                                    <td>{{ establishment.establishment_address }}, {{ establishment.establishment_city }}</td>
+                                    <td>
+                                        {% if establishment.identity_documents_verified %}
+                                            <span class="badge ok">{% translate "Vérifiée" %}</span>
+                                        {% else %}
+                                            <span class="badge warning">{% translate "À valider" %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if establishment.legal_document %}{% translate "Document légal reçu" %}{% else %}<span class="badge danger">{% translate "Document légal manquant" %}</span>{% endif %}
+                                        <br>
+                                        {% if establishment.establishment_photo %}{% translate "Photo reçue" %}{% else %}<span class="badge danger">{% translate "Photo manquante" %}</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if establishment.is_verified %}
+                                            <span class="badge ok">{% translate "Vérifié" %}</span>
+                                        {% else %}
+                                            <span class="badge warning">{% translate "À vérifier" %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><a class="btn btn-primary btn-sm" href="{% url 'adminpanel:verification_dossier' profile_id=establishment.profile_id %}">{% translate "Examiner le dossier" %}</a></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="7" class="empty-state">{% translate "Aucun établissement pour ce filtre." %}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if page_obj.paginator.num_pages > 1 %}
+                    <nav class="pagination" aria-label="{% translate 'Pagination des établissements' %}">
+                        {% if page_obj.has_previous %}<a class="page-link" href="?statut={{ selected_establishment_status }}&page={{ page_obj.previous_page_number }}">← {% translate "Précédent" %}</a>{% endif %}
+                        <span>{% blocktranslate with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} / {{ total }}{% endblocktranslate %}</span>
+                        {% if page_obj.has_next %}<a class="page-link" href="?statut={{ selected_establishment_status }}&page={{ page_obj.next_page_number }}">{% translate "Suivant" %} →</a>{% endif %}
+                    </nav>
+                {% endif %}
             {% elif active_section == 'verification_dossier' %}
                 {% with profile=verification_profile %}
                     <a class="btn btn-secondary" href="{% url 'adminpanel:verifications' %}">← {% translate "Retour aux dossiers" %}</a>

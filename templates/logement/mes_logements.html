@@ -141,6 +141,20 @@
         text-decoration: none;
         font-weight: 600;
     }
+
+    .add-listing-button {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 16px;
+        padding: 11px 18px;
+        border-radius: 8px;
+        background: #fff;
+        color: #047857;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+    .add-listing-button:hover { background: #f0fdf4; }
 </style>
 {% endblock %}
 
@@ -148,6 +162,7 @@
 <div class="page-header">
     <h1>🏠 {% translate "Mes Logements" %}</h1>
     <p>{% blocktranslate with total_logements=total %}Gestion de vos propriétés - Total: {{ total_logements }} logement(s){% endblocktranslate %}</p>
+    <a class="add-listing-button" href="{% url 'logement:ajouter_logement' %}">＋ {% translate "Publier une autre annonce" %}</a>
 </div>
 
 <div class="container">

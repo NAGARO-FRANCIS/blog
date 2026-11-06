@@ -352,6 +352,16 @@ class AdminPanelDashboardTests(TestCase):
         )
         professional_profile.refresh_from_db()
         self.assertTrue(professional_profile.is_verified)
+        review_queue = self.client.get(reverse('adminpanel:hotels_residences'))
+        self.assertEqual(review_queue.context['items'].paginator.count, 0)
+        verified_list = self.client.get(
+            reverse('adminpanel:hotels_residences'),
+            {'statut': 'verified'},
+        )
+        self.assertEqual(
+            [item.pk for item in verified_list.context['items']],
+            [professional_profile.pk],
+        )
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
     def test_staff_can_reject_a_pending_registration_from_its_dossier(self):
@@ -475,15 +485,19 @@ class AdminPanelDashboardTests(TestCase):
         self.profile.refresh_from_db()
         self.assertTrue(self.profile.verified)
 
-        list_response = self.client.get(
-            reverse('adminpanel:hotels_residences'),
-            follow=True,
-        )
+        list_response = self.client.get(reverse('adminpanel:hotels_residences'))
         self.assertEqual(list_response.status_code, 200)
-        self.assertRedirects(
-            list_response,
-            reverse('adminpanel:verifications'),
+        self.assertEqual(
+            [item.pk for item in list_response.context['items']],
+            [professional_profile.pk],
         )
+        self.assertContains(list_response, 'Résidence test')
+        self.assertContains(list_response, 'Examiner le dossier')
+        self.assertContains(
+            list_response,
+            reverse('adminpanel:verification_dossier', args=[self.profile.pk]),
+        )
+        self.assertEqual(list_response.context['eligible_establishments'], 1)
         self.profile.refresh_from_db()
         self.assertTrue(self.profile.verified)
 
@@ -634,12 +648,10 @@ class AdminPanelDashboardTests(TestCase):
             )
 
         self.client.force_login(self.admin)
-        list_response = self.client.get(
-            reverse('adminpanel:hotels_residences'),
-            follow=True,
-        )
+        list_response = self.client.get(reverse('adminpanel:hotels_residences'))
         self.assertEqual(list_response.status_code, 200)
-        self.assertContains(list_response, 'Approuver automatiquement les 1 dossiers éligibles')
+        self.assertContains(list_response, 'Hôtel éligible')
+        self.assertEqual(list_response.context['eligible_establishments'], 1)
 
         response = self.client.post(
             reverse('adminpanel:approve_eligible_establishments'),
@@ -845,9 +857,9 @@ class AdminPanelDashboardTests(TestCase):
                     f'href="{users_url}" class="active" aria-current="page"',
                 )
 
-        response = self.client.get(reverse('adminpanel:hotels_residences'), follow=True)
+        response = self.client.get(reverse('adminpanel:hotels_residences'))
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, reverse('adminpanel:verifications'))
+        self.assertEqual(response.context['active_section'], 'hotels_residences')
 
     def test_non_staff_cannot_activate_accounts(self):
         user = User.objects.create_user(

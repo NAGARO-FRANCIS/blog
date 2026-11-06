@@ -79,9 +79,16 @@
         </section>
 
         <!-- ── MES ANNONCES ── -->
-        {% if profile.role != 'touriste' %}
         <section class="di-section">
-            <h2 class="di-section__title">{% translate "Mes annonces" %}</h2>
+            <div class="di-section__heading">
+                <h2 class="di-section__title">{% translate "Mes annonces" %}</h2>
+                <div class="di-section__listing-actions">
+                    {% if mes_annonces %}
+                    <a href="{% url 'logement:mes_logements' %}" class="di-section__link">{% translate "Voir toutes" %}</a>
+                    {% endif %}
+                    <a href="{% url 'logement:ajouter_logement' %}" class="di-section__add">＋ {% translate "Publier une annonce" %}</a>
+                </div>
+            </div>
             {% if mes_annonces %}
                 <div class="di-listings">
                     {% for logement in mes_annonces %}
@@ -114,11 +121,9 @@
             {% else %}
                 <div style="padding: 2rem; text-align: center; background: #f5f5f5; border-radius: 12px; color: #666;">
                     <p>{% translate "Vous n'avez pas encore publié d'annonce" %}</p>
-                    <a href="{% url 'logement:ajouter_logement' %}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">➕ {% translate "Créer une annonce" %}</a>
                 </div>
             {% endif %}
         </section>
-        {% endif %}
 
         <!-- ── GUIDE ── -->
         <section class="di-section">
@@ -274,6 +279,12 @@
     padding-left: 12px;
     border-left: 3px solid var(--ci-orange);
 }
+.di-section__heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.di-section__listing-actions { display: flex; align-items: center; gap: 10px; }
+.di-section__link, .di-section__add { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 9px 14px; border-radius: 8px; font-size: .88rem; font-weight: 700; text-decoration: none; }
+.di-section__link { color: #047857; background: #ecfdf5; }
+.di-section__add { color: #fff; background: #047857; }
+.di-section__add:hover { background: #065f46; }
 
 /* ── Actions ── */
 .di-actions {

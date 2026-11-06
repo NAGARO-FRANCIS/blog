@@ -815,14 +815,8 @@ def ajouter_logement(request):
                 for field, errors in etablissement_form.errors.items():
                     for error in errors:
                         messages.error(request, f"{field}: {error}")
-                for form in type_formset:
-                    for field, errors in form.errors.items():
-                        if field == '__all__':
-                            for error in errors:
-                                messages.error(request, _('Type de chambre: %(error)s') % {'error': error})
-                        else:
-                            for error in errors:
-                                messages.error(request, _('Type de chambre - %(field)s: %(error)s') % {'field': field, 'error': error})
+                for error in type_formset.non_form_errors():
+                    messages.error(request, _('Types de logement: %(error)s') % {'error': error})
         else:
             etablissement_form = EtablissementForm(instance=etablissement)
             type_formset = LogementTypeFormSet(prefix='types', queryset=Logement.objects.none())
@@ -919,7 +913,8 @@ def ajouter_logement(request):
                     video.logement = logement
                     video.save()
 
-            return redirect('logement:home')
+            messages.success(request, _('Votre annonce a été publiée avec succès. Vous pouvez en ajouter une autre.'))
+            return redirect('logement:mes_logements')
         else:
             if not form.is_valid():
                 for field, errors in form.errors.items():
