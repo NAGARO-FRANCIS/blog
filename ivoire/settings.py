@@ -43,7 +43,13 @@ _allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '').strip()
 if _allowed_hosts_env:
     ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(',') if h.strip()]
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+   ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.1.6',
+    '192.168.4.2',
+    'testserver',
+]
 
 # CSRF_TRUSTED_ORIGINS (necessaire en prod HTTPS derriere un domaine, ex: https://monsite.ci)
 _csrf_trusted_env = os.getenv('CSRF_TRUSTED_ORIGINS', '').strip()

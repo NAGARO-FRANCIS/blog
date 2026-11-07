@@ -263,12 +263,169 @@
                         </section>
                     {% endif %}
                 {% endwith %}
+            {% elif active_section == 'logements' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Tous les logements" %}</div><div class="stat-value">{{ total_logements }}</div></div><div class="stat-icon" aria-hidden="true">🏠</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Individuels" %}</div><div class="stat-value">{{ logements_individuels }}</div></div><div class="stat-icon" aria-hidden="true">👤</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Hôtels" %}</div><div class="stat-value">{{ logements_hotels }}</div></div><div class="stat-icon" aria-hidden="true">🏨</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Résidences" %}</div><div class="stat-value">{{ logements_residences }}</div></div><div class="stat-icon" aria-hidden="true">🏢</div></div>
+                </div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Logements enregistrés" %}</caption>
+                    <thead><tr><th>{% translate "Logement" %}</th><th>{% translate "Propriétaire" %}</th><th>{% translate "Type de compte" %}</th><th>{% translate "Prix" %}</th><th>{% translate "Publié le" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr>
+                        <td><strong>{{ item.titre }}</strong><br><small>{{ item.ville }}{% if item.quartier %}, {{ item.quartier }}{% endif %}</small></td>
+                        <td>{{ item.proprietaire.get_full_name|default:item.proprietaire.username }}<br><small>{{ item.proprietaire.email|default:"—" }}</small></td>
+                        <td>{{ item.get_account_type_display }}</td>
+                        <td>{% if item.prix_par_nuit %}{{ item.prix_par_nuit }} FCFA / {% translate "nuit" %}{% elif item.prix_par_mois %}{{ item.prix_par_mois }} FCFA / {% translate "mois" %}{% elif item.prix %}{{ item.prix }} FCFA{% else %}—{% endif %}</td>
+                        <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>{% empty %}<tr><td colspan="5" class="empty-state">{% translate "Aucun logement enregistré." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% elif active_section == 'colocations' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Toutes les annonces" %}</div><div class="stat-value">{{ total_colocations }}</div></div><div class="stat-icon" aria-hidden="true">🤝</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Logements de locataires / touristes" %}</div><div class="stat-value">{{ total_recherches_logement }}</div></div><div class="stat-icon" aria-hidden="true">🔎</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Locataires en recherche" %}</div><div class="stat-value">{{ locataires_recherche }}</div></div><div class="stat-icon" aria-hidden="true">🔎</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Propriétaires" %}</div><div class="stat-value">{{ proprietaires_annonces }}</div></div><div class="stat-icon" aria-hidden="true">🏠</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Touristes" %}</div><div class="stat-value">{{ touristes_recherche }}</div></div><div class="stat-icon" aria-hidden="true">🧳</div></div>
+                </div>
+                <div class="filters-panel panel--spaced"><form method="get" class="filter-form">
+                    <label for="colocation-role">{% translate "Annonces publiées par" %}</label>
+                    <select id="colocation-role" name="role">
+                        <option value="all" {% if selected_colocation_role == 'all' %}selected{% endif %}>{% translate "Tous les profils" %}</option>
+                        <option value="locataire" {% if selected_colocation_role == 'locataire' %}selected{% endif %}>{% translate "Locataires en recherche" %}</option>
+                        <option value="proprietaire" {% if selected_colocation_role == 'proprietaire' %}selected{% endif %}>{% translate "Propriétaires" %}</option>
+                        <option value="touriste" {% if selected_colocation_role == 'touriste' %}selected{% endif %}>{% translate "Touristes" %}</option>
+                    </select>
+                    <button class="btn btn-secondary" type="submit">{% translate "Filtrer" %}</button>
+                </form></div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Annonces de recherche de colocataire" %}</caption>
+                    <thead><tr><th>{% translate "Annonce / recherche" %}</th><th>{% translate "Auteur / rôle" %}</th><th>{% translate "Budget mensuel" %}</th><th>{% translate "Chambres" %}</th><th>{% translate "Publié le" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr>
+                        <td><strong>{{ item.ville }}{% if item.quartier %}, {{ item.quartier }}{% endif %}</strong><br><small>{{ item.description|truncatechars:120 }}</small><br><small>{% translate "Recherche" %} : {{ item.get_profil_recherche_display }}</small></td>
+                        <td>{{ item.proprietaire.get_full_name|default:item.proprietaire.username }}<br><small>{{ item.proprietaire.email|default:"—" }}</small><br><span class="badge">{{ item.proprietaire.profile.get_role_display }}</span>{% if item.proprietaire.profile.role == 'locataire' %}<br><small>{% translate "Recherche un colocataire" %}</small>{% endif %}</td>
+                        <td>{{ item.budget_mensuel }} FCFA</td><td>{{ item.nombre_chambres }}</td><td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>{% empty %}<tr><td colspan="5" class="empty-state">{% translate "Aucune annonce de colocation enregistrée." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+                <h2 class="section-title">{% translate "Logements publiés par les locataires et touristes" %}</h2>
+                <div class="table-panel"><table>
+                    <caption class="sr-only">{% translate "Annonces logement des locataires et touristes" %}</caption>
+                    <thead><tr><th>{% translate "Annonce" %}</th><th>{% translate "Auteur / type de compte" %}</th><th>{% translate "Prix annoncé" %}</th><th>{% translate "Publié le" %}</th><th>{% translate "Consulter" %}</th></tr></thead>
+                    <tbody>{% for item in logement_items %}<tr>
+                        <td><strong>{{ item.titre }}</strong><br><small>{{ item.ville }}{% if item.quartier %}, {{ item.quartier }}{% endif %}</small><br><small>{{ item.description|truncatechars:120 }}</small></td>
+                        <td>{{ item.proprietaire.get_full_name|default:item.proprietaire.username }}<br><small>{{ item.proprietaire.email|default:"—" }}</small><br><span class="badge">{{ item.proprietaire.profile.get_role_display }}</span></td>
+                        <td>{% if item.prix %}{{ item.prix }} FCFA{% elif item.prix_par_mois %}{{ item.prix_par_mois }} FCFA / {% translate "mois" %}{% else %}—{% endif %}</td>
+                        <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                        <td><a class="btn btn-secondary btn-sm" href="{% url 'logement:detail_logement' id=item.pk %}">{% translate "Voir l’annonce" %}</a></td>
+                    </tr>{% empty %}<tr><td colspan="5" class="empty-state">{% translate "Aucun logement de locataire ou de touriste enregistré." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+                {% if logement_page_obj.paginator.num_pages > 1 %}
+                    <nav class="pagination" aria-label="{% translate 'Pagination des logements de recherche' %}">
+                        {% if logement_page_obj.has_previous %}<a class="page-link" href="?role={{ selected_colocation_role }}&amp;logement_page={{ logement_page_obj.previous_page_number }}">← {% translate "Précédent" %}</a>{% endif %}
+                        <span>{% blocktranslate with number=logement_page_obj.number total=logement_page_obj.paginator.num_pages %}Page {{ number }} / {{ total }}{% endblocktranslate %}</span>
+                        {% if logement_page_obj.has_next %}<a class="page-link" href="?role={{ selected_colocation_role }}&amp;logement_page={{ logement_page_obj.next_page_number }}">{% translate "Suivant" %} →</a>{% endif %}
+                    </nav>
+                {% endif %}
+            {% elif active_section == 'reservations' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Réservations" %}</div><div class="stat-value">{{ total_reservations }}</div></div><div class="stat-icon" aria-hidden="true">📅</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "En attente" %}</div><div class="stat-value">{{ reservations_en_attente }}</div></div><div class="stat-icon" aria-hidden="true">⏳</div></div>
+                </div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Réservations" %}</caption>
+                    <thead><tr><th>{% translate "Logement" %}</th><th>{% translate "Client" %}</th><th>{% translate "Séjour" %}</th><th>{% translate "Montant" %}</th><th>{% translate "Statut" %}</th><th>{% translate "Créée le" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr>
+                        <td><strong>{{ item.logement.titre }}</strong><br><small>{{ item.logement.ville }}</small></td>
+                        <td>{{ item.client_user.get_full_name|default:item.client_nom }}<br><small>{{ item.client_email }}</small></td>
+                        <td>{{ item.date_arrivee|date:"d/m/Y" }} – {{ item.date_depart|date:"d/m/Y" }}</td>
+                        <td>{{ item.montant_final }} FCFA</td><td><span class="badge {{ item.statut }}">{{ item.get_statut_display }}</span></td><td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>{% empty %}<tr><td colspan="6" class="empty-state">{% translate "Aucune réservation enregistrée." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% elif active_section == 'finance' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Paiements enregistrés" %}</div><div class="stat-value">{{ paiements_total }}</div></div><div class="stat-icon" aria-hidden="true">💳</div></div>
+                    <div class="stat-card stat-card--success"><div><div class="stat-label">{% translate "Revenus encaissés" %}</div><div class="stat-value">{{ revenus_total }} <span class="stat-unit">FCFA</span></div></div><div class="stat-icon" aria-hidden="true">💰</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "En attente" %}</div><div class="stat-value">{{ paiements_en_attente }}</div></div><div class="stat-icon" aria-hidden="true">⏳</div></div>
+                </div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Paiements" %}</caption>
+                    <thead><tr><th>{% translate "Référence" %}</th><th>{% translate "Client" %}</th><th>{% translate "Montant" %}</th><th>{% translate "Méthode" %}</th><th>{% translate "Statut" %}</th><th>{% translate "Créé le" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr>
+                        <td><strong>{{ item.reservation.logement.titre }}</strong><br><small>#{{ item.reservation_id }}</small></td>
+                        <td>{{ item.reservation.client_user.get_full_name|default:item.reservation.client_nom }}</td>
+                        <td>{{ item.montant }} FCFA</td><td>{{ item.get_methode_display }}</td><td><span class="badge {{ item.statut }}">{{ item.get_statut_display }}</span></td><td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>{% empty %}<tr><td colspan="6" class="empty-state">{% translate "Aucun paiement enregistré." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% elif active_section == 'avis' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Avis publiés" %}</div><div class="stat-value">{{ avis_total }}</div></div><div class="stat-icon" aria-hidden="true">⭐</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "Avis masqués" %}</div><div class="stat-value">{{ avis_masques }}</div></div><div class="stat-icon" aria-hidden="true">🙈</div></div>
+                </div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Avis clients" %}</caption>
+                    <thead><tr><th>{% translate "Avis" %}</th><th>{% translate "Auteur" %}</th><th>{% translate "Logement" %}</th><th>{% translate "Note" %}</th><th>{% translate "Visibilité" %}</th><th>{% translate "Action" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr>
+                        <td>{{ item.commentaire|truncatechars:160 }}<br><small>{{ item.created_at|date:"d/m/Y H:i" }}</small></td><td>{{ item.auteur.get_full_name|default:item.auteur.username }}</td><td>{{ item.logement.titre }}</td><td>{{ item.note_logement|default:"—" }}/5</td>
+                        <td>{% if item.est_visible %}{% translate "Visible" %}{% else %}{% translate "Masqué" %}{% endif %}</td>
+                        <td><form method="post" action="{% url 'adminpanel:toggle_avis_visibility' avis_id=item.pk %}">{% csrf_token %}<button class="btn btn-secondary btn-sm" type="submit">{% if item.est_visible %}{% translate "Masquer" %}{% else %}{% translate "Rendre visible" %}{% endif %}</button></form></td>
+                    </tr>{% empty %}<tr><td colspan="6" class="empty-state">{% translate "Aucun avis enregistré." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% elif active_section == 'signalements' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Signalements" %}</div><div class="stat-value">{{ signalements_total }}</div></div><div class="stat-icon" aria-hidden="true">🚨</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "À traiter" %}</div><div class="stat-value">{{ signalements_a_traiter }}</div></div><div class="stat-icon" aria-hidden="true">⚠️</div></div>
+                </div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Signalements d’avis" %}</caption>
+                    <thead><tr><th>{% translate "Motif" %}</th><th>{% translate "Avis signalé" %}</th><th>{% translate "Signalé par" %}</th><th>{% translate "Date" %}</th><th>{% translate "État" %}</th><th>{% translate "Action" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr>
+                        <td>{{ item.motif }}</td><td>{{ item.avis.commentaire|truncatechars:120 }}<br><small>{{ item.avis.logement.titre }} · {{ item.avis.auteur.get_full_name|default:item.avis.auteur.username }}</small></td><td>{{ item.auteur.get_full_name|default:item.auteur.username }}</td><td>{{ item.created_at|date:"d/m/Y H:i" }}</td><td>{% if item.traite %}{% translate "Traité" %}{% else %}{% translate "À traiter" %}{% endif %}</td>
+                        <td>{% if not item.traite %}<form method="post" action="{% url 'adminpanel:traiter_signalement' signalement_id=item.pk %}">{% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">{% translate "Marquer traité" %}</button></form>{% else %}—{% endif %}</td>
+                    </tr>{% empty %}<tr><td colspan="6" class="empty-state">{% translate "Aucun signalement enregistré." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% elif active_section == 'notifications' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Notifications reçues" %}</div><div class="stat-value">{{ notifications_total }}</div></div><div class="stat-icon" aria-hidden="true">🔔</div></div>
+                    <div class="stat-card stat-card--warning"><div><div class="stat-label">{% translate "Non lues" %}</div><div class="stat-value">{{ notifications_non_lues }}</div></div><div class="stat-icon" aria-hidden="true">●</div></div>
+                </div>
+                <div class="table-panel panel--spaced"><table>
+                    <caption class="sr-only">{% translate "Notifications reçues par l’administrateur" %}</caption>
+                    <thead><tr><th>{% translate "Notification" %}</th><th>{% translate "Type" %}</th><th>{% translate "Émise par" %}</th><th>{% translate "État" %}</th><th>{% translate "Date" %}</th></tr></thead>
+                    <tbody>{% for item in items %}<tr><td><strong>{{ item.title }}</strong><br><small>{{ item.message|truncatechars:180 }}</small></td><td>{{ item.get_notification_type_display }}</td><td>{{ item.actor|default:"Système" }}</td><td>{% if item.is_read %}{% translate "Lue" %}{% else %}{% translate "Non lue" %}{% endif %}</td><td>{{ item.created_at|date:"d/m/Y H:i" }}</td></tr>{% empty %}<tr><td colspan="5" class="empty-state">{% translate "Aucune notification reçue." %}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% elif active_section == 'statistiques' %}
+                <div class="stats-grid">
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Utilisateurs" %}</div><div class="stat-value">{{ total_users }}</div></div><div class="stat-icon" aria-hidden="true">👥</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Logements" %}</div><div class="stat-value">{{ total_logements }}</div></div><div class="stat-icon" aria-hidden="true">🏠</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Colocations" %}</div><div class="stat-value">{{ total_colocations }}</div></div><div class="stat-icon" aria-hidden="true">🤝</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Réservations" %}</div><div class="stat-value">{{ total_reservations }}</div></div><div class="stat-icon" aria-hidden="true">📅</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Paiements" %}</div><div class="stat-value">{{ total_paiements }}</div></div><div class="stat-icon" aria-hidden="true">💳</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Avis" %}</div><div class="stat-value">{{ total_avis }}</div></div><div class="stat-icon" aria-hidden="true">⭐</div></div>
+                    <div class="stat-card"><div><div class="stat-label">{% translate "Signalements" %}</div><div class="stat-value">{{ total_signalements }}</div></div><div class="stat-icon" aria-hidden="true">🚨</div></div>
+                </div>
+            {% elif active_section == 'parametres' %}
+                <section class="panel panel--padded">
+                    <div class="section-header-row"><div><h2>{% translate "État du système" %}</h2><p>{% translate "Vue de contrôle des principales données de la plateforme." %}</p></div><span class="badge ok">{{ system_status }}</span></div>
+                    <div class="stats-grid panel--spaced">
+                        <div class="stat-card"><div><div class="stat-label">{% translate "Comptes utilisateurs" %}</div><div class="stat-value">{{ total_users }}</div></div><div class="stat-icon" aria-hidden="true">👥</div></div>
+                        <div class="stat-card"><div><div class="stat-label">{% translate "Logements publiés" %}</div><div class="stat-value">{{ total_logements }}</div></div><div class="stat-icon" aria-hidden="true">🏠</div></div>
+                        <div class="stat-card"><div><div class="stat-label">{% translate "Réservations" %}</div><div class="stat-value">{{ total_reservations }}</div></div><div class="stat-icon" aria-hidden="true">📅</div></div>
+                    </div>
+                    <div class="action-row panel--spaced"><a class="btn btn-secondary" href="{% url 'adminpanel:users' %}">{% translate "Gérer les utilisateurs" %}</a><a class="btn btn-secondary" href="{% url 'adminpanel:verifications' %}">{% translate "Ouvrir les vérifications" %}</a><a class="btn btn-secondary" href="{% url 'adminpanel:statistiques' %}">{% translate "Voir les statistiques" %}</a></div>
+                </section>
             {% else %}
                 <section class="empty-panel">
                     <h2>{{ section_title }}</h2>
-                    <p>{% translate "Cette rubrique est disponible dans le panneau d’administration. Les validations de comptes et de documents se font depuis la rubrique Vérifications." %}</p>
-                    <a class="btn btn-primary form-spaced" href="{% url 'adminpanel:verifications' %}">{% translate "Ouvrir les vérifications" %}</a>
+                    <p>{% translate "Aucun contenu n’est disponible dans cette rubrique pour le moment." %}</p>
                 </section>
+            {% endif %}
+            {% if active_section != 'verifications' and active_section != 'hotels_residences' and page_obj and page_obj.paginator.num_pages > 1 %}
+                <nav class="pagination" aria-label="{% translate 'Pagination' %}">
+                    {% if page_obj.has_previous %}<a class="page-link" href="{% if active_section == 'colocations' %}?role={{ selected_colocation_role }}&amp;{% else %}?{% endif %}page={{ page_obj.previous_page_number }}">← {% translate "Précédent" %}</a>{% endif %}
+                    <span>{% blocktranslate with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} / {{ total }}{% endblocktranslate %}</span>
+                    {% if page_obj.has_next %}<a class="page-link" href="{% if active_section == 'colocations' %}?role={{ selected_colocation_role }}&amp;{% else %}?{% endif %}page={{ page_obj.next_page_number }}">{% translate "Suivant" %} →</a>{% endif %}
+                </nav>
             {% endif %}
         </div>
     </main>

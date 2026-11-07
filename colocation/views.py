@@ -141,7 +141,7 @@ def detail_annonce(request, annonce_id):
 @login_required
 @require_http_methods(["GET", "POST"])
 def publier_annonce(request):
-    """Publier une annonce de colocation - réservé aux touristes et propriétaires individuels"""
+    """Publier une annonce de colocation pour les locataires, touristes et propriétaires individuels."""
     try:
         profile = request.user.profile
         account_type = profile.account_type
@@ -161,7 +161,7 @@ def publier_annonce(request):
         )
         return redirect('logement:ajouter_logement')
     
-    # Les touristes seuls peuvent publier des annonces de colocation
+    # Seuls les comptes individuels avec un rôle autorisé peuvent publier.
     if account_type == 'individu' and role not in ['touriste', 'proprietaire', 'locataire']:
         return render(request, 'colocation/publier_annonce.html', {
             'form': None,

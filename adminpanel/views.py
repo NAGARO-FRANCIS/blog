@@ -50,7 +50,12 @@ def _build_section_context(request, section_name, title, items=None, stats=None)
     if stats:
         context.update(stats)
     if items is not None:
-        context["items"] = items
+        if "page_obj" not in context:
+            page_obj = Paginator(items, 25).get_page(request.GET.get("page"))
+            context["page_obj"] = page_obj
+            context["items"] = page_obj.object_list
+        else:
+            context["items"] = items
     return context
 
 
@@ -340,19 +345,65 @@ def _dashboard_placeholder(request, section_name):
 
 @user_passes_test(is_staff)
 def logements(request):
-    items = Logement.objects.select_related('proprietaire', 'proprietaire__profile').order_by('-created_at')[:12]
+    items = Logement.objects.select_related('proprietaire', 'proprietaire__profile').order_by('-created_at')
     stats = {
         'total_logements': Logement.objects.count(),
-        'logements_disponibles': Logement.objects.filter(available_units_for_date=None).count() if False else Logement.objects.count(),
-        'logements_en_attente': 0,
+        'logements_individuels': Logement.objects.filter(account_type='individu').count(),
+        'logements_hotels': Logement.objects.filter(account_type='hotel').count(),
+        'logements_residences': Logement.objects.filter(account_type='residence').count(),
     }
     return render(request, 'adminpanel/section.html', _build_section_context(request, 'logements', 'Logements', items, stats))
 
 
 @user_passes_test(is_staff)
 def colocations(request):
-    items = ColocationAnnonce.objects.select_related('proprietaire').order_by('-created_at')[:12]
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'colocations', 'Colocations', items, {'total_colocations': ColocationAnnonce.objects.count()}))
+    items = ColocationAnnonce.objects.select_related('proprietaire', 'proprietaire__profile').order_by('-created_at')
+    logement_items = Logement.objects.select_related(
+        'proprietaire',
+        'proprietaire__profile',
+    ).filter(
+        account_type='individu',
+        proprietaire__profile__role__in=['locataire', 'touriste'],
+    ).order_by('-created_at')
+    selected_role = request.GET.get('role', 'all')
+    valid_roles = {role for role, _ in Profile.ROLE_CHOICES}
+    if selected_role in valid_roles:
+        items = items.filter(proprietaire__profile__role=selected_role)
+        logement_items = logement_items.filter(proprietaire__profile__role=selected_role)
+    else:
+        selected_role = 'all'
+
+    logement_page_obj = Paginator(logement_items, 25).get_page(request.GET.get('logement_page'))
+    stats = {
+        'total_colocations': ColocationAnnonce.objects.count(),
+        'total_recherches_logement': Logement.objects.filter(
+            account_type='individu',
+            proprietaire__profile__role__in=['locataire', 'touriste'],
+        ).count(),
+        'locataires_recherche': (
+            ColocationAnnonce.objects.filter(proprietaire__profile__role='locataire').count()
+            + Logement.objects.filter(
+                account_type='individu',
+                proprietaire__profile__role='locataire',
+            ).count()
+        ),
+        'proprietaires_annonces': ColocationAnnonce.objects.filter(proprietaire__profile__role='proprietaire').count(),
+        'touristes_recherche': (
+            ColocationAnnonce.objects.filter(proprietaire__profile__role='touriste').count()
+            + Logement.objects.filter(
+                account_type='individu',
+                proprietaire__profile__role='touriste',
+            ).count()
+        ),
+        'selected_colocation_role': selected_role,
+        'logement_items': logement_page_obj.object_list,
+        'logement_page_obj': logement_page_obj,
+    }
+    return render(
+        request,
+        'adminpanel/section.html',
+        _build_section_context(request, 'colocations', 'Colocations', items, stats),
+    )
 
 
 @user_passes_test(is_staff)
@@ -563,13 +614,13 @@ def approve_eligible_establishments(request):
 
 @user_passes_test(is_staff)
 def reservations(request):
-    items = Reservation.objects.select_related('logement', 'client_user').order_by('-created_at')[:12]
+    items = Reservation.objects.select_related('logement', 'client_user').order_by('-created_at')
     return render(request, 'adminpanel/section.html', _build_section_context(request, 'reservations', 'Réservations', items, {'total_reservations': Reservation.objects.count(), 'reservations_en_attente': Reservation.objects.filter(statut='pending').count()}))
 
 
 @user_passes_test(is_staff)
 def finance(request):
-    items = Paiement.objects.select_related('reservation', 'reservation__logement').order_by('-created_at')[:12]
+    items = Paiement.objects.select_related('reservation', 'reservation__logement').order_by('-created_at')
     revenus = (Paiement.objects.filter(statut='completed').aggregate(total=Sum('montant')).get('total') or Decimal('0'))
     return render(request, 'adminpanel/section.html', _build_section_context(request, 'finance', 'Finance', items, {'revenus_total': revenus, 'paiements_total': Paiement.objects.count(), 'paiements_en_attente': Paiement.objects.filter(statut='pending').count()}))
 
@@ -1003,7 +1054,7 @@ def avis(request):
     items = (
         AvisLogement.objects
         .select_related('logement', 'auteur')
-        .order_by('-created_at')[:50]
+        .order_by('-created_at')
     )
     stats = {
         'avis_total': AvisLogement.objects.count(),
@@ -1021,7 +1072,7 @@ def signalements(request):
     items = (
         SignalementAvis.objects
         .select_related('avis', 'avis__logement', 'auteur')
-        .order_by('-created_at')[:50]
+        .order_by('-created_at')
     )
     stats = {
         'signalements_total': SignalementAvis.objects.count(),
@@ -1062,18 +1113,35 @@ def traiter_signalement(request, signalement_id):
 
 @user_passes_test(is_staff)
 def notifications(request):
-    items = _get_recent_notifications(request.user)
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'notifications', 'Notifications', items, {'notifications_total': items.count()}))
+    items = Notification.objects.filter(recipient=request.user).select_related('actor').order_by('-created_at')
+    stats = {
+        'notifications_total': items.count(),
+        'notifications_non_lues': items.filter(is_read=False).count(),
+    }
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'notifications', 'Notifications', items, stats))
 
 
 @user_passes_test(is_staff)
 def statistiques(request):
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'statistiques', 'Statistiques', [], {'total_users': User.objects.count(), 'total_logements': Logement.objects.count(), 'total_reservations': Reservation.objects.count()}))
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'statistiques', 'Statistiques', [], {
+        'total_users': User.objects.count(),
+        'total_logements': Logement.objects.count(),
+        'total_colocations': ColocationAnnonce.objects.count(),
+        'total_reservations': Reservation.objects.count(),
+        'total_paiements': Paiement.objects.count(),
+        'total_avis': AvisLogement.objects.count(),
+        'total_signalements': SignalementAvis.objects.count(),
+    }))
 
 
 @user_passes_test(is_staff)
 def parametres(request):
-    return render(request, 'adminpanel/section.html', _build_section_context(request, 'parametres', 'Paramètres', [], {'system_status': 'Opérationnel'}))
+    return render(request, 'adminpanel/section.html', _build_section_context(request, 'parametres', 'Paramètres', [], {
+        'system_status': 'Opérationnel',
+        'total_users': User.objects.count(),
+        'total_logements': Logement.objects.count(),
+        'total_reservations': Reservation.objects.count(),
+    }))
 
 
 @user_passes_test(is_staff)
@@ -1097,15 +1165,23 @@ def users(request):
             | Q(profile__telephone__icontains=search)
         )
 
-    # Type de compte
+    # Catégories affichées à l'administration : type professionnel ou rôle individuel.
     account_type = request.GET.get("account_type", "").strip()
 
-    if account_type in ["individu", "residence", "hotel"]:
+    account_categories = {"hotel", "residence", "proprietaire", "locataire", "touriste"}
+    if account_type in {"hotel", "residence"}:
+        queryset = queryset.filter(profile__account_type=account_type)
+    elif account_type in {"proprietaire", "locataire", "touriste"}:
         queryset = queryset.filter(
-            profile__account_type=account_type
+            profile__account_type="individu",
+            profile__role=account_type,
         )
+    elif account_type == "individu":
+        queryset = queryset.filter(profile__account_type="individu")
+    elif account_type not in account_categories:
+        account_type = ""
 
-    # Rôle
+    # Compatibilité avec les anciens liens contenant encore un paramètre role.
     role = request.GET.get("role", "").strip()
 
     if role in ["locataire", "touriste", "proprietaire"]:

@@ -72,16 +72,11 @@
 
                     <select name="account_type" aria-label="{% translate 'Type de compte' %}">
                         <option value="">{% translate "Type de compte" %}</option>
-                        <option value="individu" {% if account_type == 'individu' %}selected{% endif %}>{% translate "Individu" %}</option>
                         <option value="hotel" {% if account_type == 'hotel' %}selected{% endif %}>{% translate "Hôtel" %}</option>
                         <option value="residence" {% if account_type == 'residence' %}selected{% endif %}>{% translate "Résidence" %}</option>
-                    </select>
-
-                    <select name="role" aria-label="{% translate 'Rôle' %}">
-                        <option value="">{% translate "Rôle" %}</option>
-                        <option value="proprietaire" {% if role == 'proprietaire' %}selected{% endif %}>{% translate "Propriétaire" %}</option>
-                        <option value="locataire" {% if role == 'locataire' %}selected{% endif %}>{% translate "Locataire" %}</option>
-                        <option value="touriste" {% if role == 'touriste' %}selected{% endif %}>{% translate "Touriste" %}</option>
+                        <option value="proprietaire" {% if account_type == 'proprietaire' %}selected{% endif %}>{% translate "Propriétaire" %}</option>
+                        <option value="locataire" {% if account_type == 'locataire' %}selected{% endif %}>{% translate "Locataire" %}</option>
+                        <option value="touriste" {% if account_type == 'touriste' %}selected{% endif %}>{% translate "Touriste" %}</option>
                     </select>
 
                     <select name="status" aria-label="{% translate 'Statut' %}">
@@ -119,7 +114,6 @@
                         <tr>
                             <th scope="col">{% translate "Utilisateur" %}</th>
                             <th scope="col">{% translate "Courriel" %}</th>
-                            <th scope="col">{% translate "Rôle" %}</th>
                             <th scope="col">{% translate "Type de compte" %}</th>
                             <th scope="col">{% translate "Compte" %}</th>
                             <th scope="col">{% translate "Vérification" %}</th>
@@ -141,14 +135,9 @@
                                 <td>{{ user.email|default:'—' }}</td>
                                 <td>
                                     {% if user.profile %}
-                                        {{ user.profile.get_role_display }}
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if user.profile %}
-                                        {{ user.profile.get_account_type_display }}
+                                        {% if user.profile.account_type == 'hotel' %}{% translate "Hôtel" %}
+                                        {% elif user.profile.account_type == 'residence' %}{% translate "Résidence" %}
+                                        {% else %}{{ user.profile.get_role_display }}{% endif %}
                                     {% else %}
                                         —
                                     {% endif %}

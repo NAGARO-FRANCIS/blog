@@ -18,7 +18,8 @@ from accounts.models import (
     ProfessionalProfile,
     VerificationLog,
 )
-from logement.models import AvisLogement, Etablissement, Logement, Reservation, SignalementAvis
+from colocation.models import ColocationAnnonce
+from logement.models import AvisLogement, Etablissement, Logement, Paiement, Reservation, SignalementAvis
 
 
 class AdminPanelDashboardTests(TestCase):
@@ -63,6 +64,112 @@ class AdminPanelDashboardTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Nouvelle alerte admin')
+
+    def test_users_filter_supports_the_five_account_categories(self):
+        profiles = {'locataire': self.profile}
+        for username, category in (
+            ('hotel_account', 'hotel'),
+            ('residence_account', 'residence'),
+            ('owner_account', 'proprietaire'),
+            ('tourist_account', 'touriste'),
+        ):
+            user = User.objects.create_user(username=username, password='StrongPass123!')
+            profile = user.profile
+            if category in {'hotel', 'residence'}:
+                profile.account_type = category
+            else:
+                profile.account_type = 'individu'
+                profile.role = category
+            profile.save(update_fields=['account_type', 'role'])
+            profiles[category] = profile
+
+        self.client.force_login(self.admin)
+        for category, profile in profiles.items():
+            with self.subTest(category=category):
+                response = self.client.get(
+                    reverse('adminpanel:users'),
+                    {'account_type': category},
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.context['page_obj'].paginator.count, 1)
+                self.assertEqual(response.context['users'][0].pk, profile.user_id)
+
+    def test_management_sections_display_their_records(self):
+        avis, signalement = self.create_review_and_report()
+        Paiement.objects.create(
+            reservation=avis.reservation,
+            montant=30000,
+            methode='mobile_money',
+            statut='completed',
+        )
+        owner = User.objects.create_user(username='colocation_owner', password='StrongPass123!')
+        ColocationAnnonce.objects.create(
+            proprietaire=owner,
+            ville='Abidjan',
+            quartier='Cocody',
+            budget_mensuel=150000,
+            description='Annonce de colocation visible dans le panneau admin.',
+        )
+        Logement.objects.create(
+            titre='Recherche de colocataire par un locataire',
+            description='Annonce logement publiée par un locataire.',
+            ville='Abidjan',
+            account_type='individu',
+            proprietaire=owner,
+        )
+        self.client.force_login(self.admin)
+
+        sections = (
+            ('adminpanel:logements', 'Appartement à Abidjan'),
+            ('adminpanel:colocations', 'Annonce de colocation visible dans le panneau admin.'),
+            ('adminpanel:reservations', 'Client test'),
+            ('adminpanel:finance', 'Appartement à Abidjan'),
+            ('adminpanel:avis', 'Avis à modérer'),
+            ('adminpanel:signalements', 'Contenu inapproprié'),
+            ('adminpanel:notifications', 'Nouvelle alerte admin'),
+        )
+        for route_name, visible_content in sections:
+            with self.subTest(section=route_name):
+                response = self.client.get(reverse(route_name))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, visible_content)
+
+        tenant_ads = self.client.get(
+            reverse('adminpanel:colocations'),
+            {'role': 'locataire'},
+        )
+        self.assertEqual(tenant_ads.status_code, 200)
+        self.assertContains(tenant_ads, 'Recherche un colocataire')
+        self.assertContains(tenant_ads, 'Recherche de colocataire par un locataire')
+        self.assertEqual(tenant_ads.context['locataires_recherche'], 2)
+        self.assertEqual(len(tenant_ads.context['items']), 1)
+        self.assertEqual(len(tenant_ads.context['logement_items']), 1)
+
+        self.assertContains(self.client.get(reverse('adminpanel:avis')), 'Masquer')
+        self.assertContains(self.client.get(reverse('adminpanel:signalements')), 'Marquer traité')
+
+    def test_logements_section_paginates_all_records(self):
+        owner = User.objects.create_user(username='many_listings_owner', password='StrongPass123!')
+        Logement.objects.bulk_create([
+            Logement(
+                titre=f'Logement admin {index}',
+                description='Description de test',
+                ville='Abidjan',
+                proprietaire=owner,
+            )
+            for index in range(27)
+        ])
+        self.client.force_login(self.admin)
+
+        first_page = self.client.get(reverse('adminpanel:logements'))
+        second_page = self.client.get(reverse('adminpanel:logements'), {'page': 2})
+
+        self.assertEqual(first_page.status_code, 200)
+        self.assertEqual(first_page.context['page_obj'].paginator.count, 27)
+        self.assertEqual(len(first_page.context['items']), 25)
+        self.assertContains(first_page, 'Page 1 / 2')
+        self.assertContains(second_page, 'Page 2 / 2')
+        self.assertEqual(len(second_page.context['items']), 2)
 
     def create_review_and_report(self):
         owner = User.objects.create_user(username='owner_reviews', password='StrongPass123!')
