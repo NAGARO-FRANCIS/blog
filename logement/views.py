@@ -695,6 +695,10 @@ def ajouter_logement(request):
         profile.role = 'proprietaire'
         profile.save(update_fields=['account_type', 'role'])
 
+    if account_type == 'individu' and role == 'touriste':
+        messages.info(request, _('Le compte Touriste peut consulter les annonces, mais ne peut pas en publier.'))
+        return redirect('logement:home')
+
     if not profile.can_publish:
         messages.warning(
             request,
@@ -972,6 +976,10 @@ def modifier_logement(request, id):
     # Vérifier que l'utilisateur est le propriétaire
     if logement.proprietaire != request.user:
         messages.error(request, _('❌ Vous n\'avez pas la permission de modifier cette annonce.'))
+        return redirect('logement:detail_logement', id=logement.id)
+
+    if request.user.profile.account_type == 'individu' and request.user.profile.role == 'touriste':
+        messages.info(request, _('Le compte Touriste ne peut pas modifier ni republier des annonces.'))
         return redirect('logement:detail_logement', id=logement.id)
 
     if not request.user.profile.can_publish:

@@ -993,6 +993,24 @@ class DocumentUploadSecurityTests(TestCase):
         ).update(status='pending')
         self.assertFalse(profile.can_publish)
 
+    def test_tourist_cannot_publish_even_after_identity_verification(self):
+        profile = self.user.profile
+        profile.account_type = 'individu'
+        profile.role = 'touriste'
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=['account_type', 'role', 'verification_status', 'verified'])
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file='identity.jpg',
+                status='verified',
+            )
+
+        self.assertFalse(profile.can_publish)
+        self.assertIn('Touriste', profile.publication_block_reason)
+
     def test_professional_publication_also_requires_establishment_review(self):
         profile = self.user.profile
         profile.account_type = 'hotel'

@@ -19,7 +19,11 @@
         <header class="vf-header">
             <span class="vf-header__flag">🇨🇮</span>
             <h1 class="vf-header__title">{% translate "Finaliser votre inscription" %}</h1>
-            <p class="vf-header__sub">{% translate "Téléversez d’abord les trois pièces : recto, verso et selfie avec la pièce. L’examen commence lorsque le dossier est complet; la publication est autorisée après approbation manuelle des trois pièces. Les gestionnaires doivent aussi faire vérifier leur établissement." %}</p>
+            {% if profile.account_type == 'individu' and profile.role == 'touriste' %}
+                <p class="vf-header__sub">{% translate "Le compte Touriste peut consulter les annonces, mais ne peut pas en publier. Le dépôt des pièces ne débloque pas la publication pour ce type de compte." %}</p>
+            {% else %}
+                <p class="vf-header__sub">{% translate "Téléversez d’abord les trois pièces : recto, verso et selfie avec la pièce. L’examen commence lorsque le dossier est complet; la publication est autorisée après approbation manuelle des trois pièces. Les gestionnaires doivent aussi faire vérifier leur établissement." %}</p>
+            {% endif %}
         </header>
 
         <!-- ── CONTENU ── -->

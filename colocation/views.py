@@ -160,9 +160,14 @@ def publier_annonce(request):
             _('Vous avez accès au formulaire de publication pour votre type d\'établissement.'),
         )
         return redirect('logement:ajouter_logement')
+
+    if account_type == 'individu' and role == 'touriste':
+        from django.contrib import messages
+        messages.info(request, _('Le compte Touriste peut consulter les annonces, mais ne peut pas en publier.'))
+        return redirect('colocation:liste_annonces')
     
-    # Seuls les comptes individuels avec un rôle autorisé peuvent publier.
-    if account_type == 'individu' and role not in ['touriste', 'proprietaire', 'locataire']:
+    # Seuls les locataires et propriétaires individuels peuvent publier.
+    if account_type == 'individu' and role not in ['proprietaire', 'locataire']:
         return render(request, 'colocation/publier_annonce.html', {
             'form': None,
             'error': 'Vous devez avoir un rôle valide pour publier une annonce.'

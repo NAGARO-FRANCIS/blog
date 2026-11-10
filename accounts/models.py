@@ -154,6 +154,9 @@ class Profile(models.Model):
 
     @property
     def publication_block_reason(self):
+        if self.account_type == 'individu' and self.role == 'touriste':
+            return _('Le compte Touriste peut consulter les annonces, mais ne peut pas en publier.')
+
         if (
             not self.verified
             or self.verification_status != 'verified'

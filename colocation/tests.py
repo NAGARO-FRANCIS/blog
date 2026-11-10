@@ -3,9 +3,25 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 
 from logement.models import Logement
+from .models import ColocationAnnonce
 
 
 class PublicationVerificationTests(TestCase):
+    def test_tourist_cannot_publish_a_colocation_announcement(self):
+        tourist = User.objects.create_user(
+            username='tourist_cannot_publish_colocation',
+            password='StrongPassword123!',
+        )
+        tourist.profile.account_type = 'individu'
+        tourist.profile.role = 'touriste'
+        tourist.profile.save(update_fields=['account_type', 'role'])
+        self.client.force_login(tourist)
+
+        response = self.client.post(reverse('colocation:publier_annonce'), {})
+
+        self.assertRedirects(response, reverse('colocation:liste_annonces'))
+        self.assertFalse(ColocationAnnonce.objects.filter(proprietaire=tourist).exists())
+
     def test_unverified_owner_cannot_publish_colocation_announcement(self):
         owner = User.objects.create_user(
             username='unverified_colocation_owner',

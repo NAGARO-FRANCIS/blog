@@ -1,20 +1,55 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% translate "Mon profil" %} — {{ request.user.first_name|default:request.user.username }}{% endblock %}
+{% block title %}{% translate "Mon profil" %} — {% firstof viewed_user.first_name viewed_user.username request.user.first_name request.user.username %}{% endblock %}
 
 {% block content %}
+{# Le profil affiché : viewed_user quand on consulte quelqu'un d'autre, sinon l'utilisateur connecté #}
+{% with profile_user=viewed_user|default:request.user %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+{# Bibliothèque d'icônes : chaque icône est définie une seule fois puis réutilisée avec <use> #}
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="ic-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+    <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/></symbol>
+    <symbol id="ic-shield-check" viewBox="0 0 24 24"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="ic-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+    <symbol id="ic-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="ic-doc" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></symbol>
+    <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+    <symbol id="ic-star" viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></symbol>
+    <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+    <symbol id="ic-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .3 2 .5 3 .7a2 2 0 0 1 1.7 2Z"/></symbol>
+    <symbol id="ic-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="ic-briefcase" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></symbol>
+    <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+    <symbol id="ic-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></symbol>
+    <symbol id="ic-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+    <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 4h3v2a3 3 0 0 1-3 3M7 4H4v2a3 3 0 0 0 3 3"/></symbol>
+    <symbol id="ic-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></symbol>
+    <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+    <symbol id="ic-photo" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="4"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></symbol>
+</svg>
+
 <div class="ic-wrap">
 
     <!-- ══════════ BANNIÈRE ILLUSTRÉE ══════════ -->
     <div class="ic-hero">
-        <svg class="ic-hero__svg" viewBox="0 0 1200 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <svg class="ic-hero__svg" viewBox="0 0 1200 280" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <defs>
                 <linearGradient id="skyGrad" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%"  stop-color="#F77F00"/>
                     <stop offset="42%" stop-color="#FFE3C2"/>
                     <stop offset="58%" stop-color="#EAF7EE"/>
-                    <stop offset="100%" stop-color="#009A44"/>
+                    <stop offset="100%" stop-color="#009E60"/>
                 </linearGradient>
                 <linearGradient id="sunGlow" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35"/>
@@ -24,7 +59,7 @@
             <rect width="1200" height="280" fill="url(#skyGrad)"/>
             <circle cx="600" cy="90" r="140" fill="url(#sunGlow)"/>
 
-            <!-- Buildings silhouette -->
+            <!-- Immeubles -->
             <g fill="#0F2A22" opacity="0.30">
                 <rect x="760" y="150" width="26" height="100"/>
                 <rect x="792" y="120" width="34" height="130"/>
@@ -40,7 +75,7 @@
                 <rect x="1140" y="130" width="24" height="120"/>
             </g>
 
-            <!-- Pont (arche) -->
+            <!-- Pont -->
             <g stroke="#0F2A22" stroke-width="4" fill="none" opacity="0.55">
                 <path d="M420,250 Q600,90 780,250" stroke-width="6"/>
                 <line x1="480" y1="250" x2="600" y2="140"/>
@@ -65,41 +100,43 @@
             <!-- Reflet lagune -->
             <rect x="0" y="250" width="1200" height="30" fill="#0F2A22" opacity="0.12"/>
         </svg>
-        <div class="ic-hero__flagline"></div>
+        <div class="ic-hero__flagline" aria-hidden="true"></div>
 
-        <button type="button" class="ic-hero__editbtn" onclick="document.getElementById('icCoverInput').click()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>
-            {% translate "Changer la couverture" %}
-        </button>
-        <form method="post" enctype="multipart/form-data" action="{% url 'accounts:edit_profil' %}" style="display:none;">
-            {% csrf_token %}
-            <input type="file" id="icCoverInput" name="photo_couverture" accept="image/*" onchange="this.form.submit()">
-        </form>
+        {% if profile_user == request.user %}
+            <button type="button" class="ic-hero__editbtn" id="icCoverButton">
+                <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-camera"/></svg>
+                {% translate "Changer la couverture" %}
+            </button>
+            <form method="post" enctype="multipart/form-data" action="{% url 'accounts:edit_profil' %}" id="icCoverForm" hidden>
+                {% csrf_token %}
+                <input type="file" id="icCoverInput" name="photo_couverture" accept="image/*" aria-label="{% translate 'Changer la couverture' %}">
+            </form>
+        {% endif %}
     </div>
 
     <!-- ══════════ CARTE PROFIL ══════════ -->
     <div class="ic-profilecard">
         <div class="ic-avatar">
             {% if profile.photo_profil %}
-                <img src="{{ profile.photo_profil.url }}" alt="{{ request.user.username }}">
+                <img src="{{ profile.photo_profil.url }}" alt="{{ profile_user.username }}">
             {% else %}
-                <span>{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
+                <span aria-hidden="true">{{ profile_user.first_name|slice:":1"|upper }}{{ profile_user.last_name|slice:":1"|upper }}</span>
             {% endif %}
             {% if profile.verified %}
-                <span class="ic-avatar__check">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span class="ic-avatar__check" title="{% translate 'Profil vérifié' %}">
+                    <svg class="ic-i" width="14" height="14" aria-hidden="true"><use href="#ic-check"/></svg>
                 </span>
             {% endif %}
         </div>
 
         <div class="ic-profilecard__info">
             <div class="ic-name-row">
-                <h1>{{ request.user.first_name }} {{ request.user.last_name }}</h1>
+                <h1>{{ profile_user.first_name }} {{ profile_user.last_name }}</h1>
                 {% if profile.verified %}
-                    <svg class="ic-verified-tick" width="20" height="20" viewBox="0 0 24 24" fill="#009A44"><path d="M12 2 L15 5 L19 5 L19 9 L22 12 L19 15 L19 19 L15 19 L12 22 L9 19 L5 19 L5 15 L2 12 L5 9 L5 5 L9 5 Z"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg class="ic-verified-tick" width="20" height="20" viewBox="0 0 24 24" fill="#009E60" role="img" aria-label="{% translate 'Profil vérifié' %}"><path d="M12 2 L15 5 L19 5 L19 9 L22 12 L19 15 L19 19 L15 19 L12 22 L9 19 L5 19 L5 15 L2 12 L5 9 L5 5 L9 5 Z"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 {% endif %}
             </div>
-            <p class="ic-username">@{{ request.user.username }}</p>
+            <p class="ic-username">@{{ profile_user.username }}</p>
             <span class="ic-role-badge">
                 {% if profile.account_type == 'individu' %}{{ profile.get_role_display }}
                 {% elif profile.account_type == 'hotel' %}{% translate "Gestionnaire d'Hôtel" %}
@@ -108,42 +145,42 @@
 
             <div class="ic-meta-row">
                 <span class="ic-meta">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-pin"/></svg>
                     {% if profile.account_type == 'individu' %}{{ profile.ville|default:"Côte d'Ivoire" }}{% else %}{{ profile.establishment_city|default:"Côte d'Ivoire" }}{% endif %}
                 </span>
                 <span class="ic-meta">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-calendar"/></svg>
                     {% blocktranslate with date=date_inscription|date:"F Y" %}Membre depuis {{ date }}{% endblocktranslate %}
                 </span>
             </div>
 
             <div class="ic-trust-row">
                 <span class="ic-trust-badge">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/><path d="m9 12 2 2 4-4"/></svg>
-                    {% blocktranslate count count=profile.verified_by_count %}{{ count }} vérification{% plural %}{{ count }} vérifications{% endblocktranslate %}
+                    <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-shield-check"/></svg>
+                    {% blocktranslate count counter=profile.verified_by_count %}{{ counter }} vérification{% plural %}{{ counter }} vérifications{% endblocktranslate %}
                 </span>
-                {% if request.user.is_authenticated and request.user != viewed_user %}
+                {% if request.user.is_authenticated and request.user != profile_user %}
                     {% if current_user_has_verified_profile %}
                         <span class="ic-trust-status">✓ {% translate "Vérifié par vous" %}</span>
                     {% else %}
-                        <a href="{% url 'accounts:verify_profile' user_id=viewed_user.id %}" class="ic-trust-btn">{% translate "Vérifier ce profil" %}</a>
+                        <a href="{% url 'accounts:verify_profile' user_id=profile_user.id %}" class="ic-trust-btn">{% translate "Vérifier ce profil" %}</a>
                     {% endif %}
                 {% endif %}
             </div>
         </div>
 
-        <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-            {% translate "Modifier le profil" %}
-        </a>
+        {% if profile_user == request.user %}
+            <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
+                <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-pencil"/></svg>
+                {% translate "Modifier le profil" %}
+            </a>
+        {% endif %}
     </div>
 
     <!-- ══════════ STATS ══════════ -->
     <div class="ic-stats">
         <div class="ic-stat-card">
-            <div class="ic-stat-icon ic-stat-icon--orange">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>
-            </div>
+            <div class="ic-stat-icon ic-stat-icon--orange"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-eye"/></svg></div>
             <div>
                 <div class="ic-stat-value">{{ vues_profil|default:"0" }}</div>
                 <div class="ic-stat-label">{% translate "Vues du profil" %}</div>
@@ -152,9 +189,7 @@
         </div>
 
         <div class="ic-stat-card">
-            <div class="ic-stat-icon ic-stat-icon--green">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
-            </div>
+            <div class="ic-stat-icon ic-stat-icon--green"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-doc"/></svg></div>
             <div>
                 <div class="ic-stat-value">{{ nb_annonces|default:"0" }}</div>
                 <div class="ic-stat-label">{% translate "Publications" %}</div>
@@ -163,9 +198,7 @@
         </div>
 
         <div class="ic-stat-card">
-            <div class="ic-stat-icon ic-stat-icon--orange">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-            </div>
+            <div class="ic-stat-icon ic-stat-icon--orange"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-heart"/></svg></div>
             <div>
                 <div class="ic-stat-value">{{ nb_favoris|default:"0" }}</div>
                 <div class="ic-stat-label">{% translate "Favoris" %}</div>
@@ -174,14 +207,12 @@
         </div>
 
         <div class="ic-stat-card">
-            <div class="ic-stat-icon ic-stat-icon--green">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="12 2 15 9 22 9.5 17 14.5 18.5 22 12 18 5.5 22 7 14.5 2 9.5 9 9 12 2"/></svg>
-            </div>
+            <div class="ic-stat-icon ic-stat-icon--green"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-star"/></svg></div>
             <div>
                 <div class="ic-stat-value">{{ note_moyenne|floatformat:1|default:"—" }}</div>
                 <div class="ic-stat-label">{% translate "Note moyenne" %}</div>
                 {% if note_moyenne %}
-                    <div class="ic-stat-stars">
+                    <div class="ic-stat-stars" aria-hidden="true">
                         {% for i in "12345" %}<span class="{% if forloop.counter <= note_moyenne %}filled{% endif %}">★</span>{% endfor %}
                     </div>
                 {% endif %}
@@ -190,107 +221,107 @@
     </div>
 
     <!-- ══════════ ONGLETS ══════════ -->
-    <div class="ic-tabs">
-        <button class="ic-tab active" data-tab="apercu" onclick="icSwitchTab('apercu')">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+    <div class="ic-tabs" role="tablist" aria-label="{% translate 'Sections du profil' %}">
+        <button type="button" class="ic-tab active" role="tab" id="ic-tab-apercu" data-tab="apercu" aria-selected="true" aria-controls="ic-panel-apercu">
+            <svg class="ic-i" width="17" height="17" aria-hidden="true"><use href="#ic-user"/></svg>
             {% translate "Aperçu" %}
         </button>
-        <button class="ic-tab" data-tab="verification" onclick="icSwitchTab('verification')">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 20 6v6c0 5-4 8-8 10-4-2-8-5-8-10V6Z"/></svg>
+        <button type="button" class="ic-tab" role="tab" id="ic-tab-verification" data-tab="verification" aria-selected="false" aria-controls="ic-panel-verification" tabindex="-1">
+            <svg class="ic-i" width="17" height="17" aria-hidden="true"><use href="#ic-shield"/></svg>
             {% translate "Vérification" %}
         </button>
     </div>
 
     <!-- ══════════ ONGLET APERÇU ══════════ -->
-    <div class="ic-tabpanel active" id="ic-panel-apercu">
+    <div class="ic-tabpanel active" id="ic-panel-apercu" role="tabpanel" aria-labelledby="ic-tab-apercu">
         <div class="ic-columns">
 
             <!-- COLONNE GAUCHE -->
             <div class="ic-col-left">
                 <div class="ic-card">
-                    <h3 class="ic-card__title ic-card__title--orange">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                    <h2 class="ic-card__title ic-card__title--orange">
+                        <svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-user"/></svg>
                         {% translate "Informations personnelles" %}
-                    </h3>
+                    </h2>
                     <div class="ic-info-row">
-                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></span>
+                        <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-mail"/></svg></span>
                         <span class="ic-info-label">{% translate "Email" %}</span>
-                        <span class="ic-info-value">{{ request.user.email|default:"—" }}</span>
-                        {% if request.user.email %}<span class="ic-info-check">✓</span>{% endif %}
+                        <span class="ic-info-value">{{ profile_user.email|default:"—" }}</span>
+                        {% if profile_user.email %}<span class="ic-info-check" aria-hidden="true">✓</span>{% endif %}
                     </div>
                     <div class="ic-info-row">
-                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 3a2 2 0 0 1-.5 2.1L8 10a16 16 0 0 0 6 6l1.2-1.3a2 2 0 0 1 2.1-.5c1 .3 2 .5 3 .7a2 2 0 0 1 1.7 2Z"/></svg></span>
+                        <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-phone"/></svg></span>
                         <span class="ic-info-label">{% translate "Téléphone" %}</span>
                         <span class="ic-info-value {% if not profile.telephone %}ic-empty{% endif %}">{% if profile.telephone %}{{ profile.telephone }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
-                        {% if profile.telephone %}<span class="ic-info-check">✓</span>{% endif %}
+                        {% if profile.telephone %}<span class="ic-info-check" aria-hidden="true">✓</span>{% endif %}
                     </div>
                     {% if profile.account_type == 'individu' %}
                     <div class="ic-info-row">
-                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                        <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-calendar"/></svg></span>
                         <span class="ic-info-label">{% translate "Date de naissance" %}</span>
-                        <span class="ic-info-value {% if not profile.date_naissance %}ic-empty{% endif %}">
-                            {% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}{% translate "Non renseignée" %}{% endif %}
-                        </span>
+                        <span class="ic-info-value {% if not profile.date_naissance %}ic-empty{% endif %}">{% if profile.date_naissance %}{{ profile.date_naissance|date:"d/m/Y" }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                     </div>
                     <div class="ic-info-row">
-                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span>
+                        <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-circle"/></svg></span>
                         <span class="ic-info-label">{% translate "Sexe" %}</span>
-                        <span class="ic-info-value {% if profile.sexe %}{{ profile.get_sexe_display }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
+                        <span class="ic-info-value {% if not profile.sexe %}ic-empty{% endif %}">{% if profile.sexe %}{{ profile.get_sexe_display }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
                     </div>
                     {% endif %}
                 </div>
 
                 <div class="ic-card">
-                    <h3 class="ic-card__title ic-card__title--green">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                    <h2 class="ic-card__title ic-card__title--green">
+                        <svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-user"/></svg>
                         {% translate "Informations du profil" %}
-                    </h3>
+                    </h2>
                     {% if profile.account_type == 'individu' %}
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-doc"/></svg></span>
                             <span class="ic-info-label">{% translate "Type de compte" %}</span>
                             <span class="ic-info-value">{{ profile.get_role_display }}</span>
                         </div>
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-briefcase"/></svg></span>
                             <span class="ic-info-label">{% translate "Profession" %}</span>
                             <span class="ic-info-value {% if not profile.profession %}ic-empty{% endif %}">{% if profile.profession %}{{ profile.profession }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-pin"/></svg></span>
                             <span class="ic-info-label">{% translate "Ville" %}</span>
                             <span class="ic-info-value {% if not profile.ville %}ic-empty{% endif %}">{% if profile.ville %}{{ profile.ville }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-home"/></svg></span>
                             <span class="ic-info-label">{% translate "Quartier" %}</span>
                             <span class="ic-info-value {% if not profile.quartier %}ic-empty{% endif %}">{% if profile.quartier %}{{ profile.quartier }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
                         </div>
                     {% else %}
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-home"/></svg></span>
                             <span class="ic-info-label">{% translate "Établissement" %}</span>
                             <span class="ic-info-value">{{ profile.establishment_name|default:"—" }}</span>
                         </div>
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-pin"/></svg></span>
                             <span class="ic-info-label">{% translate "Ville" %}</span>
-                            <span class="ic-info-value">{% if profile.establishment_city %}{{ profile.establishment_city }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
+                            <span class="ic-info-value {% if not profile.establishment_city %}ic-empty{% endif %}">{% if profile.establishment_city %}{{ profile.establishment_city }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
                         <div class="ic-info-row">
-                            <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg></span>
+                            <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-briefcase"/></svg></span>
                             <span class="ic-info-label">{% translate "RCCM / SIRET" %}</span>
                             <span class="ic-info-value">{{ profile.siret_or_rccm|default:"—" }}</span>
                         </div>
                     {% endif %}
+
+                    {% if profile_user == request.user %}
                     <div class="ic-info-row">
-                        <span class="ic-info-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg></span>
+                        <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-globe"/></svg></span>
                         <span class="ic-info-label">{% translate "Langue" %}</span>
                         <form method="post" action="{% url 'set_language' %}" class="ic-language-form">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                            <label for="profile-language-select" class="sr-only">{% translate "Langue" %}</label>
-                            <select id="profile-language-select" name="language" onchange="this.form.submit()">
+                            <label for="profile-language-select" class="ic-sr-only">{% translate "Langue" %}</label>
+                            <select id="profile-language-select" name="language">
                                 {% get_current_language as CURRENT_LANGUAGE %}
                                 {% get_available_languages as AVAILABLE_LANGUAGES %}
                                 {% for language_code, language_name in AVAILABLE_LANGUAGES %}
@@ -299,23 +330,24 @@
                             </select>
                         </form>
                     </div>
+                    {% endif %}
                 </div>
 
                 {% if activites %}
                 <div class="ic-card">
-                    <h3 class="ic-card__title ic-card__title--orange">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <h2 class="ic-card__title ic-card__title--orange">
+                        <svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-activity"/></svg>
                         {% translate "Activité récente" %}
-                    </h3>
+                    </h2>
                     {% for activite in activites %}
                         <div class="ic-activity-row">
                             <span class="ic-activity-icon ic-activity-icon--{{ activite.type|default:'orange' }}">
                                 {% if activite.type == 'annonce' %}
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 9 12 2l9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                                    <svg class="ic-i" width="14" height="14" aria-hidden="true"><use href="#ic-home"/></svg>
                                 {% elif activite.type == 'photo' %}
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="4"/></svg>
+                                    <svg class="ic-i" width="14" height="14" aria-hidden="true"><use href="#ic-photo"/></svg>
                                 {% else %}
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                    <svg class="ic-i" width="14" height="14" aria-hidden="true"><use href="#ic-pencil"/></svg>
                                 {% endif %}
                             </span>
                             <div class="ic-activity-body">
@@ -333,73 +365,73 @@
             <!-- COLONNE DROITE -->
             <div class="ic-col-right">
                 <div class="ic-verif-card {% if not profile.verified %}ic-verif-card--pending{% endif %}">
-                    <div class="ic-verif-icon">
+                    <div class="ic-verif-icon" aria-hidden="true">
                         {% if profile.verified %}
-                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <svg class="ic-i ic-i--bold" width="34" height="34"><use href="#ic-check"/></svg>
                         {% else %}
-                            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <svg class="ic-i ic-i--bold" width="34" height="34"><use href="#ic-alert"/></svg>
                         {% endif %}
                     </div>
                     {% if profile.verified %}
                         {% if publication_block_reason %}
-                            <h3>{% translate "Identité vérifiée — publication indisponible" %}</h3>
+                            <h2>{% translate "Identité vérifiée — publication indisponible" %}</h2>
                             <p>{{ publication_block_reason }}
                                 {% if profile.account_type == 'hotel' or profile.account_type == 'residence' %}
                                     {% translate "La vérification de l’identité ne valide pas automatiquement l’établissement." %}
                                 {% endif %}
                             </p>
                         {% else %}
-                            <h3>{% translate "Profil vérifié" %}</h3>
+                            <h2>{% translate "Profil vérifié" %}</h2>
                             <p>{% translate "Félicitations ! Votre profil a été vérifié avec succès. Vous pouvez publier des annonces sans restriction et accéder à toutes les fonctionnalités." %}</p>
                         {% endif %}
                         <div class="ic-verif-details">
                             <div class="ic-verif-detail">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-calendar"/></svg>
                                 <div><span class="ic-verif-detail__label">{% translate "Vérifié le" %}</span><br>{{ profile.date_verification|date:"d F Y"|default:"—" }}</div>
                             </div>
                             <div class="ic-verif-detail">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                                <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-user"/></svg>
                                 <div><span class="ic-verif-detail__label">{% translate "Vérifié par" %}</span><br>{% translate "Admin Ivoire Connect" %}</div>
                             </div>
                         </div>
-                        {% if publication_block_reason and request.user == viewed_user %}
+                        {% if publication_block_reason and profile_user == request.user %}
                             <a href="{% url 'accounts:verification_docs' %}" class="ic-btn-verif">{% translate "Voir l’état de mes vérifications" %}</a>
                         {% endif %}
                     {% else %}
-                        <h3>{% translate "Vérification en attente" %}</h3>
+                        <h2>{% translate "Vérification en attente" %}</h2>
                         <p>{% translate "Votre profil est en cours de vérification par notre équipe. Vous serez notifié dès que ce sera fait." %}</p>
                     {% endif %}
-                    <a href="#" class="ic-btn-verif">{% translate "En savoir plus sur la vérification" %}
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </a>
+                    <button type="button" class="ic-btn-verif" data-open-tab="verification">{% translate "En savoir plus sur la vérification" %}
+                        <svg class="ic-i" width="14" height="14" aria-hidden="true"><use href="#ic-info"/></svg>
+                    </button>
                 </div>
 
-                {% if request.user.is_authenticated and request.user != viewed_user %}
+                {% if request.user.is_authenticated and request.user != profile_user %}
                 <div class="ic-follow-card">
-                    <h3 class="ic-card__title ic-card__title--orange">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+                    <h2 class="ic-card__title ic-card__title--orange">
+                        <svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-plus"/></svg>
                         {% translate "Suivre ce profil" %}
-                    </h3>
+                    </h2>
                     <p class="ic-follow-copy">{% translate "Recevez ses nouvelles annonces et restez informé de ses publications." %}</p>
-                    <button type="button" id="profileFollowBtn" class="ic-follow-btn{% if is_following %} ic-follow-btn--active{% endif %}" onclick="toggleProfileFollow({{ viewed_user.id }})">
+                    <button type="button" id="profileFollowBtn" class="ic-follow-btn{% if is_following %} ic-follow-btn--active{% endif %}" data-creator-id="{{ profile_user.id }}">
                         <span id="profileFollowBtnText">{% if is_following %}✅ {% translate "Abonné" %}{% else %}🔔 {% translate "Suivre ce profil" %}{% endif %}</span>
                     </button>
                     <div class="ic-follow-meta">
-                        <span id="profileFollowCount">{{ subscriber_count|default:0 }}</span> {% blocktranslate count subscriber_count=subscriber_count|default:0 %}abonné{% plural %}abonnés{% endblocktranslate %}
+                        <span id="profileFollowCount">{{ subscriber_count|default:0 }}</span> {% blocktranslate count counter=subscriber_count|default:0 %}abonné{% plural %}abonnés{% endblocktranslate %}
                     </div>
                 </div>
                 {% endif %}
 
                 {% if badges %}
                 <div class="ic-card">
-                    <h3 class="ic-card__title ic-card__title--orange">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 4h3v2a3 3 0 0 1-3 3M7 4H4v2a3 3 0 0 0 3 3"/></svg>
+                    <h2 class="ic-card__title ic-card__title--orange">
+                        <svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-trophy"/></svg>
                         {% translate "Vos badges" %}
-                    </h3>
+                    </h2>
                     <div class="ic-badges-grid">
                         {% for badge in badges %}
                             <div class="ic-badge ic-badge--{{ badge.couleur|default:'orange' }}">
-                                <div class="ic-badge__icon">{{ badge.emoji|default:"🏅" }}</div>
+                                <div class="ic-badge__icon" aria-hidden="true">{{ badge.emoji|default:"🏅" }}</div>
                                 <div class="ic-badge__label">{{ badge.titre }}</div>
                                 <div class="ic-badge__sub">{{ badge.description }}</div>
                             </div>
@@ -413,295 +445,462 @@
     </div>
 
     <!-- ══════════ ONGLET VÉRIFICATION ══════════ -->
-    <div class="ic-tabpanel" id="ic-panel-verification">
+    <div class="ic-tabpanel" id="ic-panel-verification" role="tabpanel" aria-labelledby="ic-tab-verification">
         <div class="ic-card">
-            <h3 class="ic-card__title ic-card__title--green">{% translate "Détails de la vérification" %}</h3>
-            <p style="color:#6B7280; font-size:0.9rem;">
+            <h2 class="ic-card__title ic-card__title--green">{% translate "Détails de la vérification" %}</h2>
+            <p class="ic-panel-text">
                 {% if profile.verified %}
-                    {% translate "Ton profil a été vérifié le" %} {{ profile.date_verification|date:"d/m/Y"|default:"—" }}. {% translate "Tu as un accès complet à la plateforme." %}
+                    {% blocktranslate with date=profile.date_verification|date:"d/m/Y"|default:"—" %}Votre profil a été vérifié le {{ date }}. Vous avez un accès complet à la plateforme.{% endblocktranslate %}
                 {% else %}
-                    {% translate "Ta pièce d'identité est en cours d'examen par notre équipe. Ce processus prend généralement 24 à 48h." %}
+                    {% translate "Votre pièce d'identité est en cours d'examen par notre équipe. Ce processus prend généralement 24 à 48h." %}
                 {% endif %}
             </p>
         </div>
     </div>
 
-    <!-- ══════════ FOOTER VAGUE ══════════ -->
+    <!-- ══════════ PIED DE PAGE EN VAGUE ══════════ -->
     <div class="ic-footer-wave">
-        <svg viewBox="0 0 1200 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 1200 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
             <path d="M0,40 C300,90 900,0 1200,50 L1200,90 L0,90 Z" fill="#F77F00" opacity="0.9"/>
             <path d="M0,55 C350,20 850,90 1200,35 L1200,90 L0,90 Z" fill="#FFFFFF" opacity="0.85"/>
-            <path d="M0,65 C400,30 800,80 1200,45 L1200,90 L0,90 Z" fill="#009A44"/>
+            <path d="M0,65 C400,30 800,80 1200,45 L1200,90 L0,90 Z" fill="#009E60"/>
         </svg>
-        <p>{% translate "Fait avec" %} <span class="ic-heart">❤️</span> {% translate "en Côte d'Ivoire" %}</p>
+        <p>{% blocktranslate %}Fait avec <span class="ic-heart">❤️</span> en Côte d'Ivoire{% endblocktranslate %}</p>
     </div>
 </div>
 
 <style>
-:root {
+/* ══════════════════════════════════════════════
+   Profil — Ivoire Connect
+   Palette Côte d'Ivoire : orange · blanc · vert
+   Plan : 1 Base · 2 Bannière · 3 Carte profil · 4 Statistiques · 5 Onglets
+          6 Cartes d'information · 7 Vérification · 8 Abonnement · 9 Badges · 10 Responsive
+══════════════════════════════════════════════ */
+
+/* ── 1. Base ── */
+.ic-wrap {
     --ic-orange: #F77F00;
-    --ic-orange-dk: #D96B00;
-    --ic-green: #009A44;
-    --ic-green-dk: #007A35;
-    --ic-text: #111827;
-    --ic-muted: #6B7280;
-    --ic-border: #E5E7EB;
-    --ic-surface: #F9FAFB;
+    --ic-orange-hover: #FF9122;
+    --ic-orange-soft: #FFF1E0;
+    --ic-orange-text: #8A4300;
+    --ic-green: #009E60;
+    --ic-green-dk: #0B5D3B;
+    --ic-green-soft: #E6F4EC;
+    --ic-text: #10231A;
+    --ic-muted: #5B6B62;
+    --ic-border: #DCE5DF;
+    --ic-bg: #F3F7F4;
     --ic-radius: 16px;
-    --ic-shadow: 0 2px 10px rgba(0,0,0,.06);
-    --ic-shadow-lg: 0 10px 28px rgba(0,0,0,.10);
+    --ic-shadow: 0 1px 3px rgba(11, 93, 59, .06);
+    --ic-shadow-lg: 0 10px 28px rgba(11, 93, 59, .12);
+
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+    color: var(--ic-text);
+    font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
 }
 
-.ic-wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px 0; }
+.ic-wrap *, .ic-wrap *::before, .ic-wrap *::after { box-sizing: border-box; }
+.ic-wrap :where(h1, h2, p) { margin: 0; }
+.ic-wrap :focus-visible { outline: 3px solid var(--ic-orange); outline-offset: 2px; }
+.ic-wrap [hidden] { display: none !important; }
 
-/* HERO */
-.ic-hero { position: relative; width: calc(100% + 40px); margin: 0 -20px; height: 230px; overflow: hidden; }
-.ic-hero__svg { width: 100%; height: 100%; display: block; }
-.ic-hero__flagline { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(to right, #F77F00 33.3%, #fff 33.3%, #fff 66.6%, #009A44 66.6%); }
+.ic-sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* Icônes : le trait suit la couleur du texte */
+.ic-i {
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.ic-i--bold { stroke-width: 2.5; }
+
+/* ── 2. Bannière ── */
+.ic-hero { position: relative; width: calc(100% + 40px); height: 230px; margin: 0 -20px; overflow: hidden; }
+.ic-hero__svg { display: block; width: 100%; height: 100%; }
+.ic-hero__flagline {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+    background: linear-gradient(to right, #F77F00 33.3%, #fff 33.3%, #fff 66.6%, #009E60 66.6%);
+}
 .ic-hero__editbtn {
-    position: absolute; top: 16px; right: 16px; display: flex; align-items: center; gap: 6px;
-    background: rgba(0,0,0,.45); color: #fff; border: none; padding: 8px 14px; border-radius: 100px;
-    font-size: .8rem; font-weight: 700; cursor: pointer;
+    position: absolute; top: 16px; right: 16px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border: none; border-radius: 100px;
+    background: rgba(8, 48, 31, .6); color: #fff;
+    font: 600 13px 'Figtree', sans-serif; cursor: pointer;
 }
-.ic-hero__editbtn:hover { background: rgba(0,0,0,.65); }
+.ic-hero__editbtn:hover { background: rgba(8, 48, 31, .85); }
 
-/* CARTE PROFIL */
+/* ── 3. Carte profil ── */
 .ic-profilecard {
-    background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow-lg);
-    margin: -48px 0 0; padding: 24px 28px 24px 164px; position: relative;
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 22px;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 22px;
     min-height: 146px;
+    margin-top: -48px;
+    padding: 24px 28px 24px 164px;
+    border: 1px solid var(--ic-border);
+    border-radius: var(--ic-radius);
+    background: #fff;
+    box-shadow: var(--ic-shadow-lg);
 }
+
 .ic-avatar {
-    position: absolute; left: 28px; top: -40px; width: 112px; height: 112px; border-radius: 50%;
-    border: 4px solid white; box-shadow: 0 8px 22px rgba(17,24,39,.18); overflow: hidden; background: var(--ic-orange);
-    display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 800; color: white;
+    position: absolute; left: 28px; top: -40px;
+    display: flex; align-items: center; justify-content: center;
+    width: 112px; height: 112px; overflow: hidden;
+    border: 4px solid #fff; border-radius: 50%;
+    background: var(--ic-orange); color: var(--ic-text);
+    box-shadow: 0 8px 22px rgba(16, 35, 26, .18);
+    font: 700 2.2rem 'Bricolage Grotesque', sans-serif;
 }
 .ic-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .ic-avatar__check {
-    position: absolute; bottom: 4px; right: 4px; width: 30px; height: 30px; border-radius: 50%;
-    background: var(--ic-green); border: 3px solid white; display: flex; align-items: center; justify-content: center;
+    position: absolute; right: 4px; bottom: 4px;
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px;
+    border: 3px solid #fff; border-radius: 50%;
+    background: var(--ic-green); color: #fff;
 }
+
 .ic-profilecard__info { min-width: 0; }
 .ic-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.ic-name-row h1 { font-size: 1.5rem; line-height: 1.15; font-weight: 800; color: var(--ic-text); margin: 0; overflow-wrap: anywhere; }
+.ic-name-row h1 { font: 700 1.6rem/1.15 'Bricolage Grotesque', 'Figtree', sans-serif; overflow-wrap: anywhere; }
 .ic-verified-tick { flex-shrink: 0; }
-.ic-username { color: var(--ic-muted); font-size: .88rem; margin: 2px 0 8px; }
+.ic-username { margin: 2px 0 8px; color: var(--ic-muted); font-size: 14px; }
+
 .ic-role-badge {
-    display: inline-block; background: #FFF1DE; color: var(--ic-orange-dk);
-    font-weight: 700; font-size: .78rem; padding: 4px 14px; border-radius: 100px; border: 1px solid #FBD9A8;
+    display: inline-block; padding: 4px 14px;
+    border: 1px solid #F6D9B0; border-radius: 100px;
+    background: var(--ic-orange-soft); color: var(--ic-orange-text);
+    font-size: 13px; font-weight: 600;
 }
-.ic-meta-row { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
-.ic-meta { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--ic-muted); }
-.ic-meta svg { color: var(--ic-orange); flex-shrink: 0; }
-.ic-trust-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
-.ic-trust-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: #ecfdf3; color: #166534; border-radius: 999px; font-size: .85rem; font-weight: 700; }
-.ic-trust-status { color: #0f766e; font-size: .9rem; font-weight: 700; }
-.ic-trust-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-green)); color: white; text-decoration: none; font-size: .9rem; font-weight: 700; }
+
+.ic-meta-row { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; }
+.ic-meta { display: flex; align-items: center; gap: 6px; color: var(--ic-muted); font-size: 14px; }
+.ic-meta svg { color: var(--ic-orange); }
+
+.ic-trust-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+.ic-trust-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+    border: 1px solid #BFE0CE; border-radius: 999px;
+    background: var(--ic-green-soft); color: var(--ic-green-dk);
+    font-size: 14px; font-weight: 600;
+}
+.ic-trust-status { color: var(--ic-green-dk); font-size: 14px; font-weight: 600; }
+.ic-trust-btn {
+    display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px;
+    background: var(--ic-orange); color: var(--ic-text);
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    transition: background-color .15s ease;
+}
+.ic-trust-btn:hover { background: var(--ic-orange-hover); }
 
 .ic-editprofile-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-orange-dk));
-    color: white; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: .9rem; text-decoration: none;
-    box-shadow: 0 4px 14px rgba(247,127,0,.3); white-space: nowrap; transition: transform .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0.7rem 1.4rem; border-radius: 12px;
+    background: var(--ic-orange); color: var(--ic-text);
+    font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap;
+    transition: background-color .15s ease;
 }
-.ic-editprofile-btn:hover { transform: translateY(-2px); }
+.ic-editprofile-btn:hover { background: var(--ic-orange-hover); }
 
-/* STATS */
+/* ── 4. Statistiques ── */
 .ic-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
-.ic-stat-card {
-    background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow); padding: 18px 20px;
-    display: flex; align-items: center; gap: 14px; transition: transform .2s, box-shadow .2s;
-}
-.ic-stat-card:hover { transform: translateY(-3px); box-shadow: var(--ic-shadow-lg); }
-.ic-stat-icon { width: 46px; height: 46px; min-width: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.ic-stat-icon--orange { background: var(--ic-orange); }
-.ic-stat-icon--green { background: var(--ic-green); }
-.ic-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--ic-text); line-height: 1; }
-.ic-stat-label { font-size: .78rem; color: var(--ic-muted); margin-top: 2px; }
-.ic-stat-delta { font-size: .74rem; color: var(--ic-green-dk); font-weight: 700; margin-top: 3px; }
-.ic-stat-stars { margin-top: 2px; font-size: .8rem; color: #ddd; }
-.ic-stat-stars .filled { color: #FFB100; }
 
-/* TABS */
-.ic-tabs { display: flex; gap: 8px; margin-top: 26px; border-bottom: 2px solid var(--ic-border); }
-.ic-tab {
-    display: flex; align-items: center; gap: 7px; background: none; border: none; padding: 12px 6px;
-    font-weight: 700; font-size: .92rem; color: var(--ic-muted); cursor: pointer; border-bottom: 3px solid transparent;
-    margin-bottom: -2px; margin-right: 20px; transition: color .2s;
+.ic-stat-card {
+    display: flex; align-items: center; gap: 14px; padding: 1rem 1.25rem;
+    border: 1px solid var(--ic-border); border-radius: var(--ic-radius); background: #fff;
 }
-.ic-tab:hover { color: var(--ic-orange-dk); }
-.ic-tab.active { color: var(--ic-orange-dk); border-bottom-color: var(--ic-orange); }
+
+.ic-stat-icon {
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; color: #fff;
+}
+.ic-stat-icon--orange { background: var(--ic-orange); color: var(--ic-text); }
+.ic-stat-icon--green { background: var(--ic-green); }
+
+.ic-stat-value { font: 700 1.6rem/1 'Bricolage Grotesque', 'Figtree', sans-serif; }
+.ic-stat-label { margin-top: 3px; color: var(--ic-muted); font-size: 13px; }
+.ic-stat-delta { margin-top: 3px; color: var(--ic-green-dk); font-size: 13px; font-weight: 600; }
+.ic-stat-stars { margin-top: 2px; color: #D5DBD7; font-size: 14px; }
+.ic-stat-stars .filled { color: var(--ic-orange); }
+
+/* ── 5. Onglets ── */
+.ic-tabs { display: flex; gap: 8px; margin-top: 26px; border-bottom: 2px solid var(--ic-border); }
+
+.ic-tab {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 20px -2px 0; padding: 12px 6px;
+    border: none; border-bottom: 3px solid transparent; background: none;
+    color: var(--ic-muted); font: 600 15px 'Figtree', sans-serif; cursor: pointer;
+    transition: color .15s ease;
+}
+.ic-tab:hover { color: var(--ic-green-dk); }
+.ic-tab.active { color: var(--ic-green-dk); border-bottom-color: var(--ic-orange); }
 
 .ic-tabpanel { display: none; padding-top: 22px; }
-.ic-tabpanel.active { display: block; animation: icFade .25s ease; }
-@keyframes icFade { from { opacity: 0; } to { opacity: 1; } }
+.ic-tabpanel.active { display: block; }
 
-/* COLUMNS */
 .ic-columns { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
-.ic-col-left, .ic-col-right { display: flex; flex-direction: column; gap: 20px; }
+.ic-col-left, .ic-col-right { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
-/* CARD */
-.ic-card { background: white; border-radius: var(--ic-radius); box-shadow: var(--ic-shadow); padding: 22px 24px; }
-.ic-card__title { display: flex; align-items: center; gap: 8px; font-size: .92rem; font-weight: 800; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--ic-border); }
-.ic-card__title--orange { color: var(--ic-orange-dk); }
-.ic-card__title--green { color: var(--ic-green-dk); }
+.ic-panel-text { color: var(--ic-muted); font-size: 15px; }
 
-.ic-info-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #F3F4F6; font-size: .88rem; }
+/* ── 6. Cartes d'information ── */
+.ic-card {
+    padding: 1.4rem 1.5rem;
+    border: 1px solid var(--ic-border); border-radius: var(--ic-radius); background: #fff;
+}
+
+.ic-card__title {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 1rem; padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--ic-border);
+    font: 700 1.05rem 'Bricolage Grotesque', 'Figtree', sans-serif;
+}
+.ic-card__title--orange svg { color: var(--ic-orange); }
+.ic-card__title--green svg { color: var(--ic-green); }
+.ic-card__title { color: var(--ic-green-dk); }
+
+.ic-info-row { display: flex; align-items: center; gap: 10px; padding: 0.7rem 0; border-bottom: 1px solid #EEF3EF; font-size: 15px; }
 .ic-info-row:last-child { border-bottom: none; }
-.ic-info-icon { color: var(--ic-muted); flex-shrink: 0; }
-.ic-info-label { color: var(--ic-muted); min-width: 140px; }
-.ic-info-value { color: var(--ic-text); font-weight: 600; flex: 1; }
-.ic-empty { color: #C4C9D4; font-style: italic; font-weight: 400; }
-.ic-info-check { color: var(--ic-green); font-weight: 800; }
+.ic-info-icon { display: flex; color: var(--ic-muted); }
+.ic-info-label { min-width: 140px; color: var(--ic-muted); }
+.ic-info-value { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.ic-empty { color: #7D8A82; font-style: italic; font-weight: 400; }
+.ic-info-check { color: var(--ic-green); font-weight: 700; }
 
-/* FOLLOW CTA */
-.ic-follow-card {
-    background: linear-gradient(135deg, #fff7ed, #fff);
-    border: 1px solid #ffd7aa;
-    border-radius: var(--ic-radius);
-    box-shadow: var(--ic-shadow);
-    padding: 22px 24px;
+.ic-language-form { flex: 1; margin: 0; }
+.ic-language-form select {
+    min-height: 38px; padding: 0.3rem 2rem 0.3rem 0.7rem;
+    border: 1.5px solid #CBD6CE; border-radius: 10px; background-color: #fff;
+    color: var(--ic-text); font: inherit; cursor: pointer;
 }
-.ic-follow-copy { color: var(--ic-muted); font-size: .9rem; margin: 0 0 12px; }
-.ic-follow-btn {
-    width: 100%; border: none; border-radius: 999px; padding: 10px 14px; background: linear-gradient(135deg, var(--ic-orange), var(--ic-green));
-    color: white; font-weight: 700; cursor: pointer;
-}
-.ic-follow-btn--active { background: linear-gradient(135deg, var(--ic-green), #0f766e); }
-.ic-follow-meta { margin-top: 10px; color: var(--ic-muted); font-size: .82rem; font-weight: 600; }
 
-/* ACTIVITY */
-.ic-activity-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
+/* Activité */
+.ic-activity-row { display: flex; align-items: flex-start; gap: 12px; padding: 0.75rem 0; border-bottom: 1px solid #EEF3EF; }
 .ic-activity-row:last-of-type { border-bottom: none; }
-.ic-activity-icon { width: 32px; height: 32px; min-width: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.ic-activity-icon--orange { background: var(--ic-orange); }
-.ic-activity-icon--green { background: var(--ic-green); }
-.ic-activity-body { flex: 1; }
-.ic-activity-title { font-weight: 700; font-size: .86rem; color: var(--ic-text); }
-.ic-activity-sub { font-size: .78rem; color: var(--ic-muted); margin-top: 2px; }
-.ic-activity-time { font-size: .74rem; color: #B0B5BE; white-space: nowrap; }
+.ic-activity-icon {
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; color: #fff;
+}
+.ic-activity-icon--orange { background: var(--ic-orange); color: var(--ic-text); }
+.ic-activity-icon--green, .ic-activity-icon--annonce { background: var(--ic-green); }
+.ic-activity-body { flex: 1; min-width: 0; }
+.ic-activity-title { font-size: 15px; font-weight: 600; }
+.ic-activity-sub { margin-top: 2px; color: var(--ic-muted); font-size: 14px; }
+.ic-activity-time { color: var(--ic-muted); font-size: 13px; white-space: nowrap; }
 
 .ic-btn-outline {
-    display: block; text-align: center; margin-top: 14px; padding: 10px; border-radius: 10px;
-    border: 1.5px solid var(--ic-orange); color: var(--ic-orange-dk); font-weight: 700; font-size: .86rem;
-    text-decoration: none; transition: background .2s;
+    display: block; margin-top: 14px; padding: 0.65rem;
+    border: 1.5px solid #BFE0CE; border-radius: 12px;
+    color: var(--ic-green-dk); font-size: 15px; font-weight: 600; text-align: center; text-decoration: none;
+    transition: background-color .15s ease, border-color .15s ease;
 }
-.ic-btn-outline:hover { background: #FFF3E0; }
-.ic-btn-block { width: 100%; box-sizing: border-box; }
+.ic-btn-outline:hover { background: var(--ic-green-soft); border-color: var(--ic-green); }
+.ic-btn-block { width: 100%; }
 
-/* VERIF CARD */
+/* ── 7. Vérification ── */
 .ic-verif-card {
-    background: linear-gradient(160deg, #E6F5ED, #F3FCF6); border: 1px solid #CDEBD9; border-radius: var(--ic-radius);
-    padding: 30px 26px; text-align: center; box-shadow: var(--ic-shadow);
+    padding: 1.9rem 1.6rem;
+    border: 1px solid #BFE0CE; border-radius: var(--ic-radius);
+    background: var(--ic-green-soft); text-align: center;
 }
-.ic-verif-card--pending { background: linear-gradient(160deg, #FFF7E6, #FFFBF0); border-color: #FDE9B8; }
+.ic-verif-card--pending { background: var(--ic-orange-soft); border-color: #F6D9B0; }
+
 .ic-verif-icon {
-    width: 74px; height: 74px; border-radius: 50%; background: var(--ic-green); margin: 0 auto 16px;
-    display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,154,68,.3);
+    display: flex; align-items: center; justify-content: center;
+    width: 74px; height: 74px; margin: 0 auto 1rem;
+    border-radius: 50%; background: var(--ic-green); color: #fff;
 }
-.ic-verif-card--pending .ic-verif-icon { background: #F5A623; box-shadow: 0 6px 18px rgba(245,166,35,.3); }
-.ic-verif-card h3 { color: var(--ic-green-dk); font-size: 1.15rem; margin: 0 0 10px; }
-.ic-verif-card--pending h3 { color: #92610C; }
-.ic-verif-card p { color: #4B5563; font-size: .85rem; line-height: 1.55; margin: 0 0 20px; }
-.ic-verif-details { display: flex; gap: 12px; margin-bottom: 20px; }
+.ic-verif-card--pending .ic-verif-icon { background: var(--ic-orange); color: var(--ic-text); }
+
+.ic-verif-card h2 { margin-bottom: 8px; color: var(--ic-green-dk); font: 700 1.2rem 'Bricolage Grotesque', 'Figtree', sans-serif; }
+.ic-verif-card--pending h2 { color: var(--ic-orange-text); }
+.ic-verif-card p { margin-bottom: 1.25rem; color: #3A4540; font-size: 15px; line-height: 1.55; }
+
+.ic-verif-details { display: flex; gap: 12px; margin-bottom: 1.25rem; }
 .ic-verif-detail {
-    flex: 1; background: white; border-radius: 12px; padding: 12px; display: flex; gap: 8px; align-items: flex-start;
-    font-size: .78rem; color: var(--ic-text); text-align: left; box-shadow: var(--ic-shadow);
+    display: flex; align-items: flex-start; flex: 1; gap: 8px; padding: 0.75rem;
+    border-radius: 12px; background: #fff; font-size: 14px; text-align: left;
 }
-.ic-verif-detail svg { color: var(--ic-green); margin-top: 2px; flex-shrink: 0; }
-.ic-verif-detail__label { color: var(--ic-muted); font-size: .72rem; }
+.ic-verif-detail svg { margin-top: 3px; color: var(--ic-green); }
+.ic-verif-detail__label { color: var(--ic-muted); font-size: 13px; }
+
 .ic-btn-verif {
-    display: inline-flex; align-items: center; gap: 7px; background: var(--ic-green); color: white;
-    padding: 11px 22px; border-radius: 10px; font-weight: 700; font-size: .85rem; text-decoration: none;
-    transition: background .2s;
+    display: inline-flex; align-items: center; gap: 8px; margin: 4px 4px 0;
+    padding: 0.65rem 1.3rem; border: none; border-radius: 12px;
+    background: var(--ic-green-dk); color: #fff;
+    font: 600 15px 'Figtree', sans-serif; text-decoration: none; cursor: pointer;
+    transition: background-color .15s ease;
 }
-.ic-btn-verif:hover { background: var(--ic-green-dk); }
+.ic-btn-verif:hover { background: var(--ic-green); }
 
-/* BADGES */
+/* ── 8. Abonnement ── */
+.ic-follow-card {
+    padding: 1.4rem 1.5rem;
+    border: 1px solid #F6D9B0; border-radius: var(--ic-radius); background: var(--ic-orange-soft);
+}
+.ic-follow-copy { margin-bottom: 12px; color: #6F3A00; font-size: 15px; }
+.ic-follow-btn {
+    width: 100%; min-height: 46px; padding: 0.6rem 1rem;
+    border: none; border-radius: 12px;
+    background: var(--ic-orange); color: var(--ic-text);
+    font: 600 15px 'Figtree', sans-serif; cursor: pointer;
+    transition: background-color .15s ease;
+}
+.ic-follow-btn:hover { background: var(--ic-orange-hover); }
+.ic-follow-btn--active { background: var(--ic-green-dk); color: #fff; }
+.ic-follow-btn--active:hover { background: var(--ic-green); }
+.ic-follow-meta { margin-top: 10px; color: var(--ic-muted); font-size: 14px; font-weight: 500; }
+
+/* ── 9. Badges ── */
 .ic-badges-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
-.ic-badge { text-align: center; padding: 14px 6px; border-radius: 14px; border: 2px solid; }
-.ic-badge--orange { border-color: #FBD9A8; background: #FFF8F0; }
-.ic-badge--green { border-color: #A7D7B8; background: #F0FFF6; }
-.ic-badge__icon { font-size: 1.8rem; margin-bottom: 6px; }
-.ic-badge__label { font-size: .78rem; font-weight: 800; color: var(--ic-text); }
-.ic-badge__sub { font-size: .68rem; color: var(--ic-muted); margin-top: 2px; }
+.ic-badge { padding: 0.9rem 0.4rem; border: 2px solid; border-radius: 14px; text-align: center; }
+.ic-badge--orange { border-color: #F6D9B0; background: var(--ic-orange-soft); }
+.ic-badge--green { border-color: #BFE0CE; background: var(--ic-green-soft); }
+.ic-badge__icon { margin-bottom: 6px; font-size: 1.8rem; }
+.ic-badge__label { font-size: 14px; font-weight: 700; }
+.ic-badge__sub { margin-top: 2px; color: var(--ic-muted); font-size: 13px; }
 
-/* FOOTER WAVE */
-.ic-footer-wave { position: relative; margin-top: 40px; text-align: center; }
-.ic-footer-wave svg { width: 100%; height: 70px; display: block; }
-.ic-footer-wave p { margin: -6px 0 20px; font-size: .85rem; color: var(--ic-muted); font-weight: 600; }
-.ic-heart { color: #F77F00; }
+/* Pied de page */
+.ic-footer-wave { margin-top: 40px; text-align: center; }
+.ic-footer-wave svg { display: block; width: 100%; height: 70px; }
+.ic-footer-wave p { margin: -6px 0 20px; color: var(--ic-muted); font-size: 14px; font-weight: 500; }
 
-/* RESPONSIVE */
+/* ── 10. Responsive ── */
 @media (max-width: 900px) {
     .ic-columns { grid-template-columns: 1fr; }
     .ic-stats { grid-template-columns: repeat(2, 1fr); }
 }
+
 @media (max-width: 780px) {
     .ic-profilecard { grid-template-columns: 1fr; padding-right: 20px; }
     .ic-editprofile-btn { width: 100%; }
 }
+
 @media (max-width: 600px) {
     .ic-profilecard { display: block; padding: 76px 20px 20px; }
-    .ic-avatar { left: 50%; transform: translateX(-50%); top: -42px; }
-    .ic-profilecard__info { text-align: left; width: 100%; }
+    .ic-avatar { left: 50%; top: -42px; transform: translateX(-50%); }
+    .ic-profilecard__info { width: 100%; }
     .ic-editprofile-btn { width: 100%; margin-top: 18px; }
-    .ic-stats { grid-template-columns: 1fr 1fr; }
     .ic-verif-details { flex-direction: column; }
+    .ic-info-label { min-width: 110px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ic-wrap * { transition: none !important; }
 }
 </style>
 
-<script>
+{# Textes utilisés par le script (traduits côté serveur, échappés pour JavaScript) #}
 {% translate "Abonné" as subscribed_label %}
 {% translate "Suivre ce profil" as follow_profile_label %}
-{% translate "Impossible de modifier l’abonnement" as subscription_error %}
-{% translate "Impossible de modifier l’abonnement." as subscription_error_alert %}
-function toggleProfileFollow(creatorId) {
-    const btn = document.getElementById('profileFollowBtn');
-    const txtSpan = document.getElementById('profileFollowBtnText');
-    const countSpan = document.getElementById('profileFollowCount');
+{% translate "Impossible de modifier l’abonnement." as subscription_error %}
 
-    if (!btn || !txtSpan) return;
+<script>
+(function () {
+    // ── Onglets (clavier : flèches gauche/droite) ──
+    const tabs = Array.from(document.querySelectorAll('.ic-tab'));
 
-    const csrfToken = getCookie('csrftoken');
-    const postOptions = {
-        method: 'POST',
-        headers: {'X-CSRFToken': csrfToken},
-        credentials: 'same-origin'
-    };
+    function icSwitchTab(tab, focusTab) {
+        tabs.forEach(el => {
+            const active = el.dataset.tab === tab;
+            el.classList.toggle('active', active);
+            el.setAttribute('aria-selected', String(active));
+            el.tabIndex = active ? 0 : -1;
+            if (active && focusTab) el.focus();
+        });
+        document.querySelectorAll('.ic-tabpanel').forEach(el => {
+            el.classList.toggle('active', el.id === `ic-panel-${tab}`);
+        });
+    }
+    window.icSwitchTab = icSwitchTab;
 
-    fetch(`/accounts/is-subscribed/${creatorId}/`)
-        .then(response => response.json())
-        .then(data => {
-            const endpoint = data.is_subscribed ? `/accounts/unsubscribe/${creatorId}/` : `/accounts/subscribe/${creatorId}/`;
-            return fetch(endpoint, postOptions)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        if (result.is_subscribed) {
-                            btn.classList.add('ic-follow-btn--active');
-                            txtSpan.textContent = '✅ {{ subscribed_label|escapejs }}';
-                        } else {
-                            btn.classList.remove('ic-follow-btn--active');
-                            txtSpan.textContent = '🔔 {{ follow_profile_label|escapejs }}';
-                        }
+    tabs.forEach((el, index) => {
+        el.addEventListener('click', () => icSwitchTab(el.dataset.tab));
+        el.addEventListener('keydown', event => {
+            if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+            const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+            icSwitchTab(next.dataset.tab, true);
+        });
+    });
+
+    document.querySelectorAll('[data-open-tab]').forEach(el => {
+        el.addEventListener('click', () => icSwitchTab(el.dataset.openTab, true));
+    });
+
+    // ── Photo de couverture : le bouton ouvre le sélecteur, le formulaire part dès le choix du fichier ──
+    const coverButton = document.getElementById('icCoverButton');
+    const coverInput = document.getElementById('icCoverInput');
+    if (coverButton && coverInput) {
+        coverButton.addEventListener('click', () => coverInput.click());
+        coverInput.addEventListener('change', () => coverInput.form.submit());
+    }
+
+    // ── Langue : change dès la sélection ──
+    const languageSelect = document.getElementById('profile-language-select');
+    if (languageSelect) languageSelect.addEventListener('change', () => languageSelect.form.submit());
+
+    // ── Abonnement ──
+    const followButton = document.getElementById('profileFollowBtn');
+
+    function readCsrfToken() {
+        if (typeof getCookie === 'function') return getCookie('csrftoken');
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+
+    function toggleProfileFollow(creatorId) {
+        const txtSpan = document.getElementById('profileFollowBtnText');
+        const countSpan = document.getElementById('profileFollowCount');
+        if (!followButton || !txtSpan) return;
+
+        const postOptions = {
+            method: 'POST',
+            headers: {'X-CSRFToken': readCsrfToken()},
+            credentials: 'same-origin'
+        };
+
+        fetch(`/accounts/is-subscribed/${creatorId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const endpoint = data.is_subscribed ? `/accounts/unsubscribe/${creatorId}/` : `/accounts/subscribe/${creatorId}/`;
+                return fetch(endpoint, postOptions)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (!result.success) throw new Error(result.message || '{{ subscription_error|escapejs }}');
+                        followButton.classList.toggle('ic-follow-btn--active', Boolean(result.is_subscribed));
+                        txtSpan.textContent = result.is_subscribed
+                            ? '✅ {{ subscribed_label|escapejs }}'
+                            : '🔔 {{ follow_profile_label|escapejs }}';
                         if (countSpan && typeof result.subscriber_count !== 'undefined') {
                             countSpan.textContent = result.subscriber_count;
                         }
-                    } else {
-                        throw new Error(result.message || '{{ subscription_error|escapejs }}');
-                    }
-                });
-        })
-        .catch(error => {
-            console.error('Erreur abonnement:', error);
-            alert(error.message || '{{ subscription_error_alert|escapejs }}');
-        });
-}
+                    });
+            })
+            .catch(error => {
+                console.error('Erreur abonnement:', error);
+                alert(error.message || '{{ subscription_error|escapejs }}');
+            });
+    }
+    window.toggleProfileFollow = toggleProfileFollow;
 
-function icSwitchTab(tab) {
-    document.querySelectorAll('.ic-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
-    document.querySelectorAll('.ic-tabpanel').forEach(el => el.classList.toggle('active', el.id === `ic-panel-${tab}`));
-}
+    if (followButton) {
+        followButton.addEventListener('click', () => toggleProfileFollow(followButton.dataset.creatorId));
+    }
+})();
 </script>
+
+{% endwith %}
 {% endblock %}

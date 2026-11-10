@@ -17,6 +17,21 @@ from .views import _apply_logement_filters
 
 
 class PublicationVerificationTests(TestCase):
+    def test_tourist_cannot_publish_a_lodging_listing(self):
+        tourist = User.objects.create_user(
+            username='tourist_cannot_publish',
+            password='StrongPassword123!',
+        )
+        tourist.profile.account_type = 'individu'
+        tourist.profile.role = 'touriste'
+        tourist.profile.save(update_fields=['account_type', 'role'])
+        self.client.force_login(tourist)
+
+        response = self.client.post(reverse('logement:ajouter_logement'), {})
+
+        self.assertRedirects(response, reverse('logement:home'))
+        self.assertFalse(Logement.objects.filter(proprietaire=tourist).exists())
+
     def test_unverified_owner_cannot_open_lodging_publication_form(self):
         owner = User.objects.create_user(
             username='unverified_lodging_owner',

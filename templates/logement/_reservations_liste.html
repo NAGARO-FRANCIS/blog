@@ -1,136 +1,453 @@
+{% load i18n %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-    .reservations-page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; color: #172033; }
-    .reservations-header { margin: 0 -20px 24px; padding: 30px 24px; color: #fff; background: linear-gradient(135deg, #10b981, #059669); }
-    .reservations-header h1 { margin: 0 0 8px; font-size: clamp(1.6rem, 4vw, 2.2rem); }
-    .reservations-header p { margin: 0; }
-    .reservations-toolbar, .reservations-card { padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 2px 10px rgba(15, 23, 42, .07); }
-    .reservations-toolbar { margin-bottom: 18px; }
-    .reservations-filters { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px) auto auto; align-items: end; gap: 12px; }
-    .reservations-filters label { display: block; margin-bottom: 6px; font-size: .86rem; font-weight: 650; color: #374151; }
-    .reservations-filters input, .reservations-filters select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #172033; font: inherit; }
-    .reservations-button, .reservations-reset { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; padding: 9px 16px; border: 0; border-radius: 8px; font: inherit; font-weight: 650; text-decoration: none; cursor: pointer; }
-    .reservations-button { color: #fff; background: #059669; }
-    .reservations-reset { color: #374151; background: #f3f4f6; }
-    .reservations-count { margin: 0 0 14px; color: #6b7280; font-size: .95rem; }
+    /* ══════════════════════════════════════════════
+       Réservations reçues — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Recherche · 4 Tableau · 5 Statuts et actions · 6 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .reservations-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-orange-text: #8A4300;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger: #B3261E;
+        --ci-danger-soft: #FDF1F1;
+
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3.5rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
+    }
+
+    .reservations-page *,
+    .reservations-page *::before,
+    .reservations-page *::after { box-sizing: border-box; }
+
+    .reservations-page :where(h1, p) { margin: 0; }
+    .reservations-page :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    /* ── 2. En-tête ── */
+    .reservations-header {
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+    }
+
+    .reservations-header-stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
+    }
+
+    .reservations-header-body {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .reservations-header-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        font-size: 1.5rem;
+    }
+
+    .reservations-header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .reservations-header p { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Recherche ── */
+    .reservations-toolbar,
+    .reservations-card {
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .reservations-toolbar { margin-bottom: 1rem; padding: 1.25rem; }
+
+    .reservations-filters {
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px) auto auto;
+        align-items: end;
+        gap: 12px;
+    }
+
+    .reservations-filters label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .reservations-filters input,
+    .reservations-filters select {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.6rem 0.85rem;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 10px;
+        background: var(--ci-white);
+        color: var(--ci-ink);
+        font: inherit;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .reservations-filters select {
+        appearance: none;
+        padding-right: 2.2rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%230B5D3B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        cursor: pointer;
+    }
+
+    .reservations-filters input:hover,
+    .reservations-filters select:hover { border-color: #9FB3A7; }
+
+    .reservations-filters input:focus,
+    .reservations-filters select:focus {
+        outline: none;
+        border-color: var(--ci-green);
+        box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+    }
+
+    .reservations-button,
+    .reservations-reset {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0.6rem 1.25rem;
+        border: 1.5px solid transparent;
+        border-radius: 12px;
+        font: 600 15px 'Figtree', sans-serif;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease;
+    }
+
+    .reservations-button { background: var(--ci-orange); color: var(--ci-ink); }
+    .reservations-button:hover { background: var(--ci-orange-hover); }
+
+    .reservations-reset { background: transparent; color: var(--ci-green-deep); border-color: #BFE0CE; }
+    .reservations-reset:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+
+    .reservations-count { margin: 0 0 0.9rem 2px; color: var(--ci-muted); }
+
+    /* ── 4. Tableau ── */
+    .reservations-card { overflow: hidden; }
     .reservations-table-wrap { overflow-x: auto; }
-    .reservations-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .reservations-table th, .reservations-table td { padding: 14px 12px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
-    .reservations-table th { color: #6b7280; font-size: .76rem; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
-    .reservation-client { display: flex; min-width: 190px; align-items: center; gap: 11px; }
-    .reservation-avatar { width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; object-fit: cover; background: #ecfdf5; }
-    .reservation-avatar-fallback { display: grid; place-items: center; color: #047857; font-size: 1.35rem; }
-    .reservation-client-name, .reservation-property-name { display: block; font-weight: 700; color: #172033; }
-    .reservation-detail { display: block; margin-top: 3px; color: #6b7280; font-size: .84rem; }
-    .reservation-status { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #f3f4f6; color: #374151; font-size: .82rem; white-space: nowrap; }
-    .reservation-status--confirmed, .reservation-status--completed { background: #d1fae5; color: #065f46; }
-    .reservation-status--pending { background: #fef3c7; color: #92400e; }
-    .reservation-status--cancelled { background: #fee2e2; color: #991b1b; }
-    .reservation-status--checked_in { background: #dbeafe; color: #1e40af; }
-    .reservation-actions { display: flex; min-width: 150px; flex-wrap: wrap; gap: 7px; }
-    .reservation-action { padding: 8px 10px; border: 0; border-radius: 7px; color: #fff; background: #047857; font: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
-    .reservation-action--checkout { background: #1d4ed8; }
-    .reservation-empty { padding: 36px 16px; color: #6b7280; text-align: center; }
-    .reservations-back { display: inline-block; margin-top: 20px; color: #047857; font-weight: 650; text-decoration: none; }
+
+    .reservations-table { width: 100%; min-width: 880px; border-collapse: collapse; text-align: left; }
+
+    .reservations-table th,
+    .reservations-table td {
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid #EEF3EF;
+        vertical-align: middle;
+    }
+
+    .reservations-table th {
+        background: #F0F7F3;
+        color: var(--ci-green-deep);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: .03em;
+        white-space: nowrap;
+    }
+
+    .reservations-table tbody tr:hover { background: #FAFCFB; }
+    .reservations-table tbody tr:last-child td { border-bottom: none; }
+
+    .reservation-client { display: flex; min-width: 200px; align-items: center; gap: 12px; }
+
+    .reservation-avatar {
+        flex: 0 0 46px;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--ci-green-soft);
+        background: var(--ci-green-soft);
+    }
+
+    .reservation-avatar-fallback { display: grid; place-items: center; font-size: 1.3rem; }
+
+    .reservation-client-name,
+    .reservation-property-name { display: block; font-weight: 600; }
+
+    .reservation-detail { display: block; margin-top: 2px; color: var(--ci-muted); font-size: 13px; }
+
+    .reservation-amount { font-weight: 600; white-space: nowrap; }
+
+    .reservation-empty { padding: 2.5rem 1rem; color: var(--ci-muted); text-align: center; }
+
+    /* ── 5. Statuts et actions ── */
+    .reservation-status {
+        display: inline-block;
+        padding: 3px 10px;
+        border: 1px solid #D6DDD9;
+        border-radius: 999px;
+        background: #EEF0EF;
+        color: #3A4540;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .reservation-status--confirmed,
+    .reservation-status--completed { background: var(--ci-green-soft); border-color: #BFE0CE; color: var(--ci-green-deep); }
+    .reservation-status--pending { background: var(--ci-orange-soft); border-color: #F6D9B0; color: var(--ci-orange-text); }
+    .reservation-status--cancelled { background: var(--ci-danger-soft); border-color: #F0CACA; color: #8F1D17; }
+    .reservation-status--checked_in { background: var(--ci-green-deep); border-color: var(--ci-green-deep); color: var(--ci-white); }
+
+    .reservation-paid { font-size: 14px; font-weight: 500; }
+    .reservation-paid--yes { color: var(--ci-green-deep); }
+    .reservation-paid--no { color: var(--ci-orange-text); }
+
+    .reservation-actions { display: flex; min-width: 160px; flex-wrap: wrap; gap: 8px; margin: 0; }
+
+    .reservation-action {
+        padding: 0.5rem 0.9rem;
+        border: 0;
+        border-radius: 10px;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        font: 600 14px 'Figtree', sans-serif;
+        cursor: pointer;
+        transition: background-color .15s ease;
+    }
+    .reservation-action:hover { background: var(--ci-orange-hover); }
+    .reservation-action--checkout { background: var(--ci-green-deep); color: var(--ci-white); }
+    .reservation-action--checkout:hover { background: var(--ci-green); }
+
+    .reservations-back {
+        display: inline-block;
+        margin-top: 1.25rem;
+        color: var(--ci-green-deep);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    /* ── 6. Responsive ── */
+    @media (max-width: 991px) {
+        .reservations-filters { grid-template-columns: 1fr 1fr; }
+        .reservations-filters > div:first-child { grid-column: 1 / -1; }
+    }
+
+    /* Petits écrans : chaque réservation devient une carte (les libellés viennent de data-label) */
     @media (max-width: 760px) {
+        .reservations-page { padding: 1rem 0.75rem 2.5rem; }
+        .reservations-header-body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
         .reservations-filters { grid-template-columns: 1fr; }
-        .reservations-toolbar, .reservations-card { padding: 15px; }
-        .reservations-table th, .reservations-table td { padding: 11px 9px; }
+        .reservations-toolbar { padding: 1rem; }
+
+        .reservations-card { border: 0; background: transparent; }
+        .reservations-table { min-width: 0; }
+        .reservations-table thead {
+            position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0);
+        }
+        .reservations-table,
+        .reservations-table tbody,
+        .reservations-table tr,
+        .reservations-table td { display: block; width: 100%; }
+
+        .reservations-table tr {
+            margin-bottom: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--ci-line);
+            border-radius: 16px;
+            background: var(--ci-white);
+        }
+
+        .reservations-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 0.65rem 0;
+            text-align: right;
+        }
+
+        .reservations-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            color: var(--ci-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .reservations-table td.reservation-empty { display: block; text-align: center; }
+        .reservations-table td.reservation-empty::before { content: none; }
+        .reservation-client { min-width: 0; text-align: left; }
+        .reservation-actions { min-width: 0; justify-content: flex-end; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .reservations-page * { transition: none !important; }
     }
 </style>
 
+{% translate "Confirmer le départ et libérer la chambre ?" as confirm_checkout %}
+
 <div class="reservations-page">
+
+    <!-- En-tête -->
     <header class="reservations-header">
-        <h1>📋 {{ titre|default:"Réservations" }}</h1>
-        <p>Retrouvez les clients, leurs chambres et les dates de leur séjour.</p>
+        <div class="reservations-header-stripe" aria-hidden="true"></div>
+        <div class="reservations-header-body">
+            <span class="reservations-header-icon" aria-hidden="true">📋</span>
+            <div>
+                <h1>{{ titre|default:_("Réservations") }}</h1>
+                <p>{% translate "Retrouvez les clients, leurs chambres et les dates de leur séjour." %}</p>
+            </div>
+        </div>
     </header>
 
-    <section class="reservations-toolbar" aria-label="Recherche de réservations">
-        <form class="reservations-filters" method="get">
+    <!-- Recherche -->
+    <section class="reservations-toolbar" aria-label="{% translate 'Recherche de réservations' %}">
+        <form class="reservations-filters" method="get" role="search">
             <div>
-                <label for="reservation-search">Rechercher un client ou un logement</label>
-                <input id="reservation-search" type="search" name="q" value="{{ search_query }}" placeholder="Nom, e-mail, téléphone, logement, n° de chambre…">
+                <label for="reservation-search">{% translate "Rechercher un client ou un logement" %}</label>
+                <input id="reservation-search" type="search" name="q" value="{{ search_query }}" placeholder="{% translate 'Nom, e-mail, téléphone, logement, n° de chambre…' %}">
             </div>
             <div>
-                <label for="reservation-status">Statut</label>
+                <label for="reservation-status">{% translate "Statut" %}</label>
                 <select id="reservation-status" name="statut">
-                    <option value="">Tous les statuts</option>
+                    <option value="">{% translate "Tous les statuts" %}</option>
                     {% for value, label in status_choices %}
-                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                        <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <button class="reservations-button" type="submit">Rechercher</button>
+            <button class="reservations-button" type="submit">{% translate "Rechercher" %}</button>
             {% if search_query or selected_status %}
-            <a class="reservations-reset" href="{% url 'logement:mes_reservations' %}">Effacer</a>
+                <a class="reservations-reset" href="{% url 'logement:mes_reservations' %}">{% translate "Effacer" %}</a>
             {% endif %}
         </form>
     </section>
 
-    <p class="reservations-count">
-        {{ nb_reservations }} réservation{{ nb_reservations|pluralize }} trouvée{{ nb_reservations|pluralize }}
+    <p class="reservations-count" aria-live="polite">
+        {% blocktranslate count counter=nb_reservations %}{{ counter }} réservation trouvée{% plural %}{{ counter }} réservations trouvées{% endblocktranslate %}
     </p>
 
+    <!-- Liste -->
     <section class="reservations-card">
         <div class="reservations-table-wrap">
             <table class="reservations-table">
+                <caption class="sr-only">{{ titre|default:_("Réservations") }}</caption>
                 <thead>
                     <tr>
-                        <th>Client</th>
-                        <th>Chambre / logement</th>
-                        <th>Séjour</th>
-                        <th>Statut</th>
-                        <th>Paiement</th>
-                        <th>Montant</th>
-                        <th>Actions</th>
+                        <th scope="col">{% translate "Client" %}</th>
+                        <th scope="col">{% translate "Chambre / logement" %}</th>
+                        <th scope="col">{% translate "Séjour" %}</th>
+                        <th scope="col">{% translate "Statut" %}</th>
+                        <th scope="col">{% translate "Paiement" %}</th>
+                        <th scope="col">{% translate "Montant" %}</th>
+                        <th scope="col">{% translate "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for reservation in reservations %}
                     <tr>
-                        <td>
+                        <td data-label="{% translate 'Client' %}">
                             <div class="reservation-client">
                                 {% if reservation.client_user.profile.photo_profil %}
-                                <img class="reservation-avatar" src="{{ reservation.client_user.profile.photo_profil.url }}" alt="Photo de {{ reservation.client_user.get_full_name|default:reservation.client_nom }}">
+                                    <img class="reservation-avatar" src="{{ reservation.client_user.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ reservation.client_user.get_full_name|default:reservation.client_nom }}" loading="lazy">
                                 {% else %}
-                                <span class="reservation-avatar reservation-avatar-fallback" aria-hidden="true">👤</span>
+                                    <span class="reservation-avatar reservation-avatar-fallback" aria-hidden="true">👤</span>
                                 {% endif %}
                                 <div>
                                     <span class="reservation-client-name">{{ reservation.client_user.get_full_name|default:reservation.client_nom }}</span>
                                     <span class="reservation-detail">{{ reservation.client_email }}</span>
                                     {% if reservation.client_telephone %}
-                                    <span class="reservation-detail">{{ reservation.client_telephone }}</span>
+                                        <span class="reservation-detail">{{ reservation.client_telephone }}</span>
                                     {% endif %}
                                 </div>
                             </div>
                         </td>
-                        <td>
-                            <span class="reservation-property-name">{{ reservation.logement.titre }}</span>
-                            <span class="reservation-detail">{{ reservation.nombre_chambres|default:1 }} chambre{{ reservation.nombre_chambres|default:1|pluralize }} réservée{{ reservation.nombre_chambres|default:1|pluralize }}</span>
-                            {% for unite in reservation.unites.all %}
-                            <span class="reservation-detail">Chambre n° {{ unite.numero }}</span>
-                            {% empty %}
-                            <span class="reservation-detail">Chambre non attribuée</span>
-                            {% endfor %}
+
+                        <td data-label="{% translate 'Chambre / logement' %}">
+                            <div>
+                                <span class="reservation-property-name">{{ reservation.logement.titre }}</span>
+                                <span class="reservation-detail">{% with rooms=reservation.nombre_chambres|default:1 %}{% blocktranslate count counter=rooms %}{{ counter }} chambre réservée{% plural %}{{ counter }} chambres réservées{% endblocktranslate %}{% endwith %}</span>
+                                {% for unite in reservation.unites.all %}
+                                    <span class="reservation-detail">{% blocktranslate with numero=unite.numero %}Chambre n° {{ numero }}{% endblocktranslate %}</span>
+                                {% empty %}
+                                    <span class="reservation-detail">{% translate "Chambre non attribuée" %}</span>
+                                {% endfor %}
+                            </div>
                         </td>
-                        <td>
-                            <span>{{ reservation.date_arrivee|date:"d/m/Y" }} → {{ reservation.date_depart|date:"d/m/Y" }}</span>
-                            <span class="reservation-detail">{{ reservation.nombre_nuits }} nuit{{ reservation.nombre_nuits|pluralize }} · {{ reservation.nombre_personnes }} personne{{ reservation.nombre_personnes|pluralize }}</span>
+
+                        <td data-label="{% translate 'Séjour' %}">
+                            <div>
+                                <span>{{ reservation.date_arrivee|date:"d/m/Y" }} → {{ reservation.date_depart|date:"d/m/Y" }}</span>
+                                <span class="reservation-detail">{% blocktranslate count nights=reservation.nombre_nuits %}{{ nights }} nuit{% plural %}{{ nights }} nuits{% endblocktranslate %} · {% blocktranslate count guests=reservation.nombre_personnes %}{{ guests }} personne{% plural %}{{ guests }} personnes{% endblocktranslate %}</span>
+                            </div>
                         </td>
-                        <td><span class="reservation-status reservation-status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span></td>
-                        <td>{% if reservation.paye %}Payée{% else %}À régler{% endif %}</td>
-                        <td>{{ reservation.montant_final }} FCFA</td>
-                        <td>
-                            {% if reservation.statut == "confirmed" or reservation.statut == "checked_in" %}
-                            <form class="reservation-actions" method="post" action="{% url 'logement:changer_statut_reservation' reservation.id %}">
-                                {% csrf_token %}
-                                {% if reservation.statut == "confirmed" %}
-                                <button class="reservation-action" type="submit" name="action" value="check_in">Enregistrer l’arrivée</button>
-                                {% else %}
-                                <button class="reservation-action reservation-action--checkout" type="submit" name="action" value="check_out" onclick="return confirm('Confirmer le départ et libérer la chambre ?')">Clôturer le séjour</button>
-                                {% endif %}
-                            </form>
+
+                        <td data-label="{% translate 'Statut' %}"><span class="reservation-status reservation-status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span></td>
+
+                        <td data-label="{% translate 'Paiement' %}">
+                            {% if reservation.paye %}
+                                <span class="reservation-paid reservation-paid--yes">{% translate "Payée" %}</span>
                             {% else %}
-                            <span class="reservation-detail">Aucune action disponible</span>
+                                <span class="reservation-paid reservation-paid--no">{% translate "À régler" %}</span>
+                            {% endif %}
+                        </td>
+
+                        <td data-label="{% translate 'Montant' %}"><span class="reservation-amount">{{ reservation.montant_final|floatformat:0 }} FCFA</span></td>
+
+                        <td data-label="{% translate 'Actions' %}">
+                            {% if reservation.statut == "confirmed" or reservation.statut == "checked_in" %}
+                                <form class="reservation-actions" method="post" action="{% url 'logement:changer_statut_reservation' reservation.id %}"{% if reservation.statut == "checked_in" %} data-confirm="{{ confirm_checkout }}"{% endif %}>
+                                    {% csrf_token %}
+                                    {% if reservation.statut == "confirmed" %}
+                                        <button class="reservation-action" type="submit" name="action" value="check_in">{% translate "Enregistrer l’arrivée" %}</button>
+                                    {% else %}
+                                        <button class="reservation-action reservation-action--checkout" type="submit" name="action" value="check_out">{% translate "Clôturer le séjour" %}</button>
+                                    {% endif %}
+                                </form>
+                            {% else %}
+                                <span class="reservation-detail">{% translate "Aucune action disponible" %}</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -138,9 +455,9 @@
                     <tr>
                         <td class="reservation-empty" colspan="7">
                             {% if search_query or selected_status %}
-                            Aucune réservation ne correspond à votre recherche.
+                                {% translate "Aucune réservation ne correspond à votre recherche." %}
                             {% else %}
-                            Aucune réservation pour le moment.
+                                {% translate "Aucune réservation pour le moment." %}
                             {% endif %}
                         </td>
                     </tr>
@@ -151,8 +468,16 @@
     </section>
 
     {% if request.user.profile.account_type == "hotel" %}
-    <a class="reservations-back" href="{% url 'accounts:dashboard_hotel' %}">← Retour au tableau de bord</a>
+        <a class="reservations-back" href="{% url 'accounts:dashboard_hotel' %}">← {% translate "Retour au tableau de bord" %}</a>
     {% else %}
-    <a class="reservations-back" href="{% url 'accounts:dashboard_residence' %}">← Retour au tableau de bord</a>
+        <a class="reservations-back" href="{% url 'accounts:dashboard_residence' %}">← {% translate "Retour au tableau de bord" %}</a>
     {% endif %}
 </div>
+
+<script>
+    // Confirmation avant une action sensible : <form data-confirm="message">
+    document.addEventListener('submit', function (e) {
+        const message = e.target.dataset && e.target.dataset.confirm;
+        if (message && !window.confirm(message)) e.preventDefault();
+    });
+</script>

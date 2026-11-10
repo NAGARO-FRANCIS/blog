@@ -170,11 +170,11 @@ body {
                 <div class="management-desc">{% translate "Gestion complète de vos propriétés" %}</div>
             </a>
 
-            <a href="{% url 'logement:ajouter_logement' %}" class="management-card">
+            {% if request.user.profile.role != 'touriste' %}<a href="{% url 'logement:ajouter_logement' %}" class="management-card">
                 <div class="management-icon">➕</div>
                 <div class="management-title">{% translate "Ajouter" %}</div>
                 <div class="management-desc">{% translate "Créer un nouveau logement" %}</div>
-            </a>
+            </a>{% endif %}
         </div>
     </div>
 

@@ -4,203 +4,319 @@
 {% block title %}{% translate "Mes Logements - Gestion" %}{% endblock %}
 
 {% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+    /* ══════════════════════════════════════════════
+       Mes logements — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Cartes · 4 Boutons · 5 État vide · 6 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .mylistings-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger: #B3261E;
+        --ci-danger-soft: #FDF1F1;
+
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3.5rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
+    }
+
+    .mylistings-page *,
+    .mylistings-page *::before,
+    .mylistings-page *::after { box-sizing: border-box; }
+
+    .mylistings-page :where(h1, h3, p) { margin: 0; }
+    .mylistings-page :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    /* ── 2. En-tête ── */
     .page-header {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        padding: 40px 30px;
-        margin-bottom: 30px;
-        border-radius: 0 0 15px 15px;
-    }
-    
-    .page-header h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-    
-    .logements-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-    }
-    
-    .logement-card {
-        background: white;
-        border-radius: 12px;
+        margin-bottom: 1.5rem;
         overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
     }
-    
-    .logement-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15);
+
+    .page-header-stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
     }
-    
-    .logement-image {
-        width: 100%;
-        height: 200px;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+
+    .page-header-body {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .page-header-title { display: flex; align-items: center; gap: 16px; }
+
+    .page-header-icon {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        font-size: 1.5rem;
+    }
+
+    .page-header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .page-header p { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Cartes de logements ── */
+    .logements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .logement-card {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+        transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .logement-card:hover { border-color: var(--ci-green); transform: translateY(-3px); }
+
+    .logement-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        background: var(--ci-green-soft);
         font-size: 3rem;
     }
-    
-    .logement-content {
-        padding: 20px;
-    }
-    
+
+    .logement-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+    .logement-content { display: flex; flex: 1; flex-direction: column; padding: 1.25rem; }
+
     .logement-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1a2332;
         margin-bottom: 8px;
+        font: 700 1.1rem/1.3 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-ink);
     }
-    
+
     .logement-type {
-        display: inline-block;
-        background: #d1fae5;
-        color: #065f46;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.8rem;
+        align-self: flex-start;
+        margin-bottom: 12px;
+        padding: 3px 10px;
+        border: 1px solid #BFE0CE;
+        border-radius: 999px;
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        font-size: 13px;
         font-weight: 600;
-        margin-bottom: 10px;
     }
-    
+
     .logement-info {
-        font-size: 0.9rem;
-        color: #6b7280;
-        margin-bottom: 15px;
+        flex: 1;
+        margin-bottom: 1rem;
+        color: var(--ci-muted);
+        font-size: 15px;
         line-height: 1.6;
     }
-    
-    .logement-actions {
-        display: flex;
-        gap: 10px;
-    }
-    
+
+    .logement-price { color: var(--ci-ink); font-weight: 600; }
+
+    /* ── 4. Boutons ── */
+    .logement-actions { display: flex; gap: 10px; }
+    .logement-actions form { flex: 1; margin: 0; }
+
     .btn {
-        padding: 8px 12px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        flex: 1;
-        text-align: center;
-    }
-    
-    .btn-edit {
-        background: #10b981;
-        color: white;
-    }
-    
-    .btn-edit:hover {
-        background: #059669;
-    }
-    
-    .btn-delete {
-        background: #ef4444;
-        color: white;
-    }
-    
-    .btn-delete:hover {
-        background: #dc2626;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        min-height: 44px;
+        padding: 0.5rem 0.9rem;
+        border: 1.5px solid transparent;
         border-radius: 12px;
-    }
-    
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
-    }
-    
-    .empty-text {
-        color: #6b7280;
-        font-size: 1.1rem;
-        margin-bottom: 30px;
-    }
-    
-    .empty-state a {
-        display: inline-block;
-        background: #10b981;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 8px;
+        font: 600 15px 'Figtree', sans-serif;
+        text-align: center;
         text-decoration: none;
-        font-weight: 600;
+        cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease;
     }
+
+    .logement-actions > .btn { flex: 1; }
+
+    .btn-edit { background: var(--ci-orange); color: var(--ci-ink); }
+    .btn-edit:hover { background: var(--ci-orange-hover); }
+
+    .btn-delete { background: transparent; color: var(--ci-danger); border-color: #F0CACA; }
+    .btn-delete:hover { background: var(--ci-danger-soft); border-color: var(--ci-danger); }
 
     .add-listing-button {
         display: inline-flex;
         align-items: center;
-        margin-top: 16px;
-        padding: 11px 18px;
-        border-radius: 8px;
-        background: #fff;
-        color: #047857;
-        font-weight: 700;
+        gap: 8px;
+        min-height: 46px;
+        padding: 0.6rem 1.25rem;
+        border-radius: 12px;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        font-weight: 600;
         text-decoration: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        transition: background-color .15s ease;
     }
-    .add-listing-button:hover { background: #f0fdf4; }
+    .add-listing-button:hover { background: var(--ci-orange-hover); }
+
+    /* ── 5. État vide ── */
+    .empty-state {
+        padding: 3.5rem 1.5rem;
+        border: 2px dashed #BFD0C5;
+        border-radius: 16px;
+        background: var(--ci-white);
+        text-align: center;
+    }
+
+    .empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 76px;
+        height: 76px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        font-size: 2.1rem;
+    }
+
+    .empty-text {
+        margin-bottom: 1.5rem;
+        color: var(--ci-muted);
+        font-size: 1.1rem;
+    }
+
+    /* ── 6. Responsive ── */
+    @media (max-width: 640px) {
+        .mylistings-page { padding: 1rem 0.75rem 2.5rem; }
+        .page-header-body { padding: 1.1rem 1.1rem 1.25rem; }
+        .page-header-title { gap: 12px; }
+        .add-listing-button { width: 100%; justify-content: center; }
+        .logements-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .mylistings-page * { transition: none !important; }
+        .logement-card:hover { transform: none; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>🏠 {% translate "Mes Logements" %}</h1>
-    <p>{% blocktranslate with total_logements=total %}Gestion de vos propriétés - Total: {{ total_logements }} logement(s){% endblocktranslate %}</p>
-    <a class="add-listing-button" href="{% url 'logement:ajouter_logement' %}">＋ {% translate "Publier une autre annonce" %}</a>
-</div>
+{% translate "Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible." as confirm_delete %}
 
-<div class="container">
-    {% if logements %}
-    <div class="logements-grid">
-        {% for logement in logements %}
-        <div class="logement-card">
-            <div class="logement-image">
-                {% if logement.photos.all %}
-                    <img src="{{ logement.photos.first.image.url }}" alt="{{ logement.titre }}" style="width: 100%; height: 100%; object-fit: cover;">
-                {% else %}
-                    🏠
-                {% endif %}
-            </div>
-            <div class="logement-content">
-                <h3 class="logement-title">{{ logement.titre }}</h3>
-                <span class="logement-type">{{ logement.type_logement|title }}</span>
-                <div class="logement-info">
-                    <div>📍 {{ logement.ville }}, {{ logement.quartier }}</div>
-                    <div>💰 {{ logement.prix }} FCFA/mois</div>
-                </div>
-                <div class="logement-actions">
-                    <a href="{% url 'logement:modifier_logement' logement.id %}" class="btn btn-edit">✏️ {% translate "Modifier" %}</a>
-                    <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" style="flex: 1; margin: 0; display: inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-delete" onclick="return confirm('{% translate "Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible." %}')">🗑️ {% translate "Supprimer" %}</button>
-                    </form>
+<div class="mylistings-page">
+
+    <!-- En-tête -->
+    <header class="page-header">
+        <div class="page-header-stripe" aria-hidden="true"></div>
+        <div class="page-header-body">
+            <div class="page-header-title">
+                <span class="page-header-icon" aria-hidden="true">🏠</span>
+                <div>
+                    <h1>{% translate "Mes Logements" %}</h1>
+                    <p>{% blocktranslate count counter=total %}Gestion de vos propriétés - Total : {{ counter }} logement{% plural %}Gestion de vos propriétés - Total : {{ counter }} logements{% endblocktranslate %}</p>
                 </div>
             </div>
+
+            {% if logements and request.user.profile.role != 'touriste' %}
+                <a href="{% url 'logement:ajouter_logement' %}" class="add-listing-button">
+                    <span aria-hidden="true">+</span> {% translate "Ajouter un logement" %}
+                </a>
+            {% endif %}
         </div>
-        {% endfor %}
-    </div>
+    </header>
+
+    {% if logements %}
+        <div class="logements-grid">
+            {% for logement in logements %}
+                <article class="logement-card">
+                    <div class="logement-image">
+                        {% with photo=logement.photos.first %}
+                            {% if photo %}
+                                <img src="{{ photo.image.url }}" alt="{{ logement.titre }}" loading="lazy">
+                            {% else %}
+                                <span aria-hidden="true">🏠</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+
+                    <div class="logement-content">
+                        <h2 class="logement-title">{{ logement.titre }}</h2>
+                        <span class="logement-type">{{ logement.type_logement|title }}</span>
+
+                        <div class="logement-info">
+                            <div>📍 {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</div>
+                            <div class="logement-price">💰 {{ logement.prix|floatformat:0 }} FCFA/{% translate "mois" %}</div>
+                        </div>
+
+                        <div class="logement-actions">
+                            {% if request.user.profile.role != 'touriste' %}
+                                <a href="{% url 'logement:modifier_logement' logement.id %}" class="btn btn-edit"><span aria-hidden="true">✏️</span> {% translate "Modifier" %}</a>
+                            {% endif %}
+                            <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" data-confirm="{{ confirm_delete }}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-delete"><span aria-hidden="true">🗑️</span> {% translate "Supprimer" %}</button>
+                            </form>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
     {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">🏠</div>
-        <p class="empty-text">{% translate "Aucun logement trouvé" %}</p>
-        <a href="{% url 'logement:ajouter_logement' %}">+ {% translate "Ajouter votre premier logement" %}</a>
-    </div>
+        <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">🏠</div>
+            <p class="empty-text">{% translate "Aucun logement trouvé" %}</p>
+            {% if request.user.profile.role != 'touriste' %}
+                <a href="{% url 'logement:ajouter_logement' %}" class="add-listing-button">+ {% translate "Ajouter votre premier logement" %}</a>
+            {% endif %}
+        </div>
     {% endif %}
 </div>
+
+<script>
+    // Confirmation avant une action sensible : <form data-confirm="message">
+    document.addEventListener('submit', function (e) {
+        const message = e.target.dataset && e.target.dataset.confirm;
+        if (message && !window.confirm(message)) e.preventDefault();
+    });
+</script>
 {% endblock %}

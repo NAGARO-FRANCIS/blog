@@ -4,111 +4,308 @@
 {% block title %}{% translate "Clients & Locataires" %}{% endblock %}
 
 {% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .page-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-        padding: 40px 30px;
-        margin-bottom: 30px;
-        border-radius: 0 0 15px 15px;
-    }
-    
-    .page-header h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-    
-    .container {
+    /* ══════════════════════════════════════════════
+       Clients & locataires — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Indicateurs · 4 Tableau · 5 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .clients-page {
+        --ci-orange: #F77F00;
+        --ci-orange-soft: #FFF1E0;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 2rem 1.25rem 3.5rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
     }
-    
-    .content-section {
-        background: white;
+
+    .clients-page *,
+    .clients-page *::before,
+    .clients-page *::after { box-sizing: border-box; }
+
+    .clients-page :where(h1, p) { margin: 0; }
+    .clients-page :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    /* ── 2. En-tête ── */
+    .page-header {
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+    }
+
+    .page-header-stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
+    }
+
+    .page-header-body {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .page-header-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        font-size: 1.5rem;
+    }
+
+    .page-header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .page-header p { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Indicateurs ── */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 1.1rem 1.25rem;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .stat-label { margin-bottom: 4px; color: var(--ci-muted); font-size: 14px; }
+
+    .stat-kpi {
+        font: 700 1.75rem/1.1 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-ink);
+    }
+
+    .stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background: var(--ci-orange-soft);
+        font-size: 1.3rem;
+    }
+
+    /* ── 4. Tableau ── */
+    .table-wrapper {
+        overflow-x: auto;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .clients-table { width: 100%; min-width: 720px; border-collapse: collapse; }
+
+    .clients-table th,
+    .clients-table td {
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid #EEF3EF;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .clients-table th {
+        background: #F0F7F3;
+        color: var(--ci-green-deep);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: .03em;
+        white-space: nowrap;
+    }
+
+    .clients-table tbody tr:hover { background: #FAFCFB; }
+    .clients-table tbody tr:last-child td { border-bottom: none; }
+
+    .client-name { font-weight: 600; }
+    .client-amount { font-weight: 600; white-space: nowrap; }
+
+    .client-link { color: var(--ci-green-deep); text-decoration: underline; text-underline-offset: 3px; }
+    .client-link:hover { color: var(--ci-green); }
+
+    .client-count {
+        display: inline-block;
+        min-width: 28px;
+        padding: 2px 9px;
+        border-radius: 999px;
+        background: var(--ci-green-soft);
+        color: var(--ci-green-deep);
+        font-weight: 600;
         text-align: center;
     }
-    
-    .coming-soon {
-        font-size: 3rem;
-        margin-bottom: 20px;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #d97706;
-        margin-bottom: 10px;
-    }
-    
-    .section-desc {
-        color: #6b7280;
-        font-size: 1rem;
-        margin-bottom: 30px;
-        line-height: 1.6;
-    }
-    
+
+    .empty-row { padding: 2.5rem 1rem !important; color: var(--ci-muted); text-align: center !important; }
+
+    .actions-row { margin-top: 1.4rem; }
+
     .back-link {
-        display: inline-block;
-        background: #f59e0b;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 8px;
-        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 0.6rem 1.25rem;
+        border: 1.5px solid #BFE0CE;
+        border-radius: 12px;
+        color: var(--ci-green-deep);
         font-weight: 600;
-        transition: all 0.3s ease;
+        text-decoration: none;
+        transition: background-color .15s ease, border-color .15s ease;
     }
-    
-    .back-link:hover {
-        background: #d97706;
+    .back-link:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+
+    /* ── 5. Responsive ── */
+    /* Petits écrans : chaque client devient une carte (les libellés viennent de data-label) */
+    @media (max-width: 720px) {
+        .clients-page { padding: 1rem 0.75rem 2.5rem; }
+        .page-header-body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
+
+        .table-wrapper { border: 0; background: transparent; overflow: visible; }
+        .clients-table { min-width: 0; }
+        .clients-table thead {
+            position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0);
+        }
+        .clients-table,
+        .clients-table tbody,
+        .clients-table tr,
+        .clients-table td { display: block; width: 100%; }
+
+        .clients-table tr {
+            margin-bottom: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--ci-line);
+            border-radius: 16px;
+            background: var(--ci-white);
+        }
+
+        .clients-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 0.6rem 0;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .clients-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            color: var(--ci-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .clients-table td.empty-row { display: block; text-align: center; }
+        .clients-table td.empty-row::before { content: none; }
+        .back-link { width: 100%; justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .clients-page * { transition: none !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 {% translate "Clients & Locataires" as default_clients_title %}
-<div class="page-header">
-    <h1>👥 {{ titre|default:default_clients_title }}</h1>
-    <p>{% translate "Gérez vos clients et locataires" %}</p>
-</div>
 
-<div class="container">
-    <div class="summary-grid">
-        <div class="stat-box green">
-            <div class="stat-kpi">{{ nb_clients|default:0 }}</div>
-            <div class="stat-label">{% translate "Clients" %}</div>
+<div class="clients-page">
+
+    <!-- En-tête -->
+    <header class="page-header">
+        <div class="page-header-stripe" aria-hidden="true"></div>
+        <div class="page-header-body">
+            <span class="page-header-icon" aria-hidden="true">👥</span>
+            <div>
+                <h1>{{ titre|default:default_clients_title }}</h1>
+                <p>{% translate "Gérez vos clients et locataires" %}</p>
+            </div>
         </div>
-        <div class="stat-box orange">
-            <div class="stat-kpi">{{ clients|length|default:0 }}</div>
-            <div class="stat-label">{% translate "Contacts actifs" %}</div>
+    </header>
+
+    <!-- Indicateurs -->
+    <div class="summary-grid">
+        <div class="stat-box">
+            <div>
+                <div class="stat-label">{% translate "Clients" %}</div>
+                <div class="stat-kpi">{{ nb_clients|default:0 }}</div>
+            </div>
+            <div class="stat-icon" aria-hidden="true">👤</div>
+        </div>
+        <div class="stat-box">
+            <div>
+                <div class="stat-label">{% translate "Contacts actifs" %}</div>
+                <div class="stat-kpi">{{ clients|length }}</div>
+            </div>
+            <div class="stat-icon" aria-hidden="true">✅</div>
         </div>
     </div>
 
+    <!-- Liste des clients -->
     <div class="table-wrapper">
         <table class="clients-table">
+            <caption class="sr-only">{{ titre|default:default_clients_title }}</caption>
             <thead>
                 <tr>
-                    <th>{% translate "Client" %}</th>
-                    <th>{% translate "Email" %}</th>
-                    <th>{% translate "Téléphone" %}</th>
-                    <th>{% translate "Réservations" %}</th>
-                    <th>{% translate "Montant total" %}</th>
-                    <th>{% translate "Dernière visite" %}</th>
+                    <th scope="col">{% translate "Client" %}</th>
+                    <th scope="col">{% translate "Email" %}</th>
+                    <th scope="col">{% translate "Téléphone" %}</th>
+                    <th scope="col">{% translate "Réservations" %}</th>
+                    <th scope="col">{% translate "Montant total" %}</th>
+                    <th scope="col">{% translate "Dernière visite" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for client in clients %}
                 <tr>
-                    <td>{{ client.client_name }}</td>
-                    <td>{{ client.email }}</td>
-                    <td>{{ client.telephone }}</td>
-                    <td>{{ client.nb_reservations }}</td>
-                    <td>{{ client.total_depense }} FCFA</td>
-                    <td>{{ client.derniere_reservation|date:'d/m/Y' }}</td>
+                    <td data-label="{% translate 'Client' %}"><span class="client-name">{{ client.client_name }}</span></td>
+                    <td data-label="{% translate 'Email' %}">{% if client.email %}<a class="client-link" href="mailto:{{ client.email }}">{{ client.email }}</a>{% else %}—{% endif %}</td>
+                    <td data-label="{% translate 'Téléphone' %}">{% if client.telephone %}<a class="client-link" href="tel:{{ client.telephone }}">{{ client.telephone }}</a>{% else %}—{% endif %}</td>
+                    <td data-label="{% translate 'Réservations' %}"><span class="client-count">{{ client.nb_reservations }}</span></td>
+                    <td data-label="{% translate 'Montant total' %}"><span class="client-amount">{{ client.total_depense|floatformat:0 }} FCFA</span></td>
+                    <td data-label="{% translate 'Dernière visite' %}">{{ client.derniere_reservation|date:'d/m/Y' }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -123,21 +320,4 @@
         <a href="{% url 'logement:gestion_logements' %}" class="back-link">← {% translate "Retour à la Gestion" %}</a>
     </div>
 </div>
-
-<style>
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 24px; }
-    .stat-box { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-    .stat-box.green { border-top: 4px solid #10b981; }
-    .stat-box.orange { border-top: 4px solid #f59e0b; }
-    .stat-kpi { font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 8px; }
-    .stat-label { color: #6b7280; font-weight: 600; }
-    .table-wrapper { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
-    .clients-table { width: 100%; border-collapse: collapse; }
-    .clients-table th, .clients-table td { padding: 14px 16px; border-bottom: 1px solid #eef2f7; text-align: left; }
-    .clients-table th { background: #f8fafc; color: #374151; font-size: .8rem; text-transform: uppercase; }
-    .empty-row { text-align: center; color: #6b7280; padding: 28px; }
-    .actions-row { margin-top: 22px; }
-    .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
-    .back-link:hover { background: #d97706; }
-</style>
 {% endblock %}

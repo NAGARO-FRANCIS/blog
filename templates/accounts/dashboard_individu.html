@@ -86,7 +86,7 @@
                     {% if mes_annonces %}
                     <a href="{% url 'logement:mes_logements' %}" class="di-section__link">{% translate "Voir toutes" %}</a>
                     {% endif %}
-                    <a href="{% url 'logement:ajouter_logement' %}" class="di-section__add">＋ {% translate "Publier une annonce" %}</a>
+                    {% if profile.role != 'touriste' %}<a href="{% url 'logement:ajouter_logement' %}" class="di-section__add">＋ {% translate "Publier une annonce" %}</a>{% endif %}
                 </div>
             </div>
             {% if mes_annonces %}
@@ -133,8 +133,13 @@
                 <div class="di-guide__step">
                     <span class="di-guide__num">1</span>
                     <div>
+                        {% if profile.role == 'touriste' %}
+                        <h3 class="di-guide__step-title">{% translate "Parcourez les annonces" %}</h3>
+                        <p class="di-guide__step-desc">{% translate "Consultez les logements et les colocations disponibles." %}</p>
+                        {% else %}
                         <h3 class="di-guide__step-title">{% translate "Publiez une annonce" %}</h3>
                         <p class="di-guide__step-desc">{% translate "Cherchez un touriste ou proposez une chambre en quelques minutes." %}</p>
+                        {% endif %}
                     </div>
                 </div>
 

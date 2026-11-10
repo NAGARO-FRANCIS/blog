@@ -52,8 +52,8 @@
         </div>
         {% endif %}
 
-        <!-- COLOCATION (Locataire, touriste ou propriétaire) -->
-        {% if user.profile.account_type == 'individu' and user.profile.role in 'touriste,proprietaire,locataire' %}
+        <!-- COLOCATION (Locataire ou propriétaire) -->
+        {% if user.profile.account_type == 'individu' and user.profile.role in 'proprietaire,locataire' %}
         <div class="type-card colocation-card">
             <div class="card-icon">🏠</div>
             {% if user.profile.role == 'locataire' %}
