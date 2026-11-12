@@ -4,129 +4,395 @@
 {% block title %}{% translate "Avis & Évaluations" %}{% endblock %}
 
 {% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .page-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-        padding: 40px 30px;
-        margin-bottom: 30px;
-        border-radius: 0 0 15px 15px;
-    }
-    
-    .page-header h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-    
-    .container {
+    /* ══════════════════════════════════════════════
+       Avis & évaluations — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Indicateurs · 4 Avis · 5 État vide · 6 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .reviews-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-orange-text: #8A4300;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 2rem 1.25rem 3.5rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
     }
-    
-    .content-section {
-        background: white;
-        border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+    .reviews-page *,
+    .reviews-page *::before,
+    .reviews-page *::after { box-sizing: border-box; }
+
+    .reviews-page :where(h1, h2, h3, p, blockquote) { margin: 0; }
+    .reviews-page :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    /* ── 2. En-tête ── */
+    .page-header {
+        margin-bottom: 1.75rem;
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+    }
+
+    .page-header-stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
+    }
+
+    .page-header-body {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .page-header-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        font-size: 1.5rem;
+    }
+
+    .header-label {
+        display: inline-block;
+        margin-bottom: 6px;
+        padding: 2px 12px;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 999px;
+        background: rgba(255,255,255,.12);
+        color: var(--ci-white);
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .page-header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .page-header p { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Indicateurs ── */
+    .section-heading { margin-bottom: 1rem; }
+
+    .section-heading h2 {
+        font: 700 1.3rem/1.25 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-green-deep);
+    }
+
+    .section-heading p { margin-top: 4px; color: var(--ci-muted); }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.25rem;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        font-size: 1.5rem;
+    }
+
+    .stat-box.green .stat-icon { background: var(--ci-green-soft); color: var(--ci-green-deep); }
+    .stat-box.orange .stat-icon { background: var(--ci-orange-soft); color: var(--ci-orange-text); }
+
+    .stat-kpi {
+        font: 700 1.8rem/1.1 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-ink);
+    }
+
+    .stat-label { margin-top: 3px; color: var(--ci-muted); font-size: 14px; }
+
+    /* ── 4. Liste des avis ── */
+    .reviews-list { display: grid; gap: 1rem; }
+
+    .review-card {
+        padding: 1.4rem 1.5rem;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+        transition: border-color .15s ease;
+    }
+
+    .review-card:hover { border-color: #9FB3A7; }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #EEF3EF;
+    }
+
+    .review-author { display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+    .author-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: var(--ci-green);
+        color: var(--ci-white);
+        font: 700 1.15rem 'Bricolage Grotesque', 'Figtree', sans-serif;
+    }
+
+    .review-header h3 {
+        font: 700 1.05rem 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-ink);
+        overflow-wrap: anywhere;
+    }
+
+    .property-name { margin-top: 3px; color: var(--ci-muted); font-size: 14px; }
+
+    .stars {
+        display: flex;
+        gap: 2px;
+        flex-shrink: 0;
+        color: var(--ci-orange);
+        font-size: 1.25rem;
+        white-space: nowrap;
+    }
+
+    .stars .star-off { color: #CBD6CE; }
+
+    .review-body { padding: 1.1rem 0; }
+
+    .review-body blockquote {
+        padding-left: 1rem;
+        border-left: 4px solid var(--ci-orange);
+        color: #2F4137;
+        font-size: 16px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .review-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 24px;
+        padding-top: 0.9rem;
+        border-top: 1px solid #EEF3EF;
+        color: var(--ci-muted);
+        font-size: 14px;
+    }
+
+    .meta-item { display: inline-flex; align-items: center; gap: 7px; }
+
+    /* ── 5. État vide et bouton retour ── */
+    .empty-state {
+        padding: 3.5rem 1.5rem;
+        border: 2px dashed #BFD0C5;
+        border-radius: 16px;
+        background: var(--ci-white);
         text-align: center;
     }
-    
-    .coming-soon {
-        font-size: 3rem;
-        margin-bottom: 20px;
+
+    .empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        font-size: 1.9rem;
     }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #d97706;
-        margin-bottom: 10px;
+
+    .empty-state h3 {
+        margin-bottom: 8px;
+        font: 700 1.2rem 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-green-deep);
     }
-    
-    .section-desc {
-        color: #6b7280;
-        font-size: 1rem;
-        margin-bottom: 30px;
-        line-height: 1.6;
-    }
-    
+
+    .empty-state p { max-width: 420px; margin: 0 auto; color: var(--ci-muted); }
+
+    .actions-row { margin-top: 1.5rem; }
+
     .back-link {
-        display: inline-block;
-        background: #f59e0b;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 8px;
-        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 0.6rem 1.25rem;
+        border: 1.5px solid #BFE0CE;
+        border-radius: 12px;
+        color: var(--ci-green-deep);
         font-weight: 600;
-        transition: all 0.3s ease;
+        text-decoration: none;
+        transition: background-color .15s ease, border-color .15s ease;
     }
-    
-    .back-link:hover {
-        background: #d97706;
+
+    .back-link:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+
+    /* ── 6. Responsive ── */
+    @media (max-width: 650px) {
+        .reviews-page { padding: 1rem 0.75rem 2.5rem; }
+        .page-header-body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
+        .summary-grid { grid-template-columns: 1fr; }
+        .review-card { padding: 1.1rem; }
+        .review-header { flex-direction: column; align-items: flex-start; }
+        .review-meta { flex-direction: column; gap: 8px; }
+        .back-link { width: 100%; justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .reviews-page * { transition: none !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>⭐ {% translate "Avis & Évaluations" %}</h1>
-    <p>{% translate "Consultez les avis de vos clients" %}</p>
-</div>
+{% translate "Aucun commentaire." as no_comment %}
 
-<div class="container">
+<div class="reviews-page">
+
+    <!-- En-tête -->
+    <header class="page-header">
+        <div class="page-header-stripe" aria-hidden="true"></div>
+        <div class="page-header-body">
+            <span class="page-header-icon" aria-hidden="true">⭐</span>
+            <div>
+                <span class="header-label">{% translate "Espace professionnel" %}</span>
+                <h1>{% translate "Avis & Évaluations" %}</h1>
+                <p>{% translate "Consultez les avis de vos clients et suivez leur satisfaction." %}</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Indicateurs -->
+    <div class="section-heading">
+        <h2>{% translate "Vue d'ensemble" %}</h2>
+        <p>{% translate "Résumé de vos évaluations clients." %}</p>
+    </div>
+
     <div class="summary-grid">
         <div class="stat-box green">
-            <div class="stat-kpi">{{ note_moyenne|default:0 }}/5</div>
-            <div class="stat-label">{% translate "Note moyenne" %}</div>
-        </div>
-        <div class="stat-box orange">
-            <div class="stat-kpi">{{ nb_avis|default:0 }}</div>
-            <div class="stat-label">{% translate "Avis reçus" %}</div>
-        </div>
-    </div>
-
-    <div class="reviews-list">
-        {% for item in avis %}
-        <article class="review-card">
-            <div class="review-header">
-                <div>
-                    <h3>{{ item.auteur.get_full_name|default:item.auteur.username }}</h3>
-                    <p>{{ item.logement.titre }}</p>
-                </div>
-                <div class="stars">{% for i in '12345' %}{% if forloop.counter <= item.note_logement %}★{% else %}☆{% endif %}{% endfor %}</div>
+            <div class="stat-icon" aria-hidden="true">★</div>
+            <div>
+                <div class="stat-kpi">{{ note_moyenne|default:0 }}/5</div>
+                <div class="stat-label">{% translate "Note moyenne" %}</div>
             </div>
-            <blockquote>{{ item.commentaire }}</blockquote>
-            <div class="review-meta">{{ item.created_at|date:'d/m/Y' }} • {% translate "Séjour" %}: {{ item.reservation.date_arrivee|date:'d/m/Y' }} → {{ item.reservation.date_depart|date:'d/m/Y' }}</div>
-        </article>
-        {% empty %}
-        <div class="empty-state">{% translate "Aucun avis client pour le moment." %}</div>
-        {% endfor %}
+        </div>
+
+        <div class="stat-box orange">
+            <div class="stat-icon" aria-hidden="true">💬</div>
+            <div>
+                <div class="stat-kpi">{{ nb_avis|default:0 }}</div>
+                <div class="stat-label">{% translate "Avis reçus" %}</div>
+            </div>
+        </div>
     </div>
 
+    <!-- Liste des avis -->
+    <section class="reviews-section">
+        <div class="section-heading">
+            <h2>{% translate "Avis de vos clients" %}</h2>
+            <p>{% translate "Retrouvez ici les évaluations laissées par vos clients." %}</p>
+        </div>
+
+        <div class="reviews-list">
+            {% for item in avis %}
+                <article class="review-card">
+                    <div class="review-header">
+                        <div class="review-author">
+                            <div class="author-avatar" aria-hidden="true">{{ item.auteur.username|first|upper }}</div>
+                            <div>
+                                <h3>{{ item.auteur.get_full_name|default:item.auteur.username }}</h3>
+                                <p class="property-name">🏠 {{ item.logement.titre }}</p>
+                            </div>
+                        </div>
+
+                        {% if item.note_logement %}
+                            <div class="stars" role="img" aria-label="{% blocktranslate with note=item.note_logement %}{{ note }} sur 5{% endblocktranslate %}">
+                                {% for i in '12345' %}
+                                    {% if forloop.counter <= item.note_logement %}
+                                        <span aria-hidden="true">★</span>
+                                    {% else %}
+                                        <span class="star-off" aria-hidden="true">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="review-body">
+                        <blockquote>{{ item.commentaire|default:no_comment }}</blockquote>
+                    </div>
+
+                    <div class="review-meta">
+                        <span class="meta-item">
+                            <span aria-hidden="true">📅</span>
+                            {% translate "Publié le" %} {{ item.created_at|date:'d/m/Y' }}
+                        </span>
+                        <span class="meta-item">
+                            <span aria-hidden="true">🏨</span>
+                            {% translate "Séjour" %} : {{ item.reservation.date_arrivee|date:'d/m/Y' }} → {{ item.reservation.date_depart|date:'d/m/Y' }}
+                        </span>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon" aria-hidden="true">💬</div>
+                    <h3>{% translate "Aucun avis client pour le moment" %}</h3>
+                    <p>{% translate "Les avis de vos clients apparaîtront ici après leurs séjours." %}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Retour -->
     <div class="actions-row">
         <a href="{% url 'logement:gestion_logements' %}" class="back-link">← {% translate "Retour à la Gestion" %}</a>
     </div>
 </div>
-
-<style>
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 24px; }
-    .stat-box { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-    .stat-box.green { border-top: 4px solid #10b981; }
-    .stat-box.orange { border-top: 4px solid #f59e0b; }
-    .stat-kpi { font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 8px; }
-    .stat-label { color: #6b7280; font-weight: 600; }
-    .reviews-list { display: grid; gap: 18px; }
-    .review-card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .review-header { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
-    .review-header h3 { margin: 0; font-size: 1.05rem; }
-    .review-header p { margin: 6px 0 0; color: #6b7280; }
-    .stars { color: #f59e0b; font-size: 1.2rem; letter-spacing: 2px; }
-    blockquote { margin: 0; color: #374151; line-height: 1.7; }
-    .review-meta { margin-top: 12px; color: #6b7280; font-size: .82rem; }
-    .empty-state { text-align: center; padding: 28px; background: white; border-radius: 14px; color: #6b7280; }
-    .actions-row { margin-top: 22px; }
-    .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; }
-</style>
 {% endblock %}

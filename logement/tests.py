@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from urllib.parse import urlencode
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -322,6 +323,85 @@ class PaymentViewTests(TestCase):
 
 
 class ReservationSecurityTests(TestCase):
+    def setUp(self):
+        self.customer = self.create_verified_user(
+            'verified_booking_customer',
+            first_name='Client',
+            last_name='Test',
+            email='client@example.com',
+        )
+        self.client.force_login(self.customer)
+
+    def create_verified_user(self, username, **user_fields):
+        user = User.objects.create_user(
+            username=username,
+            password='StrongPassword123!',
+            **user_fields,
+        )
+        profile = user.profile
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=['verification_status', 'verified'])
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file=f'identity/{username}_{document_type}.jpg',
+                status='verified',
+            )
+        return user
+
+    def test_anonymous_user_cannot_create_a_reservation(self):
+        self.client.logout()
+        logement = Logement.objects.create(
+            titre='Hôtel réservé aux comptes vérifiés',
+            description='Description test',
+            ville='Abidjan',
+            account_type='hotel',
+            prix_par_nuit=10000,
+            proprietaire=User.objects.create_user(
+                username='owner_guest_booking',
+                password='StrongPassword123!',
+            ),
+        )
+
+        response = self.client.post(
+            reverse('logement:reserver_logement', args=[logement.id]),
+            {},
+        )
+
+        self.assertRedirects(
+            response,
+            f"{reverse('accounts:login')}?{urlencode({'next': reverse('logement:reserver_logement', args=[logement.id])})}",
+        )
+        self.assertFalse(Reservation.objects.filter(logement=logement).exists())
+
+    def test_identity_documents_must_be_approved_before_reserving(self):
+        unverified_user = User.objects.create_user(
+            username='unverified_booking_customer',
+            password='StrongPassword123!',
+        )
+        logement = Logement.objects.create(
+            titre='Hôtel vérifié',
+            description='Description test',
+            ville='Abidjan',
+            account_type='hotel',
+            prix_par_nuit=10000,
+            proprietaire=User.objects.create_user(
+                username='owner_unverified_booking',
+                password='StrongPassword123!',
+            ),
+        )
+        self.client.force_login(unverified_user)
+
+        response = self.client.post(
+            reverse('logement:reserver_logement', args=[logement.id]),
+            {},
+        )
+
+        self.assertRedirects(response, reverse('accounts:verification_docs'))
+        self.assertFalse(Reservation.objects.filter(logement=logement).exists())
+
     def test_reservations_hotel_et_residence_sont_confirmees_avec_paiement_sur_place(self):
         for account_type in ('hotel', 'residence'):
             with self.subTest(account_type=account_type):
@@ -655,10 +735,10 @@ class ReservationSecurityTests(TestCase):
         reservation = Reservation.objects.get(logement=logement)
         self.assertEqual(reservation.prix_par_nuit, 10000)
         self.assertEqual(reservation.montant_final, 20000)
-        self.assertIn(reservation.id, self.client.session['guest_reservation_ids'])
+        self.assertEqual(reservation.client_user, self.customer)
 
     def test_un_proprietaire_ne_peut_pas_reserver_son_propre_logement(self):
-        owner = User.objects.create_user(username='owner_resa', password='StrongPassword123!')
+        owner = self.create_verified_user('owner_resa')
         logement = Logement.objects.create(
             titre='Villa du propriétaire',
             description='Description test',

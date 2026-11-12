@@ -7,6 +7,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
+from accounts.decorators import verified_identity_required
 from .models import AppelSession, AppelSignal, Conversation, Message, ParticipationConversation
 import json
 from colocation.models import ColocationAnnonce
@@ -181,6 +182,7 @@ def terminer_appel(request, session_id):
 
 
 @login_required
+@verified_identity_required
 def envoyer_message(request, annonce_id=None, annonce_type=None):
     """
     Envoie un message à propos d'une annonce ou continue une conversation existante.
@@ -215,6 +217,9 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
             participants=request.user
         )
         destinataire = conversation.get_other_participant(request.user)
+        if not destinataire:
+            django_messages.warning(request, "Le contact de cette conversation n’est plus disponible.")
+            return redirect('messagerie:conversation_detail', conversation_id=conversation.id)
 
     if request.method == 'POST':
         contenu = request.POST.get('contenu', '').strip()
@@ -302,6 +307,7 @@ def envoyer_message(request, annonce_id=None, annonce_type=None):
 
 
 @login_required
+@verified_identity_required
 def demarrer_conversation(request, user_id):
     """Démarre une nouvelle conversation avec un utilisateur"""
     destinataire = get_object_or_404(User, pk=user_id)

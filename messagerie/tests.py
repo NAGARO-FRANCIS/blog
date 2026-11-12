@@ -5,6 +5,7 @@ from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from accounts.models import DocumentVerification
 from ivoire.context_processors import unread_messages_count
 from logement.models import Logement
 from .models import Conversation, Message, ParticipationConversation
@@ -14,6 +15,21 @@ class MessagerieTests(TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(username='alice', password='pass1234')
         self.user2 = User.objects.create_user(username='bob', password='pass1234')
+        self.verify_identity(self.user1)
+        self.verify_identity(self.user2)
+
+    def verify_identity(self, user):
+        profile = user.profile
+        profile.verification_status = 'verified'
+        profile.verified = True
+        profile.save(update_fields=['verification_status', 'verified'])
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=profile,
+                document_type=document_type,
+                document_file=f'identity/{user.username}_{document_type}.jpg',
+                status='verified',
+            )
 
     def test_unread_message_count_uses_one_query_and_ignores_hidden_conversations(self):
         visible_conversation = Conversation.objects.create()
@@ -72,6 +88,46 @@ class MessagerieTests(TestCase):
         self.assertEqual(message.contenu, 'Bonjour Bob')
         self.assertTrue(message.attachment)
         self.assertEqual(message.message_type, 'audio')
+
+    def test_unverified_user_cannot_send_message(self):
+        unverified_user = User.objects.create_user(
+            username='unverified_sender',
+            password='pass1234',
+        )
+        for document_type in ('id_front', 'id_back', 'selfie'):
+            DocumentVerification.objects.create(
+                profile=unverified_user.profile,
+                document_type=document_type,
+                document_file=f'identity/pending_{document_type}.jpg',
+                status='pending',
+            )
+        conversation = Conversation.objects.create()
+        conversation.participants.add(unverified_user, self.user2)
+        self.client.force_login(unverified_user)
+
+        response = self.client.post(
+            reverse('messagerie:envoyer_message'),
+            {'conversation_id': conversation.id, 'contenu': 'Bonjour'},
+        )
+
+        self.assertRedirects(response, reverse('accounts:verification_docs'))
+        self.assertFalse(Message.objects.filter(conversation=conversation).exists())
+
+    def test_unverified_user_cannot_start_conversation(self):
+        unverified_user = User.objects.create_user(
+            username='unverified_conversation_starter',
+            password='pass1234',
+        )
+        self.client.force_login(unverified_user)
+
+        response = self.client.get(
+            reverse('messagerie:demarrer_conversation', args=[self.user2.id])
+        )
+
+        self.assertRedirects(response, reverse('accounts:verification_docs'))
+        self.assertFalse(
+            Conversation.objects.filter(participants=unverified_user).exists()
+        )
 
     def test_send_message_with_webm_audio_attachment_is_classified_as_audio(self):
         self.client.login(username='alice', password='pass1234')
@@ -133,6 +189,36 @@ class MessagerieTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Salut !')
+
+    def test_conversation_without_other_participant_renders_without_error(self):
+        self.client.login(username='alice', password='pass1234')
+        conversation = Conversation.objects.create()
+        conversation.participants.add(self.user1)
+
+        response = self.client.get(
+            reverse('messagerie:conversation_detail', args=[conversation.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Contact indisponible')
+        self.assertContains(response, 'Le contact de cette conversation')
+        self.assertContains(response, 'id="messageContent" disabled')
+
+    def test_cannot_send_message_to_conversation_without_other_participant(self):
+        self.client.login(username='alice', password='pass1234')
+        conversation = Conversation.objects.create()
+        conversation.participants.add(self.user1)
+
+        response = self.client.post(
+            reverse('messagerie:envoyer_message'),
+            {'conversation_id': conversation.id, 'contenu': 'Message sans destinataire'},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('messagerie:conversation_detail', args=[conversation.id]),
+        )
+        self.assertFalse(Message.objects.filter(conversation=conversation).exists())
 
     def test_conversation_list_uses_compact_openable_rows(self):
         self.client.login(username='alice', password='pass1234')

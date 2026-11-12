@@ -153,6 +153,21 @@ class Profile(models.Model):
         return verified_documents == required_documents
 
     @property
+    def can_reserve_or_message(self):
+        return (
+            self.verified
+            and self.verification_status == 'verified'
+            and self.has_verified_identity_documents
+        )
+
+    @property
+    def identity_interaction_block_reason(self):
+        return _(
+            'La réservation et l’envoi de messages nécessitent l’approbation de vos trois pièces '
+            'd’identité. Déposez ou remplacez les pièces refusées, puis attendez leur validation.'
+        )
+
+    @property
     def publication_block_reason(self):
         if self.account_type == 'individu' and self.role == 'touriste':
             return _('Le compte Touriste peut consulter les annonces, mais ne peut pas en publier.')

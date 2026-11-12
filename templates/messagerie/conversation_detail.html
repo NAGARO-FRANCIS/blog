@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}{% blocktranslate with participant=other_participant.get_full_name|default:other_participant.username %}Conversation avec {{ participant }} - Coloc.ai{% endblocktranslate %}{% endblock %}
+{% block title %}{% if other_participant %}{% blocktranslate with participant=other_participant.get_full_name|default:other_participant.username %}Conversation avec {{ participant }} - Ivoire Connect{% endblocktranslate %}{% else %}{% translate "Conversation - Ivoire Connect" %}{% endif %}{% endblock %}
 
 {% block content %}
 
@@ -18,22 +18,24 @@
             <div class="cd-header-body">
                 <div class="cd-participant">
                     <div class="cd-avatar">
-                        {% if other_participant.profile.photo_profil %}
+                        {% if other_participant and other_participant.profile.photo_profil %}
                             <img src="{{ other_participant.profile.photo_profil.url }}" alt="{% translate 'Photo de' %} {{ other_participant.get_full_name }}">
-                        {% else %}
+                        {% elif other_participant %}
                             <div class="cd-avatar-placeholder">{{ other_participant.get_full_name|default:other_participant.username|first|upper }}</div>
+                        {% else %}
+                            <div class="cd-avatar-placeholder" aria-hidden="true">?</div>
                         {% endif %}
                     </div>
                     <div class="cd-participant-details">
-                        <h1>{{ other_participant.get_full_name|default:other_participant.username }}</h1>
+                        <h1>{% if other_participant %}{{ other_participant.get_full_name|default:other_participant.username }}{% else %}{% translate "Contact indisponible" %}{% endif %}</h1>
                         {% if conversation.annonce %}
                             <p class="cd-subject">📄 {% translate "À propos de:" %} {{ conversation.annonce.titre }}</p>
                         {% endif %}
                         <p class="cd-status">
-                            {% if other_participant.profile.verified %}
+                            {% if other_participant and other_participant.profile.verified %}
                                 <span class="cd-verified">✓ {% translate "Profil vérifié" %}</span>
                             {% endif %}
-                            {% if other_participant.profile.ville %}
+                            {% if other_participant and other_participant.profile.ville %}
                                 <span class="cd-location">📍 {{ other_participant.profile.ville }}</span>
                             {% endif %}
                         </p>
@@ -44,8 +46,8 @@
                     <a href="{% url 'messagerie:mes_conversations' %}" class="cd-btn cd-btn-ghost" aria-label="{% translate 'Retour aux conversations' %}" title="{% translate 'Retour aux conversations' %}">
                         <span aria-hidden="true">←</span><span class="cd-action-label">{% translate "Retour aux conversations" %}</span>
                     </a>
-                    <button type="button" class="cd-btn cd-btn-call" id="videoCallBtn" aria-label="{% translate 'Appel vidéo' %}" title="{% translate 'Appel vidéo' %}"><span aria-hidden="true">📹</span><span class="cd-action-label">{% translate "Appel vidéo" %}</span></button>
-                    <button type="button" class="cd-btn cd-btn-call" id="audioCallBtn" aria-label="{% translate 'Appel vocal' %}" title="{% translate 'Appel vocal' %}"><span aria-hidden="true">📞</span><span class="cd-action-label">{% translate "Appel vocal" %}</span></button>
+                    <button type="button" class="cd-btn cd-btn-call" id="videoCallBtn" aria-label="{% translate 'Appel vidéo' %}" title="{% translate 'Appel vidéo' %}"{% if not other_participant %} disabled{% endif %}><span aria-hidden="true">📹</span><span class="cd-action-label">{% translate "Appel vidéo" %}</span></button>
+                    <button type="button" class="cd-btn cd-btn-call" id="audioCallBtn" aria-label="{% translate 'Appel vocal' %}" title="{% translate 'Appel vocal' %}"{% if not other_participant %} disabled{% endif %}><span aria-hidden="true">📞</span><span class="cd-action-label">{% translate "Appel vocal" %}</span></button>
                     <button type="button" class="cd-btn cd-btn-danger-outline" onclick="confirmerSuppression()" aria-label="{% translate 'Supprimer la conversation' %}" title="{% translate 'Supprimer la conversation' %}">
                         <span aria-hidden="true">🗑️</span><span class="cd-action-label">{% translate "Supprimer" %}</span>
                     </button>
@@ -102,22 +104,25 @@
 
         <!-- Zone de saisie -->
         <div class="cd-composer">
+            {% if not other_participant %}
+                <p class="cd-empty-chat">{% translate "Le contact de cette conversation n’est plus disponible. Vous ne pouvez pas envoyer de message ni démarrer un appel." %}</p>
+            {% endif %}
             <form method="post" action="{% url 'messagerie:envoyer_message' %}" class="cd-form" id="messageForm" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
                 <div class="cd-field">
-                    <textarea name="contenu" id="messageContent" placeholder="{% translate 'Tapez votre message...' %}" rows="1" aria-label="{% translate 'Tapez votre message...' %}"></textarea>
+                    <textarea name="contenu" id="messageContent" placeholder="{% translate 'Tapez votre message...' %}" rows="1" aria-label="{% translate 'Tapez votre message...' %}"{% if not other_participant %} disabled{% endif %}></textarea>
                     <label for="messageAttachment" class="cd-attach" title="{% translate 'Joindre un fichier' %}">
                         <span aria-hidden="true">📎</span>
-                        <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx">
+                        <input type="file" name="attachment" id="messageAttachment" accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"{% if not other_participant %} disabled{% endif %}>
                     </label>
                 </div>
                 <div class="cd-tools">
-                    <button type="button" id="voiceRecorderBtn" class="cd-voice" title="{% translate 'Envoyer un message vocal' %}" aria-label="{% translate 'Enregistrer un message vocal' %}">🎤</button>
+                    <button type="button" id="voiceRecorderBtn" class="cd-voice" title="{% translate 'Envoyer un message vocal' %}" aria-label="{% translate 'Enregistrer un message vocal' %}"{% if not other_participant %} disabled{% endif %}>🎤</button>
                     <span id="voiceStatus" class="cd-voice-status">{% translate "Enregistrer un vocal" %}</span>
                 </div>
                 <div class="cd-send-wrap">
-                    <button type="submit" class="cd-btn cd-btn-send">
+                    <button type="submit" class="cd-btn cd-btn-send"{% if not other_participant %} disabled{% endif %}>
                         <span class="cd-send-text">{% translate "Envoyer" %}</span>
                         <span class="cd-send-arrow" aria-hidden="true">→</span>
                     </button>

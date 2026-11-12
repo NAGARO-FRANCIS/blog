@@ -4,126 +4,345 @@
 {% block title %}{% translate "Paiements & Facturation" %}{% endblock %}
 
 {% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .page-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-        padding: 40px 30px;
-        margin-bottom: 30px;
-        border-radius: 0 0 15px 15px;
-    }
-    
-    .page-header h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-    
-    .container {
+    /* ══════════════════════════════════════════════
+       Paiements & facturation — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Indicateurs · 4 Tableau · 5 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .payments-page {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-orange-soft: #FFF1E0;
+        --ci-orange-text: #8A4300;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger-soft: #FDF1F1;
+
         max-width: 1200px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 2rem 1.25rem 3.5rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
     }
-    
-    .content-section {
-        background: white;
-        border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        text-align: center;
+
+    .payments-page *,
+    .payments-page *::before,
+    .payments-page *::after { box-sizing: border-box; }
+
+    .payments-page :where(h1, p) { margin: 0; }
+    .payments-page :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    .sr-only {
+        position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
-    
-    .coming-soon {
-        font-size: 3rem;
-        margin-bottom: 20px;
+
+    /* ── 2. En-tête ── */
+    .page-header {
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
     }
-    
-    .section-title {
+
+    .page-header-stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
+    }
+
+    .page-header-body {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .page-header-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
         font-size: 1.5rem;
+    }
+
+    .page-header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .page-header p { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Indicateurs ── */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 1.1rem 1.25rem;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .stat-label { margin-bottom: 4px; color: var(--ci-muted); font-size: 14px; }
+
+    .stat-kpi {
+        font: 700 1.6rem/1.1 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-ink);
+    }
+
+    .stat-unit { font: 500 13px 'Figtree', sans-serif; color: var(--ci-muted); }
+
+    .stat-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--ci-orange-soft);
+        font-size: 1.3rem;
+    }
+
+    .stat-box--received .stat-icon { background: var(--ci-green-soft); }
+
+    /* ── 4. Tableau ── */
+    .table-wrapper {
+        overflow-x: auto;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .payments-table { width: 100%; min-width: 820px; border-collapse: collapse; }
+
+    .payments-table th,
+    .payments-table td {
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid #EEF3EF;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .payments-table th {
+        background: #F0F7F3;
+        color: var(--ci-green-deep);
+        font-size: 13px;
         font-weight: 600;
-        color: #d97706;
-        margin-bottom: 10px;
+        letter-spacing: .03em;
+        white-space: nowrap;
     }
-    
-    .section-desc {
-        color: #6b7280;
-        font-size: 1rem;
-        margin-bottom: 30px;
-        line-height: 1.6;
-    }
-    
-    .back-link {
+
+    .payments-table tbody tr:hover { background: #FAFCFB; }
+    .payments-table tbody tr:last-child td { border-bottom: none; }
+
+    .payment-amount { font-weight: 600; white-space: nowrap; }
+    .payment-none { color: var(--ci-muted); }
+
+    .badge {
         display: inline-block;
-        background: #f59e0b;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 8px;
-        text-decoration: none;
+        padding: 3px 10px;
+        border: 1px solid #D6DDD9;
+        border-radius: 999px;
+        background: #EEF0EF;
+        color: #3A4540;
+        font-size: 13px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        white-space: nowrap;
     }
-    
-    .back-link:hover {
-        background: #d97706;
+    .status-completed { background: var(--ci-green-soft); border-color: #BFE0CE; color: var(--ci-green-deep); }
+    .status-pending { background: var(--ci-orange-soft); border-color: #F6D9B0; color: var(--ci-orange-text); }
+    .status-failed { background: var(--ci-danger-soft); border-color: #F0CACA; color: #8F1D17; }
+
+    .payment-confirm-button {
+        padding: 0.5rem 0.9rem;
+        border: 0;
+        border-radius: 10px;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        font: 600 14px 'Figtree', sans-serif;
+        cursor: pointer;
+        transition: background-color .15s ease;
+    }
+    .payment-confirm-button:hover { background: var(--ci-orange-hover); }
+
+    .empty-row { padding: 2.5rem 1rem !important; color: var(--ci-muted); text-align: center !important; }
+
+    .actions-row { margin-top: 1.4rem; }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 0.6rem 1.25rem;
+        border: 1.5px solid #BFE0CE;
+        border-radius: 12px;
+        color: var(--ci-green-deep);
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color .15s ease, border-color .15s ease;
+    }
+    .back-link:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
+
+    /* ── 5. Responsive ── */
+    /* Petits écrans : chaque paiement devient une carte (les libellés viennent de data-label) */
+    @media (max-width: 760px) {
+        .payments-page { padding: 1rem 0.75rem 2.5rem; }
+        .page-header-body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
+
+        .table-wrapper { border: 0; background: transparent; overflow: visible; }
+        .payments-table { min-width: 0; }
+        .payments-table thead {
+            position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0);
+        }
+        .payments-table,
+        .payments-table tbody,
+        .payments-table tr,
+        .payments-table td { display: block; width: 100%; }
+
+        .payments-table tr {
+            margin-bottom: 12px;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--ci-line);
+            border-radius: 16px;
+            background: var(--ci-white);
+        }
+
+        .payments-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 0.6rem 0;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .payments-table td::before {
+            content: attr(data-label);
+            flex-shrink: 0;
+            color: var(--ci-muted);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .payments-table td.empty-row { display: block; text-align: center; }
+        .payments-table td.empty-row::before { content: none; }
+        .back-link { width: 100%; justify-content: center; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .payments-page * { transition: none !important; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>💳 {% translate "Paiements & Facturation" %}</h1>
-    <p>{% blocktranslate with nb_transactions=nb_paiements|default:0 revenue=total_recu|default:0 %}{{ nb_transactions }} transaction(s) • Revenu total reçu: {{ revenue }} FCFA{% endblocktranslate %}</p>
-</div>
+{% translate "Confirmer que ce paiement en espèces a bien été reçu ?" as confirm_cash_payment %}
 
-<div class="container">
+<div class="payments-page">
+
+    <!-- En-tête -->
+    <header class="page-header">
+        <div class="page-header-stripe" aria-hidden="true"></div>
+        <div class="page-header-body">
+            <span class="page-header-icon" aria-hidden="true">💳</span>
+            <div>
+                <h1>{% translate "Paiements & Facturation" %}</h1>
+                <p>{% blocktranslate with revenue=total_recu|default:0|floatformat:0 count counter=nb_paiements|default:0 %}{{ counter }} transaction • Revenu total reçu : {{ revenue }} FCFA{% plural %}{{ counter }} transactions • Revenu total reçu : {{ revenue }} FCFA{% endblocktranslate %}</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Indicateurs -->
     <div class="summary-grid">
-        <div class="stat-box green">
-            <div class="stat-kpi">{{ total_recu|default:0 }} FCFA</div>
-            <div class="stat-label">{% translate "Revenus reçus" %}</div>
+        <div class="stat-box stat-box--received">
+            <div>
+                <div class="stat-label">{% translate "Revenus reçus" %}</div>
+                <div class="stat-kpi">{{ total_recu|default:0|floatformat:0 }} <span class="stat-unit">FCFA</span></div>
+            </div>
+            <div class="stat-icon" aria-hidden="true">💰</div>
         </div>
-        <div class="stat-box orange">
-            <div class="stat-kpi">{{ total_en_attente|default:0 }} FCFA</div>
-            <div class="stat-label">{% translate "En attente" %}</div>
+        <div class="stat-box">
+            <div>
+                <div class="stat-label">{% translate "En attente" %}</div>
+                <div class="stat-kpi">{{ total_en_attente|default:0|floatformat:0 }} <span class="stat-unit">FCFA</span></div>
+            </div>
+            <div class="stat-icon" aria-hidden="true">⏳</div>
         </div>
-        <div class="stat-box blue">
-            <div class="stat-kpi">{{ nb_paiements|default:0 }}</div>
-            <div class="stat-label">{% translate "Paiements" %}</div>
+        <div class="stat-box">
+            <div>
+                <div class="stat-label">{% translate "Paiements" %}</div>
+                <div class="stat-kpi">{{ nb_paiements|default:0 }}</div>
+            </div>
+            <div class="stat-icon" aria-hidden="true">🧾</div>
         </div>
     </div>
 
+    <!-- Liste des paiements -->
     <div class="table-wrapper">
         <table class="payments-table">
+            <caption class="sr-only">{% translate "Paiements & Facturation" %}</caption>
             <thead>
                 <tr>
-                    <th>{% translate "Client" %}</th>
-                    <th>{% translate "Logement" %}</th>
-                    <th>{% translate "Montant" %}</th>
-                    <th>{% translate "Méthode" %}</th>
-                    <th>{% translate "Statut" %}</th>
-                    <th>{% translate "Date" %}</th>
-                    <th>{% translate "Action" %}</th>
+                    <th scope="col">{% translate "Client" %}</th>
+                    <th scope="col">{% translate "Logement" %}</th>
+                    <th scope="col">{% translate "Montant" %}</th>
+                    <th scope="col">{% translate "Méthode" %}</th>
+                    <th scope="col">{% translate "Statut" %}</th>
+                    <th scope="col">{% translate "Date" %}</th>
+                    <th scope="col">{% translate "Action" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for paiement in paiements %}
                 <tr>
-                    <td>{{ paiement.reservation.client_user.get_full_name|default:paiement.reservation.client_nom }}</td>
-                    <td>{{ paiement.reservation.logement.titre }}</td>
-                    <td>{{ paiement.montant }} FCFA</td>
-                    <td>{{ paiement.get_methode_display }}</td>
-                    <td>
-                        <span class="badge status-{{ paiement.statut }}">
-                            {{ paiement.get_statut_display }}
-                        </span>
-                    </td>
-                    <td>{{ paiement.created_at|date:'d/m/Y' }}</td>
-                    <td>
+                    <td data-label="{% translate 'Client' %}">{{ paiement.reservation.client_user.get_full_name|default:paiement.reservation.client_nom }}</td>
+                    <td data-label="{% translate 'Logement' %}">{{ paiement.reservation.logement.titre }}</td>
+                    <td data-label="{% translate 'Montant' %}"><span class="payment-amount">{{ paiement.montant|floatformat:0 }} FCFA</span></td>
+                    <td data-label="{% translate 'Méthode' %}">{{ paiement.get_methode_display }}</td>
+                    <td data-label="{% translate 'Statut' %}"><span class="badge status-{{ paiement.statut }}">{{ paiement.get_statut_display }}</span></td>
+                    <td data-label="{% translate 'Date' %}">{{ paiement.created_at|date:'d/m/Y' }}</td>
+                    <td data-label="{% translate 'Action' %}">
                         {% if paiement.methode == 'cash' and paiement.statut == 'pending' %}
-                        <form method="post" action="{% url 'logement:confirmer_paiement_especes' paiement.id %}">
-                            {% csrf_token %}
-                            <button class="payment-confirm-button" type="submit">{% translate "Confirmer le paiement reçu" %}</button>
-                        </form>
-                        {% else %}—{% endif %}
+                            <form method="post" action="{% url 'logement:confirmer_paiement_especes' paiement.id %}" data-confirm="{{ confirm_cash_payment }}">
+                                {% csrf_token %}
+                                <button class="payment-confirm-button" type="submit">{% translate "Confirmer le paiement reçu" %}</button>
+                            </form>
+                        {% else %}
+                            <span class="payment-none" aria-label="{% translate 'Aucune action disponible' %}">—</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
@@ -140,26 +359,11 @@
     </div>
 </div>
 
-<style>
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 24px; }
-    .stat-box { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-    .stat-box.green { border-top: 4px solid #10b981; }
-    .stat-box.orange { border-top: 4px solid #f59e0b; }
-    .stat-box.blue { border-top: 4px solid #3b82f6; }
-    .stat-kpi { font-size: 1.5rem; font-weight: 800; color: #111827; margin-bottom: 8px; }
-    .stat-label { color: #6b7280; font-weight: 600; }
-    .table-wrapper { background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
-    .payments-table { width: 100%; border-collapse: collapse; }
-    .payments-table th, .payments-table td { padding: 14px 16px; border-bottom: 1px solid #eef2f7; text-align: left; }
-    .payments-table th { background: #f8fafc; color: #374151; font-size: .8rem; text-transform: uppercase; }
-    .badge { display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: .75rem; font-weight: 700; }
-    .status-completed { background: #dcfce7; color: #166534; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-failed { background: #fee2e2; color: #991b1b; }
-    .empty-row { text-align: center; color: #6b7280; padding: 28px; }
-    .payment-confirm-button { padding: 8px 11px; border: 0; border-radius: 7px; color: white; background: #047857; font: inherit; font-size: .82rem; font-weight: 650; cursor: pointer; }
-    .actions-row { margin-top: 22px; }
-    .back-link { display: inline-block; background: #f59e0b; color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
-    .back-link:hover { background: #d97706; }
-</style>
+<script>
+    // Confirmation avant une action sensible : <form data-confirm="message">
+    document.addEventListener('submit', function (e) {
+        const message = e.target.dataset && e.target.dataset.confirm;
+        if (message && !window.confirm(message)) e.preventDefault();
+    });
+</script>
 {% endblock %}

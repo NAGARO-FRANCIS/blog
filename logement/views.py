@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
 from django.http import JsonResponse
+from accounts.decorators import verified_identity_required
 from accounts.models import Profile
 from .forms import (
     EtablissementForm, LogementProprietaireForm, LogementTouristeForm, LogementHotelForm,
@@ -342,6 +343,8 @@ def _can_access_reservation(request, reservation):
 
 
 @require_http_methods(["GET", "POST"])
+@login_required
+@verified_identity_required
 def reserver_logement(request, id):
     """Créer une réservation (pour hôtels et résidences)"""
     from django.contrib import messages
