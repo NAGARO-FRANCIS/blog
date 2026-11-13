@@ -103,7 +103,7 @@ class Logement(models.Model):
     )
     nombre_salles_bain = models.PositiveSmallIntegerField(default=1)
     
-    # Tarification flexible (hôtel par nuit, résidence par mois)
+    # Tarification professionnelle: hôtels par nuit, résidences par jour.
     prix_par_nuit = models.DecimalField(
         max_digits=10, 
         decimal_places=2,
@@ -141,7 +141,7 @@ class Logement(models.Model):
         blank=True,
         validators=[MinValueValidator(0)]
     )
-    duree_min_bail = models.CharField(max_length=50, null=True, blank=True)
+    duree_min_bail = models.PositiveIntegerField(null=True, blank=True)
     type_charge = models.CharField(
         max_length=25,
         choices=TYPE_CHARGE,

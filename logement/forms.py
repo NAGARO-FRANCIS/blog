@@ -36,7 +36,7 @@ LOGEMENT_FIELD_LABELS = {
     'heure_depart': _('Heure de départ'),
     'caution_mois': _('Mois de caution'),
     'frais_agence': _('Frais d’agence'),
-    'duree_min_bail': _('Durée minimale du bail'),
+    'duree_min_bail': _('Durée minimale de location (jours)'),
     'type_charge': _('Type de charges'),
     'conditions_speciales': _('Conditions spéciales'),
     'climatisation': _('Climatisation'),
@@ -101,8 +101,8 @@ class LogementTypeForm(LocalizedModelForm):
         fields = [
             'titre', 'type_logement', 'surface', 'nombre_pieces', 'nombre_chambres',
             'nombre_lits', 'capacite', 'nombre_salles_bain', 'etage', 'meuble',
-            'unites_totales', 'prix_par_nuit', 'prix_par_mois', 'frais_nettoyage',
-            'min_sejour', 'caution_mois', 'frais_agence', 'duree_min_bail',
+            'prix_par_nuit', 'frais_nettoyage',
+            'min_sejour', 'duree_min_bail',
             'type_charge', 'conditions_speciales', 'climatisation', 'wifi', 'garage',
             'jardin', 'piscine', 'cuisine_equipee', 'minibar', 'television',
             'coffre_fort', 'reception_24h', 'restaurant', 'ascenseur', 'gardien',
@@ -118,14 +118,10 @@ class LogementTypeForm(LocalizedModelForm):
             'capacite': forms.NumberInput(attrs={'class': 'form-input'}),
             'nombre_salles_bain': forms.NumberInput(attrs={'class': 'form-input'}),
             'etage': forms.NumberInput(attrs={'class': 'form-input'}),
-            'unites_totales': forms.NumberInput(attrs={'class': 'form-input'}),
             'prix_par_nuit': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Prix / nuit', 'step': '0.01'}),
-            'prix_par_mois': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'Prix / mois', 'step': '0.01'}),
             'frais_nettoyage': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'FCFA', 'step': '0.01'}),
             'min_sejour': forms.NumberInput(attrs={'class': 'form-input'}),
-            'caution_mois': forms.NumberInput(attrs={'class': 'form-input'}),
-            'frais_agence': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'FCFA', 'step': '0.01'}),
-            'duree_min_bail': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: 6 mois'}),
+            'duree_min_bail': forms.NumberInput(attrs={'class': 'form-input', 'min': '1', 'step': '1', 'placeholder': 'Ex: 30'}),
             'type_charge': forms.Select(attrs={'class': 'form-select'}),
             'conditions_speciales': forms.Textarea(attrs={'class': 'form-textarea', 'rows': 3}),
             'disponible_depuis': forms.DateInput(attrs={'class': 'form-input', 'type': 'date'}),
@@ -150,10 +146,9 @@ class LogementTypeForm(LocalizedModelForm):
         self.fields['conditions_speciales'].required = False
         self.fields['frais_nettoyage'].required = False
         self.fields['min_sejour'].required = False
-        self.fields['caution_mois'].required = False
-        self.fields['frais_agence'].required = False
         self.fields['prix_par_nuit'].required = False
-        self.fields['prix_par_mois'].required = False
+        self.fields['duree_min_bail'].required = False
+        self.fields['duree_min_bail'].min_value = 1
         self.fields['surface'].required = False
         self.fields['nombre_pieces'].required = False
         self.fields['nombre_chambres'].required = False
@@ -161,7 +156,6 @@ class LogementTypeForm(LocalizedModelForm):
         self.fields['capacite'].required = False
         self.fields['nombre_salles_bain'].required = False
         self.fields['etage'].required = False
-        self.fields['unites_totales'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -177,9 +171,7 @@ class LogementTypeForm(LocalizedModelForm):
             cleaned_data['capacite'] = 1
         if not cleaned_data.get('nombre_salles_bain'):
             cleaned_data['nombre_salles_bain'] = 1
-        if not cleaned_data.get('unites_totales'):
-            cleaned_data['unites_totales'] = 1
-        if not cleaned_data.get('prix_par_nuit') and not cleaned_data.get('prix_par_mois'):
+        if not cleaned_data.get('prix_par_nuit'):
             cleaned_data['prix_par_nuit'] = 0
         return cleaned_data
 
@@ -192,8 +184,8 @@ LogementTypeFormSet = modelformset_factory(
     fields=[
         'titre', 'type_logement', 'surface', 'nombre_pieces', 'nombre_chambres',
         'nombre_lits', 'capacite', 'nombre_salles_bain', 'etage', 'meuble',
-        'unites_totales', 'prix_par_nuit', 'prix_par_mois', 'frais_nettoyage',
-        'min_sejour', 'caution_mois', 'frais_agence', 'duree_min_bail',
+        'prix_par_nuit', 'frais_nettoyage',
+        'min_sejour', 'duree_min_bail',
         'type_charge', 'conditions_speciales', 'climatisation', 'wifi', 'garage',
         'jardin', 'piscine', 'cuisine_equipee', 'minibar', 'television',
         'coffre_fort', 'reception_24h', 'restaurant', 'ascenseur', 'gardien',
@@ -299,7 +291,7 @@ class LogementHotelForm(LocalizedModelForm):
             'latitude', 'longitude', 'distance_universite', 'distance_hopital',
             
             # Caractéristiques de la chambre
-            'type_logement', 'surface', 'nombre_pieces', 'nombre_lits', 'capacite', 'unites_totales',
+            'type_logement', 'surface', 'nombre_pieces', 'nombre_lits', 'capacite',
             'nombre_salles_bain', 'etage',
             
             # Tarification hôtel
@@ -444,11 +436,11 @@ class LogementResidenceForm(LocalizedModelForm):
             'titre', 'description', 'ville', 'quartier',
             
             # Caractéristiques du logement
-            'type_logement', 'surface', 'nombre_pieces', 'nombre_chambres', 'unites_totales',
+            'type_logement', 'surface', 'nombre_chambres',
             'nombre_salles_bain', 'etage', 'meuble',
             
             # Tarification résidence
-            'prix_par_nuit', 'prix_par_mois', 'caution_mois', 'frais_agence',
+            'prix_par_nuit',
             'duree_min_bail', 'type_charge', 'conditions_speciales', 'politique_annulation', 'heure_arrivee', 'heure_depart',
             'disponible_depuis',
             
@@ -479,10 +471,6 @@ class LogementResidenceForm(LocalizedModelForm):
                 'class': 'form-input',
                 'placeholder': 'Surface en m²'
             }),
-            'nombre_pieces': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Nombre de pièces'
-            }),
             'nombre_chambres': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'placeholder': 'Nombre de chambres'
@@ -495,10 +483,6 @@ class LogementResidenceForm(LocalizedModelForm):
                 'class': 'form-input',
                 'placeholder': 'Optionnel'
             }),
-            'prix_par_mois': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Loyer en FCFA/mois'
-            }),
             'prix_par_nuit': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'placeholder': 'Prix journalier en FCFA',
@@ -506,17 +490,11 @@ class LogementResidenceForm(LocalizedModelForm):
                 'step': '0.01',
                 'required': True,
             }),
-            'caution_mois': forms.NumberInput(attrs={
+            'duree_min_bail': forms.NumberInput(attrs={
                 'class': 'form-input',
-                'placeholder': 'Nombre de mois'
-            }),
-            'frais_agence': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Optionnel (FCFA)'
-            }),
-            'duree_min_bail': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Ex: 1 an, 6 mois...'
+                'min': '1',
+                'step': '1',
+                'placeholder': 'Ex: 30 jours'
             }),
             'type_charge': forms.Select(attrs={'class': 'form-select'}),
             'conditions_speciales': forms.Textarea(attrs={
@@ -533,33 +511,28 @@ class LogementResidenceForm(LocalizedModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Rendre les champs de détails optionnels avec valeurs par défaut
-        self.fields['nombre_pieces'].required = False
         self.fields['nombre_chambres'].required = False
         self.fields['nombre_salles_bain'].required = False
         self.fields['etage'].required = False
         self.fields['surface'].required = False
-        self.fields['prix_par_mois'].required = False
+        self.fields['prix_par_nuit'].label = _('Prix par jour')
         self.fields['prix_par_nuit'].required = True
         self.fields['prix_par_nuit'].min_value = 0.01
         self.fields['prix_par_nuit'].widget.attrs.update({'min': '0.01', 'step': '0.01', 'required': True})
-        self.fields['caution_mois'].required = False
+        self.fields['duree_min_bail'].required = False
+        self.fields['duree_min_bail'].min_value = 1
     
     def clean(self):
         """Valider et remplir les champs optionnels avec des valeurs par défaut"""
         cleaned_data = super().clean()
         
         # Remplir avec des valeurs par défaut si vides
-        if not cleaned_data.get('nombre_pieces'):
-            cleaned_data['nombre_pieces'] = 1
         if not cleaned_data.get('nombre_chambres'):
             cleaned_data['nombre_chambres'] = 1
         if not cleaned_data.get('nombre_salles_bain'):
             cleaned_data['nombre_salles_bain'] = 1
         if not cleaned_data.get('surface'):
             cleaned_data['surface'] = 30  # Valeur par défaut
-        if not cleaned_data.get('caution_mois'):
-            cleaned_data['caution_mois'] = 2
-        
         return cleaned_data
 
 

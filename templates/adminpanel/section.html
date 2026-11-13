@@ -277,7 +277,7 @@
                         <td><strong>{{ item.titre }}</strong><br><small>{{ item.ville }}{% if item.quartier %}, {{ item.quartier }}{% endif %}</small></td>
                         <td>{{ item.proprietaire.get_full_name|default:item.proprietaire.username }}<br><small>{{ item.proprietaire.email|default:"—" }}</small></td>
                         <td>{{ item.get_account_type_display }}</td>
-                        <td>{% if item.prix_par_nuit %}{{ item.prix_par_nuit }} FCFA / {% translate "nuit" %}{% elif item.prix_par_mois %}{{ item.prix_par_mois }} FCFA / {% translate "mois" %}{% elif item.prix %}{{ item.prix }} FCFA{% else %}—{% endif %}</td>
+                        <td>{% if item.account_type == 'residence' and item.prix_par_nuit %}{{ item.prix_par_nuit }} FCFA / {% translate "jour" %}{% elif item.prix_par_nuit %}{{ item.prix_par_nuit }} FCFA / {% translate "nuit" %}{% elif item.prix_par_mois %}{{ item.prix_par_mois }} FCFA / {% translate "mois" %}{% elif item.prix %}{{ item.prix }} FCFA{% else %}—{% endif %}</td>
                         <td>{{ item.created_at|date:"d/m/Y H:i" }}</td>
                     </tr>{% empty %}<tr><td colspan="5" class="empty-state">{% translate "Aucun logement enregistré." %}</td></tr>{% endfor %}</tbody>
                 </table></div>

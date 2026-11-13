@@ -504,15 +504,9 @@
             <div class="rb-price-row">
               <span class="rb-price-label">{% translate "Par jour" %}</span>
               <span class="rb-price-value" id="reservation-unit-price" data-price="{{ logement.prix_reservation_par_nuit|default_if_none:'' }}">
-                {% if logement.prix_reservation_par_nuit %}{{ logement.prix_reservation_par_nuit|floatformat:0 }} <small class="rb-unit">FCFA / {% translate "nuit" %}{% if logement.reservation_uses_monthly_rate %} ({% translate "tarif mensuel proratisé" %}){% endif %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
+                {% if logement.prix_reservation_par_nuit %}{{ logement.prix_reservation_par_nuit|floatformat:0 }} <small class="rb-unit">FCFA / {% translate "jour" %}{% if logement.reservation_uses_monthly_rate %} ({% translate "tarif mensuel proratisé" %}){% endif %}</small>{% else %}{% translate "Tarif journalier à confirmer" %}{% endif %}
               </span>
             </div>
-            {% if logement.caution_mois %}
-            <div class="rb-price-row">
-              <span class="rb-price-label">{% translate "Caution" %}</span>
-              <span class="rb-price-sub">{{ logement.caution_mois|floatformat:0 }} FCFA</span>
-            </div>
-            {% endif %}
           {% else %}
             <div class="rb-price-row">
               <span class="rb-price-label">{% translate "Prix" %}</span>

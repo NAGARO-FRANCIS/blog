@@ -156,6 +156,9 @@
                     {% if logement.account_type == 'hotel' and logement.prix_par_nuit %}
                         {{ logement.prix_par_nuit|floatformat:0 }}
                         <span class="property-price-period">/ nuit</span>
+                    {% elif logement.account_type == 'residence' and logement.prix_par_nuit %}
+                        {{ logement.prix_par_nuit|floatformat:0 }}
+                        <span class="property-price-period">/ jour</span>
                     {% elif logement.account_type == 'residence' and logement.prix_par_mois %}
                         {{ logement.prix_par_mois|floatformat:0 }}
                         <span class="property-price-period">/ mois</span>

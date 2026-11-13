@@ -455,8 +455,17 @@ class ReservationSecurityTests(TestCase):
     def test_tarif_journalier_est_obligatoire_a_la_publication_professionnelle(self):
         self.assertTrue(LogementHotelForm().fields['prix_par_nuit'].required)
         self.assertEqual(str(LogementHotelForm().fields['prix_par_nuit'].min_value), '0.01')
-        self.assertTrue(LogementResidenceForm().fields['prix_par_nuit'].required)
-        self.assertEqual(str(LogementResidenceForm().fields['prix_par_nuit'].min_value), '0.01')
+        residence_form = LogementResidenceForm()
+        self.assertTrue(residence_form.fields['prix_par_nuit'].required)
+        self.assertEqual(str(residence_form.fields['prix_par_nuit'].min_value), '0.01')
+        self.assertEqual(residence_form.fields['prix_par_nuit'].label, 'Prix par jour')
+        self.assertNotIn('prix_par_mois', residence_form.fields)
+        self.assertNotIn('caution_mois', residence_form.fields)
+        self.assertNotIn('frais_agence', residence_form.fields)
+        self.assertNotIn('nombre_pieces', residence_form.fields)
+        self.assertNotIn('unites_totales', residence_form.fields)
+        self.assertEqual(residence_form.fields['duree_min_bail'].widget.input_type, 'number')
+        self.assertEqual(residence_form.fields['duree_min_bail'].min_value, 1)
 
     def test_reservation_permet_de_choisir_une_categorie_et_applique_son_tarif(self):
         owner = User.objects.create_user(username='owner_categories', password='StrongPassword123!')

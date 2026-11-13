@@ -119,6 +119,8 @@
                                 <div class="feed-prix">
                                     {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
                                         {{ annonce.prix_par_nuit|floatformat:0 }}<small>/nuit</small>
+                                    {% elif annonce.account_type == 'residence' and annonce.prix_par_nuit %}
+                                        {{ annonce.prix_par_nuit|floatformat:0 }}<small>/jour</small>
                                     {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
                                         {{ annonce.prix_par_mois|floatformat:0 }}<small>/mois</small>
                                     {% elif annonce.prix %}

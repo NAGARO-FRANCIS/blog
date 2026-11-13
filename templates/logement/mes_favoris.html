@@ -66,6 +66,8 @@
                             <p class="fav-card__price">
                                 {% if fav.logement.account_type == 'hotel' and fav.logement.prix_par_nuit %}
                                     <strong>{{ fav.logement.prix_par_nuit|floatformat:0 }}</strong> <span>FCFA / {% translate "nuit" %}</span>
+                                {% elif fav.logement.account_type == 'residence' and fav.logement.prix_par_nuit %}
+                                    <strong>{{ fav.logement.prix_par_nuit|floatformat:0 }}</strong> <span>FCFA / {% translate "jour" %}</span>
                                 {% elif fav.logement.account_type == 'residence' and fav.logement.prix_par_mois %}
                                     <strong>{{ fav.logement.prix_par_mois|floatformat:0 }}</strong> <span>FCFA / {% translate "mois" %}</span>
                                 {% elif fav.logement.prix %}

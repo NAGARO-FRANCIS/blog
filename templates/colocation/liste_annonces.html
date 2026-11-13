@@ -75,6 +75,8 @@
                                 <div class="annonce-prix">
                                     {% if annonce.account_type == 'hotel' and annonce.prix_par_nuit %}
                                         {{ annonce.prix_par_nuit|floatformat:0 }} <span>{% translate "FCFA/nuit" %}</span>
+                                    {% elif annonce.account_type == 'residence' and annonce.prix_par_nuit %}
+                                        {{ annonce.prix_par_nuit|floatformat:0 }} <span>{% translate "FCFA/jour" %}</span>
                                     {% elif annonce.account_type == 'residence' and annonce.prix_par_mois %}
                                         {{ annonce.prix_par_mois|floatformat:0 }} <span>{% translate "FCFA/mois" %}</span>
                                     {% elif annonce.prix %}

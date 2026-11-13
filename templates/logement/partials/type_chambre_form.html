@@ -51,10 +51,6 @@
       {{ room_form.capacite }}
     </div>
     <div class="col-md-3">
-      {{ room_form.unites_totales.label_tag }}
-      {{ room_form.unites_totales }}
-    </div>
-    <div class="col-md-3">
       {{ room_form.nombre_salles_bain.label_tag }}
       {{ room_form.nombre_salles_bain }}
     </div>
@@ -62,10 +58,12 @@
       {{ room_form.etage.label_tag }}
       {{ room_form.etage }}
     </div>
-    <div class="col-md-3">
-      {{ room_form.nombre_pieces.label_tag }}
-      {{ room_form.nombre_pieces }}
-    </div>
+    {% if account_type == 'hotel' %}
+      <div class="col-md-3">
+        {{ room_form.nombre_pieces.label_tag }}
+        {{ room_form.nombre_pieces }}
+      </div>
+    {% endif %}
 
   </div>
 
@@ -85,16 +83,8 @@
       </div>
     {% else %}
       <div class="col-md-4">
-        {{ room_form.prix_par_mois.label_tag }}
-        {{ room_form.prix_par_mois }}
-      </div>
-      <div class="col-md-4">
-        {{ room_form.caution_mois.label_tag }}
-        {{ room_form.caution_mois }}
-      </div>
-      <div class="col-md-4">
-        {{ room_form.frais_agence.label_tag }}
-        {{ room_form.frais_agence }}
+        <label for="{{ room_form.prix_par_nuit.id_for_label }}">{% translate "Prix par jour" %}</label>
+        {{ room_form.prix_par_nuit }}
       </div>
       <div class="col-md-6">
         {{ room_form.duree_min_bail.label_tag }}

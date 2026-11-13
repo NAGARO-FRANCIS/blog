@@ -88,7 +88,7 @@
                                     <span class="dl-related-category__title">{{ category.titre|default:category.get_type_logement_display }}</span>
                                     <span class="dl-related-category__price">
                                         {% if category.account_type == 'residence' %}
-                                            {% if category.prix_par_mois %}{{ category.prix_par_mois|floatformat:0 }} FCFA/{% translate "mois" %}{% else %}{% translate "Tarif mensuel non renseigné" %}{% endif %}
+                                            {% if category.prix_par_nuit %}{{ category.prix_par_nuit|floatformat:0 }} FCFA/{% translate "jour" %}{% elif category.prix_par_mois %}{{ category.prix_par_mois|floatformat:0 }} FCFA/{% translate "mois" %}{% else %}{% translate "Tarif journalier non renseigné" %}{% endif %}
                                         {% else %}
                                             {% if category.prix_journalier %}{{ category.prix_journalier|floatformat:0 }} FCFA/{% translate "nuit" %}{% else %}{% translate "Tarif par nuit non renseigné" %}{% endif %}
                                         {% endif %}
@@ -179,9 +179,7 @@
                     {% endif %}
                     {% if logement.account_type == 'residence' %}
                         <div class="dl-conditions">
-                            {% if logement.caution_mois %}<p>💳 <strong>{% translate "Caution" %}:</strong> {{ logement.caution_mois }} {% translate "mois de loyer" %}</p>{% endif %}
-                            {% if logement.frais_agence %}<p>📋 <strong>{% translate "Frais d'agence" %}:</strong> {{ logement.frais_agence|floatformat:0 }} FCFA</p>{% endif %}
-                            {% if logement.duree_min_bail %}<p>📅 <strong>{% translate "Durée minimale" %}:</strong> {{ logement.duree_min_bail }}</p>{% endif %}
+                            {% if logement.duree_min_bail %}<p>📅 <strong>{% translate "Durée minimale" %}:</strong> {{ logement.duree_min_bail }} {% translate "jours" %}</p>{% endif %}
                             {% if logement.type_charge %}<p>💡 <strong>{% translate "Type de charges" %}:</strong> {{ logement.get_type_charge_display }}</p>{% endif %}
                         </div>
                     {% endif %}
@@ -197,10 +195,12 @@
                 <!-- Prix -->
                 <div class="dl-card__price">
                     {% if logement.account_type == 'residence' %}
-                        {% if logement.prix_par_mois %}
+                        {% if logement.prix_par_nuit %}
+                            <span class="dl-price">{{ logement.prix_par_nuit|floatformat:0 }} <small>FCFA / {% translate "jour" %}</small></span>
+                        {% elif logement.prix_par_mois %}
                             <span class="dl-price">{{ logement.prix_par_mois|floatformat:0 }} <small>FCFA / {% translate "mois" %}</small></span>
                         {% else %}
-                            <span class="dl-price">{% translate "Tarif mensuel non renseigné" %}</span>
+                            <span class="dl-price">{% translate "Tarif journalier non renseigné" %}</span>
                         {% endif %}
                     {% elif logement.prix_journalier %}
                         <span class="dl-price">{{ logement.prix_journalier|floatformat:0 }} <small>FCFA / {% translate "nuit" %}</small></span>
@@ -216,9 +216,8 @@
                     <div class="dl-card__pricing">
                         <h4 class="dl-pricing__title">{% translate "Tarification" %}</h4>
                         {% if logement.account_type == 'hotel' and logement.prix_journalier %}<p>💰 {% translate "Par nuit" %}: <strong>{{ logement.prix_journalier|floatformat:0 }} FCFA</strong></p>{% endif %}
-                        {% if logement.account_type == 'residence' and logement.prix_par_mois %}<p>💰 {% translate "Par mois" %}: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.account_type == 'residence' and logement.prix_par_nuit %}<p>💰 {% translate "Par jour" %}: <strong>{{ logement.prix_par_nuit|floatformat:0 }} FCFA</strong></p>{% elif logement.account_type == 'residence' and logement.prix_par_mois %}<p>💰 {% translate "Par mois" %}: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
                         {% if logement.frais_nettoyage %}<p>🧹 {% translate "Nettoyage" %}: <strong>{{ logement.frais_nettoyage|floatformat:0 }} FCFA</strong></p>{% endif %}
-                        {% if logement.frais_agence %}<p>📋 {% translate "Agence" %}: <strong>{{ logement.frais_agence|floatformat:0 }} FCFA</strong></p>{% endif %}
                     </div>
                 {% endif %}
 
@@ -230,8 +229,7 @@
                         {% if logement.min_sejour %}<p>🌙 {% translate "Séjour minimum" %}: {{ logement.min_sejour }}</p>{% endif %}
                     {% elif logement.account_type == 'residence' %}
                         <p>🏢 <strong>Résidence</strong></p>
-                        {% if logement.duree_min_bail %}<p>📅 {% translate "Durée minimale" %}: {{ logement.duree_min_bail }}</p>{% endif %}
-                        {% if logement.caution_mois %}<p>💳 {% translate "Caution" %}: {{ logement.caution_mois }} {% translate "mois" %}</p>{% endif %}
+                        {% if logement.duree_min_bail %}<p>📅 {% translate "Durée minimale" %}: {{ logement.duree_min_bail }} {% translate "jours" %}</p>{% endif %}
                         {% if logement.type_charge %}<p>💡 {% translate "Charges" %}: {{ logement.get_type_charge_display }}</p>{% endif %}
                     {% else %}
                         <p>🏠 <strong>{% translate "Particulier" %}</strong></p>
