@@ -4,16 +4,30 @@
 {% block title %}{% translate "Paramètres du compte" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <main class="account-settings">
+
+    <!-- En-tête -->
     <header class="settings-header">
-        <p class="settings-eyebrow">{% translate "Compte" %}</p>
-        <h1>{% translate "Paramètres du compte" %}</h1>
-        <p>{% translate "Gérez vos informations de connexion et vos préférences." %}</p>
+        <div class="settings-header__stripe" aria-hidden="true"></div>
+        <div class="settings-header__body">
+            <span class="settings-header__icon" aria-hidden="true">⚙️</span>
+            <div>
+                <p class="settings-eyebrow">{% translate "Compte" %}</p>
+                <h1>{% translate "Paramètres du compte" %}</h1>
+                <p class="settings-header__lead">{% translate "Gérez vos informations de connexion et vos préférences." %}</p>
+            </div>
+        </div>
     </header>
 
+    <!-- Informations personnelles -->
     <section class="settings-section" aria-labelledby="account-information-title">
         <div class="settings-section__heading">
-            <h2 id="account-information-title">{% translate "Informations personnelles" %}</h2>
+            <h2 id="account-information-title"><span aria-hidden="true">👤</span> {% translate "Informations personnelles" %}</h2>
             <p>{% translate "Ces informations sont distinctes de votre profil public." %}</p>
         </div>
         <div class="settings-row">
@@ -25,9 +39,10 @@
         </div>
     </section>
 
+    <!-- Sécurité -->
     <section class="settings-section" aria-labelledby="security-title">
         <div class="settings-section__heading">
-            <h2 id="security-title">{% translate "Sécurité" %}</h2>
+            <h2 id="security-title"><span aria-hidden="true">🔒</span> {% translate "Sécurité" %}</h2>
             <p>{% translate "Protégez l’accès à votre compte." %}</p>
         </div>
         <div class="settings-row">
@@ -39,9 +54,10 @@
         </div>
     </section>
 
+    <!-- Langue -->
     <section class="settings-section" aria-labelledby="language-title">
         <div class="settings-section__heading">
-            <h2 id="language-title">{% translate "Langue" %}</h2>
+            <h2 id="language-title"><span aria-hidden="true">🌍</span> {% translate "Langue" %}</h2>
             <p>{% translate "Choisissez la langue de l’interface." %}</p>
         </div>
         <form class="settings-language" method="post" action="{% url 'set_language' %}">
@@ -63,43 +79,186 @@
 </main>
 
 <style>
-.account-settings {
-    --settings-ink: #17231d;
-    --settings-muted: #607066;
-    --settings-line: #dce5df;
-    --settings-paper: #fff;
-    --settings-green: #0b5d3b;
-    --settings-orange: #f77f00;
-    max-width: 880px;
-    min-height: calc(100vh - 72px);
-    margin: 0 auto;
-    padding: 2.5rem 1.25rem 4rem;
-    color: var(--settings-ink);
-}
-.settings-header { padding: 0 0 1.5rem; border-bottom: 3px solid var(--settings-green); }
-.settings-eyebrow { margin: 0 0 .4rem; color: var(--settings-orange); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
-.settings-header h1 { margin: 0; font-size: 2rem; color: var(--settings-green); }
-.settings-header > p:last-child { margin: .5rem 0 0; color: var(--settings-muted); }
-.settings-section { margin-top: 1.5rem; border: 1px solid var(--settings-line); border-radius: 12px; background: var(--settings-paper); }
-.settings-section__heading { padding: 1.25rem 1.4rem .9rem; }
-.settings-section__heading h2 { margin: 0; font-size: 1.1rem; }
-.settings-section__heading p { margin: .3rem 0 0; color: var(--settings-muted); font-size: .9rem; }
-.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.4rem; border-top: 1px solid var(--settings-line); }
-.settings-row h3 { margin: 0; font-size: .95rem; }
-.settings-row p { margin: .25rem 0 0; color: var(--settings-muted); font-size: .9rem; overflow-wrap: anywhere; }
-.settings-link, .settings-language button { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: .55rem .9rem; border: 1px solid var(--settings-green); border-radius: 7px; background: var(--settings-green); color: #fff; font: inherit; font-weight: 700; text-decoration: none; white-space: nowrap; }
-.settings-link:hover, .settings-language button:hover { background: #08482e; }
-.settings-language { padding: 1rem 1.4rem 1.25rem; border-top: 1px solid var(--settings-line); }
-.settings-language label { display: block; margin-bottom: .45rem; font-size: .9rem; font-weight: 700; }
-.settings-language__controls { display: flex; gap: .75rem; }
-.settings-language select { min-width: 0; flex: 1; min-height: 42px; padding: .5rem .75rem; border: 1px solid #aebdb3; border-radius: 7px; background: #fff; color: var(--settings-ink); font: inherit; }
-.settings-link:focus-visible, .settings-language button:focus-visible, .settings-language select:focus-visible { outline: 3px solid var(--settings-orange); outline-offset: 2px; }
-@media (max-width: 600px) {
-    .account-settings { padding: 1.5rem .9rem 3rem; }
-    .settings-header h1 { font-size: 1.6rem; }
-    .settings-row { align-items: flex-start; flex-direction: column; }
-    .settings-link { width: 100%; }
-    .settings-language__controls { align-items: stretch; flex-direction: column; }
-}
+    /* ══════════════════════════════════════════════
+       Paramètres du compte — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Sections · 4 Lignes d'action · 5 Langue · 6 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .account-settings {
+        --ci-orange: #F77F00;
+        --ci-orange-hover: #FF9122;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 4rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
+    }
+
+    .account-settings *,
+    .account-settings *::before,
+    .account-settings *::after { box-sizing: border-box; }
+
+    .account-settings :where(h1, h2, h3, p) { margin: 0; }
+    .account-settings :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    /* ── 2. En-tête ── */
+    .settings-header {
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+    }
+
+    .settings-header__stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
+    }
+
+    .settings-header__body {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .settings-header__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        font-size: 1.5rem;
+    }
+
+    .settings-eyebrow { color: rgba(255,255,255,.75); font-size: 13px; font-weight: 500; }
+
+    .settings-header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .settings-header__lead { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Sections ── */
+    .settings-section {
+        margin-top: 1.25rem;
+        overflow: hidden;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .settings-section__heading { padding: 1.25rem 1.5rem 1rem; }
+
+    .settings-section__heading h2 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font: 700 1.15rem 'Bricolage Grotesque', 'Figtree', sans-serif;
+        color: var(--ci-green-deep);
+    }
+
+    .settings-section__heading p { margin-top: 4px; color: var(--ci-muted); }
+
+    /* ── 4. Lignes d'action ── */
+    .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.5rem;
+        border-top: 1px solid var(--ci-line);
+    }
+
+    .settings-row h3 { font-size: 16px; font-weight: 600; }
+    .settings-row p { margin-top: 2px; color: var(--ci-muted); overflow-wrap: anywhere; }
+
+    .settings-link,
+    .settings-language button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0.55rem 1.2rem;
+        border: 0;
+        border-radius: 12px;
+        background: var(--ci-orange);
+        color: var(--ci-ink);
+        font: 600 15px 'Figtree', sans-serif;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background-color .15s ease;
+    }
+
+    .settings-link:hover,
+    .settings-language button:hover { background: var(--ci-orange-hover); }
+
+    /* ── 5. Langue ── */
+    .settings-language { padding: 1rem 1.5rem 1.4rem; border-top: 1px solid var(--ci-line); }
+
+    .settings-language label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+
+    .settings-language__controls { display: flex; gap: 0.75rem; }
+
+    .settings-language select {
+        flex: 1;
+        min-width: 0;
+        min-height: 44px;
+        padding: 0.5rem 2.2rem 0.5rem 0.85rem;
+        border: 1.5px solid #CBD6CE;
+        border-radius: 10px;
+        background-color: var(--ci-white);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%230B5D3B' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        appearance: none;
+        color: var(--ci-ink);
+        font: inherit;
+        cursor: pointer;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .settings-language select:hover { border-color: #9FB3A7; }
+
+    .settings-language select:focus {
+        outline: none;
+        border-color: var(--ci-green);
+        box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+    }
+
+    /* ── 6. Responsive ── */
+    @media (max-width: 600px) {
+        .account-settings { padding: 1rem 0.75rem 3rem; }
+        .settings-header__body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
+        .settings-section__heading { padding: 1.1rem 1.1rem 0.9rem; }
+        .settings-row { align-items: flex-start; flex-direction: column; padding: 1rem 1.1rem; }
+        .settings-link { width: 100%; }
+        .settings-language { padding: 1rem 1.1rem 1.25rem; }
+        .settings-language__controls { flex-direction: column; align-items: stretch; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .account-settings * { transition: none !important; }
+    }
 </style>
 {% endblock %}

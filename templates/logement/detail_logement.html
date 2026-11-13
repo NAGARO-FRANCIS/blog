@@ -4,26 +4,34 @@
 {% block title %}{{ logement.titre }} — Ivoire Connect{% endblock %}
 
 {% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+{% translate "Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible." as confirm_delete %}
+
 <div class="dl-wrapper">
     <div class="dl-container">
 
-        <!-- ── COLONNE GAUCHE ── -->
+        <!-- ══════════ COLONNE GAUCHE ══════════ -->
         <div class="dl-main">
 
             <!-- Galerie -->
             <div class="dl-gallery">
                 {% if photos %}
                     <div class="dl-gallery__main" id="mainPhoto">
-                        <img src="{{ photos.0.image.url }}" alt="{{ photos.0.alt_text }}" id="mainImg">
-                        <span class="dl-gallery__badge">{{ photos|length }} photo{% if photos|length > 1 %}s{% endif %}</span>
+                        <img src="{{ photos.0.image.url }}" alt="{{ photos.0.alt_text|default:logement.titre }}" id="mainImg">
+                        <span class="dl-gallery__badge">{% blocktranslate count counter=photos|length %}{{ counter }} photo{% plural %}{{ counter }} photos{% endblocktranslate %}</span>
                     </div>
                     {% if photos|length > 1 %}
-                        <div class="dl-gallery__thumbs">
+                        <div class="dl-gallery__thumbs" role="list">
                             {% for photo in photos %}
-                                <img src="{{ photo.image.url }}"
-                                     alt="{{ photo.alt_text }}"
-                                     class="dl-gallery__thumb {% if forloop.first %}dl-gallery__thumb--active{% endif %}"
-                                     onclick="switchPhoto(this, '{{ photo.image.url }}')">
+                                <button type="button" class="dl-gallery__thumb{% if forloop.first %} dl-gallery__thumb--active{% endif %}" role="listitem"
+                                        data-photo-url="{{ photo.image.url }}" data-photo-alt="{{ photo.alt_text|default:logement.titre }}"
+                                        aria-label="{% blocktranslate with number=forloop.counter %}Afficher la photo {{ number }}{% endblocktranslate %}">
+                                    <img src="{{ photo.image.url }}" alt="" loading="lazy">
+                                </button>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -34,42 +42,40 @@
 
             <!-- Vidéos -->
             {% if videos %}
-                <div class="dl-section">
+                <section class="dl-section">
                     <h2 class="dl-section__title">🎬 {% translate "Vidéos" %}</h2>
-                    <div class="dl-videos" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="dl-videos">
                         {% for video in videos %}
-                            <div style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background: #f5f5f5;">
-                                <video 
-                                    controls 
-                                    style="width: 100%; height: 200px; background: #000; object-fit: cover;"
-                                    poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23333' width='400' height='300'/%3E%3Cpolygon fill='%23fff' points='160,80 160,220 280,150'/%3E%3C/svg%3E">
+                            <div class="dl-video">
+                                <video controls preload="metadata">
                                     <source src="{{ video.video.url }}" type="video/mp4">
                                     {% translate "Votre navigateur ne prend pas en charge les vidéos HTML5" %}
                                 </video>
                                 {% if video.titre %}
-                                    <div style="padding: 0.75rem;">
-                                        <h4 style="margin: 0 0 0.25rem; font-size: 14px; font-weight: 600;">{{ video.titre }}</h4>
-                                        {% if video.description %}<p style="margin: 0; font-size: 12px; color: #666;">{{ video.description|truncatewords:15 }}</p>{% endif %}
+                                    <div class="dl-video__info">
+                                        <h3>{{ video.titre }}</h3>
+                                        {% if video.description %}<p>{{ video.description|truncatewords:15 }}</p>{% endif %}
                                     </div>
                                 {% endif %}
                             </div>
                         {% endfor %}
                     </div>
-                </div>
+                </section>
             {% endif %}
 
-            <!-- Titre & tags -->
-            <div class="dl-section">
+            <!-- Titre et étiquettes -->
+            <section class="dl-section">
                 <div class="dl-tags">
                     <span class="dl-tag dl-tag--type">{{ logement.get_account_type_display }}</span>
                     <span class="dl-tag dl-tag--cat">{{ logement.get_type_logement_display }}</span>
                 </div>
                 <h1 class="dl-title">{{ logement.titre }}</h1>
                 <p class="dl-location">📍 {{ logement.ville }}{% if logement.quartier %}, {{ logement.quartier }}{% endif %}</p>
-            </div>
+            </section>
 
+            <!-- Établissement et autres catégories -->
             {% if etablissement %}
-                <div class="dl-section">
+                <section class="dl-section">
                     <h2 class="dl-section__title">{{ etablissement.nom }}</h2>
                     <p class="dl-desc">{% translate "Cette fiche présente une catégorie de chambre de cet établissement." %}</p>
                     {% if etablissement_categories %}
@@ -98,11 +104,11 @@
                             {% endfor %}
                         </div>
                     {% endif %}
-                </div>
+                </section>
             {% endif %}
 
             <!-- Caractéristiques -->
-            <div class="dl-section">
+            <section class="dl-section">
                 <h2 class="dl-section__title">{% translate "Caractéristiques" %}</h2>
                 <div class="dl-chars">
                     {% if logement.surface %}
@@ -113,12 +119,12 @@
                     {% endif %}
                     <div class="dl-char">
                         <span class="dl-char__val">{{ logement.nombre_chambres }}</span>
-                        <span class="dl-char__label">{% blocktranslate count counter=logement.nombre_chambres %}{{ counter }} chambre{% plural %}{{ counter }} chambres{% endblocktranslate %}</span>
+                        <span class="dl-char__label">{% blocktranslate count counter=logement.nombre_chambres %}chambre{% plural %}chambres{% endblocktranslate %}</span>
                     </div>
                     {% if logement.nombre_lits %}
                         <div class="dl-char">
                             <span class="dl-char__val">{{ logement.nombre_lits }}</span>
-                            <span class="dl-char__label">{% blocktranslate count counter=logement.nombre_lits %}{{ counter }} lit{% plural %}{{ counter }} lits{% endblocktranslate %}</span>
+                            <span class="dl-char__label">{% blocktranslate count counter=logement.nombre_lits %}lit{% plural %}lits{% endblocktranslate %}</span>
                         </div>
                     {% endif %}
                     <div class="dl-char">
@@ -138,26 +144,26 @@
                         </div>
                     {% endif %}
                 </div>
-            </div>
+            </section>
 
             <!-- Description -->
-            <div class="dl-section">
+            <section class="dl-section">
                 <h2 class="dl-section__title">{% translate "Description" %}</h2>
                 <div class="dl-desc">{{ logement.description|linebreaks }}</div>
-            </div>
+            </section>
 
             <!-- Équipements -->
             {% if logement.wifi or logement.climatisation or logement.garage or logement.jardin or logement.piscine or logement.cuisine_equipee or logement.minibar or logement.television or logement.coffre_fort or logement.reception_24h or logement.restaurant or logement.ascenseur or logement.gardien or logement.securite or logement.buanderie %}
-                <div class="dl-section">
+                <section class="dl-section">
                     <h2 class="dl-section__title">{% translate "Équipements & services" %}</h2>
                     <div class="dl-amenities">
-                        {% if logement.wifi %}<span class="dl-amenity">WiFi</span>{% endif %}
+                        {% if logement.wifi %}<span class="dl-amenity">{% translate "WiFi" %}</span>{% endif %}
                         {% if logement.climatisation %}<span class="dl-amenity">{% translate "Climatisation" %}</span>{% endif %}
                         {% if logement.garage %}<span class="dl-amenity">{% translate "Garage" %}</span>{% endif %}
                         {% if logement.jardin %}<span class="dl-amenity">{% translate "Jardin" %}</span>{% endif %}
                         {% if logement.piscine %}<span class="dl-amenity">{% translate "Piscine" %}</span>{% endif %}
                         {% if logement.cuisine_equipee %}<span class="dl-amenity">{% translate "Cuisine équipée" %}</span>{% endif %}
-                        {% if logement.minibar %}<span class="dl-amenity">Minibar</span>{% endif %}
+                        {% if logement.minibar %}<span class="dl-amenity">{% translate "Minibar" %}</span>{% endif %}
                         {% if logement.television %}<span class="dl-amenity">{% translate "Télévision" %}</span>{% endif %}
                         {% if logement.coffre_fort %}<span class="dl-amenity">{% translate "Coffre-fort" %}</span>{% endif %}
                         {% if logement.reception_24h %}<span class="dl-amenity">{% translate "Réception 24h" %}</span>{% endif %}
@@ -167,29 +173,29 @@
                         {% if logement.securite %}<span class="dl-amenity">{% translate "Sécurité" %}</span>{% endif %}
                         {% if logement.buanderie %}<span class="dl-amenity">{% translate "Buanderie" %}</span>{% endif %}
                     </div>
-                </div>
+                </section>
             {% endif %}
 
-            <!-- Conditions spéciales -->
+            <!-- Conditions -->
             {% if logement.conditions_speciales or logement.account_type == 'residence' %}
-                <div class="dl-section">
+                <section class="dl-section">
                     <h2 class="dl-section__title">📋 {% translate "Conditions" %}</h2>
                     {% if logement.conditions_speciales %}
                         <div class="dl-desc">{{ logement.conditions_speciales|linebreaks }}</div>
                     {% endif %}
                     {% if logement.account_type == 'residence' %}
                         <div class="dl-conditions">
-                            {% if logement.duree_min_bail %}<p>📅 <strong>{% translate "Durée minimale" %}:</strong> {{ logement.duree_min_bail }} {% translate "jours" %}</p>{% endif %}
-                            {% if logement.type_charge %}<p>💡 <strong>{% translate "Type de charges" %}:</strong> {{ logement.get_type_charge_display }}</p>{% endif %}
+                            {% if logement.duree_min_bail %}<p>📅 <strong>{% translate "Durée minimale" %} :</strong> {{ logement.duree_min_bail }} {% translate "jours" %}</p>{% endif %}
+                            {% if logement.type_charge %}<p>💡 <strong>{% translate "Type de charges" %} :</strong> {{ logement.get_type_charge_display }}</p>{% endif %}
                         </div>
                     {% endif %}
-                </div>
+                </section>
             {% endif %}
 
         </div>
 
-        <!-- ── COLONNE DROITE ── -->
-        <div class="dl-sidebar">
+        <!-- ══════════ COLONNE DROITE ══════════ -->
+        <aside class="dl-sidebar">
             <div class="dl-card">
 
                 <!-- Prix -->
@@ -200,96 +206,98 @@
                         {% elif logement.prix_par_mois %}
                             <span class="dl-price">{{ logement.prix_par_mois|floatformat:0 }} <small>FCFA / {% translate "mois" %}</small></span>
                         {% else %}
-                            <span class="dl-price">{% translate "Tarif journalier non renseigné" %}</span>
+                            <span class="dl-price dl-price--none">{% translate "Tarif journalier non renseigné" %}</span>
                         {% endif %}
                     {% elif logement.prix_journalier %}
                         <span class="dl-price">{{ logement.prix_journalier|floatformat:0 }} <small>FCFA / {% translate "nuit" %}</small></span>
                     {% elif logement.account_type == 'individu' and logement.prix %}
                         <span class="dl-price">{{ logement.prix|floatformat:0 }} <small>FCFA</small></span>
                     {% elif logement.account_type == 'hotel' %}
-                        <span class="dl-price">{% translate "Tarif par nuit non renseigné" %}</span>
+                        <span class="dl-price dl-price--none">{% translate "Tarif par nuit non renseigné" %}</span>
                     {% endif %}
                 </div>
 
                 <!-- Tarification détaillée -->
                 {% if logement.account_type == 'hotel' or logement.account_type == 'residence' %}
                     <div class="dl-card__pricing">
-                        <h4 class="dl-pricing__title">{% translate "Tarification" %}</h4>
-                        {% if logement.account_type == 'hotel' and logement.prix_journalier %}<p>💰 {% translate "Par nuit" %}: <strong>{{ logement.prix_journalier|floatformat:0 }} FCFA</strong></p>{% endif %}
-                        {% if logement.account_type == 'residence' and logement.prix_par_nuit %}<p>💰 {% translate "Par jour" %}: <strong>{{ logement.prix_par_nuit|floatformat:0 }} FCFA</strong></p>{% elif logement.account_type == 'residence' and logement.prix_par_mois %}<p>💰 {% translate "Par mois" %}: <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
-                        {% if logement.frais_nettoyage %}<p>🧹 {% translate "Nettoyage" %}: <strong>{{ logement.frais_nettoyage|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        <h2 class="dl-pricing__title">{% translate "Tarification" %}</h2>
+                        {% if logement.account_type == 'hotel' and logement.prix_journalier %}<p>💰 {% translate "Par nuit" %} : <strong>{{ logement.prix_journalier|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.account_type == 'residence' and logement.prix_par_nuit %}<p>💰 {% translate "Par jour" %} : <strong>{{ logement.prix_par_nuit|floatformat:0 }} FCFA</strong></p>{% elif logement.account_type == 'residence' and logement.prix_par_mois %}<p>💰 {% translate "Par mois" %} : <strong>{{ logement.prix_par_mois|floatformat:0 }} FCFA</strong></p>{% endif %}
+                        {% if logement.frais_nettoyage %}<p>🧹 {% translate "Nettoyage" %} : <strong>{{ logement.frais_nettoyage|floatformat:0 }} FCFA</strong></p>{% endif %}
                     </div>
                 {% endif %}
 
-                <!-- Infos rapides -->
+                <!-- Informations rapides -->
                 <div class="dl-card__meta">
-                    <h4 class="dl-meta__title">📋 {% translate "Informations" %}</h4>
+                    <h2 class="dl-meta__title">📋 {% translate "Informations" %}</h2>
                     {% if logement.account_type == 'hotel' %}
-                        <p>🏨 <strong>Hôtel</strong></p>
-                        {% if logement.min_sejour %}<p>🌙 {% translate "Séjour minimum" %}: {{ logement.min_sejour }}</p>{% endif %}
+                        <p>🏨 <strong>{% translate "Hôtel" %}</strong></p>
+                        {% if logement.min_sejour %}<p>🌙 {% translate "Séjour minimum" %} : {{ logement.min_sejour }}</p>{% endif %}
                     {% elif logement.account_type == 'residence' %}
-                        <p>🏢 <strong>Résidence</strong></p>
-                        {% if logement.duree_min_bail %}<p>📅 {% translate "Durée minimale" %}: {{ logement.duree_min_bail }} {% translate "jours" %}</p>{% endif %}
-                        {% if logement.type_charge %}<p>💡 {% translate "Charges" %}: {{ logement.get_type_charge_display }}</p>{% endif %}
+                        <p>🏢 <strong>{% translate "Résidence" %}</strong></p>
+                        {% if logement.duree_min_bail %}<p>📅 {% translate "Durée minimale" %} : {{ logement.duree_min_bail }} {% translate "jours" %}</p>{% endif %}
+                        {% if logement.type_charge %}<p>💡 {% translate "Charges" %} : {{ logement.get_type_charge_display }}</p>{% endif %}
                     {% else %}
                         <p>🏠 <strong>{% translate "Particulier" %}</strong></p>
                     {% endif %}
                     {% if logement.meuble %}<p>🛋️ {% translate "Meublé" %}</p>{% else %}<p>🏚️ {% translate "Non meublé" %}</p>{% endif %}
-                    {% if logement.disponible_depuis %}<p>✅ {% translate "Disponible à partir du" %}: {{ logement.disponible_depuis|date:"d/m/Y" }}</p>{% endif %}
+                    {% if logement.disponible_depuis %}<p>✅ {% translate "Disponible à partir du" %} : {{ logement.disponible_depuis|date:"d/m/Y" }}</p>{% endif %}
                 </div>
 
-                <!-- CTA Principal -->
-                {% if logement.account_type in 'hotel,residence' %}
+                <!-- Action principale -->
+                {% if logement.account_type == 'hotel' or logement.account_type == 'residence' %}
                     <a href="{% url 'logement:reserver_logement' logement.id %}" class="dl-btn dl-btn--primary">
-                        🔗 {% translate "Réserver maintenant" %}
+                        <span aria-hidden="true">🔗</span> {% translate "Réserver maintenant" %}
                     </a>
                 {% else %}
-                    <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; color: #0369a1;">
-                        <p style="margin: 0; font-size: 14px;">ℹ️ <strong>{% translate "Les annonces de particuliers ne sont pas réservables en ligne." %}</strong><br>{% translate "Veuillez contacter directement le propriétaire pour plus d'informations." %}</p>
+                    <div class="dl-notice">
+                        <p><span aria-hidden="true">ℹ️</span> <strong>{% translate "Les annonces de particuliers ne sont pas réservables en ligne." %}</strong><br>{% translate "Veuillez contacter directement le propriétaire pour plus d'informations." %}</p>
                     </div>
                 {% endif %}
 
-                <!-- Bouton d'abonnement -->
+                <!-- Abonnement -->
                 {% if user.is_authenticated and user != logement.proprietaire %}
-                    <button class="dl-btn dl-btn--subscribe" id="subscribeBtn" onclick="toggleSubscription({{ logement.proprietaire.id }})">
+                    <button type="button" class="dl-btn dl-btn--subscribe" id="subscribeBtn" data-creator-id="{{ logement.proprietaire.id }}" aria-pressed="false">
                         <span id="subscribeBtnText">📢 {% translate "S'abonner" %}</span>
                     </button>
                 {% endif %}
 
                 <!-- Actions du propriétaire -->
                 {% if user.is_authenticated and user == logement.proprietaire %}
-                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                        <a href="{% url 'logement:modifier_logement' logement.id %}" class="dl-btn dl-btn--primary" style="flex: 1; background: #10b981;">
-                            ✏️ {% translate "Modifier" %}
+                    <div class="dl-owner-actions">
+                        <a href="{% url 'logement:modifier_logement' logement.id %}" class="dl-btn dl-btn--primary">
+                            <span aria-hidden="true">✏️</span> {% translate "Modifier" %}
                         </a>
-                        <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" style="flex: 1; margin: 0;">
+                        <form method="POST" action="{% url 'logement:supprimer_logement' logement.id %}" data-confirm="{{ confirm_delete }}">
                             {% csrf_token %}
-                            <button type="submit" class="dl-btn dl-btn--primary" style="width: 100%; background: #ef4444;" onclick="return confirm('{% translate 'Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action est irréversible.' %}')">
-                                🗑️ {% translate "Supprimer" %}
+                            <button type="submit" class="dl-btn dl-btn--danger">
+                                <span aria-hidden="true">🗑️</span> {% translate "Supprimer" %}
                             </button>
                         </form>
                     </div>
                 {% endif %}
 
-                <!-- Actions rapides -->
+                <!-- Contact -->
                 <div class="dl-card__actions">
-                    <a href="tel:{{ logement.proprietaire.profile.telephone }}" class="dl-action-btn" title="{% translate 'Appeler' %}">
-                        ☎️ {% translate "Appeler" %}
-                    </a>
+                    {% if logement.proprietaire.profile.telephone %}
+                        <a href="tel:{{ logement.proprietaire.profile.telephone }}" class="dl-action-btn" title="{% translate 'Appeler' %}">
+                            <span aria-hidden="true">☎️</span> {% translate "Appeler" %}
+                        </a>
+                    {% endif %}
                     {% if user.is_authenticated %}
                         <a href="{% url 'messagerie:envoyer_message_annonce' 'logement' logement.id %}" class="dl-action-btn" title="{% translate 'Envoyer un message dans l’application' %}">
-                            💬 {% translate "Message" %}
+                            <span aria-hidden="true">💬</span> {% translate "Message" %}
                         </a>
                     {% else %}
-                        <a href="/accounts/login/?next={% url 'logement:detail_logement' logement.id %}" class="dl-action-btn" title="{% translate 'Se connecter pour envoyer un message' %}">
-                            💬 {% translate "Message" %}
+                        <a href="{% url 'accounts:login' %}?next={% url 'logement:detail_logement' logement.id %}" class="dl-action-btn" title="{% translate 'Se connecter pour envoyer un message' %}">
+                            <span aria-hidden="true">💬</span> {% translate "Message" %}
                         </a>
                     {% endif %}
                 </div>
 
                 <!-- Propriétaire -->
                 <div class="dl-card__owner">
-                    <div class="dl-owner__avatar">
+                    <div class="dl-owner__avatar" aria-hidden="true">
                         {{ logement.proprietaire.first_name|slice:":1"|upper }}{{ logement.proprietaire.last_name|slice:":1"|upper }}
                     </div>
                     <div>
@@ -298,7 +306,7 @@
                     </div>
                 </div>
 
-                <!-- Stats -->
+                <!-- Statistiques -->
                 {% if reservations_count %}
                     <div class="dl-card__stat">
                         {% blocktranslate count counter=reservations_count %}{{ counter }} réservation confirmée{% plural %}{{ counter }} réservations confirmées{% endblocktranslate %}
@@ -306,658 +314,337 @@
                 {% endif %}
 
             </div>
-        </div>
+        </aside>
 
     </div>
 </div>
 
 <style>
-/* ── Tokens ── */
-:root {
-    --ci-orange:     #F77F00;
-    --ci-orange-dk:  #D96B00;
-    --ci-orange-lt:  #FFF3E0;
-    --ci-green:      #009A44;
-    --ci-green-dk:   #007A35;
-    --ci-green-lt:   #E6F5ED;
-    --dl-text:       #111827;
-    --dl-muted:      #6B7280;
-    --dl-border:     #E5E7EB;
-    --dl-surface:    #F9FAFB;
-    --dl-white:      #FFFFFF;
-    --dl-radius:     14px;
-    --dl-shadow:     0 2px 8px rgba(0,0,0,.07);
-    --dl-shadow-lg:  0 8px 24px rgba(0,0,0,.12);
-    --dl-transition: .2s ease;
-}
+/* ══════════════════════════════════════════════
+   Détail d'un logement — Ivoire Connect
+   Palette Côte d'Ivoire : orange · blanc · vert
+   Plan : 1 Base · 2 Galerie · 3 Sections · 4 Autres chambres · 5 Carte latérale · 6 Responsive
+══════════════════════════════════════════════ */
 
-.dl-review-heading,
-.dl-review__top,
-.dl-review-fields,
-.dl-review__actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-}
-.dl-review-summary,
-.dl-review__ratings,
-.dl-review__top span,
-.dl-review-note {
-    color: var(--dl-muted);
-    font-size: .9rem;
-}
-.dl-owner-rating {
-    color: var(--ci-orange-dk);
-    font-weight: 700;
-}
-.dl-review-form,
-.dl-review {
-    border: 1px solid var(--dl-border);
-    border-radius: 10px;
-    padding: 16px;
-    margin-top: 16px;
-    background: var(--dl-white);
-}
-.dl-review-form h3 { margin: 0 0 12px; }
-.dl-review-fields { align-items: stretch; margin-bottom: 12px; }
-.dl-review-fields label { flex: 1; font-weight: 600; font-size: .9rem; }
-.dl-review-form textarea,
-.dl-review__actions textarea,
-.dl-review__actions input {
-    width: 100%;
-    box-sizing: border-box;
-    margin: 8px 0;
-    padding: 9px;
-    border: 1px solid var(--dl-border);
-    border-radius: 6px;
-}
-.dl-review__reply {
-    border-left: 3px solid var(--ci-green);
-    padding-left: 12px;
-    margin-top: 12px;
-}
-.dl-review__actions { justify-content: flex-start; align-items: flex-start; flex-wrap: wrap; }
-.dl-review__actions form { flex: 1 1 260px; }
-.dl-link-btn { border: 0; background: none; color: var(--ci-green-dk); cursor: pointer; font-weight: 700; padding: 0; }
-@media (max-width: 600px) {
-    .dl-review-heading, .dl-review-fields { display: block; }
-    .dl-owner-rating { display: block; margin-top: 8px; }
-    .dl-review-fields label { display: block; margin-bottom: 8px; }
-}
-
-/* ── Layout ── */
+/* ── 1. Base ── */
 .dl-wrapper {
+    --ci-orange: #F77F00;
+    --ci-orange-hover: #FF9122;
+    --ci-orange-soft: #FFF1E0;
+    --ci-orange-text: #8A4300;
+    --ci-green: #009E60;
+    --ci-green-dk: #0B5D3B;
+    --ci-green-soft: #E6F4EC;
+    --ci-danger: #B3261E;
+    --ci-danger-soft: #FDF1F1;
+    --dl-text: #10231A;
+    --dl-muted: #5B6B62;
+    --dl-border: #DCE5DF;
+    --dl-surface: #F3F7F4;
+    --dl-white: #FFFFFF;
+    --dl-radius: 16px;
+
+    padding: 2rem 1.5rem 3.5rem;
     background: var(--dl-surface);
-    min-height: 100vh;
-    padding: 32px 24px 56px;
+    color: var(--dl-text);
+    font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
 }
+
+.dl-wrapper *, .dl-wrapper *::before, .dl-wrapper *::after { box-sizing: border-box; }
+.dl-wrapper :where(h1, h2, h3, p) { margin: 0; }
+.dl-wrapper :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
 .dl-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 2rem;
+    align-items: start;
     max-width: 1100px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 32px;
-    align-items: start;
 }
 
-/* ── Galerie ── */
+/* ── 2. Galerie ── */
 .dl-gallery__main {
     position: relative;
-    border-radius: var(--dl-radius);
+    aspect-ratio: 16 / 9;
     overflow: hidden;
+    border-radius: var(--dl-radius);
     background: var(--dl-border);
-    aspect-ratio: 16/9;
 }
-.dl-gallery__main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform .4s ease;
-}
-.dl-gallery__main:hover img { transform: scale(1.02); }
+.dl-gallery__main img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
 .dl-gallery__badge {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    background: rgba(17,24,39,.6);
-    backdrop-filter: blur(8px);
-    color: #fff;
-    font-size: .72rem;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 100px;
+    position: absolute; right: 12px; bottom: 12px;
+    padding: 4px 12px; border-radius: 100px;
+    background: rgba(8, 48, 31, .7); color: #fff;
+    font-size: 13px; font-weight: 600;
 }
-.dl-gallery__thumbs {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-}
+
+.dl-gallery__thumbs { display: flex; gap: 8px; margin-top: 10px; padding-bottom: 4px; overflow-x: auto; }
+
 .dl-gallery__thumb {
-    width: 80px;
-    height: 56px;
-    min-width: 80px;
-    object-fit: cover;
-    border-radius: 8px;
-    cursor: pointer;
-    opacity: .6;
-    border: 2px solid transparent;
-    transition: all var(--dl-transition);
+    flex-shrink: 0; width: 80px; height: 56px; padding: 0;
+    border: 2px solid transparent; border-radius: 10px; overflow: hidden;
+    background: none; opacity: .65; cursor: pointer;
+    transition: opacity .15s ease, border-color .15s ease;
 }
-.dl-gallery__thumb:hover { opacity: .9; }
-.dl-gallery__thumb--active {
-    opacity: 1;
-    border-color: var(--ci-orange);
-}
+.dl-gallery__thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.dl-gallery__thumb:hover { opacity: .95; }
+.dl-gallery__thumb--active { opacity: 1; border-color: var(--ci-orange); }
+
 .dl-gallery__empty {
-    height: 260px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--dl-surface);
-    border: 2px dashed var(--dl-border);
-    border-radius: var(--dl-radius);
-    color: var(--dl-muted);
-    font-size: .88rem;
+    display: flex; align-items: center; justify-content: center; height: 260px;
+    border: 2px dashed #BFD0C5; border-radius: var(--dl-radius);
+    background: var(--dl-white); color: var(--dl-muted);
 }
 
-/* ── Sections ── */
+/* ── 3. Sections ── */
 .dl-section {
-    background: var(--dl-white);
-    border: 1px solid var(--dl-border);
-    border-radius: var(--dl-radius);
-    padding: 22px 24px;
-    margin-top: 16px;
-    box-shadow: var(--dl-shadow);
+    margin-top: 1rem; padding: 1.4rem 1.5rem;
+    border: 1px solid var(--dl-border); border-radius: var(--dl-radius); background: var(--dl-white);
 }
+
 .dl-section__title {
-    font-size: .82rem;
-    font-weight: 700;
-    color: var(--dl-muted);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    margin: 0 0 16px;
-    padding-left: 10px;
-    border-left: 3px solid var(--ci-orange);
+    margin-bottom: 1rem; padding-left: 12px;
+    border-left: 4px solid var(--ci-orange);
+    font: 700 1.15rem/1.3 'Bricolage Grotesque', 'Figtree', sans-serif;
+    color: var(--ci-green-dk);
 }
 
-/* Tags */
-.dl-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-.dl-tag {
-    font-size: .72rem;
-    font-weight: 700;
-    padding: 3px 12px;
-    border-radius: 100px;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-}
-.dl-tag--type { background: var(--ci-orange-lt); color: var(--ci-orange-dk); border: 1px solid #fcd9a0; }
-.dl-tag--cat  { background: var(--ci-green-lt);  color: var(--ci-green-dk);  border: 1px solid #a7d7b8; }
+.dl-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.dl-tag { padding: 3px 12px; border: 1px solid; border-radius: 100px; font-size: 13px; font-weight: 600; }
+.dl-tag--type { background: var(--ci-orange-soft); color: var(--ci-orange-text); border-color: #F6D9B0; }
+.dl-tag--cat { background: var(--ci-green-soft); color: var(--ci-green-dk); border-color: #BFE0CE; }
 
-.dl-title {
-    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
-    font-weight: 800;
-    color: var(--dl-text);
-    margin: 0 0 10px;
-    letter-spacing: -.02em;
-}
-.dl-location {
-    font-size: .88rem;
-    color: var(--dl-muted);
-    font-weight: 600;
-    margin: 0;
-}
+.dl-title { margin-bottom: 8px; font: 700 clamp(1.4rem, 2.8vw, 1.9rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif; letter-spacing: -.01em; }
+.dl-location { color: var(--dl-muted); font-weight: 500; }
 
-/* Caractéristiques */
-.dl-chars {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 12px;
-}
+.dl-desc { line-height: 1.7; }
+.dl-desc p + p { margin-top: 0.75rem; }
+
+.dl-videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.dl-video { overflow: hidden; border: 1px solid var(--dl-border); border-radius: 12px; background: var(--dl-surface); }
+.dl-video video { display: block; width: 100%; height: 200px; background: #08301F; object-fit: cover; }
+.dl-video__info { padding: 0.75rem 0.9rem; }
+.dl-video__info h3 { font-size: 15px; font-weight: 600; }
+.dl-video__info p { margin-top: 2px; color: var(--dl-muted); font-size: 14px; }
+
+.dl-chars { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
 .dl-char {
-    background: var(--dl-surface);
-    border: 1px solid var(--dl-border);
-    border-radius: 10px;
-    padding: 14px 12px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: flex; flex-direction: column; gap: 4px; padding: 0.9rem 0.75rem;
+    border: 1px solid var(--dl-border); border-radius: 12px; background: var(--ci-green-soft); text-align: center;
 }
-.dl-char__val {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: var(--ci-orange);
-    line-height: 1;
-}
-.dl-char__label {
-    font-size: .72rem;
-    color: var(--dl-muted);
-    font-weight: 600;
+.dl-char__val { font: 700 1.5rem/1 'Bricolage Grotesque', 'Figtree', sans-serif; color: var(--ci-green-dk); }
+.dl-char__label { color: var(--dl-muted); font-size: 13px; }
+
+.dl-amenities { display: flex; flex-wrap: wrap; gap: 8px; }
+.dl-amenity {
+    padding: 5px 14px; border: 1px solid #BFE0CE; border-radius: 100px;
+    background: var(--ci-green-soft); color: var(--ci-green-dk); font-size: 14px; font-weight: 500;
 }
 
-/* Description */
-.dl-desc {
-    font-size: .9rem;
-    color: var(--dl-text);
-    line-height: 1.7;
-}
+.dl-conditions { display: flex; flex-direction: column; gap: 8px; margin-top: 0.75rem; }
+.dl-conditions p { padding-left: 10px; border-left: 3px solid var(--ci-orange); }
 
+/* ── 4. Autres chambres de l'établissement ── */
 .dl-related-categories {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr));
-    gap: 12px;
-    margin-top: 20px;
-    padding: 18px;
-    border: 1px solid #fde2bd;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #fffaf3 0%, #fff 70%);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr)); gap: 12px;
+    margin-top: 1.25rem; padding: 1.1rem;
+    border: 1px solid #F6D9B0; border-radius: 14px; background: var(--ci-orange-soft);
 }
 
-.dl-related-categories__heading {
-    display: flex;
-    grid-column: 1 / -1;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 2px;
-}
-
+.dl-related-categories__heading { display: flex; grid-column: 1 / -1; align-items: center; gap: 12px; margin-bottom: 2px; }
 .dl-related-categories__icon {
-    display: grid;
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    place-items: center;
-    border-radius: 12px;
-    background: #fff0d9;
-    font-size: 1.25rem;
+    display: grid; flex: 0 0 42px; place-items: center; width: 42px; height: 42px;
+    border-radius: 12px; background: #fff; font-size: 1.25rem;
 }
-
-.dl-related-categories__heading h3 {
-    margin: 0;
-    color: #243247;
-    font-size: 1rem;
-    font-weight: 800;
-}
-
-.dl-related-categories__heading p {
-    margin: 3px 0 0;
-    color: #697586;
-    font-size: .82rem;
-}
-
+.dl-related-categories__heading h3 { font: 700 1.05rem 'Bricolage Grotesque', 'Figtree', sans-serif; }
+.dl-related-categories__heading p { margin-top: 3px; color: var(--dl-muted); font-size: 14px; }
 .dl-related-categories__count {
-    display: grid;
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
-    place-items: center;
-    margin-left: auto;
-    border-radius: 50%;
-    background: #ffedd5;
-    color: #b45309;
-    font-size: .8rem;
-    font-weight: 800;
+    display: grid; flex: 0 0 30px; place-items: center; width: 30px; height: 30px; margin-left: auto;
+    border-radius: 50%; background: var(--ci-orange); color: var(--dl-text); font-size: 13px; font-weight: 700;
 }
 
 .dl-related-category {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 15px;
-    border: 1px solid #f0e7dc;
-    border-radius: 11px;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(67, 45, 20, .04);
-    color: inherit;
-    text-decoration: none;
-    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; padding: 0.9rem;
+    border: 1px solid #F0E3D2; border-radius: 12px; background: #fff;
+    color: inherit; text-decoration: none;
+    transition: border-color .15s ease, transform .15s ease;
 }
-
-.dl-related-category:hover {
-    transform: translateY(-2px);
-    border-color: #f6b968;
-    box-shadow: 0 8px 18px rgba(67, 45, 20, .1);
-    text-decoration: none;
-}
-
-.dl-related-category:focus-visible {
-    outline: 3px solid #f6b968;
-    outline-offset: 2px;
-}
+.dl-related-category:hover { transform: translateY(-2px); border-color: var(--ci-orange); }
 
 .dl-related-category__type {
-    padding: 3px 8px;
-    border-radius: 99px;
-    background: #fff1dc;
-    color: #a45108;
-    font-size: .68rem;
-    font-weight: 700;
+    padding: 2px 10px; border-radius: 99px; background: var(--ci-orange-soft);
+    color: var(--ci-orange-text); font-size: 13px; font-weight: 600;
 }
-
-.dl-related-category__title {
-    color: #243247;
-    font-size: .95rem;
-    font-weight: 800;
-    line-height: 1.35;
-}
-
-.dl-related-category__price {
-    color: #596579;
-    font-size: .8rem;
-}
-
+.dl-related-category__title { font-weight: 700; line-height: 1.35; }
+.dl-related-category__price { color: var(--dl-muted); font-size: 14px; }
 .dl-related-category__action {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
-    padding-top: 9px;
-    border-top: 1px solid #f1eee9;
-    color: #b45309;
-    font-size: .78rem;
-    font-weight: 800;
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
+    margin-top: 4px; padding-top: 9px; border-top: 1px solid #F1EEE9;
+    color: var(--ci-green-dk); font-size: 14px; font-weight: 600;
 }
+.dl-related-category__action span { transition: transform .15s ease; }
+.dl-related-category:hover .dl-related-category__action span { transform: translateX(3px); }
 
-.dl-related-category__action span {
-    font-size: 1rem;
-    transition: transform .18s ease;
-}
-
-.dl-related-category:hover .dl-related-category__action span {
-    transform: translateX(3px);
-}
-
-/* Équipements */
-.dl-amenities { display: flex; flex-wrap: wrap; gap: 8px; }
-.dl-amenity {
-    background: var(--ci-orange-lt);
-    color: var(--ci-orange-dk);
-    border: 1px solid #fcd9a0;
-    font-size: .78rem;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 100px;
-}
-
-/* ── Sidebar ── */
+/* ── 5. Carte latérale ── */
 .dl-card {
-    background: var(--dl-white);
-    border: 1px solid var(--dl-border);
-    border-top: 4px solid var(--ci-orange);
-    border-radius: var(--dl-radius);
-    padding: 24px;
-    box-shadow: var(--dl-shadow-lg);
-    position: sticky;
-    top: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    position: sticky; top: 24px;
+    display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem;
+    border: 1px solid var(--dl-border); border-top: 6px solid var(--ci-orange);
+    border-radius: var(--dl-radius); background: var(--dl-white);
 }
-.dl-card__price {
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--dl-border);
-}
-.dl-price {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--ci-green);
-    letter-spacing: -.03em;
-    line-height: 1;
-}
-.dl-price small {
-    font-size: .8rem;
-    font-weight: 500;
-    color: var(--dl-muted);
-}
-.dl-card__meta {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.dl-card__meta p {
-    font-size: .8rem;
-    color: var(--dl-muted);
-    margin: 0;
-    padding-left: 10px;
-    border-left: 2px solid var(--dl-border);
-}
+
+.dl-card__price { padding-bottom: 1rem; border-bottom: 1px solid var(--dl-border); }
+.dl-price { font: 700 1.9rem/1.1 'Bricolage Grotesque', 'Figtree', sans-serif; letter-spacing: -.02em; color: var(--ci-green-dk); }
+.dl-price small { font: 500 14px 'Figtree', sans-serif; color: var(--dl-muted); }
+.dl-price--none { font-size: 1.05rem; color: var(--dl-muted); }
+
+.dl-card__pricing { padding-bottom: 1rem; border-bottom: 1px solid var(--dl-border); }
+.dl-pricing__title, .dl-meta__title { margin-bottom: 8px; font-size: 14px; font-weight: 700; color: var(--ci-green-dk); }
+.dl-card__pricing p { margin: 4px 0; color: var(--dl-muted); font-size: 14px; }
+.dl-card__pricing strong { color: var(--dl-text); }
+
+.dl-card__meta { display: flex; flex-direction: column; gap: 6px; }
+.dl-card__meta p { padding-left: 10px; border-left: 2px solid var(--dl-border); color: var(--dl-muted); font-size: 14px; }
+
 .dl-btn {
-    display: block;
-    background: var(--ci-orange);
-    color: #fff;
-    text-align: center;
-    text-decoration: none;
-    padding: 13px 20px;
-    border-radius: 8px;
-    font-size: .9rem;
-    font-weight: 700;
-    transition: all var(--dl-transition);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; min-height: 48px; padding: 0.7rem 1.25rem;
+    border: 0; border-radius: 12px;
+    font: 600 15px 'Figtree', sans-serif; text-align: center; text-decoration: none; cursor: pointer;
+    transition: background-color .15s ease;
 }
-.dl-btn:hover {
-    background: var(--ci-orange-dk);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(247,127,0,.35);
-}
-.dl-btn--primary { background: var(--ci-orange); }
-.dl-btn--primary:hover { background: var(--ci-orange-dk); }
+.dl-btn--primary { background: var(--ci-orange); color: var(--dl-text); }
+.dl-btn--primary:hover { background: var(--ci-orange-hover); }
 
-/* Bouton d'abonnement */
-.dl-btn--subscribe {
-    background: var(--ci-green);
-    color: #fff;
-    text-decoration: none;
-    padding: 13px 20px;
-    border-radius: 8px;
-    font-size: .9rem;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    transition: all var(--dl-transition);
-    width: 100%;
-}
-.dl-btn--subscribe:hover {
-    background: var(--ci-green-dk);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0,154,68,.35);
-}
-.dl-btn--subscribe.subscribed {
-    background: var(--dl-muted);
-}
-.dl-btn--subscribe.subscribed:hover {
-    background: #555;
-}
+.dl-btn--subscribe { background: var(--ci-green-dk); color: #fff; }
+.dl-btn--subscribe:hover { background: var(--ci-green); }
+.dl-btn--subscribe.subscribed { background: var(--ci-green-soft); color: var(--ci-green-dk); border: 1.5px solid #BFE0CE; }
 
-/* Actions rapides */
-.dl-card__actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
+.dl-btn--danger { background: transparent; color: var(--ci-danger); border: 1.5px solid #F0CACA; }
+.dl-btn--danger:hover { background: var(--ci-danger-soft); border-color: var(--ci-danger); }
+
+.dl-notice { padding: 0.8rem 1rem; border: 1px solid #F6D9B0; border-radius: 12px; background: var(--ci-orange-soft); color: #6F3A00; font-size: 14px; line-height: 1.5; }
+
+.dl-owner-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dl-owner-actions form { margin: 0; }
+
+.dl-card__actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
 .dl-action-btn {
-    background: var(--dl-surface);
-    color: var(--dl-text);
-    border: 1px solid var(--dl-border);
-    text-align: center;
-    text-decoration: none;
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: .8rem;
-    font-weight: 600;
-    transition: all var(--dl-transition);
-    display: block;
+    display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0.5rem 0.75rem;
+    border: 1.5px solid #BFE0CE; border-radius: 12px; color: var(--ci-green-dk);
+    font-size: 15px; font-weight: 600; text-decoration: none;
+    transition: background-color .15s ease, border-color .15s ease;
 }
-.dl-action-btn:hover {
-    background: var(--ci-orange-lt);
-    border-color: var(--ci-orange);
-    color: var(--ci-orange-dk);
-}
+.dl-action-btn:hover { background: var(--ci-green-soft); border-color: var(--ci-green); }
 
-/* Tarification détaillée */
-.dl-card__pricing {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--dl-border);
-}
-.dl-pricing__title {
-    font-size: .72rem;
-    font-weight: 700;
-    color: var(--dl-muted);
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    margin: 0 0 8px;
-}
-.dl-card__pricing p {
-    font-size: .78rem;
-    color: var(--dl-muted);
-    margin: 4px 0;
-}
-.dl-card__pricing strong {
-    color: var(--ci-orange);
-    font-weight: 700;
-}
-
-/* Meta title */
-.dl-meta__title {
-    font-size: .72rem;
-    font-weight: 700;
-    color: var(--dl-muted);
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    margin: 0 0 8px;
-}
-
-/* Conditions */
-.dl-conditions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.dl-conditions p {
-    font-size: .8rem;
-    color: var(--dl-text);
-    margin: 0;
-    padding-left: 10px;
-    border-left: 2px solid var(--ci-orange);
-}
-.dl-card__owner {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-top: 16px;
-    border-top: 1px solid var(--dl-border);
-}
+.dl-card__owner { display: flex; align-items: center; gap: 12px; padding-top: 1rem; border-top: 1px solid var(--dl-border); }
 .dl-owner__avatar {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    border-radius: 50%;
-    background: var(--ci-orange-lt);
-    border: 2px solid var(--ci-orange);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .85rem;
-    font-weight: 800;
-    color: var(--ci-orange);
+    display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 44px; height: 44px;
+    border-radius: 50%; background: var(--ci-green); color: #fff; font: 700 1rem 'Bricolage Grotesque', sans-serif;
 }
-.dl-owner__name  { font-size: .88rem; font-weight: 700; color: var(--dl-text); margin: 0 0 2px; }
-.dl-owner__label { font-size: .72rem; color: var(--dl-muted); margin: 0; }
+.dl-owner__name { font-weight: 600; }
+.dl-owner__label { color: var(--dl-muted); font-size: 14px; }
+
 .dl-card__stat {
-    background: var(--ci-green-lt);
-    color: var(--ci-green-dk);
-    border: 1px solid #a7d7b8;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: .78rem;
-    font-weight: 600;
-    text-align: center;
+    padding: 0.55rem 0.75rem; border: 1px solid #BFE0CE; border-radius: 12px;
+    background: var(--ci-green-soft); color: var(--ci-green-dk); font-size: 14px; font-weight: 600; text-align: center;
 }
 
-/* ── Responsive ── */
+/* ── 6. Responsive ── */
 @media (max-width: 900px) {
     .dl-container { grid-template-columns: 1fr; }
     .dl-card { position: static; }
 }
+
 @media (max-width: 560px) {
-    .dl-wrapper { padding: 16px 16px 40px; }
+    .dl-wrapper { padding: 1rem 0.75rem 2.5rem; }
+    .dl-section { padding: 1.1rem; }
     .dl-chars { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dl-wrapper * { transition: none !important; }
+    .dl-related-category:hover { transform: none; }
 }
 </style>
 
+{# Textes utilisés par le script (traduits côté serveur, échappés pour JavaScript) #}
+{% translate "S'abonner" as subscribe_label %}
+{% translate "Abonné" as subscribed_label %}
+{% translate "Impossible de modifier l’abonnement." as subscription_error %}
+
 <script>
-function switchPhoto(thumb, url) {
-    document.getElementById('mainImg').src = url;
-    document.querySelectorAll('.dl-gallery__thumb').forEach(t => t.classList.remove('dl-gallery__thumb--active'));
-    thumb.classList.add('dl-gallery__thumb--active');
-}
+(function () {
+    // ── Galerie : un clic (ou Entrée) sur une miniature affiche la photo ──
+    const mainImg = document.getElementById('mainImg');
+    document.querySelectorAll('.dl-gallery__thumb').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+            mainImg.src = thumb.dataset.photoUrl;
+            mainImg.alt = thumb.dataset.photoAlt;
+            document.querySelectorAll('.dl-gallery__thumb').forEach(t => t.classList.remove('dl-gallery__thumb--active'));
+            thumb.classList.add('dl-gallery__thumb--active');
+        });
+    });
 
-// Gestion de l'abonnement
-function toggleSubscription(creatorId) {
-    const btn = document.getElementById('subscribeBtn');
-    const txtSpan = document.getElementById('subscribeBtnText');
-    const postOptions = {
-        method: 'POST',
-        headers: {'X-CSRFToken': getCookie('csrftoken')},
-        credentials: 'same-origin'
+    // ── Confirmation avant une action sensible : <form data-confirm="message"> ──
+    document.addEventListener('submit', event => {
+        const message = event.target.dataset && event.target.dataset.confirm;
+        if (message && !window.confirm(message)) event.preventDefault();
+    });
+
+    // ── Abonnement au propriétaire (le bouton n'existe que pour un visiteur connecté) ──
+    const subscribeButton = document.getElementById('subscribeBtn');
+    if (!subscribeButton) return;
+
+    const label = document.getElementById('subscribeBtnText');
+    const creatorId = subscribeButton.dataset.creatorId;
+    const TEXT = {
+        subscribe: '📢 {{ subscribe_label|escapejs }}',
+        subscribed: '✅ {{ subscribed_label|escapejs }}',
+        error: '{{ subscription_error|escapejs }}'
     };
-    
-    // Vérifier si déjà abonné
-    fetch(`/accounts/is-subscribed/${creatorId}/`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.is_subscribed) {
-                // Désabonner
-                fetch(`/accounts/unsubscribe/${creatorId}/`, postOptions)
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            btn.classList.remove('subscribed');
-                            txtSpan.textContent = '📢 S\'abonner';
-                        } else {
-                            throw new Error(result.message || 'Impossible de modifier l’abonnement');
-                        }
-                    });
-            } else {
-                // S'abonner
-                fetch(`/accounts/subscribe/${creatorId}/`, postOptions)
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            btn.classList.add('subscribed');
-                            txtSpan.textContent = '✅ Abonné';
-                        } else {
-                            throw new Error(result.message || 'Impossible de modifier l’abonnement');
-                        }
-                    });
-            }
-        })
-        .catch(error => {
-            console.error('Erreur abonnement:', error);
-            alert(error.message || 'Impossible de modifier l’abonnement.');
-        });
-}
 
-// Initialiser le statut du bouton au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    const creatorId = {{ logement.proprietaire.id }};
-    fetch(`/accounts/is-subscribed/${creatorId}/`)
+    function csrfToken() {
+        if (typeof getCookie === 'function') return getCookie('csrftoken');
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+
+    function render(isSubscribed) {
+        subscribeButton.classList.toggle('subscribed', isSubscribed);
+        subscribeButton.setAttribute('aria-pressed', String(isSubscribed));
+        label.textContent = isSubscribed ? TEXT.subscribed : TEXT.subscribe;
+    }
+
+    // État initial
+    fetch(`/accounts/is-subscribed/${creatorId}/`, {credentials: 'same-origin'})
         .then(response => response.json())
-        .then(data => {
-            const btn = document.getElementById('subscribeBtn');
-            const txtSpan = document.getElementById('subscribeBtnText');
-            if (btn) {
-                if (data.is_subscribed) {
-                    btn.classList.add('subscribed');
-                    txtSpan.textContent = '✅ Abonné';
-                }
-            }
-        });
-});
+        .then(data => render(Boolean(data.is_subscribed)))
+        .catch(() => {});
+
+    // Un clic : on lit l'état courant, puis on s'abonne ou on se désabonne
+    subscribeButton.addEventListener('click', () => {
+        const postOptions = {method: 'POST', headers: {'X-CSRFToken': csrfToken()}, credentials: 'same-origin'};
+
+        fetch(`/accounts/is-subscribed/${creatorId}/`, {credentials: 'same-origin'})
+            .then(response => response.json())
+            .then(data => {
+                const action = data.is_subscribed ? 'unsubscribe' : 'subscribe';
+                return fetch(`/accounts/${action}/${creatorId}/`, postOptions)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (!result.success) throw new Error(result.message || TEXT.error);
+                        render(action === 'subscribe');
+                    });
+            })
+            .catch(error => {
+                console.error('Erreur abonnement:', error);
+                alert(error.message || TEXT.error);
+            });
+    });
+})();
 </script>
 
 {% endblock %}

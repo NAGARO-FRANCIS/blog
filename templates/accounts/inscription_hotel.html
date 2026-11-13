@@ -1,23 +1,64 @@
+```html
 {% extends 'base.html' %}
 {% load i18n %}
 
 {% block title %}{% translate "S'inscrire comme Gestionnaire d'Hôtel" %} - Ivoire Connect{% endblock %}
 
 {% block content %}
-<div class="signup-wrapper">
-    <div class="signup-container">
-        <!-- Header -->
-        <div class="signup-header">
-            <div class="header-progress">
-                <div class="progress-step active" data-step="1">1</div>
-                <div class="progress-line" data-line="1"></div>
-                <div class="progress-step" data-step="2">2</div>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="hotel-signup">
+
+    <!-- EN-TÊTE -->
+    <header class="signup-header">
+
+        <div class="header-stripe"></div>
+
+        <div class="header-content">
+
+            <div class="header-icon">🏨</div>
+
+            <div class="header-text">
+                <span class="header-eyebrow">
+                    {% translate "Espace professionnel" %}
+                </span>
+
+                <h1>{% translate "Inscription Hôtel" %}</h1>
+
+                <p>
+                    {% translate "Créez votre espace hôtelier et développez votre visibilité sur Ivoire Connect." %}
+                </p>
             </div>
-            <h1>{% translate "Inscription Hôtel" %}</h1>
-            <p>🏨 {% translate "Gestionnaire d'Hôtel" %}</p>
+
         </div>
 
-        <!-- Error Messages -->
+        <!-- PROGRESSION -->
+        <div class="progress-container">
+
+            <div class="progress-item">
+                <div class="progress-step active" data-step="1">1</div>
+                <span>{% translate "Hôtel" %}</span>
+            </div>
+
+            <div class="progress-line" data-line="1"></div>
+
+            <div class="progress-item">
+                <div class="progress-step" data-step="2">2</div>
+                <span>{% translate "Représentant" %}</span>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTENU PRINCIPAL -->
+    <div class="signup-container">
+
+        <!-- ERREURS GÉNÉRALES -->
         {% if form.non_field_errors %}
             <div class="alert alert-danger">
                 {% for error in form.non_field_errors %}
@@ -26,603 +67,1826 @@
             </div>
         {% endif %}
 
-        <form method="post" class="signup-form" enctype="multipart/form-data" novalidate id="hotelSignupForm">
+
+        <form method="post"
+              class="signup-form"
+              enctype="multipart/form-data"
+              novalidate
+              id="hotelSignupForm">
+
             {% csrf_token %}
 
+
+            <!-- =====================================
+                 ÉTAPE 1 : INFORMATIONS DE L'HÔTEL
+            ====================================== -->
+
             <div class="signup-step visible" data-step="1">
-                <div class="step-content">
-                    <h2 class="step-heading">🏨 {% translate "Informations de l'Hôtel" %}</h2>
 
-                    <div class="form-group">
-                        <label for="{{ form.establishment_name.id_for_label }}">{{ form.establishment_name.label }}</label>
-                        {{ form.establishment_name }}
-                        {% if form.establishment_name.errors %}<span class="field-error">{{ form.establishment_name.errors.0 }}</span>{% endif %}
+                <div class="section-heading">
+
+                    <div class="section-icon">🏨</div>
+
+                    <div>
+                        <h2>{% translate "Informations de l'hôtel" %}</h2>
+
+                        <p>
+                            {% translate "Présentez votre établissement et renseignez ses informations principales." %}
+                        </p>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.siret_or_rccm.id_for_label }}">{{ form.siret_or_rccm.label }}</label>
-                            {{ form.siret_or_rccm }}
-                            {% if form.siret_or_rccm.errors %}<span class="field-error">{{ form.siret_or_rccm.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.number_of_rooms.id_for_label }}">{{ form.number_of_rooms.label }}</label>
-                            {{ form.number_of_rooms }}
-                            {% if form.number_of_rooms.errors %}<span class="field-error">{{ form.number_of_rooms.errors.0 }}</span>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.establishment_address.id_for_label }}">{{ form.establishment_address.label }}</label>
-                        {{ form.establishment_address }}
-                        {% if form.establishment_address.errors %}<span class="field-error">{{ form.establishment_address.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.establishment_city.id_for_label }}">{{ form.establishment_city.label }}</label>
-                            {{ form.establishment_city }}
-                            {% if form.establishment_city.errors %}<span class="field-error">{{ form.establishment_city.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.establishment_postal_code.id_for_label }}">{{ form.establishment_postal_code.label }}</label>
-                            {{ form.establishment_postal_code }}
-                            {% if form.establishment_postal_code.errors %}<span class="field-error">{{ form.establishment_postal_code.errors.0 }}</span>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.number_of_floors.id_for_label }}">{{ form.number_of_floors.label }}</label>
-                            {{ form.number_of_floors }}
-                            {% if form.number_of_floors.errors %}<span class="field-error">{{ form.number_of_floors.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>
-                            {{ form.website }}
-                            {% if form.website.errors %}<span class="field-error">{{ form.website.errors.0 }}</span>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>{{ form.establishment_photo.label }}</label>
-                        <label class="photo-upload" for="{{ form.establishment_photo.id_for_label }}">
-                            <span class="photo-upload-icon">📷</span>
-                            <div>
-                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">{% translate "Cliquez ou déposez une photo" %}</p>
-                                <span class="upload-hint" id="establishmentPhotoName">{% translate "JPG, PNG ou GIF" %}</span>
-                            </div>
-                            <img id="establishmentPhotoPreview" class="photo-preview" alt="{% translate 'Aperçu' %}">
-                        </label>
-                        <div class="hidden-file-input">{{ form.establishment_photo }}</div>
-                        {% if form.establishment_photo.errors %}<span class="field-error">{{ form.establishment_photo.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <button type="button" class="btn btn-next" onclick="nextStep()" style="width: 100%;">{% translate "Continuer" %} →</button>
                 </div>
+
+
+                <div class="step-content">
+
+                    <!-- NOM DE L'HÔTEL -->
+                    <div class="form-group">
+
+                        <label for="{{ form.establishment_name.id_for_label }}">
+                            {{ form.establishment_name.label }}
+                        </label>
+
+                        {{ form.establishment_name }}
+
+                        {% if form.establishment_name.errors %}
+                            <span class="field-error">
+                                {{ form.establishment_name.errors.0 }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- RCCM ET NOMBRE DE CHAMBRES -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.siret_or_rccm.id_for_label }}">
+                                {{ form.siret_or_rccm.label }}
+                            </label>
+
+                            {{ form.siret_or_rccm }}
+
+                            {% if form.siret_or_rccm.errors %}
+                                <span class="field-error">
+                                    {{ form.siret_or_rccm.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.number_of_rooms.id_for_label }}">
+                                {{ form.number_of_rooms.label }}
+                            </label>
+
+                            {{ form.number_of_rooms }}
+
+                            {% if form.number_of_rooms.errors %}
+                                <span class="field-error">
+                                    {{ form.number_of_rooms.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ADRESSE -->
+                    <div class="form-group">
+
+                        <label for="{{ form.establishment_address.id_for_label }}">
+                            {{ form.establishment_address.label }}
+                        </label>
+
+                        {{ form.establishment_address }}
+
+                        {% if form.establishment_address.errors %}
+                            <span class="field-error">
+                                {{ form.establishment_address.errors.0 }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- VILLE ET CODE POSTAL -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.establishment_city.id_for_label }}">
+                                {{ form.establishment_city.label }}
+                            </label>
+
+                            {{ form.establishment_city }}
+
+                            {% if form.establishment_city.errors %}
+                                <span class="field-error">
+                                    {{ form.establishment_city.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.establishment_postal_code.id_for_label }}">
+                                {{ form.establishment_postal_code.label }}
+                            </label>
+
+                            {{ form.establishment_postal_code }}
+
+                            {% if form.establishment_postal_code.errors %}
+                                <span class="field-error">
+                                    {{ form.establishment_postal_code.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ÉTAGES ET SITE WEB -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.number_of_floors.id_for_label }}">
+                                {{ form.number_of_floors.label }}
+                            </label>
+
+                            {{ form.number_of_floors }}
+
+                            {% if form.number_of_floors.errors %}
+                                <span class="field-error">
+                                    {{ form.number_of_floors.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.website.id_for_label }}">
+                                {{ form.website.label }}
+                            </label>
+
+                            {{ form.website }}
+
+                            {% if form.website.errors %}
+                                <span class="field-error">
+                                    {{ form.website.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PHOTO DE L'HÔTEL -->
+                    <div class="form-group">
+
+                        <label for="{{ form.establishment_photo.id_for_label }}">
+                            {{ form.establishment_photo.label }}
+                        </label>
+
+                        <label class="upload-zone"
+                               for="{{ form.establishment_photo.id_for_label }}">
+
+                            <span class="upload-icon">📷</span>
+
+                            <strong>
+                                {% translate "Ajouter une photo de votre hôtel" %}
+                            </strong>
+
+                            <span>
+                                {% translate "Cliquez pour sélectionner une image" %}
+                            </span>
+
+                            <small id="establishmentPhotoName">
+                                {% translate "Formats acceptés : JPG, PNG ou GIF" %}
+                            </small>
+
+                            <img id="establishmentPhotoPreview"
+                                 class="photo-preview"
+                                 alt="{% translate 'Aperçu de la photo' %}">
+
+                        </label>
+
+                        <div class="hidden-file-input">
+                            {{ form.establishment_photo }}
+                        </div>
+
+                        {% if form.establishment_photo.errors %}
+                            <span class="field-error">
+                                {{ form.establishment_photo.errors.0 }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- CONTINUER -->
+                    <div class="step-footer">
+
+                        <button type="button"
+                                class="btn btn-primary"
+                                onclick="nextStep()">
+
+                            {% translate "Continuer" %}
+
+                            <span>→</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
+
+
+
+            <!-- =====================================
+                 ÉTAPE 2 : REPRÉSENTANT
+            ====================================== -->
 
             <div class="signup-step" data-step="2">
-                <div class="step-content">
-                    <h2 class="step-heading">👤 {% translate "Informations du Représentant" %}</h2>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}<span class="field-error">{{ form.first_name.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}<span class="field-error">{{ form.last_name.errors.0 }}</span>{% endif %}
-                        </div>
+                <div class="section-heading">
+
+                    <div class="section-icon">👤</div>
+
+                    <div>
+                        <h2>{% translate "Informations du représentant" %}</h2>
+
+                        <p>
+                            {% translate "Renseignez les coordonnées de la personne responsable de l'établissement." %}
+                        </p>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
-                            {{ form.email }}
-                            {% if form.email.errors %}<span class="field-error">{{ form.email.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
-                            {{ form.username }}
-                            {% if form.username.errors %}<span class="field-error">{{ form.username.errors.0 }}</span>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.telephone.id_for_label }}">{{ form.telephone.label }}</label>
-                            {{ form.telephone }}
-                            {% if form.telephone.errors %}<span class="field-error">{{ form.telephone.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.legal_phone.id_for_label }}">{{ form.legal_phone.label }}</label>
-                            {{ form.legal_phone }}
-                            {% if form.legal_phone.errors %}<span class="field-error">{{ form.legal_phone.errors.0 }}</span>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
-                            {{ form.password1 }}
-                            {% if form.password1.errors %}<span class="field-error">{{ form.password1.errors.0 }}</span>{% endif %}
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
-                            {{ form.password2 }}
-                            {% if form.password2.errors %}<span class="field-error">{{ form.password2.errors.0 }}</span>{% endif %}
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>🪪 {% translate "Pièce d'identité" %}</label>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="{{ form.type_piece_identite.id_for_label }}">{% translate "Type" %}</label>
-                                {{ form.type_piece_identite }}
-                                {% if form.type_piece_identite.errors %}<span class="field-error">{{ form.type_piece_identite.errors.0 }}</span>{% endif %}
-                            </div>
-                            <div class="form-group">
-                                <label for="{{ form.numero_piece_identite.id_for_label }}">{% translate "Numéro" %}</label>
-                                {{ form.numero_piece_identite }}
-                                {% if form.numero_piece_identite.errors %}<span class="field-error">{{ form.numero_piece_identite.errors.0 }}</span>{% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>{{ form.legal_document.label }}</label>
-                        <label class="file-upload" for="{{ form.legal_document.id_for_label }}">
-                            <span class="file-upload-icon">📄</span>
-                            <div>
-                                <p style="margin: 0 0 5px; color: #1a2332; font-weight: 600;">{% translate "Cliquez ou déposez le document" %}</p>
-                                <span class="upload-hint" id="legalDocumentName">{% translate "PDF ou image" %}</span>
-                            </div>
-                        </label>
-                        <div class="hidden-file-input">{{ form.legal_document }}</div>
-                        {% if form.legal_document.errors %}<span class="field-error">{{ form.legal_document.errors.0 }}</span>{% endif %}
-                    </div>
-
-                    <div class="form-row">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()" style="width: 100%;">← {% translate "Retour" %}</button>
-                        <button type="submit" class="btn btn-success" style="width: 100%;">✅ {% translate "Créer mon compte" %}</button>
-                    </div>
                 </div>
+
+
+                <div class="step-content">
+
+
+                    <!-- NOM ET PRÉNOMS -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.first_name.id_for_label }}">
+                                {{ form.first_name.label }}
+                            </label>
+
+                            {{ form.first_name }}
+
+                            {% if form.first_name.errors %}
+                                <span class="field-error">
+                                    {{ form.first_name.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.last_name.id_for_label }}">
+                                {{ form.last_name.label }}
+                            </label>
+
+                            {{ form.last_name }}
+
+                            {% if form.last_name.errors %}
+                                <span class="field-error">
+                                    {{ form.last_name.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- EMAIL ET IDENTIFIANT -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.email.id_for_label }}">
+                                {{ form.email.label }}
+                            </label>
+
+                            {{ form.email }}
+
+                            {% if form.email.errors %}
+                                <span class="field-error">
+                                    {{ form.email.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.username.id_for_label }}">
+                                {{ form.username.label }}
+                            </label>
+
+                            {{ form.username }}
+
+                            {% if form.username.errors %}
+                                <span class="field-error">
+                                    {{ form.username.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TÉLÉPHONES -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.telephone.id_for_label }}">
+                                {{ form.telephone.label }}
+                            </label>
+
+                            {{ form.telephone }}
+
+                            {% if form.telephone.errors %}
+                                <span class="field-error">
+                                    {{ form.telephone.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.legal_phone.id_for_label }}">
+                                {{ form.legal_phone.label }}
+                            </label>
+
+                            {{ form.legal_phone }}
+
+                            {% if form.legal_phone.errors %}
+                                <span class="field-error">
+                                    {{ form.legal_phone.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MOTS DE PASSE -->
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="{{ form.password1.id_for_label }}">
+                                {{ form.password1.label }}
+                            </label>
+
+                            {{ form.password1 }}
+
+                            {% if form.password1.errors %}
+                                <span class="field-error">
+                                    {{ form.password1.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="{{ form.password2.id_for_label }}">
+                                {{ form.password2.label }}
+                            </label>
+
+                            {{ form.password2 }}
+
+                            {% if form.password2.errors %}
+                                <span class="field-error">
+                                    {{ form.password2.errors.0 }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PIÈCE D'IDENTITÉ -->
+                    <div class="identity-card">
+
+                        <h3>🪪 {% translate "Pièce d'identité" %}</h3>
+
+                        <div class="form-row">
+
+                            <div class="form-group">
+
+                                <label for="{{ form.type_piece_identite.id_for_label }}">
+                                    {% translate "Type" %}
+                                </label>
+
+                                {{ form.type_piece_identite }}
+
+                                {% if form.type_piece_identite.errors %}
+                                    <span class="field-error">
+                                        {{ form.type_piece_identite.errors.0 }}
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="{{ form.numero_piece_identite.id_for_label }}">
+                                    {% translate "Numéro" %}
+                                </label>
+
+                                {{ form.numero_piece_identite }}
+
+                                {% if form.numero_piece_identite.errors %}
+                                    <span class="field-error">
+                                        {{ form.numero_piece_identite.errors.0 }}
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DOCUMENT LÉGAL -->
+                    <div class="form-group">
+
+                        <label for="{{ form.legal_document.id_for_label }}">
+                            {{ form.legal_document.label }}
+                        </label>
+
+                        <label class="upload-zone document-zone"
+                               for="{{ form.legal_document.id_for_label }}">
+
+                            <span class="upload-icon">📄</span>
+
+                            <strong>
+                                {% translate "Ajouter votre document légal" %}
+                            </strong>
+
+                            <span>
+                                {% translate "Cliquez pour sélectionner votre document" %}
+                            </span>
+
+                            <small id="legalDocumentName">
+                                {% translate "Formats acceptés : PDF ou image" %}
+                            </small>
+
+                        </label>
+
+                        <div class="hidden-file-input">
+                            {{ form.legal_document }}
+                        </div>
+
+                        {% if form.legal_document.errors %}
+                            <span class="field-error">
+                                {{ form.legal_document.errors.0 }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- BOUTONS -->
+                    <div class="step-footer step-footer-double">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                onclick="prevStep()">
+
+                            ← {% translate "Retour" %}
+
+                        </button>
+
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            ✓ {% translate "Créer mon compte" %}
+
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
+
         </form>
 
+
+        <!-- CONNEXION -->
         <div class="auth-footer">
-            <p>{% translate "Vous avez déjà un compte ?" %} <a href="{% url 'accounts:login' %}">{% translate "Se connecter" %}</a></p>
+
+            <p>
+                {% translate "Vous avez déjà un compte ?" %}
+
+                <a href="{% url 'accounts:login' %}">
+                    {% translate "Se connecter" %}
+                </a>
+            </p>
+
         </div>
+
     </div>
 
-    <div class="signup-background">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-    </div>
 </div>
 
+
 <style>
-    .signup-wrapper {
-        position: relative;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        overflow: hidden;
-        padding: 30px 20px;
-    }
 
-    .signup-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-    }
+/* ==========================================
+   IDENTITÉ VISUELLE IVOIRE CONNECT
+========================================== */
 
-    .shape {
-        position: absolute;
-        border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-        opacity: 0.08;
-    }
+.hotel-signup {
 
-    .shape-1 {
-        width: 350px;
-        height: 350px;
-        background: #f59e0b;
-        top: -150px;
-        right: -100px;
-        animation: float 7s ease-in-out infinite;
-    }
+    --ci-orange: #F77F00;
+    --ci-orange-hover: #FF9122;
 
-    .shape-2 {
-        width: 300px;
-        height: 300px;
-        background: #d97706;
-        bottom: -150px;
-        left: -80px;
-        animation: float 9s ease-in-out infinite reverse;
-    }
+    --ci-green: #009E60;
+    --ci-green-deep: #0B5D3B;
+    --ci-green-soft: #E6F4EC;
 
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(40px); }
-    }
+    --ci-ink: #10231A;
+    --ci-muted: #5B6B62;
 
-    .signup-container {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        max-width: 600px;
-        background: white;
-        border-radius: 24px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-        overflow: hidden;
-    }
+    --ci-line: #DCE5DF;
+    --ci-bg: #F3F7F4;
+    --ci-white: #FFFFFF;
 
-    .signup-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        padding: 40px;
-        color: white;
-        text-align: center;
-    }
+    width: 100%;
+    min-height: 100vh;
 
-    .header-progress {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        margin-bottom: 25px;
-    }
+    padding: 2rem 1.25rem 4rem;
 
-    .progress-step {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.2);
-        border: 2px solid rgba(255,255,255,.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        color: rgba(255,255,255,.6);
-        transition: all 0.3s ease;
-    }
+    background: var(--ci-bg);
 
-    .progress-step.active {
-        background: white;
-        color: #d97706;
-    }
+    color: var(--ci-ink);
 
-    .progress-line {
-        width: 40px;
-        height: 2px;
-        background: rgba(255,255,255,.2);
-        transition: background 0.3s ease;
-    }
+    font-family: 'Figtree', sans-serif;
 
-    .progress-line.active {
-        background: white;
-    }
+    font-size: 15px;
+    line-height: 1.5;
 
-    .signup-header h1 {
-        font-size: 2rem;
-        margin: 0 0 10px;
-        font-weight: 700;
-    }
+}
 
-    .signup-header p {
-        margin: 0;
-        opacity: 0.95;
-        font-size: 1rem;
-    }
 
-    .signup-form {
-        padding: 40px;
-    }
+.hotel-signup *,
+.hotel-signup *::before,
+.hotel-signup *::after {
 
-    .signup-step {
-        display: none;
-    }
+    box-sizing: border-box;
 
-    .signup-step.visible {
-        display: block;
-        animation: slideIn 0.3s ease-out;
-    }
+}
 
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
 
-    .step-heading {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin: 0 0 25px;
-    }
+.hotel-signup h1,
+.hotel-signup h2,
+.hotel-signup h3,
+.hotel-signup p {
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
+    margin: 0;
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
+}
 
-    .form-group label {
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-        font-size: 0.95rem;
-    }
 
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        padding: 12px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-family: inherit;
-        transition: all 0.3s ease;
-    }
+.hotel-signup :focus-visible {
 
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #f59e0b;
-        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-    }
+    outline: 3px solid var(--ci-orange);
+    outline-offset: 3px;
 
-    .form-group input.field-invalid,
-    .form-group select.field-invalid {
-        border-color: #e74c3c;
-        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
-    }
+}
 
-    .field-error {
-        color: #e74c3c;
-        font-size: 0.85rem;
-        margin-top: 4px;
-        display: block;
-    }
 
-    .alert {
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
+/* ==========================================
+   EN-TÊTE
+========================================== */
 
-    .alert-danger {
-        background: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fee2e2;
-    }
+.hotel-signup .signup-header {
 
-    /* Le vrai input file existe toujours dans le DOM (nécessaire pour l'upload),
-       mais il est masqué visuellement — le clic passe par le <label for="..."> */
-    .hidden-file-input {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
+    max-width: 850px;
+
+    margin: 0 auto;
+
+    overflow: hidden;
+
+    background: var(--ci-green-deep);
+
+    border-radius: 20px;
+
+    color: white;
+
+    box-shadow: 0 10px 25px rgba(11, 93, 59, .15);
+
+}
+
+
+.hotel-signup .header-stripe {
+
+    height: 9px;
+
+    background: linear-gradient(
+        90deg,
+        var(--ci-orange) 0 33.33%,
+        #FFFFFF 33.33% 66.66%,
+        var(--ci-green) 66.66% 100%
+    );
+
+}
+
+
+.hotel-signup .header-content {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 1.7rem 2rem 1.2rem;
+
+}
+
+
+.hotel-signup .header-icon {
+
+    width: 65px;
+    height: 65px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: var(--ci-orange);
+
+    border-radius: 50%;
+
+    font-size: 30px;
+
+}
+
+
+.hotel-signup .header-eyebrow {
+
+    display: block;
+
+    color: rgba(255,255,255,.75);
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    margin-bottom: 3px;
+
+}
+
+
+.hotel-signup .signup-header h1 {
+
+    font-family: 'Bricolage Grotesque', sans-serif;
+
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+
+    font-weight: 700;
+
+    color: white;
+
+    line-height: 1.2;
+
+}
+
+
+.hotel-signup .header-text p {
+
+    margin-top: 8px;
+
+    color: rgba(255,255,255,.85);
+
+    font-size: 15px;
+
+}
+
+
+/* ==========================================
+   PROGRESSION
+========================================== */
+
+.hotel-signup .progress-container {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 15px;
+
+    padding: .5rem 1rem 1.5rem;
+
+}
+
+
+.hotel-signup .progress-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    color: rgba(255,255,255,.65);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+.hotel-signup .progress-step {
+
+    width: 35px;
+    height: 35px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border: 2px solid rgba(255,255,255,.35);
+
+    background: rgba(255,255,255,.1);
+
+    color: white;
+
+    font-weight: 700;
+
+    transition: .2s ease;
+
+}
+
+
+.hotel-signup .progress-step.active {
+
+    background: var(--ci-orange);
+
+    border-color: var(--ci-orange);
+
+    color: white;
+
+}
+
+
+.hotel-signup .progress-line {
+
+    width: 65px;
+    height: 2px;
+
+    background: rgba(255,255,255,.3);
+
+    transition: .2s ease;
+
+}
+
+
+.hotel-signup .progress-line.active {
+
+    background: var(--ci-orange);
+
+}
+
+
+/* ==========================================
+   CONTENU PRINCIPAL
+========================================== */
+
+.hotel-signup .signup-container {
+
+    max-width: 850px;
+
+    margin: 1.5rem auto 0;
+
+}
+
+
+.hotel-signup .signup-form {
+
+    padding: 0;
+
+}
+
+
+.hotel-signup .signup-step {
+
+    display: none;
+
+    overflow: hidden;
+
+    background: var(--ci-white);
+
+    border: 1px solid var(--ci-line);
+
+    border-radius: 18px;
+
+    box-shadow: 0 4px 15px rgba(16,35,26,.035);
+
+}
+
+
+.hotel-signup .signup-step.visible {
+
+    display: block;
+
+    animation: hotelSlideIn .3s ease;
+
+}
+
+
+@keyframes hotelSlideIn {
+
+    from {
+
         opacity: 0;
-        pointer-events: none;
+
+        transform: translateY(10px);
+
     }
 
-    .photo-upload,
-    .file-upload {
-        display: block;
-        border: 2px dashed #ccc;
-        border-radius: 8px;
-        padding: 30px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: #fafafa;
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0);
+
     }
 
-    .photo-upload:hover,
-    .file-upload:hover {
-        border-color: #f59e0b;
-        background: rgba(245, 158, 11, 0.05);
+}
+
+
+/* ==========================================
+   TITRES DES SECTIONS
+========================================== */
+
+.hotel-signup .section-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 1.5rem 1.7rem;
+
+    border-bottom: 1px solid var(--ci-line);
+
+    background: white;
+
+}
+
+
+.hotel-signup .section-icon {
+
+    width: 45px;
+    height: 45px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: var(--ci-green-soft);
+
+    font-size: 22px;
+
+}
+
+
+.hotel-signup .section-heading h2 {
+
+    font-family: 'Bricolage Grotesque', sans-serif;
+
+    font-size: 1.25rem;
+
+    font-weight: 700;
+
+    color: var(--ci-green-deep);
+
+}
+
+
+.hotel-signup .section-heading p {
+
+    margin-top: 4px;
+
+    color: var(--ci-muted);
+
+    font-size: 14px;
+
+}
+
+
+.hotel-signup .step-content {
+
+    padding: 1.7rem;
+
+}
+
+
+/* ==========================================
+   FORMULAIRES
+========================================== */
+
+.hotel-signup .form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+    margin-bottom: 1.2rem;
+
+}
+
+
+.hotel-signup .form-group label:not(.upload-zone) {
+
+    margin-bottom: 7px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: var(--ci-ink);
+
+}
+
+
+.hotel-signup .form-row {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 18px;
+
+}
+
+
+.hotel-signup .form-group input:not([type="file"]),
+.hotel-signup .form-group select,
+.hotel-signup .form-group textarea {
+
+    width: 100%;
+
+    min-height: 46px;
+
+    padding: 11px 13px;
+
+    border: 1.5px solid #CBD6CE;
+
+    border-radius: 10px;
+
+    background: white;
+
+    color: var(--ci-ink);
+
+    font-family: 'Figtree', sans-serif;
+
+    font-size: 15px;
+
+    transition: border-color .2s ease, box-shadow .2s ease;
+
+}
+
+
+.hotel-signup .form-group input:focus,
+.hotel-signup .form-group select:focus,
+.hotel-signup .form-group textarea:focus {
+
+    outline: none;
+
+    border-color: var(--ci-green);
+
+    box-shadow: 0 0 0 3px rgba(0,158,96,.15);
+
+}
+
+
+.hotel-signup .form-group input:hover,
+.hotel-signup .form-group select:hover,
+.hotel-signup .form-group textarea:hover {
+
+    border-color: #9FB3A7;
+
+}
+
+
+.hotel-signup .form-group input.field-invalid,
+.hotel-signup .form-group select.field-invalid {
+
+    border-color: #DC4545;
+
+    box-shadow: 0 0 0 3px rgba(220,69,69,.1);
+
+}
+
+
+/* ==========================================
+   PIÈCE D'IDENTITÉ
+========================================== */
+
+.hotel-signup .identity-card {
+
+    margin: 1rem 0 1.5rem;
+
+    padding: 1.2rem;
+
+    border: 1px solid var(--ci-line);
+
+    border-radius: 12px;
+
+    background: #F8FAF8;
+
+}
+
+
+.hotel-signup .identity-card h3 {
+
+    margin-bottom: 1rem;
+
+    color: var(--ci-green-deep);
+
+    font-family: 'Bricolage Grotesque', sans-serif;
+
+    font-size: 17px;
+
+}
+
+
+.hotel-signup .identity-card .form-group {
+
+    margin-bottom: 0;
+
+}
+
+
+/* ==========================================
+   TÉLÉVERSEMENT DES FICHIERS
+========================================== */
+
+.hotel-signup .hidden-file-input {
+
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    padding: 0;
+
+    margin: -1px;
+
+    overflow: hidden;
+
+    clip: rect(0, 0, 0, 0);
+
+    white-space: nowrap;
+
+    border: 0;
+
+}
+
+
+.hotel-signup .upload-zone {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 165px;
+
+    padding: 1.5rem;
+
+    border: 2px dashed #CBD6CE;
+
+    border-radius: 12px;
+
+    background: #F8FAF8;
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+
+}
+
+
+.hotel-signup .upload-zone:hover {
+
+    border-color: var(--ci-green);
+
+    background: var(--ci-green-soft);
+
+}
+
+
+.hotel-signup .upload-icon {
+
+    font-size: 35px;
+
+}
+
+
+.hotel-signup .upload-zone strong {
+
+    color: var(--ci-green-deep);
+
+    font-size: 15px;
+
+}
+
+
+.hotel-signup .upload-zone span:not(.upload-icon) {
+
+    color: var(--ci-muted);
+
+    font-size: 13px;
+
+}
+
+
+.hotel-signup .upload-zone small {
+
+    color: #87958C;
+
+    font-size: 12px;
+
+}
+
+
+.hotel-signup .photo-preview {
+
+    display: none;
+
+    max-width: 180px;
+    max-height: 150px;
+
+    margin-top: 12px;
+
+    border-radius: 10px;
+
+    object-fit: cover;
+
+}
+
+
+/* ==========================================
+   ERREURS
+========================================== */
+
+.hotel-signup .field-error {
+
+    display: block;
+
+    margin-top: 6px;
+
+    color: #C0392B;
+
+    font-size: 13px;
+
+}
+
+
+.hotel-signup .alert {
+
+    margin-bottom: 1rem;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+}
+
+
+.hotel-signup .alert-danger {
+
+    background: #FEF2F2;
+
+    border: 1px solid #FECACA;
+
+    color: #991B1B;
+
+}
+
+
+/* ==========================================
+   BOUTONS
+========================================== */
+
+.hotel-signup .step-footer {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 1.5rem;
+
+}
+
+
+.hotel-signup .step-footer-double {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+
+}
+
+
+.hotel-signup .btn {
+
+    min-height: 48px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 12px 22px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    font-family: 'Figtree', sans-serif;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition: background-color .2s ease, transform .2s ease;
+
+}
+
+
+.hotel-signup .btn-primary {
+
+    background: var(--ci-orange);
+
+    color: var(--ci-ink);
+
+}
+
+
+.hotel-signup .btn-primary:hover {
+
+    background: var(--ci-orange-hover);
+
+    transform: translateY(-2px);
+
+}
+
+
+.hotel-signup .btn-secondary {
+
+    background: var(--ci-green-soft);
+
+    border: 1px solid #C8E3D2;
+
+    color: var(--ci-green-deep);
+
+}
+
+
+.hotel-signup .btn-secondary:hover {
+
+    background: #D5EBDD;
+
+}
+
+
+.hotel-signup .step-footer > .btn {
+
+    min-width: 180px;
+
+}
+
+
+/* ==========================================
+   PIED DE PAGE
+========================================== */
+
+.hotel-signup .auth-footer {
+
+    margin-top: 1.2rem;
+
+    padding: 1.2rem;
+
+    border: 1px solid var(--ci-line);
+
+    border-radius: 12px;
+
+    background: white;
+
+    text-align: center;
+
+    color: var(--ci-muted);
+
+}
+
+
+.hotel-signup .auth-footer a {
+
+    color: var(--ci-green-deep);
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+.hotel-signup .auth-footer a:hover {
+
+    color: var(--ci-orange);
+
+    text-decoration: underline;
+
+}
+
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 650px) {
+
+    .hotel-signup {
+
+        padding: 1rem .7rem 2rem;
+
     }
 
-    .photo-upload-icon,
-    .file-upload-icon {
-        font-size: 2.5rem;
-        display: block;
-        margin-bottom: 15px;
+
+    .hotel-signup .header-content {
+
+        padding: 1.2rem;
+
+        gap: 12px;
+
     }
 
-    .upload-hint {
-        display: block;
-        color: #999;
-        font-size: 0.8rem;
-        margin-top: 5px;
+
+    .hotel-signup .header-icon {
+
+        width: 48px;
+        height: 48px;
+
+        font-size: 23px;
+
     }
 
-    .photo-preview {
-        max-width: 150px;
-        max-height: 150px;
-        margin-top: 10px;
-        display: none;
-        border-radius: 8px;
+
+    .hotel-signup .signup-header h1 {
+
+        font-size: 1.5rem;
+
     }
 
-    .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
+
+    .hotel-signup .header-text p {
+
+        font-size: 13px;
+
     }
 
-    .btn-next,
-    .btn-primary,
-    .btn-success {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
+
+    .hotel-signup .progress-container {
+
+        gap: 8px;
+
     }
 
-    .btn-next:hover,
-    .btn-primary:hover,
-    .btn-success:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+
+    .hotel-signup .progress-line {
+
+        width: 30px;
+
     }
 
-    .btn-secondary {
-        background: #f5f5f5;
-        color: #333;
-        border: 1px solid #e0e0e0;
+
+    .hotel-signup .progress-item {
+
+        gap: 5px;
+
+        font-size: 11px;
+
     }
 
-    .btn-secondary:hover {
-        background: #efefef;
+
+    .hotel-signup .progress-step {
+
+        width: 30px;
+        height: 30px;
+
     }
 
-    .auth-footer {
-        padding: 20px 40px;
-        background: #f9f9f9;
-        text-align: center;
-        border-top: 1px solid #e0e0e0;
-        color: #666;
+
+    .hotel-signup .section-heading {
+
+        padding: 1.1rem;
+
     }
 
-    .auth-footer a {
-        color: #f59e0b;
-        text-decoration: none;
-        font-weight: 600;
+
+    .hotel-signup .section-heading h2 {
+
+        font-size: 1.05rem;
+
     }
 
-    .auth-footer a:hover {
-        text-decoration: underline;
+
+    .hotel-signup .step-content {
+
+        padding: 1.1rem;
+
     }
 
-    @media (max-width: 768px) {
-        .signup-container {
-            border-radius: 0;
-        }
 
-        .signup-form {
-            padding: 30px 20px;
-        }
+    .hotel-signup .form-row {
 
-        .form-row {
-            grid-template-columns: 1fr;
-        }
+        grid-template-columns: 1fr;
 
-        .signup-header {
-            padding: 30px 20px;
-        }
+        gap: 0;
 
-        .signup-header h1 {
-            font-size: 1.5rem;
-        }
     }
+
+
+    .hotel-signup .step-footer-double {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .hotel-signup .step-footer > .btn {
+
+        width: 100%;
+
+    }
+
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+
+    .hotel-signup *,
+    .hotel-signup *::before,
+    .hotel-signup *::after {
+
+        animation: none !important;
+
+        transition: none !important;
+
+    }
+
+}
+
 </style>
 
+
 <script>
-    let currentStep = 1;
-    const TOTAL_STEPS = 2;
 
-    function showStep(step) {
-        document.querySelectorAll('.signup-step').forEach(el => {
-            el.classList.toggle('visible', parseInt(el.dataset.step) === step);
-        });
-        document.querySelectorAll('.progress-step').forEach(el => {
-            el.classList.toggle('active', parseInt(el.dataset.step) <= step);
-        });
-        document.querySelectorAll('.progress-line').forEach(el => {
-            el.classList.toggle('active', parseInt(el.dataset.line) < step);
-        });
-        currentStep = step;
-    }
+/* ==========================================
+   GESTION DES ÉTAPES
+========================================== */
 
-    // Validation manuelle des champs "required" de l'étape affichée
-    // (le form a novalidate, donc on gère nous-mêmes le contrôle avant de passer à l'étape suivante)
-    function validateCurrentStep() {
-        const stepEl = document.querySelector(`.signup-step[data-step="${currentStep}"]`);
-        let valid = true;
-        stepEl.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
-            field.classList.remove('field-invalid');
-            if (!field.checkValidity()) {
-                valid = false;
-                field.classList.add('field-invalid');
-            }
-        });
-        if (!valid) {
-            stepEl.querySelector('.field-invalid')?.reportValidity();
-        }
-        return valid;
-    }
+let currentStep = 1;
 
-    function nextStep() {
-        if (!validateCurrentStep()) return;
-        if (currentStep < TOTAL_STEPS) showStep(currentStep + 1);
-    }
+const TOTAL_STEPS = 2;
 
-    function prevStep() {
-        if (currentStep > 1) showStep(currentStep - 1);
-    }
 
-    // Si Django renvoie des erreurs de validation côté serveur sur l'étape 2
-    // (ex: mots de passe différents, email déjà utilisé), on affiche directement
-    // cette étape au chargement de la page, sinon l'utilisateur ne les verrait jamais.
-    document.addEventListener('DOMContentLoaded', function () {
-        const step2HasErrors = document.querySelector('.signup-step[data-step="2"] .field-error') !== null;
-        if (step2HasErrors) {
-            showStep(2);
-        }
+function showStep(step) {
+
+    document.querySelectorAll('.hotel-signup .signup-step').forEach(el => {
+
+        el.classList.toggle(
+            'visible',
+            parseInt(el.dataset.step) === step
+        );
+
     });
 
-    // Aperçu photo établissement + nom de fichier affiché
-    const photoInput = document.getElementById('{{ form.establishment_photo.id_for_label }}');
-    photoInput?.addEventListener('change', function (e) {
-        const preview = document.getElementById('establishmentPhotoPreview');
-        const nameLabel = document.getElementById('establishmentPhotoName');
+
+    document.querySelectorAll('.hotel-signup .progress-step').forEach(el => {
+
+        el.classList.toggle(
+            'active',
+            parseInt(el.dataset.step) <= step
+        );
+
+    });
+
+
+    document.querySelectorAll('.hotel-signup .progress-line').forEach(el => {
+
+        el.classList.toggle(
+            'active',
+            parseInt(el.dataset.line) < step
+        );
+
+    });
+
+
+    currentStep = step;
+
+}
+
+
+/* ==========================================
+   VALIDATION DES CHAMPS
+========================================== */
+
+function validateCurrentStep() {
+
+    const stepEl = document.querySelector(
+        `.hotel-signup .signup-step[data-step="${currentStep}"]`
+    );
+
+    if (!stepEl) return false;
+
+    let valid = true;
+
+
+    stepEl.querySelectorAll(
+        'input[required], select[required], textarea[required]'
+    ).forEach(field => {
+
+        field.classList.remove('field-invalid');
+
+        if (!field.checkValidity()) {
+
+            valid = false;
+
+            field.classList.add('field-invalid');
+
+        }
+
+    });
+
+
+    if (!valid) {
+
+        stepEl.querySelector('.field-invalid')?.reportValidity();
+
+    }
+
+
+    return valid;
+
+}
+
+
+/* ==========================================
+   NAVIGATION
+========================================== */
+
+function nextStep() {
+
+    if (!validateCurrentStep()) return;
+
+    if (currentStep < TOTAL_STEPS) {
+
+        showStep(currentStep + 1);
+
+        document.querySelector('.hotel-signup .signup-header')
+            .scrollIntoView({
+
+                behavior: 'smooth',
+
+                block: 'start'
+
+            });
+
+    }
+
+}
+
+
+function prevStep() {
+
+    if (currentStep > 1) {
+
+        showStep(currentStep - 1);
+
+        document.querySelector('.hotel-signup .signup-header')
+            .scrollIntoView({
+
+                behavior: 'smooth',
+
+                block: 'start'
+
+            });
+
+    }
+
+}
+
+
+/* ==========================================
+   INITIALISATION ET ERREURS DJANGO
+========================================== */
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const step2HasErrors = document.querySelector(
+        '.hotel-signup .signup-step[data-step="2"] .field-error'
+    ) !== null;
+
+
+    if (step2HasErrors) {
+
+        showStep(2);
+
+    } else {
+
+        showStep(1);
+
+    }
+
+});
+
+
+/* ==========================================
+   APERÇU DE LA PHOTO DE L'HÔTEL
+========================================== */
+
+const photoInput = document.getElementById(
+    '{{ form.establishment_photo.id_for_label }}'
+);
+
+
+if (photoInput) {
+
+    photoInput.addEventListener('change', function(e) {
+
+        const preview = document.getElementById(
+            'establishmentPhotoPreview'
+        );
+
+        const nameLabel = document.getElementById(
+            'establishmentPhotoName'
+        );
+
         const file = e.target.files[0];
+
+
         if (file) {
+
             nameLabel.textContent = file.name;
+
+
+            if (!file.type.startsWith('image/')) {
+
+                preview.style.display = 'none';
+
+                return;
+
+            }
+
+
             const reader = new FileReader();
-            reader.onload = function (event) {
+
+
+            reader.onload = function(event) {
+
                 preview.src = event.target.result;
+
                 preview.style.display = 'block';
+
             };
+
+
             reader.readAsDataURL(file);
+
         }
+
     });
 
-    // Nom de fichier affiché pour le document légal
-    const legalDocInput = document.getElementById('{{ form.legal_document.id_for_label }}');
-    legalDocInput?.addEventListener('change', function (e) {
-        const nameLabel = document.getElementById('legalDocumentName');
+}
+
+
+/* ==========================================
+   NOM DU DOCUMENT LÉGAL
+========================================== */
+
+const legalDocInput = document.getElementById(
+    '{{ form.legal_document.id_for_label }}'
+);
+
+
+if (legalDocInput) {
+
+    legalDocInput.addEventListener('change', function(e) {
+
+        const nameLabel = document.getElementById(
+            'legalDocumentName'
+        );
+
         const file = e.target.files[0];
-        if (file) nameLabel.textContent = file.name;
+
+
+        if (file) {
+
+            nameLabel.textContent = file.name;
+
+        }
+
     });
+
+}
+
+
+/* ==========================================
+   SUPPRESSION DES ERREURS À LA CORRECTION
+========================================== */
+
+document.querySelectorAll(
+    '.hotel-signup input, .hotel-signup select, .hotel-signup textarea'
+).forEach(field => {
+
+    field.addEventListener('input', function() {
+
+        this.classList.remove('field-invalid');
+
+    });
+
+    field.addEventListener('change', function() {
+
+        this.classList.remove('field-invalid');
+
+    });
+
+});
+
 </script>
+
 {% endblock %}
+```
