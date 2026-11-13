@@ -871,6 +871,11 @@ def profil(request):
 
 
 @login_required
+def account_settings(request):
+    return render(request, 'accounts/settings.html')
+
+
+@login_required
 def profil_user(request, user_id):
     """Affiche le profil d'un autre utilisateur avec un bouton d'abonnement visible."""
     if request.user.id == user_id:

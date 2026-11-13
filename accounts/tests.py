@@ -96,6 +96,32 @@ class ProfileEditFormTests(TestCase):
         self.assertIn('email', form.errors)
 
 
+class AccountSettingsPageTests(TestCase):
+    def test_settings_page_links_to_real_account_controls(self):
+        user = User.objects.create_user(
+            username='account_settings_test',
+            email='account.settings@example.com',
+            password='StrongPassword123!',
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('accounts:settings'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse('accounts:edit_profil'))
+        self.assertContains(response, reverse('accounts:password_change'))
+        self.assertContains(response, reverse('set_language'))
+        self.assertContains(response, 'account.settings@example.com')
+
+    def test_settings_page_requires_authentication(self):
+        response = self.client.get(reverse('accounts:settings'))
+
+        self.assertRedirects(
+            response,
+            f'{reverse("accounts:login")}?next={reverse("accounts:settings")}',
+        )
+
+
 class ProfilePersistenceTests(TestCase):
     def test_saving_user_does_not_overwrite_profile_changes_from_a_stale_instance(self):
         user = User.objects.create_user(

@@ -143,6 +143,45 @@ msgstr "Full name"
 msgid "Adresse e-mail"
 msgstr "Email address"
 
+msgid "Paramètres"
+msgstr "Settings"
+
+msgid "Compte"
+msgstr "Account"
+
+msgid "Paramètres du compte"
+msgstr "Account settings"
+
+msgid "Gérez vos informations de connexion et vos préférences."
+msgstr "Manage your sign-in details and preferences."
+
+msgid "Informations personnelles"
+msgstr "Personal information"
+
+msgid "Ces informations sont distinctes de votre profil public."
+msgstr "This information is separate from your public profile."
+
+msgid "Modifier les informations"
+msgstr "Edit account information"
+
+msgid "Protégez l’accès à votre compte."
+msgstr "Protect access to your account."
+
+msgid "Mettez à jour le mot de passe utilisé pour vous connecter."
+msgstr "Update the password you use to sign in."
+
+msgid "Changer le mot de passe"
+msgstr "Change password"
+
+msgid "Choisissez la langue de l’interface."
+msgstr "Choose the interface language."
+
+msgid "Langue de l’application"
+msgstr "App language"
+
+msgid "Enregistrer la langue"
+msgstr "Save language"
+
 msgid "Téléphone"
 msgstr "Phone number"
 
@@ -160,6 +199,54 @@ msgstr "Continue to payment"
 
 msgid "Retour au logement"
 msgstr "Back to property"
+
+msgid "Avis & Évaluations"
+msgstr "Reviews & Ratings"
+
+msgid "Espace professionnel"
+msgstr "Professional dashboard"
+
+msgid "Consultez les avis de vos clients et suivez leur satisfaction."
+msgstr "Read your customers' reviews and track their satisfaction."
+
+msgid "Vue d'ensemble"
+msgstr "Overview"
+
+msgid "Résumé de vos évaluations clients."
+msgstr "A summary of your customer ratings."
+
+msgid "Note moyenne"
+msgstr "Average rating"
+
+msgid "Avis reçus"
+msgstr "Reviews received"
+
+msgid "Avis de vos clients"
+msgstr "Customer reviews"
+
+msgid "Retrouvez ici les évaluations laissées par vos clients."
+msgstr "Find the ratings left by your customers here."
+
+msgid "Aucun commentaire."
+msgstr "No comment."
+
+msgid "Publié le"
+msgstr "Posted on"
+
+msgid "Séjour"
+msgstr "Stay"
+
+msgid "Aucun avis client pour le moment"
+msgstr "No customer reviews yet"
+
+msgid "Les avis de vos clients apparaîtront ici après leurs séjours."
+msgstr "Your customers' reviews will appear here after their stays."
+
+msgid "Retour à la Gestion"
+msgstr "Back to management"
+
+msgid "%(note)s sur 5"
+msgstr "%(note)s out of 5"
 
 msgid "Paiement sécurisé"
 msgstr "Secure payment"

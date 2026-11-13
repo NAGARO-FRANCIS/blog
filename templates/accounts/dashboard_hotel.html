@@ -152,10 +152,7 @@
         <section class="dh-section">
             <h2 class="dh-section__title">{% translate "Fonctionnalités" %}</h2>
             <div class="dh-features">
-                <a href="{% url 'logement:gestion_logements' %}" class="dh-feature">
-                    <span class="dh-feature__icon">▦</span>
-                    <p class="dh-feature__name">{% translate "Gestion des chambres" %}</p>
-                </a>
+               
                 <a href="{% url 'logement:calendrier_reservations' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
                     <p class="dh-feature__name">{% translate "Calendrier" %}</p>
@@ -172,7 +169,7 @@
                     <span class="dh-feature__icon">▦</span>
                     <p class="dh-feature__name">{% translate "Avis clients" %}</p>
                 </a>
-                <a href="{% url 'accounts:profil' %}" class="dh-feature">
+                <a href="{% url 'accounts:settings' %}" class="dh-feature">
                     <span class="dh-feature__icon">▦</span>
                     <p class="dh-feature__name">{% translate "Paramètres" %}</p>
                 </a>

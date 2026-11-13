@@ -91,7 +91,7 @@
                     <span class="dr-action__icon">✉</span>
                     <span>{% translate "Messages" %}</span>
                 </a>
-                <a href="{% url 'accounts:profil' %}" class="dr-action">
+                <a href="{% url 'accounts:settings' %}" class="dr-action">
                     <span class="dr-action__icon">⚙</span>
                     <span>{% translate "Paramètres" %}</span>
                 </a>
@@ -101,10 +101,7 @@
         <section class="dr-section">
             <h2 class="dr-section__title">{% translate "Fonctionnalités" %}</h2>
             <div class="dr-actions">
-                <a href="{% url 'logement:gestion_logements' %}" class="dr-action">
-                    <span class="dr-action__icon">▦</span>
-                    <span>{% translate "Gestion des logements" %}</span>
-                </a>
+               
                 <a href="{% url 'logement:calendrier_reservations' %}" class="dr-action">
                     <span class="dr-action__icon">▦</span>
                     <span>{% translate "Calendrier" %}</span>
@@ -121,10 +118,7 @@
                     <span class="dr-action__icon">▦</span>
                     <span>{% translate "Avis clients" %}</span>
                 </a>
-                <a href="{% url 'accounts:profil' %}" class="dr-action">
-                    <span class="dr-action__icon">⚙</span>
-                    <span>{% translate "Paramètres" %}</span>
-                </a>
+              
             </div>
         </section>
 

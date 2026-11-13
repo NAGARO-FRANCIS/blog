@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Paramètres du compte" %} - Ivoire Connect{% endblock %}
+
+{% block content %}
+<main class="account-settings">
+    <header class="settings-header">
+        <p class="settings-eyebrow">{% translate "Compte" %}</p>
+        <h1>{% translate "Paramètres du compte" %}</h1>
+        <p>{% translate "Gérez vos informations de connexion et vos préférences." %}</p>
+    </header>
+
+    <section class="settings-section" aria-labelledby="account-information-title">
+        <div class="settings-section__heading">
+            <h2 id="account-information-title">{% translate "Informations personnelles" %}</h2>
+            <p>{% translate "Ces informations sont distinctes de votre profil public." %}</p>
+        </div>
+        <div class="settings-row">
+            <div>
+                <h3>{% translate "Adresse e-mail" %}</h3>
+                <p>{{ request.user.email|default:"—" }}</p>
+            </div>
+            <a class="settings-link" href="{% url 'accounts:edit_profil' %}">{% translate "Modifier les informations" %}</a>
+        </div>
+    </section>
+
+    <section class="settings-section" aria-labelledby="security-title">
+        <div class="settings-section__heading">
+            <h2 id="security-title">{% translate "Sécurité" %}</h2>
+            <p>{% translate "Protégez l’accès à votre compte." %}</p>
+        </div>
+        <div class="settings-row">
+            <div>
+                <h3>{% translate "Mot de passe" %}</h3>
+                <p>{% translate "Mettez à jour le mot de passe utilisé pour vous connecter." %}</p>
+            </div>
+            <a class="settings-link" href="{% url 'accounts:password_change' %}">{% translate "Changer le mot de passe" %}</a>
+        </div>
+    </section>
+
+    <section class="settings-section" aria-labelledby="language-title">
+        <div class="settings-section__heading">
+            <h2 id="language-title">{% translate "Langue" %}</h2>
+            <p>{% translate "Choisissez la langue de l’interface." %}</p>
+        </div>
+        <form class="settings-language" method="post" action="{% url 'set_language' %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <label for="settings-language">{% translate "Langue de l’application" %}</label>
+            <div class="settings-language__controls">
+                {% get_current_language as CURRENT_LANGUAGE %}
+                {% get_available_languages as AVAILABLE_LANGUAGES %}
+                <select id="settings-language" name="language">
+                    {% for language_code, language_name in AVAILABLE_LANGUAGES %}
+                        <option value="{{ language_code }}"{% if language_code == CURRENT_LANGUAGE %} selected{% endif %}>{{ language_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">{% translate "Enregistrer la langue" %}</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<style>
+.account-settings {
+    --settings-ink: #17231d;
+    --settings-muted: #607066;
+    --settings-line: #dce5df;
+    --settings-paper: #fff;
+    --settings-green: #0b5d3b;
+    --settings-orange: #f77f00;
+    max-width: 880px;
+    min-height: calc(100vh - 72px);
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+    color: var(--settings-ink);
+}
+.settings-header { padding: 0 0 1.5rem; border-bottom: 3px solid var(--settings-green); }
+.settings-eyebrow { margin: 0 0 .4rem; color: var(--settings-orange); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
+.settings-header h1 { margin: 0; font-size: 2rem; color: var(--settings-green); }
+.settings-header > p:last-child { margin: .5rem 0 0; color: var(--settings-muted); }
+.settings-section { margin-top: 1.5rem; border: 1px solid var(--settings-line); border-radius: 12px; background: var(--settings-paper); }
+.settings-section__heading { padding: 1.25rem 1.4rem .9rem; }
+.settings-section__heading h2 { margin: 0; font-size: 1.1rem; }
+.settings-section__heading p { margin: .3rem 0 0; color: var(--settings-muted); font-size: .9rem; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.4rem; border-top: 1px solid var(--settings-line); }
+.settings-row h3 { margin: 0; font-size: .95rem; }
+.settings-row p { margin: .25rem 0 0; color: var(--settings-muted); font-size: .9rem; overflow-wrap: anywhere; }
+.settings-link, .settings-language button { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: .55rem .9rem; border: 1px solid var(--settings-green); border-radius: 7px; background: var(--settings-green); color: #fff; font: inherit; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.settings-link:hover, .settings-language button:hover { background: #08482e; }
+.settings-language { padding: 1rem 1.4rem 1.25rem; border-top: 1px solid var(--settings-line); }
+.settings-language label { display: block; margin-bottom: .45rem; font-size: .9rem; font-weight: 700; }
+.settings-language__controls { display: flex; gap: .75rem; }
+.settings-language select { min-width: 0; flex: 1; min-height: 42px; padding: .5rem .75rem; border: 1px solid #aebdb3; border-radius: 7px; background: #fff; color: var(--settings-ink); font: inherit; }
+.settings-link:focus-visible, .settings-language button:focus-visible, .settings-language select:focus-visible { outline: 3px solid var(--settings-orange); outline-offset: 2px; }
+@media (max-width: 600px) {
+    .account-settings { padding: 1.5rem .9rem 3rem; }
+    .settings-header h1 { font-size: 1.6rem; }
+    .settings-row { align-items: flex-start; flex-direction: column; }
+    .settings-link { width: 100%; }
+    .settings-language__controls { align-items: stretch; flex-direction: column; }
+}
+</style>
+{% endblock %}
