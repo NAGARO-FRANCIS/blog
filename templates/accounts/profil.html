@@ -169,24 +169,31 @@
             </div>
         </div>
 
-        {% if profile_user == request.user %}
-            <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
-                <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-pencil"/></svg>
-                {% translate "Modifier le profil" %}
+        <div class="ic-profilecard__actions">
+            <a href="{% url 'accounts:rechercher_profils' %}" class="ic-editprofile-btn">
+                {% translate "Rechercher des profils" %}
             </a>
-        {% endif %}
+            {% if profile_user == request.user %}
+                <a href="{% url 'accounts:edit_profil' %}" class="ic-editprofile-btn">
+                    <svg class="ic-i" width="15" height="15" aria-hidden="true"><use href="#ic-pencil"/></svg>
+                    {% translate "Modifier le profil" %}
+                </a>
+            {% endif %}
+        </div>
     </div>
 
     <!-- ══════════ STATS ══════════ -->
     <div class="ic-stats">
-        <div class="ic-stat-card">
-            <div class="ic-stat-icon ic-stat-icon--orange"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-eye"/></svg></div>
-            <div>
-                <div class="ic-stat-value">{{ vues_profil|default:"0" }}</div>
-                <div class="ic-stat-label">{% translate "Vues du profil" %}</div>
-                {% if vues_profil_delta %}<div class="ic-stat-delta">+{{ vues_profil_delta }}% {% translate "ce mois" %}</div>{% endif %}
+        {% if profile_user == request.user %}
+            <div class="ic-stat-card">
+                <div class="ic-stat-icon ic-stat-icon--orange"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-eye"/></svg></div>
+                <div>
+                    <div class="ic-stat-value">{{ vues_profil|default:"0" }}</div>
+                    <div class="ic-stat-label">{% translate "Vues du profil" %}</div>
+                    {% if vues_profil_delta %}<div class="ic-stat-delta">+{{ vues_profil_delta }}% {% translate "ce mois" %}</div>{% endif %}
+                </div>
             </div>
-        </div>
+        {% endif %}
 
         <div class="ic-stat-card">
             <div class="ic-stat-icon ic-stat-icon--green"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-doc"/></svg></div>
@@ -197,14 +204,16 @@
             </div>
         </div>
 
-        <div class="ic-stat-card">
-            <div class="ic-stat-icon ic-stat-icon--orange"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-heart"/></svg></div>
-            <div>
-                <div class="ic-stat-value">{{ nb_favoris|default:"0" }}</div>
-                <div class="ic-stat-label">{% translate "Favoris" %}</div>
-                {% if nb_favoris_delta %}<div class="ic-stat-delta">+{{ nb_favoris_delta }} {% translate "ce mois" %}</div>{% endif %}
+        {% if profile_user == request.user %}
+            <div class="ic-stat-card">
+                <div class="ic-stat-icon ic-stat-icon--orange"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-heart"/></svg></div>
+                <div>
+                    <div class="ic-stat-value">{{ nb_favoris|default:"0" }}</div>
+                    <div class="ic-stat-label">{% translate "Favoris" %}</div>
+                    {% if nb_favoris_delta %}<div class="ic-stat-delta">+{{ nb_favoris_delta }} {% translate "ce mois" %}</div>{% endif %}
+                </div>
             </div>
-        </div>
+        {% endif %}
 
         <div class="ic-stat-card">
             <div class="ic-stat-icon ic-stat-icon--green"><svg class="ic-i" width="20" height="20" aria-hidden="true"><use href="#ic-star"/></svg></div>
@@ -238,6 +247,7 @@
 
             <!-- COLONNE GAUCHE -->
             <div class="ic-col-left">
+                {% if profile_user == request.user %}
                 <div class="ic-card">
                     <h2 class="ic-card__title ic-card__title--orange">
                         <svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-user"/></svg>
@@ -268,6 +278,7 @@
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
 
                 <div class="ic-card">
                     <h2 class="ic-card__title ic-card__title--green">
@@ -290,11 +301,13 @@
                             <span class="ic-info-label">{% translate "Ville" %}</span>
                             <span class="ic-info-value {% if not profile.ville %}ic-empty{% endif %}">{% if profile.ville %}{{ profile.ville }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
+                        {% if profile_user == request.user %}
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-home"/></svg></span>
                             <span class="ic-info-label">{% translate "Quartier" %}</span>
                             <span class="ic-info-value {% if not profile.quartier %}ic-empty{% endif %}">{% if profile.quartier %}{{ profile.quartier }}{% else %}{% translate "Non renseigné" %}{% endif %}</span>
                         </div>
+                        {% endif %}
                     {% else %}
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-home"/></svg></span>
@@ -306,11 +319,13 @@
                             <span class="ic-info-label">{% translate "Ville" %}</span>
                             <span class="ic-info-value {% if not profile.establishment_city %}ic-empty{% endif %}">{% if profile.establishment_city %}{{ profile.establishment_city }}{% else %}{% translate "Non renseignée" %}{% endif %}</span>
                         </div>
+                        {% if profile_user == request.user %}
                         <div class="ic-info-row">
                             <span class="ic-info-icon"><svg class="ic-i" width="16" height="16" aria-hidden="true"><use href="#ic-briefcase"/></svg></span>
                             <span class="ic-info-label">{% translate "RCCM / SIRET" %}</span>
                             <span class="ic-info-value">{{ profile.siret_or_rccm|default:"—" }}</span>
                         </div>
+                        {% endif %}
                     {% endif %}
 
                     {% if profile_user == request.user %}
@@ -573,6 +588,7 @@
 }
 
 .ic-profilecard__info { min-width: 0; }
+.ic-profilecard__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .ic-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .ic-name-row h1 { font: 700 1.6rem/1.15 'Bricolage Grotesque', 'Figtree', sans-serif; overflow-wrap: anywhere; }
 .ic-verified-tick { flex-shrink: 0; }
@@ -615,7 +631,7 @@
 .ic-editprofile-btn:hover { background: var(--ic-orange-hover); }
 
 /* ── 4. Statistiques ── */
-.ic-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
+.ic-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 20px; }
 
 .ic-stat-card {
     display: flex; align-items: center; gap: 14px; padding: 1rem 1.25rem;
@@ -786,14 +802,16 @@
 
 @media (max-width: 780px) {
     .ic-profilecard { grid-template-columns: 1fr; padding-right: 20px; }
-    .ic-editprofile-btn { width: 100%; }
+    .ic-profilecard__actions { width: 100%; }
+    .ic-profilecard__actions .ic-editprofile-btn { width: 100%; }
 }
 
 @media (max-width: 600px) {
     .ic-profilecard { display: block; padding: 76px 20px 20px; }
     .ic-avatar { left: 50%; top: -42px; transform: translateX(-50%); }
     .ic-profilecard__info { width: 100%; }
-    .ic-editprofile-btn { width: 100%; margin-top: 18px; }
+    .ic-profilecard__actions { width: 100%; margin-top: 18px; }
+    .ic-profilecard__actions .ic-editprofile-btn { width: 100%; }
     .ic-verif-details { flex-direction: column; }
     .ic-info-label { min-width: 110px; }
 }

@@ -103,8 +103,10 @@ def initier_paiement(paiement):
 @transaction.atomic
 def appliquer_statut(paiement_id, statut):
     """Met à jour le paiement et la réservation. Sans danger si appelée plusieurs fois."""
+    reservation_id = Paiement.objects.values_list('reservation_id', flat=True).get(pk=paiement_id)
+    Reservation.objects.select_for_update().get(pk=reservation_id)
     paiement = Paiement.objects.select_for_update().select_related('reservation').get(pk=paiement_id)
-    if paiement.statut == 'completed':
+    if paiement.statut in ('completed', 'refunded'):
         return paiement
     if statut == 'SUCCESS':
         paiement.statut = 'completed'
@@ -112,8 +114,17 @@ def appliquer_statut(paiement_id, statut):
         paiement.save(update_fields=['statut', 'completed_at'])
         reservation = paiement.reservation
         reservation.paye = True
-        reservation.statut = 'confirmed'
-        reservation.save(update_fields=['paye', 'statut', 'updated_at'])
+        update_fields = ['paye', 'updated_at']
+        if reservation.statut == 'cancelled':
+            logger.warning(
+                'CinetPay payment %s completed after reservation %s was cancelled; manual refund review is required.',
+                paiement.pk,
+                reservation.pk,
+            )
+        else:
+            reservation.statut = 'confirmed'
+            update_fields.append('statut')
+        reservation.save(update_fields=update_fields)
     elif statut in ('FAILED', 'EXPIRED') and paiement.statut == 'pending':
         paiement.statut = 'failed'
         paiement.save(update_fields=['statut'])
@@ -170,6 +181,12 @@ def cinetpay_retour(request, reservation_id):
             logger.exception('CinetPay : vérification au retour impossible (paiement %s)', paiement.pk)
 
     if paiement and paiement.statut == 'completed':
+        if reservation.statut == 'cancelled':
+            messages.warning(
+                request,
+                _('Le paiement a été reçu après l’annulation de la réservation. Contactez le propriétaire pour le remboursement selon la politique de l’annonce.'),
+            )
+            return redirect('logement:confirmation_reservation', reservation_id=reservation.id)
         messages.success(request, _('✅ Paiement confirmé. Votre réservation est validée.'))
         return redirect('logement:confirmation_reservation', reservation_id=reservation.id)
     if paiement and paiement.statut == 'failed':

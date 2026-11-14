@@ -182,7 +182,8 @@
     }
     .status-completed { background: var(--ci-green-soft); border-color: #BFE0CE; color: var(--ci-green-deep); }
     .status-pending { background: var(--ci-orange-soft); border-color: #F6D9B0; color: var(--ci-orange-text); }
-    .status-failed { background: var(--ci-danger-soft); border-color: #F0CACA; color: #8F1D17; }
+    .status-failed, .status-cancelled { background: var(--ci-danger-soft); border-color: #F0CACA; color: #8F1D17; }
+    .status-refunded { background: var(--ci-green-soft); border-color: #BFE0CE; color: var(--ci-green-deep); }
 
     .payment-confirm-button {
         padding: 0.5rem 0.9rem;
@@ -270,6 +271,7 @@
 
 {% block content %}
 {% translate "Confirmer que ce paiement en espèces a bien été reçu ?" as confirm_cash_payment %}
+{% translate "Confirmez que vous avez déjà effectué le remboursement auprès du moyen de paiement. Cette action mettra à jour le suivi uniquement." as confirm_external_refund %}
 
 <div class="payments-page">
 
@@ -329,13 +331,23 @@
                 {% for paiement in paiements %}
                 <tr>
                     <td data-label="{% translate 'Client' %}">{{ paiement.reservation.client_user.get_full_name|default:paiement.reservation.client_nom }}</td>
-                    <td data-label="{% translate 'Logement' %}">{{ paiement.reservation.logement.titre }}</td>
+                    <td data-label="{% translate 'Logement' %}">
+                        {{ paiement.reservation.logement.titre }}
+                        {% if paiement.reservation.statut == 'cancelled' %}
+                            <span class="payment-none">{% translate "Réservation annulée" %}</span>
+                        {% endif %}
+                    </td>
                     <td data-label="{% translate 'Montant' %}"><span class="payment-amount">{{ paiement.montant|floatformat:0 }} FCFA</span></td>
                     <td data-label="{% translate 'Méthode' %}">{{ paiement.get_methode_display }}</td>
                     <td data-label="{% translate 'Statut' %}"><span class="badge status-{{ paiement.statut }}">{{ paiement.get_statut_display }}</span></td>
                     <td data-label="{% translate 'Date' %}">{{ paiement.created_at|date:'d/m/Y' }}</td>
                     <td data-label="{% translate 'Action' %}">
-                        {% if paiement.methode == 'cash' and paiement.statut == 'pending' %}
+                        {% if paiement.reservation.statut == 'cancelled' and paiement.statut == 'completed' %}
+                            <form method="post" action="{% url 'logement:marquer_paiement_rembourse' paiement.id %}" data-confirm="{{ confirm_external_refund }}">
+                                {% csrf_token %}
+                                <button class="payment-confirm-button" type="submit">{% translate "Marquer comme remboursé" %}</button>
+                            </form>
+                        {% elif paiement.methode == 'cash' and paiement.statut == 'pending' and paiement.reservation.statut != 'cancelled' %}
                             <form method="post" action="{% url 'logement:confirmer_paiement_especes' paiement.id %}" data-confirm="{{ confirm_cash_payment }}">
                                 {% csrf_token %}
                                 <button class="payment-confirm-button" type="submit">{% translate "Confirmer le paiement reçu" %}</button>

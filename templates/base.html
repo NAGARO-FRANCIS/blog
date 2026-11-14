@@ -161,7 +161,9 @@
                     <li style="position: relative;">
                         <a href="{% url 'accounts:notifications' %}">🔔 {% translate "Notifications" %}<span class="notification-badge js-notif-badge">0</span></a>
                     </li>
+                    <li><a href="{% url 'logement:mes_reservations_client' %}">🛏️ {% translate "Mes réservations" %}</a></li>
                     <li><a href="{% url 'accounts:profil' %}">👤 {% translate "Profil" %}</a></li>
+                    <li><a href="{% url 'accounts:rechercher_profils' %}">🔎 {% translate "Rechercher des profils" %}</a></li>
                     <li><a href="{% url 'accounts:logout' %}">🚪 {% translate "Déconnexion" %}</a></li>
                 {% else %}
                     <li><a href="{% url 'accounts:login' %}">🔐 {% translate "Connexion" %}</a></li>
@@ -242,6 +244,10 @@
       <svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
       <span>{% translate "Notifications" %}</span>
       <b class="notification-badge js-notif-badge">0</b>
+    </a>
+    <a href="{% url 'logement:mes_reservations_client' %}" class="tab {% if rm.url_name == 'mes_reservations_client' %}active{% endif %}">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+      <span>{% translate "Réservations" %}</span>
     </a>
     <a href="{% url 'accounts:profil' %}" class="tab {% if rm.url_name == 'profil' %}active{% endif %}">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>

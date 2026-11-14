@@ -2,8 +2,8 @@ from django.urls import path
 from .views import (
     home, listings_all_types, choisir_type_annonce, ajouter_logement, modifier_logement, supprimer_logement,
     mes_logements, gestion_logements,
-    mes_reservations, changer_statut_reservation, calendrier_reservations, mes_paiements,
-    confirmer_paiement_especes,
+    mes_reservations, mes_reservations_client, changer_statut_reservation, annuler_reservation,
+    calendrier_reservations, mes_paiements, confirmer_paiement_especes, marquer_paiement_rembourse,
     mes_clients, avis_clients, statistiques_professionnel,
     detail_logement, toggle_favori, mes_favoris, reserver_logement, paiement_reservation, confirmation_reservation,
 )
@@ -25,12 +25,15 @@ urlpatterns = [
     
     # Gestion des réservations
     path('reservations/', mes_reservations, name='mes_reservations'),
+    path('mes-reservations/', mes_reservations_client, name='mes_reservations_client'),
     path('reservation/<int:reservation_id>/statut/', changer_statut_reservation, name='changer_statut_reservation'),
+    path('reservation/<int:reservation_id>/annuler/', annuler_reservation, name='annuler_reservation'),
     path('calendrier/', calendrier_reservations, name='calendrier_reservations'),
     
     # Gestion des paiements
     path('paiements/', mes_paiements, name='mes_paiements'),
     path('paiements/<int:paiement_id>/encaisser/', confirmer_paiement_especes, name='confirmer_paiement_especes'),
+    path('paiements/<int:paiement_id>/rembourser/', marquer_paiement_rembourse, name='marquer_paiement_rembourse'),
     
     # Gestion des clients
     path('clients/', mes_clients, name='mes_clients'),

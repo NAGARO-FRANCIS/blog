@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% translate "Mes réservations" %} — Ivoire Connect{% endblock %}
+
+{% block content %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+{% translate "Annuler cette réservation ? La chambre sera libérée. Si elle a été payée, le remboursement sera traité manuellement selon la politique de l’annonce." as confirm_cancellation %}
+
+<main class="my-bookings">
+
+    <!-- En-tête -->
+    <header class="my-bookings__header">
+        <div class="my-bookings__stripe" aria-hidden="true"></div>
+        <div class="my-bookings__header-body">
+            <span class="my-bookings__icon" aria-hidden="true">🧳</span>
+            <div>
+                <h1>{% translate "Mes réservations" %}</h1>
+                <p>{% translate "Consultez vos séjours et annulez une réservation avant l’arrivée si nécessaire." %}</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Liste -->
+    <section class="my-bookings__list" aria-label="{% translate 'Liste de mes réservations' %}">
+        {% for reservation in reservations %}
+            <article class="booking-card">
+                <div class="booking-card__heading">
+                    <div>
+                        <h2>{{ reservation.logement.titre }}</h2>
+                        <p>📍 {{ reservation.logement.ville }}</p>
+                    </div>
+                    <span class="booking-card__status booking-card__status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span>
+                </div>
+
+                <dl class="booking-card__details">
+                    <div>
+                        <dt>{% translate "Séjour" %}</dt>
+                        <dd>{{ reservation.date_arrivee|date:"d/m/Y" }} – {{ reservation.date_depart|date:"d/m/Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Chambres" %}</dt>
+                        <dd>{{ reservation.nombre_chambres|default:1 }}</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Montant" %}</dt>
+                        <dd>{{ reservation.montant_final|floatformat:0 }} FCFA</dd>
+                    </div>
+                    <div>
+                        <dt>{% translate "Paiement" %}</dt>
+                        <dd>{% if reservation.paiement %}{{ reservation.paiement.get_statut_display }}{% else %}{% translate "Non renseigné" %}{% endif %}</dd>
+                    </div>
+                </dl>
+
+                {% if reservation.statut == 'cancelled' and reservation.paiement.statut == 'completed' %}
+                    <p class="booking-card__notice">{% translate "Le paiement a été reçu. Le remboursement n’est pas automatique : il est traité selon la politique de l’annonce." %}</p>
+                {% endif %}
+
+                {% if reservation.can_be_cancelled %}
+                    {% if reservation.logement.politique_annulation %}
+                        <details class="booking-card__policy">
+                            <summary>{% translate "Politique d’annulation" %}</summary>
+                            <p>{{ reservation.logement.politique_annulation|linebreaksbr }}</p>
+                        </details>
+                    {% endif %}
+
+                    <div class="booking-card__actions">
+                        <a class="booking-card__details-link" href="{% url 'logement:confirmation_reservation' reservation.pk %}">{% translate "Voir le reçu et la politique" %}</a>
+                        <form method="post" action="{% url 'logement:annuler_reservation' reservation.pk %}" data-confirm="{{ confirm_cancellation }}">
+                            {% csrf_token %}
+                            <button class="booking-card__cancel" type="submit">{% translate "Annuler la réservation" %}</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="booking-card__actions">
+                        <a class="booking-card__details-link" href="{% url 'logement:confirmation_reservation' reservation.pk %}">{% translate "Voir le reçu" %}</a>
+                    </div>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="my-bookings__empty">
+                <div class="my-bookings__empty-icon" aria-hidden="true">🧳</div>
+                <p>{% translate "Vous n’avez pas encore de réservation." %}</p>
+            </div>
+        {% endfor %}
+    </section>
+</main>
+
+<style>
+    /* ══════════════════════════════════════════════
+       Mes réservations (côté client) — Ivoire Connect
+       Palette Côte d'Ivoire : orange · blanc · vert
+       Plan : 1 Base · 2 En-tête · 3 Cartes de réservation · 4 Actions · 5 État vide · 6 Responsive
+    ══════════════════════════════════════════════ */
+
+    /* ── 1. Base ── */
+    .my-bookings {
+        --ci-orange: #F77F00;
+        --ci-orange-soft: #FFF1E0;
+        --ci-orange-text: #8A4300;
+        --ci-green: #009E60;
+        --ci-green-deep: #0B5D3B;
+        --ci-green-soft: #E6F4EC;
+        --ci-ink: #10231A;
+        --ci-muted: #5B6B62;
+        --ci-line: #DCE5DF;
+        --ci-bg: #F3F7F4;
+        --ci-white: #FFFFFF;
+        --ci-danger: #B3261E;
+        --ci-danger-soft: #FDF1F1;
+
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3.5rem;
+        background: var(--ci-bg);
+        color: var(--ci-ink);
+        font: 400 15px/1.5 'Figtree', system-ui, sans-serif;
+    }
+
+    .my-bookings *,
+    .my-bookings *::before,
+    .my-bookings *::after { box-sizing: border-box; }
+
+    .my-bookings :where(h1, h2, p, dl, dd) { margin: 0; }
+    .my-bookings :focus-visible { outline: 3px solid var(--ci-orange); outline-offset: 2px; }
+
+    /* ── 2. En-tête ── */
+    .my-bookings__header {
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ci-green-deep);
+        color: var(--ci-white);
+    }
+
+    .my-bookings__stripe {
+        height: 8px;
+        background: linear-gradient(90deg,
+            var(--ci-orange) 0 33.33%,
+            #E9EFEB 33.33% 66.66%,
+            var(--ci-green) 66.66% 100%);
+    }
+
+    .my-bookings__header-body {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 1.4rem 1.6rem 1.5rem;
+    }
+
+    .my-bookings__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--ci-orange);
+        font-size: 1.5rem;
+    }
+
+    .my-bookings__header h1 {
+        font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Bricolage Grotesque', 'Figtree', sans-serif;
+        letter-spacing: -.01em;
+        color: var(--ci-white);
+    }
+
+    .my-bookings__header p { margin-top: 4px; color: rgba(255,255,255,.85); }
+
+    /* ── 3. Cartes de réservation ── */
+    .my-bookings__list { display: grid; gap: 1rem; }
+
+    .booking-card {
+        padding: 1.4rem 1.5rem;
+        border: 1px solid var(--ci-line);
+        border-radius: 16px;
+        background: var(--ci-white);
+    }
+
+    .booking-card__heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .booking-card__heading h2 { font: 700 1.2rem/1.3 'Bricolage Grotesque', 'Figtree', sans-serif; }
+    .booking-card__heading p { margin-top: 2px; color: var(--ci-muted); }
+
+    .booking-card__status {
+        flex-shrink: 0;
+        padding: 3px 12px;
+        border: 1px solid #D6DDD9;
+        border-radius: 999px;
+        background: #EEF0EF;
+        color: #3A4540;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .booking-card__status--confirmed,
+    .booking-card__status--completed { background: var(--ci-green-soft); border-color: #BFE0CE; color: var(--ci-green-deep); }
+    .booking-card__status--pending { background: var(--ci-orange-soft); border-color: #F6D9B0; color: var(--ci-orange-text); }
+    .booking-card__status--cancelled { background: var(--ci-danger-soft); border-color: #F0CACA; color: #8F1D17; }
+    .booking-card__status--checked_in { background: var(--ci-green-deep); border-color: var(--ci-green-deep); color: var(--ci-white); }
+
+    .booking-card__details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin: 1.1rem 0;
+        padding: 1rem;
+        border-radius: 12px;
+        background: var(--ci-green-soft);
+    }
+
+    .booking-card__details div { min-width: 0; }
+    .booking-card__details dt { color: var(--ci-muted); font-size: 14px; }
+    .booking-card__details dd { margin-top: 2px; font-weight: 600; overflow-wrap: anywhere; }
+
+    .booking-card__notice {
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #F6D9B0;
+        border-left: 4px solid var(--ci-orange);
+        border-radius: 12px;
+        background: var(--ci-orange-soft);
+        color: #6F3A00;
+    }
+
+    .booking-card__policy { margin-bottom: 1rem; }
+    .booking-card__policy summary { color: var(--ci-green-deep); font-weight: 600; cursor: pointer; }
+    .booking-card__policy p { margin-top: 8px; color: var(--ci-muted); }
+
+    /* ── 4. Actions ── */
+    .booking-card__actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .booking-card__actions form { margin: 0; }
+
+    .booking-card__details-link {
+        color: var(--ci-green-deep);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .booking-card__details-link:hover { color: var(--ci-green); }
+
+    .booking-card__cancel {
+        min-height: 44px;
+        padding: 0.55rem 1.2rem;
+        border: 1.5px solid #F0CACA;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--ci-danger);
+        font: 600 15px 'Figtree', sans-serif;
+        cursor: pointer;
+        transition: background-color .15s ease, border-color .15s ease;
+    }
+
+    .booking-card__cancel:hover { background: var(--ci-danger-soft); border-color: var(--ci-danger); }
+
+    /* ── 5. État vide ── */
+    .my-bookings__empty {
+        padding: 3.5rem 1.5rem;
+        border: 2px dashed #BFD0C5;
+        border-radius: 16px;
+        background: var(--ci-white);
+        color: var(--ci-muted);
+        text-align: center;
+    }
+
+    .my-bookings__empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: var(--ci-green-soft);
+        font-size: 1.9rem;
+    }
+
+    /* ── 6. Responsive ── */
+    @media (max-width: 560px) {
+        .my-bookings { padding: 1rem 0.75rem 2.5rem; }
+        .my-bookings__header-body { padding: 1.1rem 1.1rem 1.25rem; gap: 12px; }
+        .booking-card { padding: 1.1rem; }
+        .booking-card__heading { flex-direction: column; }
+        .booking-card__actions { flex-direction: column; align-items: stretch; }
+        .booking-card__details-link { text-align: center; }
+        .booking-card__cancel { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .my-bookings * { transition: none !important; }
+    }
+</style>
+
+<script>
+    // Confirmation avant une action sensible : <form data-confirm="message">
+    document.addEventListener('submit', function (event) {
+        const form = event.target;
+        const message = form.dataset && form.dataset.confirm;
+        if (message && !window.confirm(message)) event.preventDefault();
+    });
+</script>
+{% endblock %}

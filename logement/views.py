@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_http_methods, require_POST
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from accounts.decorators import verified_identity_required
 from accounts.models import Profile
 from .forms import (
@@ -463,6 +463,15 @@ def paiement_reservation(request, reservation_id):
             }, status=403)
         return redirect('accounts:login' if not request.user.is_authenticated else 'logement:home')
 
+    if reservation.statut == 'cancelled':
+        if request.method == 'POST':
+            return JsonResponse({
+                'success': False,
+                'message': _('Cette réservation a été annulée et ne peut plus être payée.'),
+            }, status=400)
+        messages.error(request, _('Cette réservation a été annulée et ne peut plus être payée.'))
+        return redirect('logement:confirmation_reservation', reservation_id=reservation.id)
+
     if reservation.logement.account_type in ('hotel', 'residence'):
         if request.method == 'POST':
             return JsonResponse({
@@ -673,9 +682,122 @@ def confirmation_reservation(request, reservation_id):
     
     context = {
         'reservation': reservation,
+        'can_cancel_reservation': (
+            reservation.statut in ('pending', 'confirmed')
+            and reservation.date_arrivee >= timezone.localdate()
+        ),
     }
     
     return render(request, 'logement/confirmation_reservation.html', context)
+
+
+@login_required
+def mes_reservations_client(request):
+    reservations = list(Reservation.objects.filter(
+        client_user=request.user,
+    ).select_related(
+        'logement', 'paiement',
+    ).prefetch_related(
+        'unites',
+    ).order_by('-created_at'))
+    today = timezone.localdate()
+    for reservation in reservations:
+        reservation.can_be_cancelled = (
+            reservation.statut in ('pending', 'confirmed')
+            and reservation.date_arrivee >= today
+        )
+    return render(request, 'logement/mes_reservations_client.html', {
+        'reservations': reservations,
+    })
+
+
+@require_POST
+def annuler_reservation(request, reservation_id):
+    reservation = get_object_or_404(
+        Reservation.objects.select_related('logement', 'client_user'),
+        pk=reservation_id,
+    )
+    is_owner = (
+        request.user.is_authenticated
+        and reservation.logement.proprietaire_id == request.user.id
+    )
+    if not is_owner and not _can_access_reservation(request, reservation):
+        return redirect('accounts:login' if not request.user.is_authenticated else 'logement:home')
+
+    payment = None
+    cancelled = False
+    refund_due = False
+    with transaction.atomic():
+        reservation = Reservation.objects.select_for_update().select_related(
+            'logement',
+        ).get(pk=reservation_id)
+        is_owner = (
+            request.user.is_authenticated
+            and reservation.logement.proprietaire_id == request.user.id
+        )
+        if not is_owner and not _can_access_reservation(request, reservation):
+            return redirect('accounts:login' if not request.user.is_authenticated else 'logement:home')
+
+        if (
+            reservation.statut not in ('pending', 'confirmed')
+            or reservation.date_arrivee < timezone.localdate()
+        ):
+            messages.error(
+                request,
+                _('Cette réservation ne peut plus être annulée : l’arrivée a commencé ou le séjour est terminé.'),
+            )
+        else:
+            payment = Paiement.objects.select_for_update().filter(
+                reservation=reservation,
+            ).first()
+            reservation.statut = 'cancelled'
+            reservation.save(update_fields=['statut', 'updated_at'])
+            if payment and payment.statut == 'pending':
+                payment.statut = 'cancelled'
+                payment.save(update_fields=['statut'])
+            refund_due = bool(payment and payment.statut == 'completed')
+            cancelled = True
+
+    if cancelled:
+        if is_owner:
+            if reservation.client_user:
+                from accounts.notification_service import notify_user
+                notify_user(
+                    reservation.client_user,
+                    'reservation',
+                    'Réservation annulée',
+                    f'Votre réservation de « {reservation.logement.titre} » a été annulée par le propriétaire.',
+                    actor=request.user,
+                    listing_id=reservation.logement_id,
+                    reservation_id=reservation.pk,
+                    email_subject='Annulation de votre réservation',
+                )
+        else:
+            from accounts.notification_service import notify_user
+            notify_user(
+                reservation.logement.proprietaire,
+                'reservation',
+                'Annulation de réservation',
+                f'La réservation de {reservation.client_nom} pour « {reservation.logement.titre} » a été annulée.',
+                actor=request.user if request.user.is_authenticated else None,
+                listing_id=reservation.logement_id,
+                reservation_id=reservation.pk,
+                email_subject='Annulation d’une réservation',
+            )
+
+        if refund_due:
+            messages.warning(
+                request,
+                _('Réservation annulée et chambre libérée. Appliquez la politique de l’annonce et effectuez tout remboursement manuellement.'),
+            )
+        else:
+            messages.success(request, _('Réservation annulée ; la chambre est de nouveau disponible.'))
+
+    return redirect(
+        'logement:mes_reservations' if is_owner
+        else 'logement:confirmation_reservation',
+        **({'reservation_id': reservation_id} if not is_owner else {}),
+    )
 
 
 @login_required
@@ -1140,7 +1262,7 @@ def mes_reservations(request):
         logement__proprietaire=request.user,
         logement__account_type__in=['hotel', 'residence'],
     ).select_related(
-        'logement', 'client_user', 'client_user__profile',
+        'logement', 'client_user', 'client_user__profile', 'paiement',
     ).prefetch_related('unites').order_by('-created_at')
 
     search_query = request.GET.get('q', '').strip()
@@ -1167,10 +1289,18 @@ def mes_reservations(request):
     else:
         selected_status = ''
 
+    reservations = list(reservations)
+    today = timezone.localdate()
+    for reservation in reservations:
+        reservation.can_be_cancelled = (
+            reservation.statut in ('pending', 'confirmed')
+            and reservation.date_arrivee >= today
+        )
+
     return render(request, template, {
         'titre':        titre,
         'reservations': reservations,
-        'nb_reservations': reservations.count(),
+        'nb_reservations': len(reservations),
         'search_query': search_query,
         'selected_status': selected_status,
         'status_choices': Reservation.STATUT_CHOICES,
@@ -1364,21 +1494,67 @@ def mes_paiements(request):
 @require_POST
 def confirmer_paiement_especes(request, paiement_id):
     with transaction.atomic():
-        paiement = get_object_or_404(
-            Paiement.objects.select_for_update().select_related('reservation'),
-            pk=paiement_id,
-            reservation__logement__proprietaire=request.user,
-            reservation__logement__account_type__in=['hotel', 'residence'],
-        )
-        if paiement.methode != 'cash' or paiement.statut != 'pending':
+        reservation, paiement = _lock_owner_payment(request.user, paiement_id)
+        if (
+            paiement.methode != 'cash'
+            or paiement.statut != 'pending'
+            or reservation.statut == 'cancelled'
+        ):
             messages.error(request, _('Ce paiement ne peut pas être confirmé comme paiement sur place.'))
         else:
             paiement.statut = 'completed'
             paiement.completed_at = timezone.now()
             paiement.save(update_fields=['statut', 'completed_at'])
-            paiement.reservation.paye = True
-            paiement.reservation.save(update_fields=['paye', 'updated_at'])
+            reservation.paye = True
+            reservation.save(update_fields=['paye', 'updated_at'])
             messages.success(request, _('Paiement sur place enregistré.'))
+    return redirect('logement:mes_paiements')
+
+
+def _lock_owner_payment(user, paiement_id):
+    paiement_reference = get_object_or_404(
+        Paiement.objects.filter(
+            reservation__logement__proprietaire=user,
+            reservation__logement__account_type__in=['hotel', 'residence'],
+        ),
+        pk=paiement_id,
+    )
+    reservation = get_object_or_404(
+        Reservation.objects.select_for_update(),
+        pk=paiement_reference.reservation_id,
+    )
+    if (
+        reservation.logement.proprietaire_id != user.id
+        or reservation.logement.account_type not in ('hotel', 'residence')
+    ):
+        raise Http404
+    paiement = get_object_or_404(
+        Paiement.objects.select_for_update(),
+        pk=paiement_id,
+        reservation_id=reservation.pk,
+    )
+    return reservation, paiement
+
+
+@login_required
+@require_POST
+def marquer_paiement_rembourse(request, paiement_id):
+    with transaction.atomic():
+        reservation, paiement = _lock_owner_payment(request.user, paiement_id)
+        if paiement.statut != 'completed' or reservation.statut != 'cancelled':
+            messages.error(
+                request,
+                _('Seul un paiement reçu pour une réservation annulée peut être marqué comme remboursé.'),
+            )
+        else:
+            paiement.statut = 'refunded'
+            paiement.save(update_fields=['statut'])
+            reservation.paye = False
+            reservation.save(update_fields=['paye', 'updated_at'])
+            messages.success(
+                request,
+                _('Remboursement enregistré. Assurez-vous que le remboursement a bien été effectué auprès du moyen de paiement.'),
+            )
     return redirect('logement:mes_paiements')
 
 

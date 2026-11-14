@@ -7,7 +7,7 @@ from .views import (
     resend_activation,
     verify_phone, resend_phone_code,
     dashboard, dashboard_individu, dashboard_residence, dashboard_hotel,
-    profil, profil_user, edit_profil, account_settings, verification_docs, upload_document, verify_profile,
+    profil, profil_user, rechercher_profils, edit_profil, account_settings, verification_docs, upload_document, verify_profile,
     PasswordChangeView, PasswordResetConfirmView, PasswordResetView,
 )
 from .subscription_views import (
@@ -39,6 +39,7 @@ urlpatterns = [
     
     # Profil
     path('profil/', profil, name='profil'),
+    path('profils/rechercher/', rechercher_profils, name='rechercher_profils'),
     path('profil/<int:user_id>/', profil_user, name='profil_user'),
     path('profil/editer/', edit_profil, name='edit_profil'),
     path('settings/', account_settings, name='settings'),

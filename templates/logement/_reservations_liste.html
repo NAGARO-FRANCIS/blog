@@ -1,4 +1,5 @@
 {% load i18n %}
+{% translate "Annuler cette réservation et libérer la chambre ? Si elle a été payée, le remboursement doit être traité manuellement selon la politique de l’annonce." as confirm_reservation_cancellation %}
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -256,6 +257,8 @@
     .reservation-action:hover { background: var(--ci-orange-hover); }
     .reservation-action--checkout { background: var(--ci-green-deep); color: var(--ci-white); }
     .reservation-action--checkout:hover { background: var(--ci-green); }
+    .reservation-action--cancel { background: var(--ci-danger-soft); color: #8F1D17; }
+    .reservation-action--cancel:hover { background: #F7DDDD; }
 
     .reservations-back {
         display: inline-block;
@@ -427,7 +430,13 @@
                         <td data-label="{% translate 'Statut' %}"><span class="reservation-status reservation-status--{{ reservation.statut }}">{{ reservation.get_statut_display }}</span></td>
 
                         <td data-label="{% translate 'Paiement' %}">
-                            {% if reservation.paye %}
+                            {% if reservation.statut == "cancelled" and reservation.paiement.statut == "refunded" %}
+                                <span class="reservation-paid reservation-paid--yes">{% translate "Remboursée" %}</span>
+                            {% elif reservation.statut == "cancelled" and reservation.paiement.statut == "completed" %}
+                                <span class="reservation-paid reservation-paid--no">{% translate "Remboursement à traiter" %}</span>
+                            {% elif reservation.statut == "cancelled" %}
+                                <span class="reservation-paid">{% translate "Annulé" %}</span>
+                            {% elif reservation.paye %}
                                 <span class="reservation-paid reservation-paid--yes">{% translate "Payée" %}</span>
                             {% else %}
                                 <span class="reservation-paid reservation-paid--no">{% translate "À régler" %}</span>
@@ -446,7 +455,13 @@
                                         <button class="reservation-action reservation-action--checkout" type="submit" name="action" value="check_out">{% translate "Clôturer le séjour" %}</button>
                                     {% endif %}
                                 </form>
-                            {% else %}
+                            {% endif %}
+                            {% if reservation.can_be_cancelled %}
+                                <form class="reservation-actions" method="post" action="{% url 'logement:annuler_reservation' reservation.id %}" data-confirm="{{ confirm_reservation_cancellation }}">
+                                    {% csrf_token %}
+                                    <button class="reservation-action reservation-action--cancel" type="submit">{% translate "Annuler la réservation" %}</button>
+                                </form>
+                            {% elif reservation.statut != "checked_in" %}
                                 <span class="reservation-detail">{% translate "Aucune action disponible" %}</span>
                             {% endif %}
                         </td>

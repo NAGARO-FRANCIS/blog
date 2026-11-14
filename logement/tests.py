@@ -12,7 +12,7 @@ from .forms import (
     RechercheLogementForm,
     ReservationForm,
 )
-from accounts.models import DocumentVerification, ProfessionalProfile
+from accounts.models import DocumentVerification, Notification, ProfessionalProfile
 from .models import AvisLogement, Etablissement, Paiement, Reservation, Logement
 from .views import _apply_logement_filters
 
@@ -849,8 +849,8 @@ class ReservationListViewTests(TestCase):
             client_nom='Aminata Diallo',
             client_email='aminata@example.com',
             client_telephone='+2250700000000',
-            date_arrivee='2026-10-10',
-            date_depart='2026-10-12',
+            date_arrivee=date(2026, 10, 10),
+            date_depart=date(2026, 10, 12),
             nombre_personnes=2,
             nombre_chambres=1,
             prix_par_nuit=10000,
@@ -929,6 +929,166 @@ class ReservationListViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.reservation.refresh_from_db()
         self.assertEqual(self.reservation.statut, 'confirmed')
+
+    def test_owner_can_cancel_upcoming_reservation_and_paid_payment_stays_for_manual_refund(self):
+        today = timezone.localdate()
+        self.reservation.date_arrivee = today + timedelta(days=1)
+        self.reservation.date_depart = today + timedelta(days=3)
+        self.reservation.save(update_fields=['date_arrivee', 'date_depart', 'updated_at'])
+        payment = Paiement.objects.create(
+            reservation=self.reservation,
+            montant=self.reservation.montant_final,
+            methode='mobile_money',
+            statut='completed',
+        )
+        response = self.client.post(
+            reverse('logement:annuler_reservation', args=[self.reservation.pk]),
+        )
+
+        self.assertRedirects(response, reverse('logement:mes_reservations'))
+        self.reservation.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'cancelled')
+        self.assertEqual(payment.statut, 'completed')
+        self.assertEqual(len(self.logement.available_units_for_period(
+            self.reservation.date_arrivee,
+            self.reservation.date_depart,
+        )), 1)
+        self.assertTrue(Notification.objects.filter(
+            recipient=self.client_user,
+            related_reservation_id=self.reservation.pk,
+            title='Réservation annulée',
+        ).exists())
+
+    def test_client_can_cancel_reservation_and_pending_payment_is_cancelled(self):
+        today = timezone.localdate()
+        self.reservation.date_arrivee = today + timedelta(days=1)
+        self.reservation.date_depart = today + timedelta(days=2)
+        self.reservation.save(update_fields=['date_arrivee', 'date_depart', 'updated_at'])
+        self.logement.politique_annulation = 'Remboursement selon les conditions convenues.'
+        self.logement.save(update_fields=['politique_annulation'])
+        payment = Paiement.objects.create(
+            reservation=self.reservation,
+            montant=self.reservation.montant_final,
+            methode='cash',
+            statut='pending',
+        )
+        self.client.force_login(self.client_user)
+
+        response = self.client.post(
+            reverse('logement:annuler_reservation', args=[self.reservation.pk]),
+        )
+
+        self.assertRedirects(response, reverse(
+            'logement:confirmation_reservation',
+            args=[self.reservation.pk],
+        ))
+        self.reservation.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'cancelled')
+        self.assertEqual(payment.statut, 'cancelled')
+        self.assertTrue(Notification.objects.filter(
+            recipient=self.owner,
+            related_reservation_id=self.reservation.pk,
+            title='Annulation de réservation',
+        ).exists())
+        confirmation = self.client.get(reverse(
+            'logement:confirmation_reservation',
+            args=[self.reservation.pk],
+        ))
+        self.assertContains(confirmation, 'Réservation annulée')
+        self.assertContains(confirmation, 'Remboursement selon les conditions convenues.')
+        self.assertNotContains(confirmation, 'Annuler la réservation')
+
+        response = self.client.get(reverse('logement:mes_reservations_client'))
+        self.assertContains(response, 'Réservation annulée')
+        self.assertNotContains(response, 'Annuler la réservation')
+
+    def test_guest_can_cancel_only_reservation_in_their_session(self):
+        today = timezone.localdate()
+        self.reservation.client_user = None
+        self.reservation.date_arrivee = today + timedelta(days=1)
+        self.reservation.date_depart = today + timedelta(days=2)
+        self.reservation.save(update_fields=[
+            'client_user', 'date_arrivee', 'date_depart', 'updated_at',
+        ])
+        self.client.logout()
+        session = self.client.session
+        session['guest_reservation_ids'] = [str(self.reservation.pk)]
+        session.save()
+
+        response = self.client.post(
+            reverse('logement:annuler_reservation', args=[self.reservation.pk]),
+        )
+
+        self.assertRedirects(response, reverse(
+            'logement:confirmation_reservation',
+            args=[self.reservation.pk],
+        ))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'cancelled')
+
+    def test_owner_cannot_cancel_after_arrival_or_check_in(self):
+        today = timezone.localdate()
+        self.reservation.date_arrivee = today - timedelta(days=1)
+        self.reservation.date_depart = today + timedelta(days=1)
+        self.reservation.save(update_fields=['date_arrivee', 'date_depart', 'updated_at'])
+
+        response = self.client.post(
+            reverse('logement:annuler_reservation', args=[self.reservation.pk]),
+        )
+
+        self.assertRedirects(response, reverse('logement:mes_reservations'))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'confirmed')
+
+        self.reservation.date_arrivee = today
+        self.reservation.statut = 'checked_in'
+        self.reservation.save(update_fields=['date_arrivee', 'statut', 'updated_at'])
+        self.client.post(reverse('logement:annuler_reservation', args=[self.reservation.pk]))
+        self.reservation.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'checked_in')
+
+    def test_owner_can_record_refund_only_after_cancellation(self):
+        self.reservation.statut = 'cancelled'
+        self.reservation.paye = True
+        self.reservation.save(update_fields=['statut', 'paye', 'updated_at'])
+        payment = Paiement.objects.create(
+            reservation=self.reservation,
+            montant=self.reservation.montant_final,
+            methode='mobile_money',
+            statut='completed',
+        )
+
+        response = self.client.post(
+            reverse('logement:marquer_paiement_rembourse', args=[payment.pk]),
+        )
+
+        self.assertRedirects(response, reverse('logement:mes_paiements'))
+        payment.refresh_from_db()
+        self.reservation.refresh_from_db()
+        self.assertEqual(payment.statut, 'refunded')
+        self.assertFalse(self.reservation.paye)
+
+    def test_late_payment_confirmation_does_not_restore_cancelled_reservation(self):
+        self.reservation.statut = 'cancelled'
+        self.reservation.paye = False
+        self.reservation.save(update_fields=['statut', 'paye', 'updated_at'])
+        payment = Paiement.objects.create(
+            reservation=self.reservation,
+            montant=self.reservation.montant_final,
+            methode='mobile_money',
+            statut='cancelled',
+        )
+        from .cinetpay_paiement import appliquer_statut
+
+        appliquer_statut(payment.pk, 'SUCCESS')
+
+        self.reservation.refresh_from_db()
+        payment.refresh_from_db()
+        self.assertEqual(self.reservation.statut, 'cancelled')
+        self.assertTrue(self.reservation.paye)
+        self.assertEqual(payment.statut, 'completed')
 
     def test_proprietaire_peut_enregistrer_un_paiement_especes_recu(self):
         self.reservation.paye = False

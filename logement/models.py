@@ -639,6 +639,7 @@ class Paiement(models.Model):
         ('completed', _('✅ Complété')),
         ('failed', _('❌ Échoué')),
         ('refunded', _('↩️ Remboursé')),
+        ('cancelled', _('❌ Annulé')),
     ]
     
     reservation = models.OneToOneField(

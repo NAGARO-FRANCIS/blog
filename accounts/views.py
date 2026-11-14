@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 from django.db.models import Avg, Q, Sum
 from django.contrib.auth.views import (
     PasswordChangeView as DjangoPasswordChangeView,
@@ -919,6 +920,34 @@ def profil_user(request, user_id):
         'subscriber_count': subscriber_count,
     }
     return render(request, 'accounts/profil.html', context)
+
+
+@login_required
+def rechercher_profils(request):
+    query = request.GET.get('q', '').strip()[:100]
+    profiles = Profile.objects.select_related('user', 'professional_profile').filter(
+        user__is_active=True,
+    ).exclude(user=request.user)
+
+    if query:
+        profiles = profiles.filter(
+            Q(user__first_name__icontains=query)
+            | Q(user__last_name__icontains=query)
+            | Q(user__username__icontains=query)
+            | Q(ville__icontains=query)
+            | Q(profession__icontains=query)
+            | Q(role__icontains=query)
+            | Q(account_type__icontains=query)
+            | Q(professional_profile__establishment_name__icontains=query)
+            | Q(professional_profile__establishment_city__icontains=query)
+        )
+
+    page_obj = Paginator(profiles.order_by('-date_creation'), 20).get_page(request.GET.get('page'))
+    return render(request, 'accounts/rechercher_profils.html', {
+        'query': query,
+        'page_obj': page_obj,
+        'profiles': page_obj.object_list,
+    })
 
 
 @login_required

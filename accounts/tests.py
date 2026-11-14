@@ -4,7 +4,7 @@ import os
 from smtplib import SMTPException
 import tempfile
 from unittest import mock
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -565,6 +565,74 @@ class AccountActivationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Suivre ce profil')
         self.assertContains(response, 'Recevez ses nouvelles annonces')
+
+    def test_other_users_see_public_profile_fields_but_not_private_information(self):
+        owner = User.objects.create_user(
+            username='public_profile_owner',
+            email='private.owner@example.com',
+            password='StrongPassword123!',
+            first_name='Aminata',
+            last_name='Koné',
+        )
+        profile = owner.profile
+        profile.telephone = '+22501020304'
+        profile.ville = 'Abidjan'
+        profile.quartier = 'Cocody secret'
+        profile.profession = 'Architecte'
+        profile.date_naissance = date(1990, 4, 12)
+        profile.sexe = 'F'
+        profile.save()
+        viewer = User.objects.create_user(
+            username='public_profile_viewer',
+            email='viewer.public@example.com',
+            password='StrongPassword123!',
+        )
+        self.client.force_login(viewer)
+
+        response = self.client.get(reverse('accounts:profil_user', args=[owner.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Aminata')
+        self.assertContains(response, 'Architecte')
+        self.assertContains(response, 'Abidjan')
+        self.assertNotContains(response, 'private.owner@example.com')
+        self.assertNotContains(response, '+22501020304')
+        self.assertNotContains(response, 'Cocody secret')
+        self.assertNotContains(response, '12/04/1990')
+        self.assertNotContains(response, 'Féminin')
+        self.assertNotContains(response, 'Vues du profil')
+        self.assertNotContains(response, 'Favoris')
+
+    def test_profile_directory_searches_public_fields_without_searching_email(self):
+        owner = User.objects.create_user(
+            username='directory_owner',
+            email='directory.private@example.com',
+            password='StrongPassword123!',
+            first_name='Koffi',
+            last_name='Yao',
+        )
+        owner.profile.ville = 'Abidjan'
+        owner.profile.profession = 'Menuisier'
+        owner.profile.save()
+        viewer = User.objects.create_user(
+            username='directory_viewer',
+            email='directory.viewer@example.com',
+            password='StrongPassword123!',
+        )
+        self.client.force_login(viewer)
+
+        response = self.client.get(reverse('accounts:rechercher_profils'), {'q': 'Menuisier'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Koffi Yao')
+        self.assertContains(response, reverse('accounts:profil_user', args=[owner.id]))
+        self.assertNotContains(response, 'directory.private@example.com')
+
+        response = self.client.get(
+            reverse('accounts:rechercher_profils'),
+            {'q': 'directory.private@example.com'},
+        )
+        self.assertNotContains(response, 'Koffi Yao')
 
     def test_subscribe_creates_subscription_and_notification(self):
         creator = User.objects.create_user(
